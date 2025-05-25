@@ -1,0 +1,2927 @@
+### Alachua
+
+```bash
+#------------------------
+# alachua
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/zoning/florida/county/alachua/current/source_data/alachua
+
+# run to grab data
+ags_extract_data2.py zoning_alachua_city delete 15
+
+# run if file info needed
+ogrinfo zoning_alachua_city.shp zoning_alachua_city|less
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'zoning_alachua_city.shp', data_date = '2024-04-02', update_date = '2024-04-04'  WHERE county = 'ALACHUA' and city_name = 'ALACHUA'"
+
+# update dev
+update_zoning.py alachua alachua
+# copy the commands generated at the end of the output
+
+# grab raw_zon_alachua_alachua.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+
+#------------------------
+# archer
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/zoning/florida/county/alachua/current/source_data/archer
+
+# run to grab data
+ags_extract_data2.py zoning_archer delete 15
+
+# run if file info needed
+ogrinfo zoning_archer.shp zoning_archer|less
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'zoning_archer.shp', data_date = '2024-04-02', update_date = '2024-04-04'  WHERE county = 'ALACHUA' and city_name = 'ARCHER'"
+
+# update dev
+update_zoning.py alachua archer
+# copy the commands generated at the end of the output
+
+# grab raw_zon_alachua_archer.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+
+#------------------------
+# gainesville
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/zoning/florida/county/alachua/current/source_data/gainesville
+
+# run to grab data
+ags_extract_data2.py zoning_gainesville delete 15
+ags_extract_data2.py zoning_alachua_gainesville delete 15
+
+shpmv geo_export_81a7a3be-9fa9-429d-b118-84db93ca042a.shp zoning_gainesville.shp
+
+# run if file info needed
+ogrinfo zoning_gainesville.shp zoning_gainesville|less
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'zoning_gainesville.shp', data_date = '2024-04-02', update_date = '2024-04-04'  WHERE county = 'ALACHUA' and city_name = 'GAINESVILLE'"
+
+# update dev
+update_zoning.py alachua gainesville
+# copy the commands generated at the end of the output
+
+# grab raw_zon_alachua_gainesville.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+
+#------------------------
+# hawthorne
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/zoning/florida/county/alachua/current/source_data/hawthorne
+
+# run to grab data
+ags_extract_data2.py zoning_hawthorne delete 15
+
+# run if file info needed
+ogrinfo zoning_hawthorne.shp zoning_hawthorne|less
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'zoning_hawthorne.shp', data_date = '2024-04-02', update_date = '2024-04-04'  WHERE county = 'ALACHUA' and city_name = 'HAWTHORNE'"
+
+# update dev
+update_zoning.py alachua hawthorne
+# copy the commands generated at the end of the output
+
+# grab raw_zon_alachua_hawthorne.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+
+#------------------------
+# high_springs
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/zoning/florida/county/alachua/current/source_data/high_springs
+
+# run to grab data
+ags_extract_data2.py zoning_high_springs delete 15
+
+# run if file info needed
+ogrinfo zoning_high_springs.shp zoning_high_springs|less
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'zoning_high_springs.shp', data_date = '2024-04-02', update_date = '2024-04-04'  WHERE county = 'ALACHUA' and city_name = 'HIGH_SPRINGS'"
+
+# update dev
+update_zoning.py alachua high_springs
+# copy the commands generated at the end of the output
+
+# grab raw_zon_alachua_high_springs.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+
+#------------------------
+# lacrosse
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/zoning/florida/county/alachua/current/source_data/lacrosse
+
+# run to grab data
+ags_extract_data2.py zoning_lacrosse delete 15
+
+# run if file info needed
+ogrinfo zoning_lacrosse.shp zoning_lacrosse|less
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'zoning_lacrosse.shp', data_date = '2024-04-02', update_date = '2024-04-04'  WHERE county = 'ALACHUA' and city_name = 'LACROSSE'"
+
+# update dev
+update_zoning.py alachua lacrosse
+# copy the commands generated at the end of the output
+
+# grab raw_zon_alachua_lacrosse.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+
+#------------------------
+# micanopy
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/zoning/florida/county/alachua/current/source_data/micanopy
+
+# run to grab data
+ags_extract_data2.py zoning_micanopy delete 15
+
+# run if file info needed
+ogrinfo zoning_micanopy.shp zoning_micanopy|less
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'zoning_micanopy.shp', data_date = '2024-04-02', update_date = '2024-04-04'  WHERE county = 'ALACHUA' and city_name = 'MICANOPY'"
+
+# update dev
+update_zoning.py alachua micanopy
+# copy the commands generated at the end of the output
+
+# grab raw_zon_alachua_micanopy.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+
+#------------------------
+# newberry
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/zoning/florida/county/alachua/current/source_data/newberry
+
+# run to grab data
+ags_extract_data2.py zoning_newberry delete 15
+
+# run if file info needed
+ogrinfo zoning_newberry.shp zoning_newberry|less
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'zoning_newberry.shp', data_date = '2024-04-02', update_date = '2024-04-04'  WHERE county = 'ALACHUA' and city_name = 'NEWBERRY'"
+
+# update dev
+update_zoning.py alachua newberry
+# copy the commands generated at the end of the output
+
+# grab raw_zon_alachua_newberry.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+
+#------------------------
+# unincorporated
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/zoning/florida/county/alachua/current/source_data/unincorporated
+
+# run to grab data
+ags_extract_data2.py zoning_alachua_unincorporated delete 15
+
+# run if file info needed
+ogrinfo zoning_alachua_unincorporated.shp zoning_alachua_unincorporated|less
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'zoning_alachua_unincorporated.shp', data_date = '2024-04-02', update_date = '2024-04-04'  WHERE county = 'ALACHUA' and city_name = 'UNINCORPORATED'"
+
+# update dev
+update_zoning.py alachua unincorporated
+# copy the commands generated at the end of the output
+
+# grab raw_zon_alachua_unincorp.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+
+#------------------------
+# waldo
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/zoning/florida/county/alachua/current/source_data/waldo
+
+# run to grab data
+ags_extract_data2.py zoning_waldo delete 15
+
+# run if file info needed
+ogrinfo zoning_waldo.shp zoning_waldo|less
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'zoning_waldo.shp', data_date = '2024-04-02', update_date = '2024-04-04'  WHERE county = 'ALACHUA' and city_name = 'WALDO'"
+
+# update dev
+update_zoning.py alachua waldo
+# copy the commands generated at the end of the output
+
+# grab raw_zon_alachua_waldo.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+```
+
+### Baker
+
+```bash
+#------------------------
+# unincorporated
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/zoning/florida/county/baker/current/source_data/unincorporated
+
+# run if file info needed
+ogrinfo zoning_baker_unincorporated.shp zoning_baker_unincorporated|less
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'zoning_baker_unincorporated.shp', data_date = '2024-04-02', update_date = '2024-04-04'  WHERE county = 'BAKER' and city_name = 'UNINCORPORATED'"
+
+# update dev
+update_zoning.py baker unincorporated
+# copy the commands generated at the end of the output
+
+# grab raw_zon_baker_unincorp.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+```
+
+### Bay
+
+```bash
+#------------------------
+# unincorporated / unified?
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/zoning/florida/county/bay/current/source_data/unincorporated
+
+# download data
+download_data.py /data/zoning/bay/unincorporated
+
+# unzip files
+unzip -oj Zoning.zip
+
+# archive with date
+zip_rename_date.sh Zoning.zip
+
+# run if file info needed
+ogrinfo Zoning.shp Zoning|less
+
+# process data
+ogr2ogr -explodecollections Zoning_single.shp Zoning.shp
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'Zoning_single.shp', data_date = '2025-05-01', update_date = '2025-05-01', srs_epsg = '2238' WHERE county = 'BAY' and city_name = 'UNINCORPORATED'"
+
+# Note: Bay is unified and the current delete code only deletes the UNINCORPORATED records.
+# We need to manually delete all zoning records in BAY county first.
+psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'Zoning_single.shp', data_date = '2025-05-01', update_date = '2025-05-01', srs_epsg = '2238' WHERE county = 'BAY' and city_name = 'UNINCORPORATED'"
+
+# update dev
+update_zoning.py bay unincorporated
+# copy the commands generated at the end of the output
+
+# grab raw_zon_bay_unincorp.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+
+# Note: bay is unified, extra code implemented to update city names
+```
+
+### Brevard
+
+```bash
+#------------------------
+# melbourne
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/zoning/florida/county/brevard/current/source_data/melbourne
+
+# run to grab data
+ags_extract_data2.py zoning_melbourne delete 15
+
+# run if file info needed
+ogrinfo zoning_melbourne.shp zoning_melbourne|less
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET srs_epsg = 4326, shp_name = 'zoning_melbourne.shp', data_date = '2025-05-24', update_date = '2025-05-24'  WHERE county = 'BREVARD' and city_name = 'MELBOURNE'"
+
+# update dev
+update_zoning.py brevard melbourne
+# copy the commands generated at the end of the output
+
+# grab raw_zon_brevard_melbourne.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+
+#------------------------
+# palm_bay
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/zoning/florida/county/brevard/current/source_data/palm_bay
+
+# Note: Previous method was:
+# ags_extract_data2.py zoning_palm_bay delete 15 zoning,zoningdesc
+
+# run if file info needed
+ogrinfo Zoning.shp Zoning|less
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET srs_epsg = 2881, shp_name = 'Zoning.shp', data_date = '2024-03-30', update_date = '2025-05-24'  WHERE county = 'BREVARD' and city_name = 'PALM_BAY'"
+
+# update dev
+update_zoning.py brevard palm_bay
+# copy the commands generated at the end of the output
+
+# grab raw_zon_brevard_palm_bay.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+
+#------------------------
+# titusville
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/zoning/florida/county/brevard/current/source_data/titusville
+
+# Note: Previous method was:
+# ags_extract_data2.py zoning_titusville delete 15
+
+# run if file info needed
+ogrinfo Zoning.shp Zoning|less
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'Zoning.shp', data_date = '2024-02-21', update_date = '2024-04-01'  WHERE county = 'BREVARD' and city_name = 'TITUSVILLE'"
+
+# update dev
+update_zoning.py brevard titusville
+# copy the commands generated at the end of the output
+
+# grab raw_zon_brevard_titusville.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+
+#------------------------
+# unincorporated
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/zoning/florida/county/brevard/current/source_data/unincorporated
+
+# run to grab data
+ags_extract_data2.py zoning_brevard delete 15
+
+# run if file info needed
+ogrinfo zoning_brevard.shp zoning_brevard|less
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET srs_epsg = 4326, shp_name = 'zoning_brevard.shp', data_date = '2025-05-24', update_date = '2025-05-24'  WHERE county = 'BREVARD' and city_name = 'UNINCORPORATED'"
+
+# update dev
+update_zoning.py brevard unincorporated
+# copy the commands generated at the end of the output
+
+# grab raw_zon_brevard_unincorp.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+```
+
+### Broward
+
+```bash
+#------------------------
+# broward unified
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/zoning/florida/county/broward/current/source_data/county_unified
+
+# run to grab data
+ags_extract_data2.py zoning_broward delete 15
+
+# Note: old method was:
+# ags_extract_data2.py zoning_broward_cnty delete 15
+
+# run if file info needed
+ogrinfo zoning_broward.shp zoning_broward|less
+
+# process data - project and explode
+# Note: project it because lat/long doesn't play well 
+# Note: explode it but multi-polygons don't play well
+ogr2ogr -explodecollections -t_srs "EPSG:2881" -select "ZONING, ZONE_NAME" zoning_broward_single_2881.shp zoning_broward.shp
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'zoning_broward_single_2881.shp', data_date = '2024-03-29', update_date = '2024-03-31'  WHERE county = 'BROWARD' and city_name = 'COUNTY_UNIFIED'"
+
+# update dev
+update_zoning.py broward county_unified
+# copy the commands generated at the end of the output
+
+# grab raw_zon_broward_county_unified.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+```
+
+### Charlotte
+
+```bash
+#------------------------
+# punta_gorda
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/zoning/florida/county/charlotte/current/source_data/punta_gorda
+
+# run if file info needed
+ogrinfo zoning_punta_gorda.shp zoning_punta_gorda|less
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'zoning_punta_gorda.shp', data_date = '2024-04-02', update_date = '2024-04-04'  WHERE county = 'CHARLOTTE' and city_name = 'PUNTA_GORDA'"
+
+# update dev
+update_zoning.py charlotte punta_gorda
+# copy the commands generated at the end of the output
+
+# grab raw_zon_charlotte_punta_gorda.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+
+#------------------------
+# unincorporated
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/zoning/florida/county/charlotte/current/source_data/unincorporated
+
+# download data
+download_data.py /data/zoning/charlotte/unincorporated
+
+# unzip files
+unzip -oj zoning.zip
+
+# archive with date
+zip_rename_date.sh Zoning.zip
+
+# run if file info needed
+ogrinfo ZONING.shp ZONING|less
+
+# process data
+ogr2ogr -explodecollections Zoning_single.shp Zoning.shp
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'ZONING.shp', data_date = '2022-06-09', update_date = '2024-04-04'  WHERE county = 'CHARLOTTE' and city_name = 'UNINCORPORATED'"
+
+# update dev
+update_zoning.py charlotte unincorporated
+# copy the commands generated at the end of the output
+
+# grab raw_zon_charlotte_unincorp.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+```
+
+### Citrus
+
+```bash
+#------------------------
+# unincorporated
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/zoning/florida/county/citrus/current/source_data/unincorporated
+
+# unzip files
+unzip -oj Zoning.zip
+
+# run if file info needed
+ogrinfo Zoning_FWS.shp Zoning_FWS|less
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'Zoning_FWS.shp', data_date = '2023-11-01', update_date = '2024-04-04'  WHERE county = 'CITRUS' and city_name = 'UNINCORPORATED'"
+
+# update dev
+update_zoning.py citrus unincorporated
+# copy the commands generated at the end of the output
+
+# grab raw_zon_citrus_unincorp.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+```
+
+### Clay
+
+```bash
+#------------------------
+# unincorporated
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/zoning/florida/county/clay/current/source_data/unincorporated
+
+# download data
+download_data.py /data/zoning/clay/unincorporated
+
+# unzip files
+unzip -oj Zoning.zip
+
+# run if file info needed
+ogrinfo Zoning.shp Zoning|less
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'Zoning.shp', data_date = '2024-04-02', update_date = '2024-04-04'  WHERE county = 'CLAY' and city_name = 'UNINCORPORATED'"
+
+# update dev
+update_zoning.py clay unincorporated
+# copy the commands generated at the end of the output
+
+# grab raw_zon_clay_unincorp.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+```
+
+### Collier
+
+```bash
+#------------------------
+# marco_island
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/zoning/florida/county/collier/current/source_data/marco_island
+
+# run to grab data
+ags_extract_data2.py zoning_marco_island delete 15
+
+# run if file info needed
+ogrinfo zoning_marco_island.shp zoning_marco_island|less
+
+# Note: Commented out processing step, keep for reference
+# ogr2ogr -explodecollections zoning_marco_island_single.shp zoning_marco_island.shp
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET srs_epsg = 4326, shp_name = 'zoning_marco_island.shp', data_date = '2025-05-25', update_date = '2025-05-25'  WHERE county = 'COLLIER' and city_name = 'MARCO_ISLAND'"
+
+# update dev
+update_zoning.py collier marco_island
+# copy the commands generated at the end of the output
+
+# grab raw_zon_collier_marco_island.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+
+#------------------------
+# naples
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/zoning/florida/county/collier/current/source_data/naples
+
+# run to grab data
+ags_extract_data2.py zoning_naples delete 15
+
+# run if file info needed
+ogrinfo zoning_naples.shp zoning_naples|less
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET srs_epsg = 4326, shp_name = 'zoning_naples.shp', data_date = '2025-05-25', update_date = '2025-05-25'  WHERE county = 'COLLIER' and city_name = 'NAPLES'"
+
+# update dev
+update_zoning.py collier naples
+# copy the commands generated at the end of the output
+
+# grab raw_zon_collier_naples.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+
+#------------------------
+# unincorporated
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/zoning/florida/county/collier/current/source_data/unincorporated
+
+# grab from opendata portal, unzip, move to plato
+
+# run if file info needed
+ogrinfo Zoning_General.shp Zoning_General|less
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET srs_epsg = 2236, shp_name = 'Zoning_General.shp', data_date = '2025-05-23', update_date = '2025-05-25'  WHERE county = 'COLLIER' and city_name = 'UNINCORPORATED'"
+
+# update dev
+update_zoning.py collier unincorporated
+# copy the commands generated at the end of the output
+
+# grab raw_zon_collier_unincorp.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+```
+
+### Duval
+
+```bash
+#------------------------
+# jacksonville
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/zoning/florida/county/duval/current/source_data/jacksonville
+
+# Note: Manual download - see Data Catalog
+
+# create archive
+# zip zoning.zip zoning_duval.*
+
+# unzip files
+unzip -o zoning.zip
+
+# archive with date
+zip_rename_date.sh zoning.zip
+
+# Rename all files associated with shapefile
+shpmv ZONING_20240423.shp zoning_duval.shp
+
+# run if file info needed
+ogrinfo zoning_duval.shp zoning_duval|less
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'zoning_duval.shp', data_date = '2024-05-24', update_date = '2025-05-01', srs_epsg = '2236'  WHERE county = 'DUVAL' and city_name = 'JACKSONVILLE'"
+
+# update dev
+update_zoning.py duval jacksonville
+# copy the commands generated at the end of the output
+
+# grab raw_zon_duval_jacksonville.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+
+#------------------------
+# unincorporated
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/zoning/florida/county/duval/current/source_data/unincorporated
+
+# run to grab data
+ags_extract_data2.py zoning_duval delete 15
+
+# process data
+ogr2ogr -explodecollections zoning_single.shp zoning_duval.shp 
+
+# run if file info needed
+ogrinfo zoning_duval.shp zoning_duval|less
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'zoning_single.shp', data_date = '2024-04-02', update_date = '2024-04-04'  WHERE county = 'DUVAL' and city_name = 'UNINCORPORATED'"
+
+# update dev
+update_zoning.py duval unincorporated
+# copy the commands generated at the end of the output
+
+# grab raw_zon_duval_unincorp.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+```
+
+### Escambia
+
+```bash
+#------------------------
+# unincorporated
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/zoning/florida/county/escambia/current/source_data/unincorporated
+
+# run to grab data
+ags_extract_data2.py zoning_escambia delete 15
+
+# run if file info needed
+ogrinfo zoning_escambia.shp zoning_escambia|less
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'zoning_escambia.shp', data_date = '2024-04-04', update_date = '2024-04-04'  WHERE county = 'ESCAMBIA' and city_name = 'UNINCORPORATED'"
+
+# update dev
+update_zoning.py escambia unincorporated
+# copy the commands generated at the end of the output
+
+# grab raw_zon_escambia_unincorp.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+```
+
+### Flagler
+
+```bash
+#------------------------
+# unincorporated
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/zoning/florida/county/flagler/current/source_data/unincorporated
+
+# run if file info needed
+ogrinfo zoning_flagler_unincorporated.shp zoning_flagler_unincorporated|less
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'zoning_flagler_unincorporated.shp', data_date = '2024-04-02', update_date = '2024-04-04'  WHERE county = 'FLAGLER' and city_name = 'UNINCORPORATED'"
+
+# update dev
+update_zoning.py flagler unincorporated
+# copy the commands generated at the end of the output
+
+# grab raw_zon_flagler_unincorp.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+```
+
+### Hernando
+
+```bash
+#------------------------
+#  brooksville
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/zoning/florida/county/hernando/current/source_data/brooksville
+
+# run to grab data
+ags_extract_data2.py zoning_brooksville delete 15
+
+# run if file info needed
+ogrinfo zoning_brooksville.shp zoning_brooksville|less
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'zoning_brooksville.shp', data_date = '2024-04-02', update_date = '2024-04-04'  WHERE county = 'HERNANDO' and city_name = 'BROOKSVILLE'"
+
+# update dev
+update_zoning.py hernando brooksville
+# copy the commands generated at the end of the output
+
+# grab raw_zon_hernando_brooksville.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+
+#------------------------
+#  unincorporated
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/zoning/florida/county/hernando/current/source_data/unincorporated
+
+# run to grab data
+ags_extract_data2.py zoning_hernando delete 15
+
+# run if file info needed
+ogrinfo zoning_hernando.shp zoning_hernando|less
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'zoning_hernando.shp', data_date = '2024-04-02', update_date = '2024-04-04'  WHERE county = 'HERNANDO' and city_name = 'UNINCORPORATED'"
+
+# update dev
+update_zoning.py hernando unincorporated
+# copy the commands generated at the end of the output
+
+# grab raw_zon_hernando_unincorp.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+```
+
+### Highlands
+
+```bash
+#------------------------
+# unincorporated
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/zoning/florida/county/highlands/current/source_data/unincorporated
+
+# run to grab data
+ags_extract_data2.py zoning_highlands delete 15
+
+# run if file info needed
+ogrinfo zoning_highlands.shp zoning_highlands|less
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'zoning_highlands.shp', data_date = '2024-04-02', update_date = '2024-04-04'  WHERE county = 'HIGHLANDS' and city_name = 'UNINCORPORATED'"
+
+# update dev
+update_zoning.py highlands unincorporated
+# copy the commands generated at the end of the output
+
+# grab raw_zon_highlands_unincorp.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+```
+
+### Hillsborough
+
+```bash
+#------------------------
+# plant_city
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/zoning/florida/county/hillsborough/current/source_data/plant_city
+
+# run to grab data
+ags_extract_data2.py zoning_plant_city delete 15 
+
+# run if file info needed
+ogrinfo PC_Zoning.shp PC_Zoning|less
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'PC_Zoning.shp', data_date = '2023-12-04', update_date = '2024-03-31'  WHERE county = 'HILLSBOROUGH' and city_name = 'PLANT_CITY'"
+
+# update dev
+update_zoning.py hillsborough plant_city
+# copy the commands generated at the end of the output
+
+# grab raw_zon_hillsborough_plant_city.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+
+#------------------------
+# tampa
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/zoning/florida/county/hillsborough/current/source_data/tampa
+
+# run if file info needed
+ogrinfo Zoning_District.shp Zoning_District|less
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'Zoning_District.shp', data_date = '2024-03-25', update_date = '2024-03-31'  WHERE county = 'HILLSBOROUGH' and city_name = 'TAMPA'"
+
+# update dev
+update_zoning.py hillsborough tampa
+# copy the commands generated at the end of the output
+
+# grab raw_zon_hillsborough_tampa.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+
+#------------------------
+# unincorporated (REVIEW)
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/zoning/florida/county/hillsborough/current/source_data/unincorporated
+
+# get data from opendata portal and move to plato
+
+# run if file info needed 
+ogrinfo Zoning.shp Zoning|less
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'Zoning.shp', data_date = 'YYYY-MM-DD', update_date = 'YYYY-MM-DD'  WHERE county = 'HILLSBOROUGH' and city_name = 'UNINCORPORATED'"
+
+# update dev
+update_zoning.py hillsborough unincorporated
+# copy the commands generated at the end of the output
+
+# grab raw_zon_hillsborough_unincorporated.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+```
+
+### Indian River
+
+```bash
+#------------------------
+# vero_beach
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/zoning/florida/county/indian_river/current/source_data/vero_beach
+
+# unzip files
+unzip -oj ZoningDistricts.zip
+
+# archive with date
+zip_rename_date.sh ZoningDistricts.zip
+
+# run if file info needed
+ogrinfo ZoningDistricts.shp ZoningDistricts|less
+
+# Note: Commented out processing step, keep for reference
+# ogr2ogr -explodecollections Zoning_single.shp Zoning.shp
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'ZoningDistricts.shp', data_date = '2023-12-27', update_date = '2024-04-04'  WHERE county = 'INDIAN_RIVER' and city_name = 'VERO_BEACH'"
+
+# update dev
+update_zoning.py indian_river vero_beach
+# copy the commands generated at the end of the output
+
+# grab raw_zon_indian_river_vero_beach.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+
+#------------------------
+# unincorporated
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/zoning/florida/county/indian_river/current/source_data/unincorporated
+
+# run to grab data
+ags_extract_data2.py zoning_indian_river_unincorporated delete 15 zoning,zoning_abv,comment,ordinance
+
+# run if file info needed
+ogrinfo zoning_indian_river_unincorporated.shp zoning_indian_river_unincorporated|less
+
+# Note: Commented out processing step, keep for reference
+# ogr2ogr -explodecollections Zoning_single.shp Zoning.shp
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'zoning_indian_river_unincorporated.shp', data_date = '2024-04-04', update_date = '2024-04-04'  WHERE county = 'INDIAN_RIVER' and city_name = 'UNINCORPORATED'"
+
+# update dev
+update_zoning.py indian_river unincorporated
+# copy the commands generated at the end of the output
+
+# grab raw_zon_indian_river_unincorp.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+```
+
+### Lake
+
+```bash
+#------------------------
+# leesburg
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/zoning/florida/county/lake/current/source_data/leesburg
+
+# run to grab data
+ags_extract_data2.py zoning_leesburg delete 15
+
+# run if file info needed
+ogrinfo zoning_leesburg.shp zoning_leesburg|less
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'zoning_leesburg.shp', data_date = '2024-04-02', update_date = '2024-04-02'  WHERE county = 'LAKE' and city_name = 'LEESBURG'"
+
+# update dev
+update_zoning.py lake leesburg
+# copy the commands generated at the end of the output
+
+# grab raw_zon_lake_leesburg.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+
+#------------------------
+# unincorporated
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/zoning/florida/county/lake/current/source_data/unincorporated
+
+# download data
+download_data.py /data/zoning/lake/unincorporated
+
+# run if file info needed
+ogrinfo Zoning.shp Zoning|less
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'Zoning.shp', data_date = '2024-04-02', update_date = '2024-04-02'  WHERE county = 'LAKE' and city_name = 'UNINCORPORATED'"
+
+# update dev
+update_zoning.py lake unincorporated
+# copy the commands generated at the end of the output
+
+# grab raw_zon_lake_unincorp.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+```
+
+### Lee
+
+```bash
+#------------------------
+# cape_coral
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/zoning/florida/county/lee/current/source_data/cape_coral
+
+# grab data from opendata portal, unzip, move to plato
+
+# run if file info needed
+ogrinfo Zoning.shp Zoning|less
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET srs_epsg = 2237, shp_name = 'Zoning.shp', data_date = '2024-08-02', update_date = '2025-05-24'  WHERE county = 'LEE' and city_name = 'CAPE_CORAL'"
+
+# update dev
+update_zoning.py lee cape_coral
+# copy the commands generated at the end of the output
+
+# grab raw_zon_lee_cape_coral.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+
+#------------------------
+# fort_myers
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/zoning/florida/county/lee/current/source_data/fort_myers
+
+# grab data from opendata portal, unzip and move to plato
+
+# Note: 4/1/2024 - fort_myers AGS is not working - no download option - contact them
+#   Previous method:
+#   ags_extract_data2.py zoning_fort_myers delete 15 District,DistrictName,PUDName,PUDOrdinance
+#   Current method:
+#   ags_extract_data2.py zoning_fort_myers delete 15 
+
+# run if file info needed
+ogrinfo Zoning.shp Zoning|less
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET srs_epsg = 6443, shp_name = 'Zoning.shp', data_date = '2025-05-10', update_date = '2025-05-24'  WHERE county = 'LEE' and city_name = 'FORT_MYERS'"
+
+# update dev
+update_zoning.py lee fort_myers
+# copy the commands generated at the end of the output
+
+# grab raw_zon_lee_fort_myers.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+
+#------------------------
+# unincorporated
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/zoning/florida/county/lee/current/source_data/unincorporated
+
+# grab data from opendata portal
+
+# unzip and move to plato
+
+# run if file info needed
+ogrinfo Zoning.shp Zoning|less
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET srs_epsg = 2236, shp_name = 'Zoning.shp', data_date = '2025-05-10', update_date = '2025-05-24'  WHERE county = 'LEE' and city_name = 'UNINCORPORATED'"
+
+# update dev
+update_zoning.py lee unincorporated
+# copy the commands generated at the end of the output
+
+# grab raw_zon_lee_unincorp.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+```
+
+### Leon
+
+```bash
+#------------------------
+#  leon unified
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/zoning/florida/county/leon/current/source_data/county_unified
+
+# run to grab data
+ags_extract_data2.py zoning_leon delete 15
+
+# run if file info needed
+ogrinfo Zoning.shp Zoning|less
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'Zoning.shp', data_date = '2024-04-04', update_date = '2024-04-04'  WHERE county = 'LEON' and city_name = 'COUNTY_UNIFIED'"
+
+# update dev
+update_zoning.py leon county_unified
+# copy the commands generated at the end of the output
+
+# grab raw_zon_leon_county_unified.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+```
+
+### Manatee
+
+```bash
+#------------------------
+# bradenton
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/zoning/florida/county/manatee/current/source_data/bradenton
+
+# run to grab data
+ags_extract_data2.py zoning_bradenton delete 15
+
+# run if file info needed
+ogrinfo zoning_bradenton.shp zoning_bradenton|less
+
+# process data
+ogr2ogr -explodecollections zoning_bradenton_single.shp zoning_bradenton.shp
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET srs_epsg = 4326, shp_name = 'zoning_bradenton_single.shp', data_date = '2025-05-24', update_date = '2025-05-24'  WHERE county = 'MANATEE' and city_name = 'BRADENTON'"
+
+# update dev
+update_zoning.py manatee bradenton
+# copy the commands generated at the end of the output
+
+# grab raw_zon_manatee_bradenton.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+
+#------------------------
+# unincorporated
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/zoning/florida/county/manatee/current/source_data/unincorporated
+
+# grab data from opendata portal, unzip, move to plato
+
+# run if file info needed
+ogrinfo Zoning.shp Zoning|less
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET srs_epsg = 3857, shp_name = 'Zoning.shp', data_date = '2025-01-28', update_date = '2025-05-24'  WHERE county = 'MANATEE' and city_name = 'UNINCORPORATED'"
+
+# update dev
+update_zoning.py manatee unincorporated
+# copy the commands generated at the end of the output
+
+# grab raw_zon_manatee_unincorp.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+```
+
+### Marion
+
+```bash
+#------------------------
+# ocala
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/zoning/florida/county/marion/current/source_data/ocala
+
+# run if file info needed
+ogrinfo Zoning.shp Zoning|less
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'Zoning.shp', data_date = '2024-04-02', update_date = '2024-03-27'  WHERE county = 'MARION' and city_name = 'OCALA'"
+
+# update dev
+update_zoning.py marion ocala
+# copy the commands generated at the end of the output
+
+# grab raw_zon_marion_ocala.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+
+#------------------------
+# unincorporated
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/zoning/florida/county/marion/current/source_data/unincorporated
+
+# run if file info needed
+ogrinfo zoning_marion.shp zoning_marion|less
+
+# process data
+ogr2ogr -explodecollections zoning_marion_single.shp zoning_marion.shp
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'zoning_marion_single.shp', data_date = '2024-04-02', update_date = '2024-04-02'  WHERE county = 'MARION' and city_name = 'UNINCORPORATED'"
+
+# update dev
+update_zoning.py marion unincorporated
+# copy the commands generated at the end of the output
+
+# grab raw_zon_marion_unincorp.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+
+# Note: Previous issues (keep for reference)
+# PROBLEM !!! didn't download, then downloaded mostly and a couple json with problems
+# one is big box polygon, another is json to shp bails
+# ags_extract_data2.py zoning_marion delete 15
+```
+
+### Martin
+
+```bash
+#------------------------
+# stuart
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/zoning/florida/county/martin/current/source_data/stuart
+
+# run to grab data
+ags_extract_data2.py zoning_stuart delete 15
+
+# run if file info needed
+ogrinfo zoning_stuart.shp zoning_stuart|less
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'zoning_stuart.shp', data_date = '2024-04-04', update_date = '2024-04-04'  WHERE county = 'MARTIN' and city_name = 'STUART'"
+
+# update dev
+update_zoning.py martin stuart
+# copy the commands generated at the end of the output
+
+# grab raw_zon_martin_stuart.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+
+#------------------------
+# unincorporated
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/zoning/florida/county/martin/current/source_data/unincorporated
+
+# unzip files
+unzip -oj Zoning.zip
+
+# archive with date
+zip_rename_date.sh Zoning.zip
+
+# run if file info needed
+ogrinfo Zoning.shp Zoning|less
+
+# Note: Commented out processing step, keep for reference
+# ogr2ogr -explodecollections Zoning_single.shp Zoning.shp
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'Zoning.shp', data_date = '2024-03-31', update_date = '2024-04-04'  WHERE county = 'MARTIN' and city_name = 'UNINCORPORATED'"
+
+# update dev
+update_zoning.py martin unincorporated
+# copy the commands generated at the end of the output
+
+# grab raw_zon_martin_unincorp.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+```
+
+### Miami-Dade
+
+```bash
+#------------------------
+# incorporated
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/zoning/florida/county/miami-dade/current/source_data/incorporated
+
+# run if file info needed
+ogrinfo zoning_miami-dade_incorporated.shp zoning_miami-dade_incorporated|less
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'zoning_miami-dade_incorporated.shp', data_date = '2024-04-02', update_date = '2024-04-04'  WHERE county = 'MIAMI-DADE' and city_name = 'INCORPORATED'"
+
+# update dev
+update_zoning.py miami-dade incorporated
+# copy the commands generated at the end of the output
+
+# grab raw_zon_miami-dade_incorporated.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+
+#------------------------
+# unincorporated
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/zoning/florida/county/miami-dade/current/source_data/unincorporated
+
+# get data from opendata portal
+
+# unzip and move to plato
+
+# run if file info needed
+ogrinfo County_Zoning.shp County_Zoning|less
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET srs_epsg = 3857, shp_name = 'County_Zoning.shp', data_date = '2025-04-18', update_date = '2025-05-23'  WHERE county = 'MIAMI-DADE' and city_name = 'UNINCORPORATED';"
+
+# update dev
+update_zoning.py miami-dade unincorporated
+# copy the commands generated at the end of the output
+
+# grab raw_zon_miami-dade_unincorp.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+```
+
+### Nassau
+
+```bash
+#------------------------
+# unincorporated
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/zoning/florida/county/nassau/current/source_data/unincorporated
+
+# run to grab data
+ags_extract_data_objectids_1.py zoning_nassau delete 15
+
+# run if file info needed
+ogrinfo zoning_nassau.shp zoning_nassau|less
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'zoning_nassau.shp', data_date = '2024-04-02', update_date = '2024-04-04'  WHERE county = 'NASSAU' and city_name = 'UNINCORPORATED'"
+
+# update dev
+update_zoning.py nassau unincorporated
+# copy the commands generated at the end of the output
+
+# grab raw_zon_nassau_unincorp.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+```
+
+### Okaloosa
+
+```bash
+#------------------------
+# unincorporated
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/zoning/florida/county/okaloosa/current/source_data/unincorporated
+
+# unzip files
+unzip -oj Local_Planning.zip
+
+# archive with date
+zip_rename_date.sh Local_Planning.zip
+
+# run if file info needed
+ogrinfo zngpy.shp zngpy|less
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'zngpy.shp', data_date = '2024-03-31', update_date = '2024-04-04'  WHERE county = 'OKALOOSA' and city_name = 'UNINCORPORATED'"
+
+# update dev
+update_zoning.py okaloosa unincorporated
+# copy the commands generated at the end of the output
+
+# grab raw_zon_okaloosa_unincorp.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+```
+
+### Orange
+
+```bash
+#------------------------
+# apopka
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/zoning/florida/county/orange/current/source_data/apopka
+
+# ensure AGS link is correct, and find data date (last edit date)
+
+# run to grab data
+ags_extract_data2.py zoning_apopka delete 15
+
+# run if file info needed
+ogrinfo zoning_apopka.shp zoning_apopka|less
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'zoning_apopka.shp', data_date = '2025-04-30', update_date = '2025-05-17'  WHERE county = 'ORANGE' and city_name = 'APOPKA'"
+
+# update dev
+update_zoning.py orange apopka
+# copy the commands generated at the end of the output
+
+# grab raw_zon_orange_apopka.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+
+#------------------------
+# eatonville
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/zoning/florida/county/orange/current/source_data/eatonville
+
+# grab data via opendata portal, ensure it is in correct directory
+
+# run if file info needed
+ogrinfo Eatonville_Zoning.shp Eatonville_Zoning|less
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'Eatonville_Zoning.shp', data_date = '2024-01-04', update_date = '2025-05-09'  WHERE county = 'ORANGE' and city_name = 'EATONVILLE'"
+
+# update dev
+update_zoning.py orange eatonville
+# copy the commands generated at the end of the output
+
+# grab raw_zon_orange_eatonville.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+
+#------------------------
+# ocoee (REVIEW)
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/zoning/florida/county/orange/current/source_data/ocoee
+
+# ensure AGS link is correct, and find data date
+
+# run to grab data
+ags_extract_data2.py zoning_ocoee delete 15
+
+# run if file info needed
+ogrinfo zoning_ocoee.shp zoning_ocoee|less
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'zoning_ocoee.shp', data_date = '2024-04-02', update_date = '2024-04-04'  WHERE county = 'ORANGE' and city_name = 'OCOEE'"
+
+# update dev
+update_zoning.py orange ocoee
+# copy the commands generated at the end of the output
+
+# grab raw_zon_orange_ocoee.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+
+#------------------------
+# orlando
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/zoning/florida/county/orange/current/source_data/orlando
+
+# download from opendata portal and move to plato
+
+# run if file info needed
+ogrinfo Orlando_Zoning.shp Orlando_Zoning|less
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'Orlando_Zoning.shp', data_date = 'YYYY-MM-DD', update_date = 'YYYY-MM-DD'  WHERE county = 'ORANGE' and city_name = 'ORLANDO'"
+
+# update dev
+update_zoning.py orange orlando
+# copy the commands generated at the end of the output
+
+# grab raw_zon_orange_orlando.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+
+#------------------------
+# unincorporated (REVIEW)
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/zoning/florida/county/orange/current/source_data/unincorporated
+
+# download data
+download_data.py /data/zoning/orange/unincorporated
+# Note: if broken, use opendata portal
+
+# run if file info needed
+ogrinfo Orange_County_Zoning.shp Orange_County_Zoning|less
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'Orange_County_Zoning.shp', data_date = 'YYYY-MM-DD', update_date = 'YYYY-MM-DD'  WHERE county = 'ORANGE' and city_name = 'UNINCORPORATED'"
+
+# update dev
+update_zoning.py orange unincorporated
+# copy the commands generated at the end of the output
+
+# grab raw_zon_orange_unincorp.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+```
+
+### Osceola
+
+```bash
+#------------------------
+# kissimmee
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/zoning/florida/county/osceola/current/source_data/kissimmee
+
+# run to grab data
+ags_extract_data2.py zoning_kissimmee delete 15
+
+# run if file info needed
+ogrinfo zoning_kissimmee.shp zoning_kissimmee|less
+
+# process data
+ogr2ogr -explodecollections zoning_kissimmee_single.shp zoning_kissimmee.shp
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET srs_epsg = 4326, shp_name = 'zoning_kissimmee_single.shp', data_date = '2025-05-25', update_date = '2025-05-25'  WHERE county = 'OSCEOLA' and city_name = 'KISSIMMEE'"
+
+# update dev
+update_zoning.py osceola kissimmee
+# copy the commands generated at the end of the output
+
+# grab raw_zon_osceola_kissimmee.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+
+#------------------------
+# st_cloud
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/zoning/florida/county/osceola/current/source_data/st_cloud
+
+# run to grab data
+ags_extract_data2.py zoning_st_cloud delete 15
+
+# run if file info needed
+ogrinfo zoning_st_cloud.shp zoning_st_cloud|less
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET srs_epsg = 4326, shp_name = 'zoning_st_cloud.shp', data_date = '2025-05-25', update_date = '2025-05-25'  WHERE county = 'OSCEOLA' and city_name = 'ST_CLOUD'"
+
+# update dev
+update_zoning.py osceola st_cloud
+# copy the commands generated at the end of the output
+
+# grab raw_zon_osceola_st_cloud.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+
+#------------------------
+# unincorporated
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/zoning/florida/county/osceola/current/source_data/unincorporated
+
+# run to grab data
+ags_extract_data2.py zoning_osceola delete 15
+
+# run if file info needed
+ogrinfo zoning_osceola.shp zoning_osceola|less
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'zoning_osceola.shp', data_date = '2024-04-03', update_date = '2024-04-03'  WHERE county = 'OSCEOLA' and city_name = 'UNINCORPORATED'"
+
+# update dev
+update_zoning.py osceola unincorporated
+# copy the commands generated at the end of the output
+
+# grab raw_zon_osceola_unincorp.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+```
+
+### Palm Beach
+
+```bash
+#------------------------
+# palm_beach unified
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/zoning/florida/county/palm_beach/current/source_data/county_unified
+
+# process data
+ogr2ogr -explodecollections -t_srs "EPSG:2881" Zoning_single.shp Zoning.shp
+
+# run if file info needed
+ogrinfo Zoning_single.shp Zoning_single|less
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'Zoning_single.shp', data_date = '2025-02-12', update_date = '2025-05-11'  WHERE county = 'PALM_BEACH' and city_name = 'COUNTY_UNIFIED'"
+
+# update dev
+update_zoning.py palm_beach county_unified
+# copy the commands generated at the end of the output
+
+# grab raw_zon_palm_beach_county_unified.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+
+# Note: 3/31/2024 - Remove UNINCORPORATED and replace with COUNTY_UNIFIED
+# psql -d gisdev -U postgres -c "DELETE FROM zoning WHERE county = 'PALM_BEACH' and city_name = 'UNINCORPORATED'"
+#update_zoning.py palm_beach unincorporated
+```
+
+### Pasco
+
+```bash
+#------------------------
+# unincorporated
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/zoning/florida/county/pasco/current/source_data/unincorporated
+
+# run to grab data
+ags_extract_data2.py zoning_pasco_unincorporated delete 15
+
+# OLD: process data
+# ogr2ogr Zoning.shp Zoning_Areas_7030391369919837430.geojson
+
+# run if file info needed
+ogrinfo zoning_pasco_unincorporated.shp zoning_pasco_unincorporated|less
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET srs_epsg = 4326, shp_name = 'zoning_pasco_unincorporated.shp', data_date = '2025-05-24', update_date = '2025-05-24'  WHERE county = 'PASCO' and city_name = 'UNINCORPORATED'"
+
+# update dev
+update_zoning.py pasco unincorporated
+# copy the commands generated at the end of the output
+
+# grab raw_zon_pasco_unincorp.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+```
+
+### Pinellas
+
+```bash
+#------------------------
+# belleair
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/zoning/florida/county/pinellas/current/source_data/belleair
+
+# AGS: run to grab data
+ags_extract_data2.py zoning_bellair delete 15
+
+# OPENDATA: grab from url, unzip, then remove parenthesis from filenames
+https://new-pinellas-egis.opendata.arcgis.com/datasets/d37011e321744c5397f04cf6ed6e52db_0/explore
+mv 'Belleair_Zoning_(PPC).cpg' 'Belleair_Zoning_PPC.cpg'
+mv 'Belleair_Zoning_(PPC).dbf' 'Belleair_Zoning_PPC.dbf'
+mv 'Belleair_Zoning_(PPC).prj' 'Belleair_Zoning_PPC.prj'
+mv 'Belleair_Zoning_(PPC).shp' 'Belleair_Zoning_PPC.shp'
+mv 'Belleair_Zoning_(PPC).shx' 'Belleair_Zoning_PPC.shx'
+mv 'Belleair_Zoning_(PPC).zip' 'Belleair_Zoning_PPC.zip'
+
+# run if file info needed
+ogrinfo Belleair_Zoning_PPC.shp Belleair_Zoning_PPC|less
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'Belleair_Zoning_PPC.shp', data_date = '2024-03-19', update_date = '2025-05-22'  WHERE county = 'PINELLAS' and city_name = 'BELLEAIR';"
+
+# update dev
+update_zoning.py pinellas belleair
+# copy the commands generated at the end of the output
+
+# grab raw_zon_pinellas_belleair.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+
+#------------------------
+# clearwater
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/zoning/florida/county/pinellas/current/source_data/clearwater
+
+# run to grab data
+ags_extract_data2.py zoning_clearwater delete 15
+
+# run if file info needed
+ogrinfo zoning_clearwater.shp zoning_clearwater|less
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'zoning_clearwater.shp', data_date = '2025-05-22', update_date = '2025-05-22'  WHERE county = 'PINELLAS' and city_name = 'CLEARWATER';"
+
+# update dev
+update_zoning.py pinellas clearwater
+# copy the commands generated at the end of the output
+
+# grab raw_zon_pinellas_clearwater.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+
+#------------------------
+# dunedin
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/zoning/florida/county/pinellas/current/source_data/dunedin
+
+# run to grab data
+ags_extract_data2.py zoning_dunedin delete 15
+
+# process data
+ogr2ogr -explodecollections -t_srs "EPSG:2882" zoning_dunedin_2882.shp zoning_dunedin.shp 
+
+# run if file info needed
+ogrinfo zoning_dunedin_2882.shp zoning_dunedin_2882|less
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'zoning_dunedin_2882.shp', data_date = '2025-05-23', update_date = '2025-05-23'  WHERE county = 'PINELLAS' and city_name = 'DUNEDIN';"
+
+# update dev
+update_zoning.py pinellas dunedin
+# copy the commands generated at the end of the output
+
+# grab raw_zon_pinellas_dunedin.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+
+#------------------------
+# indian_rocks_beach
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/zoning/florida/county/pinellas/current/source_data/indian_rocks_beach
+
+# grab from opendata portal
+
+# move to plato, unzip, and strip parentheses if needed
+mv 'Indian_Rocks_Beach_Zoning_(PPC).cpg' 'Indian_Rocks_Beach_Zoning_PPC.cpg'
+mv 'Indian_Rocks_Beach_Zoning_(PPC).prj' 'Indian_Rocks_Beach_Zoning_PPC.prj'
+mv 'Indian_Rocks_Beach_Zoning_(PPC).shx' 'Indian_Rocks_Beach_Zoning_PPC.shx'
+mv 'Indian_Rocks_Beach_Zoning_(PPC).dbf' 'Indian_Rocks_Beach_Zoning_PPC.dbf'
+mv 'Indian_Rocks_Beach_Zoning_(PPC).shp' 'Indian_Rocks_Beach_Zoning_PPC.shp'
+mv 'Indian_Rocks_Beach_Zoning_(PPC).zip' 'Indian_Rocks_Beach_Zoning_PPC.zip'
+
+# run if file info needed
+ogrinfo Indian_Rocks_Beach_Zoning_PPC.shp Indian_Rocks_Beach_Zoning_PPC|less
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET srs_epsg = 2882, shp_name = 'Indian_Rocks_Beach_Zoning_PPC.shp', data_date = '2024-03-19', update_date = '2025-05-23'  WHERE county = 'PINELLAS' and city_name = 'INDIAN_ROCKS_BEACH';"
+
+# update dev
+update_zoning.py pinellas indian_rocks_beach
+# copy the commands generated at the end of the output
+
+# grab raw_zon_pinellas_indian_rocks_beach.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+
+#------------------------
+# indian_shores
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/zoning/florida/county/pinellas/current/source_data/indian_shores
+
+# grab from opendata portal
+
+# move to plato, unzip, and strip parentheses if needed
+mv 'Indian_Shores_Zoning_(PPC).cpg' 'Indian_Shores_Zoning_PPC.cpg'
+mv 'Indian_Shores_Zoning_(PPC).prj' 'Indian_Shores_Zoning_PPC.prj'
+mv 'Indian_Shores_Zoning_(PPC).shx' 'Indian_Shores_Zoning_PPC.shx'
+mv 'Indian_Shores_Zoning_(PPC).dbf' 'Indian_Shores_Zoning_PPC.dbf'
+mv 'Indian_Shores_Zoning_(PPC).shp' 'Indian_Shores_Zoning_PPC.shp'
+mv 'Indian_Shores_Zoning_(PPC).zip' 'Indian_Shores_Zoning_PPC.zip'
+
+# run if file info needed
+ogrinfo Indian_Shores_Zoning_PPC.shp Indian_Shores_Zoning_PPC|less
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET srs_epsg = 2882, shp_name = 'Indian_Shores_Zoning_PPC.shp', data_date = '2025-05-07', update_date = '2025-05-23'  WHERE county = 'PINELLAS' and city_name = 'INDIAN_SHORES';"
+
+# update dev
+update_zoning.py pinellas indian_shores
+# copy the commands generated at the end of the output
+
+# grab raw_zon_pinellas_indian_shores.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+
+#------------------------
+# kenneth_city
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/zoning/florida/county/pinellas/current/source_data/kenneth_city
+
+# grab from opendata portal
+
+# move to plato, unzip, and strip parentheses if needed
+mv 'Kenneth_City_Zoning_(PPC).cpg' 'Kenneth_City_Zoning_PPC.cpg'
+mv 'Kenneth_City_Zoning_(PPC).dbf' 'Kenneth_City_Zoning_PPC.dbf'
+mv 'Kenneth_City_Zoning_(PPC).prj' 'Kenneth_City_Zoning_PPC.prj'
+mv 'Kenneth_City_Zoning_(PPC).shp' 'Kenneth_City_Zoning_PPC.shp'
+mv 'Kenneth_City_Zoning_(PPC).shx' 'Kenneth_City_Zoning_PPC.shx'
+mv 'Kenneth_City_Zoning_(PPC).zip' 'Kenneth_City_Zoning_PPC.zip'
+
+# run if file info needed
+ogrinfo Kenneth_City_Zoning_PPC.shp Kenneth_City_Zoning_PPC|less
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET srs_epsg = 2882, shp_name = 'Kenneth_City_Zoning_PPC.shp', data_date = '2024-06-19', update_date = '2025-05-23'  WHERE county = 'PINELLAS' and city_name = 'KENNETH_CITY';"
+
+# update dev
+update_zoning.py pinellas kenneth_city
+# copy the commands generated at the end of the output
+
+# grab raw_zon_pinellas_kenneth_city.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+
+#------------------------
+# madeira_beach
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/zoning/florida/county/pinellas/current/source_data/madeira_beach
+
+# grab from opendata portal
+
+# move to plato, unzip, and strip parentheses if needed
+mv 'Madeira_Beach_Zoning_(PPC).cpg' Madeira_Beach_Zoning_PPC.cpg
+mv 'Madeira_Beach_Zoning_(PPC).prj' Madeira_Beach_Zoning_PPC.prj
+mv 'Madeira_Beach_Zoning_(PPC).shx' Madeira_Beach_Zoning_PPC.shx
+mv 'Madeira_Beach_Zoning_(PPC).dbf' Madeira_Beach_Zoning_PPC.dbf
+mv 'Madeira_Beach_Zoning_(PPC).shp' Madeira_Beach_Zoning_PPC.shp
+mv 'Madeira_Beach_Zoning_(PPC).zip' Madeira_Beach_Zoning_PPC.zip
+
+# run if file info needed
+ogrinfo Madeira_Beach_Zoning_PPC.shp Madeira_Beach_Zoning_PPC|less
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET srs_epsg = 2882, shp_name = 'Madeira_Beach_Zoning_PPC.shp', data_date = '2024-06-19', update_date = '2025-05-23'  WHERE county = 'PINELLAS' and city_name = 'MADEIRA_BEACH';"
+
+# update dev
+update_zoning.py pinellas madeira_beach
+# copy the commands generated at the end of the output
+
+# grab raw_zon_pinellas_madeira_beach.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+
+#------------------------
+# north_redington_beach
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/zoning/florida/county/pinellas/current/source_data/north_redington_beach
+
+# run if file info needed
+ogrinfo zoning_north_redington_beach.shp zoning_north_redington_beach|less
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'zoning_north_redington_beach.shp', data_date = '2024-04-02', update_date = '2024-04-04'  WHERE county = 'PINELLAS' and city_name = 'NORTH_REDINGTON_BEACH'"
+
+# update dev
+update_zoning.py pinellas north_redington_beach
+# copy the commands generated at the end of the output
+
+# grab raw_zon_pinellas_north_redington_beach.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+
+#------------------------
+# pinellas_park
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/zoning/florida/county/pinellas/current/source_data/pinellas_park
+
+# run to grab data
+ags_extract_data2.py zoning_pinellas_park delete 15
+
+# process data
+ogr2ogr -explodecollections -t_srs "EPSG:2882" zoning_pinellas_park_2882.shp zoning_pinellas_park.shp
+
+# Note: The following command results in an error - keep for reference
+# ogr2ogr -explodecollections -t_srs "EPSG:2882" zoning_pinellas_park_2882.shp zoning_pinellas_park.shp -dialect sqlite -sql "select ST_union(Geometry) from input"
+# ERROR 6: The SQLite driver needs to be compiled to support the SQLite SQL dialect
+
+# run if file info needed
+ogrinfo zoning_pinellas_park_2882.shp zoning_pinellas_park_2882|less
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'zoning_pinellas_park_2882.shp', data_date = '2024-04-02', update_date = '2024-04-04'  WHERE county = 'PINELLAS' and city_name = 'PINELLAS_PARK'"
+
+# update dev
+update_zoning.py pinellas pinellas_park
+# copy the commands generated at the end of the output
+
+# grab raw_zon_pinellas_pinellas_park.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+
+#------------------------
+# redington_shores
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/zoning/florida/county/pinellas/current/source_data/redington_shores
+
+# grab from opendata portal
+
+# move to plato, unzip, and strip parentheses if needed
+mv 'Redington_Shores_Zoning_(PPC).cpg' 'Redington_Shores_Zoning_PPC.cpg'
+mv 'Redington_Shores_Zoning_(PPC).prj' 'Redington_Shores_Zoning_PPC.prj'
+mv 'Redington_Shores_Zoning_(PPC).shx' 'Redington_Shores_Zoning_PPC.shx'
+mv 'Redington_Shores_Zoning_(PPC).dbf' 'Redington_Shores_Zoning_PPC.dbf'
+mv 'Redington_Shores_Zoning_(PPC).shp' 'Redington_Shores_Zoning_PPC.shp'
+mv 'Redington_Shores_Zoning_(PPC).zip' 'Redington_Shores_Zoning_PPC.zip'
+
+# run if file info needed
+ogrinfo Redington_Shores_Zoning_PPC.shp Redington_Shores_Zoning_PPC|less
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET srs_epsg = 2882, shp_name = 'Redington_Shores_Zoning_PPC.shp', data_date = '2024-06-19', update_date = '2025-05-23'  WHERE county = 'PINELLAS' and city_name = 'REDINGTON_SHORES';"
+
+# update dev
+update_zoning.py pinellas redington_shores
+# copy the commands generated at the end of the output
+
+# grab raw_zon_pinellas_redington_shores.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+
+#------------------------
+# seminole
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/zoning/florida/county/pinellas/current/source_data/seminole
+
+# AGS: check link and run to grab data
+ags_extract_data2.py zoning_seminole delete 15
+
+# OPENDATA: download, unzip, strip parentheses (if needed), then move to plato
+mv 'Seminole_Zoning_(PPC).cpg' 'Seminole_Zoning_PPC.cpg'
+mv 'Seminole_Zoning_(PPC).dbf' 'Seminole_Zoning_PPC.dbf'
+mv 'Seminole_Zoning_(PPC).prj' 'Seminole_Zoning_PPC.prj'
+mv 'Seminole_Zoning_(PPC).shp' 'Seminole_Zoning_PPC.shp'
+mv 'Seminole_Zoning_(PPC).shx' 'Seminole_Zoning_PPC.shx'
+mv 'Seminole_Zoning_(PPC).zip' 'Seminole_Zoning_PPC.zip'
+
+# run if file info needed
+ogrinfo Seminole_Zoning_PPC.shp Seminole_Zoning_PPC|less
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET srs_epsg = 2882, shp_name = 'Seminole_Zoning_PPC.shp', data_date = '2024-10-09', update_date = '2025-05-23'  WHERE county = 'PINELLAS' and city_name = 'SEMINOLE'"
+
+# update dev
+update_zoning.py pinellas seminole
+# copy the commands generated at the end of the output
+
+# grab raw_zon_pinellas_seminole.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+
+#------------------------
+# south_pasadena
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/zoning/florida/county/pinellas/current/source_data/south_pasadena
+
+# grab from opendata portal
+
+# move to plato, unzip, and strip parentheses if needed
+mv 'South_Pasadena_Zoning_(PPC).cpg' 'South_Pasadena_Zoning_PPC.cpg'
+mv 'South_Pasadena_Zoning_(PPC).dbf' 'South_Pasadena_Zoning_PPC.dbf'
+mv 'South_Pasadena_Zoning_(PPC).prj' 'South_Pasadena_Zoning_PPC.prj'
+mv 'South_Pasadena_Zoning_(PPC).shp' 'South_Pasadena_Zoning_PPC.shp'
+mv 'South_Pasadena_Zoning_(PPC).shx' 'South_Pasadena_Zoning_PPC.shx'
+mv 'South_Pasadena_Zoning_(PPC).zip' 'South_Pasadena_Zoning_PPC.zip'
+
+# run if file info needed
+ogrinfo South_Pasadena_Zoning_PPC.shp South_Pasadena_Zoning_PPC|less
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET srs_epsg = 2882, shp_name = 'South_Pasadena_Zoning_PPC.shp', data_date = '2024-08-13', update_date = '2025-05-23'  WHERE county = 'PINELLAS' and city_name = 'SOUTH_PASADENA';"
+
+# update dev
+update_zoning.py pinellas south_pasadena
+# copy the commands generated at the end of the output
+
+# grab raw_zon_pinellas_south_pasadena.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+
+#------------------------
+# st_petersburg
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/zoning/florida/county/pinellas/current/source_data/st_petersburg
+
+# AGS: run to grab data
+ags_extract_data2.py zoning_st_petersburg delete 15
+
+# Opendata: grab, unzip, and move to plato
+
+# run if file info needed
+ogrinfo Zoning_Districts.shp Zoning_Districts|less
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET srs_epsg = 2882, shp_name = 'Zoning_Districts.shp', data_date = '2024-11-13', update_date = '2025-05-23'  WHERE county = 'PINELLAS' and city_name = 'ST_PETERSBURG'"
+
+# update dev
+update_zoning.py pinellas st_petersburg
+# copy the commands generated at the end of the output
+
+# grab raw_zon_pinellas_st_petersburg.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+
+#------------------------
+# treasure_island
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/zoning/florida/county/pinellas/current/source_data/treasure_island
+
+# grab from opendata portal
+
+# move to plato, unzip, and strip parentheses if needed
+mv 'Treasure_Island_Zoning_(PPC).cpg' 'Treasure_Island_Zoning_PPC.cpg'
+mv 'Treasure_Island_Zoning_(PPC).prj' 'Treasure_Island_Zoning_PPC.prj'
+mv 'Treasure_Island_Zoning_(PPC).shx' 'Treasure_Island_Zoning_PPC.shx'
+mv 'Treasure_Island_Zoning_(PPC).dbf' 'Treasure_Island_Zoning_PPC.dbf'
+mv 'Treasure_Island_Zoning_(PPC).shp' 'Treasure_Island_Zoning_PPC.shp'
+mv 'Treasure_Island_Zoning_(PPC).zip' 'Treasure_Island_Zoning_PPC.zip'
+
+# run if file info needed
+ogrinfo Treasure_Island_Zoning_PPC.shp Treasure_Island_Zoning_PPC|less
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET srs_epsg = 2882, shp_name = 'Treasure_Island_Zoning_PPC.shp', data_date = '2024-06-12', update_date = '2025-05-23'  WHERE county = 'PINELLAS' and city_name = 'TREASURE_ISLAND'"
+
+# update dev
+update_zoning.py pinellas treasure_island
+# copy the commands generated at the end of the output
+
+# grab raw_zon_pinellas_treasure_island.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+
+#------------------------
+# unincorporated
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/zoning/florida/county/pinellas/current/source_data/unincorporated
+
+# grab data from opendata portal
+
+# unzip, strip parentheses, then move to plato
+mv 'Zoning_(Unincorporated).cpg' 'Zoning_Unincorporated.cpg'
+mv 'Zoning_(Unincorporated).prj' 'Zoning_Unincorporated.prj'
+mv 'Zoning_(Unincorporated).shx' 'Zoning_Unincorporated.shx'
+mv 'Zoning_(Unincorporated).dbf' 'Zoning_Unincorporated.dbf'
+mv 'Zoning_(Unincorporated).shp' 'Zoning_Unincorporated.shp'
+mv 'Zoning_(Unincorporated).zip' 'Zoning_Unincorporated.zip'
+
+# run if file info needed
+ogrinfo Zoning_Unincorporated.shp Zoning_Unincorporated|less
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET srs_epsg = 2882, shp_name = 'Zoning_Unincorporated.shp', data_date = '2025-01-28', update_date = '2024-04-04'  WHERE county = 'PINELLAS' and city_name = 'UNINCORPORATED'"
+
+# update dev
+update_zoning.py pinellas unincorporated
+# copy the commands generated at the end of the output
+
+# grab raw_zon_pinellas_unincorp.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+```
+
+### Polk
+
+```bash
+#------------------------
+# lakeland
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/zoning/florida/county/polk/current/source_data/lakeland
+
+# AGS: download data
+# download_data.py /data/zoning/polk/lakeland
+
+# Opendata: grab data, move to plato
+
+# unzip files
+unzip -oj Zoning.zip
+
+# run if file info needed
+ogrinfo Zoning.shp Zoning|less
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET srs_epsg = 2237, shp_name = 'Zoning.shp', data_date = '2025-05-12', update_date = '2025-05-24'  WHERE county = 'POLK' and city_name = 'LAKELAND'"
+
+# update dev
+update_zoning.py polk lakeland
+# copy the commands generated at the end of the output
+
+# grab raw_zon_polk_lakeland.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+
+#------------------------
+# unincorporated - no zoning, right?
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/zoning/florida/county/polk/current/source_data/unincorporated
+
+# run if file info needed
+ogrinfo dea7bacb-e26f-4777-a3c5-644d3c25be8e202045-1-vhh0md.mldaj.shp dea7bacb-e26f-4777-a3c5-644d3c25be8e202045-1-vhh0md.mldaj|less
+
+# process data
+ogr2ogr -explodecollections zoning_single.shp dea7bacb-e26f-4777-a3c5-644d3c25be8e202045-1-vhh0md.mldaj.shp 
+update_zoning.py polk lakeland
+
+```
+
+### Putnam
+
+```bash
+#------------------------
+# unincorporated
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/zoning/florida/county/putnam/current/source_data/unincorporated
+
+# run if file info needed
+ogrinfo zoning_putnam_unincorporated.shp zoning_putnam_unincorporated|less
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'zoning_putnam_unincorporated.shp', data_date = '2024-04-02', update_date = '2024-04-04'  WHERE county = 'PUTNAM' and city_name = 'UNINCORPORATED'"
+
+# update dev
+update_zoning.py putnam unincorporated
+# copy the commands generated at the end of the output
+
+# grab raw_zon_putnam_unincorp.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+```
+
+### Santa Rosa
+
+```bash
+#------------------------
+# unincorporated
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/zoning/florida/county/santa_rosa/current/source_data/unincorporated
+
+# unzip files
+unzip -oj zoning.zip
+
+# archive with date
+zip_rename_date.sh Zoning.zip
+
+# run if file info needed
+ogrinfo Zoning.shp Zoning|less
+
+# Note: Commented out processing step, keep for reference
+# ogr2ogr -explodecollections Zoning_single.shp Zoning.shp
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'Zoning.shp', data_date = '2024-03-11', update_date = '2024-04-04'  WHERE county = 'SANTA_ROSA' and city_name = 'UNINCORPORATED'"
+
+# update dev
+update_zoning.py santa_rosa unincorporated
+# copy the commands generated at the end of the output
+
+# grab raw_zon_santa_rosa_unincorp.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+```
+
+### Sarasota
+
+```bash
+# ----------------------------------------
+# north_port
+# ----------------------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/zoning/florida/county/sarasota/current/source_data/north_port
+
+# run to grab data
+ags_extract_data2.py zoning_north_port delete 15
+
+# run if file info needed
+ogrinfo zoning_north_port.shp zoning_north_port | less
+
+# Create an archive since we downloaded from AGS
+zip zoning_north_port zoning_north_port.*
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'zoning_north_port.shp', srs_epsg = '4326', data_date = '2024-10-28', update_date = '2025-04-16'  WHERE county = 'SARASOTA' and city_name = 'NORTH_PORT'"
+
+# update dev
+update_zoning.py sarasota north_port
+# copy the commands generated at the end of the output
+
+# grab raw_zon_sarasota_north_port.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+
+# ----------------------------------------
+# sarasota
+# ----------------------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/zoning/florida/county/sarasota/current/source_data/sarasota
+
+# TODO: Convert to AGS download
+
+# download data
+mv 'Zoning_Districts_(View_Only)_3527818835144821311.zip' zoning.zip
+
+# archive with date
+zip_rename_date.sh zoning.zip
+
+# run if file info needed
+ogrinfo Zoning_Districts.shp Zoning_Districts|less
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'Zoning_Districts.shp', data_date = '2025-04-01', update_date = '2025-01-01', srs_epsg = '2882'  WHERE county = 'SARASOTA' and city_name = 'SARASOTA'"
+
+# update dev
+update_zoning.py sarasota sarasota
+# copy the commands generated at the end of the output
+
+# grab raw_zon_sarasota_sarasota.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+
+# ----------------------------------------
+# venice
+# ----------------------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/zoning/florida/county/sarasota/current/source_data/venice
+
+# run to grab data
+ags_extract_data2.py zoning_venice delete 15
+
+# create archive
+zip zoning.zip zoning_venice.*
+
+# archive with date
+zip_rename_date.sh zoning.zip
+
+# run if file info needed
+ogrinfo zoning_venice.shp zoning_venice|less
+
+# Note: polygons need dissolving
+ogr2ogr zoning_venice_dissolve.shp zoning_venice.shp -dialect sqlite -sql "SELECT ST_Union(geometry), map_label, zoning_dis, notes FROM input GROUP BY map_label, zoning_dis, notes"
+
+# Note: Run repair in QGIS
+# Use Fix geometry tool - search for tool in vector tools
+# Save to zoning_venice_fixed.shp
+
+# Note: Dissolve
+# Manual dissolve in QGIS using dissolve tool
+# Save to zoning_venice_dissolve.shp
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'zoning_venice_dissolve.shp', data_date = '2025-05-01', update_date = '2025-05-01', srs_epsg = '4326'  WHERE county = 'SARASOTA' and city_name = 'VENICE'"
+
+# update dev
+update_zoning.py sarasota venice
+# copy the commands generated at the end of the output
+
+# grab raw_zon_sarasota_venice.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+
+# ----------------------------------------
+# unincorporated
+# ----------------------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/zoning/florida/county/sarasota/current/source_data/unincorporated
+
+# Note: Manual download
+# TODO: Convert to AGS download
+
+# unzip files
+unzip -o CountyZoning.zip
+
+# archive with date
+zip_rename_date.sh CountyZoning.zip
+
+# run if file info needed
+ogrinfo CountyZoning.shp CountyZoning|less
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'CountyZoning.shp', data_date = '2025-04-21', update_date = '2025-05-01', srs_epsg = '2882'  WHERE county = 'SARASOTA' and city_name = 'UNINCORPORATED'"
+
+# update dev
+update_zoning.py sarasota unincorporated
+# copy the commands generated at the end of the output
+
+# grab raw_zon_sarasota_unincorp.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+```
+
+### Seminole
+
+```bash
+#------------------------
+# altamonte_springs
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/zoning/florida/county/seminole/current/source_data/altamonte_springs
+
+# grab data from website, unzip and move to plato
+
+# run if file info needed
+ogrinfo Zoning.shp Zoning|less
+
+# process data
+rm Zoning_single.*
+ogr2ogr -explodecollections -select "ZONING" Zoning_single.shp Zoning.shp
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET srs_epsg = 2236, shp_name = 'Zoning_single.shp', data_date = '2024-12-18', update_date = '2025-05-24'  WHERE county = 'SEMINOLE' and city_name = 'ALTAMONTE_SPRINGS'"
+
+# update dev
+update_zoning.py seminole altamonte_springs
+# copy the commands generated at the end of the output
+
+# grab raw_zon_seminole_altamonte_springs.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+
+#------------------------
+# casselberry
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/zoning/florida/county/seminole/current/source_data/casselberry
+
+# run to grab data
+ags_extract_data2.py zoning_casselberry delete 15
+
+# run if file info needed
+ogrinfo zoning_casselberry.shp zoning_casselberry|less
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET srs_epsg = 4326, shp_name = 'zoning_casselberry.shp', data_date = '2025-05-25', update_date = '2025-05-25'  WHERE county = 'SEMINOLE' and city_name = 'CASSELBERRY'"
+
+# update dev
+update_zoning.py seminole casselberry
+# copy the commands generated at the end of the output
+
+# grab raw_zon_seminole_casselberry.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+
+#------------------------
+# lake_mary
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/zoning/florida/county/seminole/current/source_data/lake_mary
+
+# run to grab data
+ags_extract_data2.py zoning_lake_mary delete 15
+
+# run if file info needed
+ogrinfo zoning_lake_mary.shp zoning_lake_mary|less
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET srs_epsg = 4326, shp_name = 'zoning_lake_mary.shp', data_date = '2025-05-25', update_date = '2025-05-25'  WHERE county = 'SEMINOLE' and city_name = 'LAKE_MARY'"
+
+# update dev
+update_zoning.py seminole lake_mary
+# copy the commands generated at the end of the output
+
+# grab raw_zon_seminole_lake_mary.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+
+#------------------------
+# longwood
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/zoning/florida/county/seminole/current/source_data/longwood
+
+# run to grab data
+ags_extract_data2.py zoning_longwood delete 15
+
+# run if file info needed
+ogrinfo zoning_longwood.shp zoning_longwood|less
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'zoning_longwood.shp', data_date = '2024-04-02', update_date = '2024-04-02'  WHERE county = 'SEMINOLE' and city_name = 'LONGWOOD'"
+
+# update dev
+update_zoning.py seminole longwood
+# copy the commands generated at the end of the output
+
+# grab raw_zon_seminole_longwood.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+
+#------------------------
+# oviedo
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/zoning/florida/county/seminole/current/source_data/oviedo
+
+# run to grab data
+ags_extract_data2.py zoning_oviedo delete 15
+
+# run if file info needed
+ogrinfo zoning_oviedo.shp zoning_oviedo|less
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET srs_epsg = 4326, shp_name = 'zoning_oviedo.shp', data_date = '2025-05-25', update_date = '2025-05-25'  WHERE county = 'SEMINOLE' and city_name = 'OVIEDO'"
+
+# update dev
+update_zoning.py seminole oviedo
+# copy the commands generated at the end of the output
+
+# grab raw_zon_seminole_oviedo.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+
+#------------------------
+# sanford
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/zoning/florida/county/seminole/current/source_data/sanford
+
+# run to grab data
+ags_extract_data2.py zoning_sanford delete 15
+
+# run if file info needed
+ogrinfo zoning_sanford.shp zoning_sanford|less
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET srs_epsg = 4326, shp_name = 'zoning_sanford.shp', data_date = '2025-05-25', update_date = '2025-05-25'  WHERE county = 'SEMINOLE' and city_name = 'SANFORD'"
+
+# update dev
+update_zoning.py seminole sanford
+# copy the commands generated at the end of the output
+
+# grab raw_zon_seminole_sanford.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+
+#------------------------
+# winter_springs
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/zoning/florida/county/seminole/current/source_data/winter_springs
+
+# run to grab data
+ags_extract_data2.py zoning_winter_springs delete 15
+
+# run if file info needed
+ogrinfo zoning_winter_springs.shp zoning_winter_springs|less
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET srs_epsg = 4326, shp_name = 'zoning_winter_springs.shp', data_date = '2025-05-25', update_date = '2025-05-25'  WHERE county = 'SEMINOLE' and city_name = 'WINTER_SPRINGS'"
+
+# update dev
+update_zoning.py seminole winter_springs
+# copy the commands generated at the end of the output
+
+# grab raw_zon_seminole_winter_springs.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+
+#------------------------
+# unincorporated
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/zoning/florida/county/seminole/current/source_data/unincorporated
+
+# ??
+
+# check attributes still match columns in support.zoning_transform
+ogrinfo LandUse.gdb Zoning|less
+
+ogr2ogr -explodecollections -select "ZONING, ORDINANCE" Zoning_single.shp LandUse.gdb Zoning
+
+psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'Zoning_single.shp', data_date = '2024-03-19', update_date = '2024-04-02'  WHERE county = 'SEMINOLE' and city_name = 'UNINCORPORATED'"
+
+update_zoning.py seminole unincorporated
+
+```
+
+### St Johns
+
+```bash
+#------------------------
+# unincorporated
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/zoning/florida/county/st_johns/current/source_data/unincorporated
+
+# download data
+download_data.py /data/zoning/st_johns/unincorporated
+
+# check attributes still match columns in support.zoning_transform
+ogrinfo Zoning.shp Zoning|less
+
+psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'Zoning.shp', data_date = '2024-03-16', update_date = '2024-04-02'  WHERE county = 'ST_JOHNS' and city_name = 'UNINCORPORATED'"
+
+update_zoning.py st_johns unincorporated
+
+```
+
+### St Lucie
+
+```bash
+#------------------------
+# port_st_lucie
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/zoning/florida/county/st_lucie/current/source_data/port_st_lucie
+
+# run to grab data
+ags_extract_data2.py zoning_port_st_lucie delete 15 zoning,seu_type
+
+# check attributes still match columns in support.zoning_transform
+ogrinfo zoning_port_st_lucie.shp zoning_port_st_lucie|less
+
+psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'zoning_port_st_lucie.shp', data_date = '2024-04-03', update_date = '2024-04-02'  WHERE county = 'ST_LUCIE' and city_name = 'PORT_ST_LUCIE'"
+
+update_zoning.py st_lucie port_st_lucie
+
+#------------------------
+# unincorporated
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/zoning/florida/county/st_lucie/current/source_data/unincorporated
+
+# download data
+download_data.py /data/zoning/st_lucie/unincorporated
+
+# check attributes still match columns in support.zoning_transform
+ogrinfo Zoning.shp Zoning|less
+
+psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'Zoning.shp', data_date = '2024-03-13', update_date = '2024-04-02'  WHERE county = 'ST_LUCIE' and city_name = 'UNINCORPORATED'"
+
+update_zoning.py st_lucie unincorporated
+```
+
+### Sumter
+
+```bash
+#------------------------
+# unincorporated
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/zoning/florida/county/sumter/current/source_data/unincorporated
+
+# run to grab data
+ags_extract_data2.py zoning_sumter delete 15
+
+# check attributes still match columns in support.zoning_transform
+ogrinfo zoning_sumter.shp zoning_sumter|less
+
+psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'zoning_sumter.shp', data_date = '2024-04-04', update_date = '2024-04-04'  WHERE county = 'SUMTER' and city_name = 'UNINCORPORATED'"
+
+update_zoning.py sumter unincorporated
+
+```
+
+### Volusia
+
+```bash
+#------------------------
+# countywide
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/zoning/florida/county/volusia/current/source_data/countywide
+
+# get data from opendata portal
+
+# unzip and move to plato
+
+# run if file info needed
+ogrinfo Countywide_Zoning.shp Countywide_Zoning|less
+
+# update table w/ proper parameters
+psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET temp_table_name = 'raw_volusia_countywide', zon_code_col = 'genl_zcode', srs_epsg = 2881, shp_name = 'Countywide_Zoning.shp', data_date = '2025-03-26', update_date = '2025-05-24'  WHERE county = 'VOLUSIA' and city_name = 'COUNTYWIDE';"
+
+# update dev
+update_zoning.py volusia countywide
+# copy the commands generated at the end of the output
+
+# grab raw_zon_volusia_countywide.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+
+
+#------------------------
+# daytona_beach
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/zoning/florida/county/volusia/current/source_data/daytona_beach
+
+# ??
+
+# check attributes still match columns in support.zoning_transform
+ogrinfo New_Zoning.shp New_Zoning|less
+
+psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'New_Zoning.shp', data_date = '2024-02-08', update_date = '2024-04-01'  WHERE county = 'VOLUSIA' and city_name = 'DAYTONA_BEACH'"
+
+update_zoning.py volusia daytona_beach
+
+#------------------------
+# port_orange
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/zoning/florida/county/volusia/current/source_data/port_orange
+
+# run to grab data
+ags_extract_data2.py zoning_port_orange delete 15
+
+# check attributes still match columns in support.zoning_transform
+ogrinfo zoning_port_orange.shp zoning_port_orange|less
+
+psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'zoning_port_orange.shp', data_date = '2024-04-01', update_date = '2024-04-01'  WHERE county = 'VOLUSIA' and city_name = 'PORT_ORANGE'"
+
+update_zoning.py volusia port_orange
+
+#------------------------
+# unincorporated
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/zoning/florida/county/volusia/current/source_data/unincorporated
+
+# ??
+
+# check attributes still match columns in support.zoning_transform
+ogrinfo Zoning.shp Zoning|less
+
+psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'Zoning.shp', data_date = '2024-03-28', update_date = '2024-04-01'  WHERE county = 'VOLUSIA' and city_name = 'UNINCORPORATED'"
+
+update_zoning.py volusia unincorporated
+
+```
+
+### Walton
+
+```bash
+#------------------------
+# unincorporated
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/zoning/florida/county/walton/current/source_data/unincorporated
+
+# run to grab data
+ags_extract_data2.py zoning_walton delete 15
+
+# run if file info needed
+ogrinfo zoning_walton.shp zoning_walton|less
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'zoning_walton.shp', data_date = '2025-04-27', update_date = '2025-05-01', srs_epsg = '4236'  WHERE county = 'WALTON' and city_name = 'UNINCORPORATED'"
+
+# update dev
+update_zoning.py walton unincorporated
+# copy the commands generated at the end of the output
+
+# grab raw_zon_walton_unincorp.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+```
