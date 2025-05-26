@@ -17,7 +17,7 @@ ogrinfo zoning_alachua_city.shp zoning_alachua_city|less
 psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'zoning_alachua_city.shp', data_date = '2024-04-02', update_date = '2024-04-04'  WHERE county = 'ALACHUA' and city_name = 'ALACHUA'"
 
 # update dev
-update_zoning2.py alachua alachua
+update_zoning.py alachua alachua
 # copy the commands generated at the end of the output
 
 # grab raw_zon_alachua_alachua.backup from plato at /var/www/apps/mapwise/htdocs/x342
@@ -43,7 +43,7 @@ ogrinfo zoning_archer.shp zoning_archer|less
 psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'zoning_archer.shp', data_date = '2024-04-02', update_date = '2024-04-04'  WHERE county = 'ALACHUA' and city_name = 'ARCHER'"
 
 # update dev
-update_zoning2.py alachua archer
+update_zoning.py alachua archer
 # copy the commands generated at the end of the output
 
 # grab raw_zon_alachua_archer.backup from plato at /var/www/apps/mapwise/htdocs/x342
@@ -72,7 +72,7 @@ ogrinfo zoning_gainesville.shp zoning_gainesville|less
 psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'zoning_gainesville.shp', data_date = '2024-04-02', update_date = '2024-04-04'  WHERE county = 'ALACHUA' and city_name = 'GAINESVILLE'"
 
 # update dev
-update_zoning2.py alachua gainesville
+update_zoning.py alachua gainesville
 # copy the commands generated at the end of the output
 
 # grab raw_zon_alachua_gainesville.backup from plato at /var/www/apps/mapwise/htdocs/x342
@@ -98,7 +98,7 @@ ogrinfo zoning_hawthorne.shp zoning_hawthorne|less
 psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'zoning_hawthorne.shp', data_date = '2024-04-02', update_date = '2024-04-04'  WHERE county = 'ALACHUA' and city_name = 'HAWTHORNE'"
 
 # update dev
-update_zoning2.py alachua hawthorne
+update_zoning.py alachua hawthorne
 # copy the commands generated at the end of the output
 
 # grab raw_zon_alachua_hawthorne.backup from plato at /var/www/apps/mapwise/htdocs/x342
@@ -124,7 +124,7 @@ ogrinfo zoning_high_springs.shp zoning_high_springs|less
 psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'zoning_high_springs.shp', data_date = '2024-04-02', update_date = '2024-04-04'  WHERE county = 'ALACHUA' and city_name = 'HIGH_SPRINGS'"
 
 # update dev
-update_zoning2.py alachua high_springs
+update_zoning.py alachua high_springs
 # copy the commands generated at the end of the output
 
 # grab raw_zon_alachua_high_springs.backup from plato at /var/www/apps/mapwise/htdocs/x342
@@ -150,7 +150,7 @@ ogrinfo zoning_lacrosse.shp zoning_lacrosse|less
 psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'zoning_lacrosse.shp', data_date = '2024-04-02', update_date = '2024-04-04'  WHERE county = 'ALACHUA' and city_name = 'LACROSSE'"
 
 # update dev
-update_zoning2.py alachua lacrosse
+update_zoning.py alachua lacrosse
 # copy the commands generated at the end of the output
 
 # grab raw_zon_alachua_lacrosse.backup from plato at /var/www/apps/mapwise/htdocs/x342
@@ -176,7 +176,7 @@ ogrinfo zoning_micanopy.shp zoning_micanopy|less
 psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'zoning_micanopy.shp', data_date = '2024-04-02', update_date = '2024-04-04'  WHERE county = 'ALACHUA' and city_name = 'MICANOPY'"
 
 # update dev
-update_zoning2.py alachua micanopy
+update_zoning.py alachua micanopy
 # copy the commands generated at the end of the output
 
 # grab raw_zon_alachua_micanopy.backup from plato at /var/www/apps/mapwise/htdocs/x342
@@ -202,7 +202,7 @@ ogrinfo zoning_newberry.shp zoning_newberry|less
 psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'zoning_newberry.shp', data_date = '2024-04-02', update_date = '2024-04-04'  WHERE county = 'ALACHUA' and city_name = 'NEWBERRY'"
 
 # update dev
-update_zoning2.py alachua newberry
+update_zoning.py alachua newberry
 # copy the commands generated at the end of the output
 
 # grab raw_zon_alachua_newberry.backup from plato at /var/www/apps/mapwise/htdocs/x342
@@ -228,7 +228,7 @@ ogrinfo zoning_alachua_unincorporated.shp zoning_alachua_unincorporated|less
 psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'zoning_alachua_unincorporated.shp', data_date = '2024-04-02', update_date = '2024-04-04'  WHERE county = 'ALACHUA' and city_name = 'UNINCORPORATED'"
 
 # update dev
-update_zoning2.py alachua unincorporated
+update_zoning.py alachua unincorporated
 # copy the commands generated at the end of the output
 
 # grab raw_zon_alachua_unincorp.backup from plato at /var/www/apps/mapwise/htdocs/x342
@@ -254,7 +254,7 @@ ogrinfo zoning_waldo.shp zoning_waldo|less
 psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'zoning_waldo.shp', data_date = '2024-04-02', update_date = '2024-04-04'  WHERE county = 'ALACHUA' and city_name = 'WALDO'"
 
 # update dev
-update_zoning2.py alachua waldo
+update_zoning.py alachua waldo
 # copy the commands generated at the end of the output
 
 # grab raw_zon_alachua_waldo.backup from plato at /var/www/apps/mapwise/htdocs/x342
@@ -281,7 +281,7 @@ ogrinfo zoning_baker_unincorporated.shp zoning_baker_unincorporated|less
 psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'zoning_baker_unincorporated.shp', data_date = '2024-04-02', update_date = '2024-04-04'  WHERE county = 'BAKER' and city_name = 'UNINCORPORATED'"
 
 # update dev
-update_zoning2.py baker unincorporated
+update_zoning.py baker unincorporated
 # copy the commands generated at the end of the output
 
 # grab raw_zon_baker_unincorp.backup from plato at /var/www/apps/mapwise/htdocs/x342
@@ -324,7 +324,7 @@ psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'Z
 psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'Zoning_single.shp', data_date = '2025-05-01', update_date = '2025-05-01', srs_epsg = '2238' WHERE county = 'BAY' and city_name = 'UNINCORPORATED'"
 
 # update dev
-update_zoning2.py bay unincorporated
+update_zoning.py bay unincorporated
 # copy the commands generated at the end of the output
 
 # grab raw_zon_bay_unincorp.backup from plato at /var/www/apps/mapwise/htdocs/x342
@@ -356,7 +356,7 @@ ogrinfo zoning_melbourne.shp zoning_melbourne|less
 psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET srs_epsg = 4326, shp_name = 'zoning_melbourne.shp', data_date = '2025-05-24', update_date = '2025-05-24'  WHERE county = 'BREVARD' and city_name = 'MELBOURNE'"
 
 # update dev
-update_zoning2.py brevard melbourne
+update_zoning.py brevard melbourne
 # copy the commands generated at the end of the output
 
 # grab raw_zon_brevard_melbourne.backup from plato at /var/www/apps/mapwise/htdocs/x342
@@ -382,7 +382,7 @@ ogrinfo Zoning.shp Zoning|less
 psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET srs_epsg = 2881, shp_name = 'Zoning.shp', data_date = '2024-03-30', update_date = '2025-05-24'  WHERE county = 'BREVARD' and city_name = 'PALM_BAY'"
 
 # update dev
-update_zoning2.py brevard palm_bay
+update_zoning.py brevard palm_bay
 # copy the commands generated at the end of the output
 
 # grab raw_zon_brevard_palm_bay.backup from plato at /var/www/apps/mapwise/htdocs/x342
@@ -408,7 +408,7 @@ ogrinfo Zoning.shp Zoning|less
 psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'Zoning.shp', data_date = '2024-02-21', update_date = '2024-04-01'  WHERE county = 'BREVARD' and city_name = 'TITUSVILLE'"
 
 # update dev
-update_zoning2.py brevard titusville
+update_zoning.py brevard titusville
 # copy the commands generated at the end of the output
 
 # grab raw_zon_brevard_titusville.backup from plato at /var/www/apps/mapwise/htdocs/x342
@@ -434,7 +434,7 @@ ogrinfo zoning_brevard.shp zoning_brevard|less
 psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET srs_epsg = 4326, shp_name = 'zoning_brevard.shp', data_date = '2025-05-24', update_date = '2025-05-24'  WHERE county = 'BREVARD' and city_name = 'UNINCORPORATED'"
 
 # update dev
-update_zoning2.py brevard unincorporated
+update_zoning.py brevard unincorporated
 # copy the commands generated at the end of the output
 
 # grab raw_zon_brevard_unincorp.backup from plato at /var/www/apps/mapwise/htdocs/x342
@@ -472,7 +472,7 @@ ogr2ogr -explodecollections -t_srs "EPSG:2881" -select "ZONING, ZONE_NAME" zonin
 psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'zoning_broward_single_2881.shp', data_date = '2024-03-29', update_date = '2024-03-31'  WHERE county = 'BROWARD' and city_name = 'COUNTY_UNIFIED'"
 
 # update dev
-update_zoning2.py broward county_unified
+update_zoning.py broward county_unified
 # copy the commands generated at the end of the output
 
 # grab raw_zon_broward_county_unified.backup from plato at /var/www/apps/mapwise/htdocs/x342
@@ -499,7 +499,7 @@ ogrinfo zoning_punta_gorda.shp zoning_punta_gorda|less
 psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'zoning_punta_gorda.shp', data_date = '2024-04-02', update_date = '2024-04-04'  WHERE county = 'CHARLOTTE' and city_name = 'PUNTA_GORDA'"
 
 # update dev
-update_zoning2.py charlotte punta_gorda
+update_zoning.py charlotte punta_gorda
 # copy the commands generated at the end of the output
 
 # grab raw_zon_charlotte_punta_gorda.backup from plato at /var/www/apps/mapwise/htdocs/x342
@@ -534,7 +534,7 @@ ogr2ogr -explodecollections Zoning_single.shp Zoning.shp
 psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'ZONING.shp', data_date = '2022-06-09', update_date = '2024-04-04'  WHERE county = 'CHARLOTTE' and city_name = 'UNINCORPORATED'"
 
 # update dev
-update_zoning2.py charlotte unincorporated
+update_zoning.py charlotte unincorporated
 # copy the commands generated at the end of the output
 
 # grab raw_zon_charlotte_unincorp.backup from plato at /var/www/apps/mapwise/htdocs/x342
@@ -564,7 +564,7 @@ ogrinfo Zoning_FWS.shp Zoning_FWS|less
 psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'Zoning_FWS.shp', data_date = '2023-11-01', update_date = '2024-04-04'  WHERE county = 'CITRUS' and city_name = 'UNINCORPORATED'"
 
 # update dev
-update_zoning2.py citrus unincorporated
+update_zoning.py citrus unincorporated
 # copy the commands generated at the end of the output
 
 # grab raw_zon_citrus_unincorp.backup from plato at /var/www/apps/mapwise/htdocs/x342
@@ -597,7 +597,7 @@ ogrinfo Zoning.shp Zoning|less
 psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'Zoning.shp', data_date = '2024-04-02', update_date = '2024-04-04'  WHERE county = 'CLAY' and city_name = 'UNINCORPORATED'"
 
 # update dev
-update_zoning2.py clay unincorporated
+update_zoning.py clay unincorporated
 # copy the commands generated at the end of the output
 
 # grab raw_zon_clay_unincorp.backup from plato at /var/www/apps/mapwise/htdocs/x342
@@ -630,7 +630,7 @@ ogrinfo zoning_marco_island.shp zoning_marco_island|less
 psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET srs_epsg = 4326, shp_name = 'zoning_marco_island.shp', data_date = '2025-05-25', update_date = '2025-05-25'  WHERE county = 'COLLIER' and city_name = 'MARCO_ISLAND'"
 
 # update dev
-update_zoning2.py collier marco_island
+update_zoning.py collier marco_island
 # copy the commands generated at the end of the output
 
 # grab raw_zon_collier_marco_island.backup from plato at /var/www/apps/mapwise/htdocs/x342
@@ -656,7 +656,7 @@ ogrinfo zoning_naples.shp zoning_naples|less
 psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET srs_epsg = 4326, shp_name = 'zoning_naples.shp', data_date = '2025-05-25', update_date = '2025-05-25'  WHERE county = 'COLLIER' and city_name = 'NAPLES'"
 
 # update dev
-update_zoning2.py collier naples
+update_zoning.py collier naples
 # copy the commands generated at the end of the output
 
 # grab raw_zon_collier_naples.backup from plato at /var/www/apps/mapwise/htdocs/x342
@@ -681,7 +681,7 @@ ogrinfo Zoning_General.shp Zoning_General|less
 psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET srs_epsg = 2236, shp_name = 'Zoning_General.shp', data_date = '2025-05-23', update_date = '2025-05-25'  WHERE county = 'COLLIER' and city_name = 'UNINCORPORATED'"
 
 # update dev
-update_zoning2.py collier unincorporated
+update_zoning.py collier unincorporated
 # copy the commands generated at the end of the output
 
 # grab raw_zon_collier_unincorp.backup from plato at /var/www/apps/mapwise/htdocs/x342
@@ -722,7 +722,7 @@ ogrinfo zoning_duval.shp zoning_duval|less
 psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'zoning_duval.shp', data_date = '2024-05-24', update_date = '2025-05-01', srs_epsg = '2236'  WHERE county = 'DUVAL' and city_name = 'JACKSONVILLE'"
 
 # update dev
-update_zoning2.py duval jacksonville
+update_zoning.py duval jacksonville
 # copy the commands generated at the end of the output
 
 # grab raw_zon_duval_jacksonville.backup from plato at /var/www/apps/mapwise/htdocs/x342
@@ -751,7 +751,7 @@ ogrinfo zoning_duval.shp zoning_duval|less
 psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'zoning_single.shp', data_date = '2024-04-02', update_date = '2024-04-04'  WHERE county = 'DUVAL' and city_name = 'UNINCORPORATED'"
 
 # update dev
-update_zoning2.py duval unincorporated
+update_zoning.py duval unincorporated
 # copy the commands generated at the end of the output
 
 # grab raw_zon_duval_unincorp.backup from plato at /var/www/apps/mapwise/htdocs/x342
@@ -781,7 +781,7 @@ ogrinfo zoning_escambia.shp zoning_escambia|less
 psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'zoning_escambia.shp', data_date = '2024-04-04', update_date = '2024-04-04'  WHERE county = 'ESCAMBIA' and city_name = 'UNINCORPORATED'"
 
 # update dev
-update_zoning2.py escambia unincorporated
+update_zoning.py escambia unincorporated
 # copy the commands generated at the end of the output
 
 # grab raw_zon_escambia_unincorp.backup from plato at /var/www/apps/mapwise/htdocs/x342
@@ -808,7 +808,7 @@ ogrinfo zoning_flagler_unincorporated.shp zoning_flagler_unincorporated|less
 psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'zoning_flagler_unincorporated.shp', data_date = '2024-04-02', update_date = '2024-04-04'  WHERE county = 'FLAGLER' and city_name = 'UNINCORPORATED'"
 
 # update dev
-update_zoning2.py flagler unincorporated
+update_zoning.py flagler unincorporated
 # copy the commands generated at the end of the output
 
 # grab raw_zon_flagler_unincorp.backup from plato at /var/www/apps/mapwise/htdocs/x342
@@ -838,7 +838,7 @@ ogrinfo zoning_brooksville.shp zoning_brooksville|less
 psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'zoning_brooksville.shp', data_date = '2024-04-02', update_date = '2024-04-04'  WHERE county = 'HERNANDO' and city_name = 'BROOKSVILLE'"
 
 # update dev
-update_zoning2.py hernando brooksville
+update_zoning.py hernando brooksville
 # copy the commands generated at the end of the output
 
 # grab raw_zon_hernando_brooksville.backup from plato at /var/www/apps/mapwise/htdocs/x342
@@ -864,7 +864,7 @@ ogrinfo zoning_hernando.shp zoning_hernando|less
 psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'zoning_hernando.shp', data_date = '2024-04-02', update_date = '2024-04-04'  WHERE county = 'HERNANDO' and city_name = 'UNINCORPORATED'"
 
 # update dev
-update_zoning2.py hernando unincorporated
+update_zoning.py hernando unincorporated
 # copy the commands generated at the end of the output
 
 # grab raw_zon_hernando_unincorp.backup from plato at /var/www/apps/mapwise/htdocs/x342
@@ -894,7 +894,7 @@ ogrinfo zoning_highlands.shp zoning_highlands|less
 psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'zoning_highlands.shp', data_date = '2024-04-02', update_date = '2024-04-04'  WHERE county = 'HIGHLANDS' and city_name = 'UNINCORPORATED'"
 
 # update dev
-update_zoning2.py highlands unincorporated
+update_zoning.py highlands unincorporated
 # copy the commands generated at the end of the output
 
 # grab raw_zon_highlands_unincorp.backup from plato at /var/www/apps/mapwise/htdocs/x342
@@ -924,7 +924,7 @@ ogrinfo PC_Zoning.shp PC_Zoning|less
 psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'PC_Zoning.shp', data_date = '2023-12-04', update_date = '2024-03-31'  WHERE county = 'HILLSBOROUGH' and city_name = 'PLANT_CITY'"
 
 # update dev
-update_zoning2.py hillsborough plant_city
+update_zoning.py hillsborough plant_city
 # copy the commands generated at the end of the output
 
 # grab raw_zon_hillsborough_plant_city.backup from plato at /var/www/apps/mapwise/htdocs/x342
@@ -947,7 +947,7 @@ ogrinfo Zoning_District.shp Zoning_District|less
 psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'Zoning_District.shp', data_date = '2024-03-25', update_date = '2024-03-31'  WHERE county = 'HILLSBOROUGH' and city_name = 'TAMPA'"
 
 # update dev
-update_zoning2.py hillsborough tampa
+update_zoning.py hillsborough tampa
 # copy the commands generated at the end of the output
 
 # grab raw_zon_hillsborough_tampa.backup from plato at /var/www/apps/mapwise/htdocs/x342
@@ -972,7 +972,7 @@ ogrinfo Zoning.shp Zoning|less
 psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'Zoning.shp', data_date = 'YYYY-MM-DD', update_date = 'YYYY-MM-DD'  WHERE county = 'HILLSBOROUGH' and city_name = 'UNINCORPORATED'"
 
 # update dev
-update_zoning2.py hillsborough unincorporated
+update_zoning.py hillsborough unincorporated
 # copy the commands generated at the end of the output
 
 # grab raw_zon_hillsborough_unincorporated.backup from plato at /var/www/apps/mapwise/htdocs/x342
@@ -1008,7 +1008,7 @@ ogrinfo ZoningDistricts.shp ZoningDistricts|less
 psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'ZoningDistricts.shp', data_date = '2023-12-27', update_date = '2024-04-04'  WHERE county = 'INDIAN_RIVER' and city_name = 'VERO_BEACH'"
 
 # update dev
-update_zoning2.py indian_river vero_beach
+update_zoning.py indian_river vero_beach
 # copy the commands generated at the end of the output
 
 # grab raw_zon_indian_river_vero_beach.backup from plato at /var/www/apps/mapwise/htdocs/x342
@@ -1037,7 +1037,7 @@ ogrinfo zoning_indian_river_unincorporated.shp zoning_indian_river_unincorporate
 psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'zoning_indian_river_unincorporated.shp', data_date = '2024-04-04', update_date = '2024-04-04'  WHERE county = 'INDIAN_RIVER' and city_name = 'UNINCORPORATED'"
 
 # update dev
-update_zoning2.py indian_river unincorporated
+update_zoning.py indian_river unincorporated
 # copy the commands generated at the end of the output
 
 # grab raw_zon_indian_river_unincorp.backup from plato at /var/www/apps/mapwise/htdocs/x342
@@ -1051,84 +1051,6 @@ update_zoning2.py indian_river unincorporated
 ### Lake
 
 ```bash
-#------------------------
-# clermont
-#------------------------
-# go to working directory
-cd /srv/datascrub/08_Land_Use_and_Zoning/zoning/florida/county/lake/current/source_data/clermont
-
-# run to grab data
-ags_extract_data2.py zoning_clermont delete 15
-
-# run if file info needed
-ogrinfo zoning_clermont.shp zoning_clermont|less
-
-# update table (ensure parameters are correct)
-psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'zoning_clermont.shp', data_date = '2024-04-02', update_date = '2024-04-02'  WHERE county = 'LAKE' and city_name = 'CLERMONT'"
-
-# update dev
-update_zoning2.py lake clermont
-# copy the commands generated at the end of the output
-
-# grab raw_zon_lake_clermont.backup from plato at /var/www/apps/mapwise/htdocs/x342
-# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
-
-# run the copied commands on both m1 and prod
-
-# QA and mark as done
-
-#------------------------
-# fruitland_park
-#------------------------
-# go to working directory
-cd /srv/datascrub/08_Land_Use_and_Zoning/zoning/florida/county/lake/current/source_data/fruitland_park
-
-# run to grab data
-ags_extract_data2.py zoning_fruitland_park delete 15
-
-# run if file info needed
-ogrinfo zoning_fruitland_park.shp zoning_fruitland_park|less
-
-# update table (ensure parameters are correct)
-psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'zoning_fruitland_park.shp', data_date = '2024-04-02', update_date = '2024-04-02'  WHERE county = 'LAKE' and city_name = 'FRUITLAND_PARK'"
-
-# update dev
-update_zoning2.py lake fruitland_park
-# copy the commands generated at the end of the output
-
-# grab raw_zon_lake_fruitland_park.backup from plato at /var/www/apps/mapwise/htdocs/x342
-# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
-
-# run the copied commands on both m1 and prod
-
-# QA and mark as done
-
-#------------------------
-# groveland
-#------------------------
-# go to working directory
-cd /srv/datascrub/08_Land_Use_and_Zoning/zoning/florida/county/lake/current/source_data/groveland
-
-# run to grab data
-ags_extract_data2.py zoning_groveland delete 15
-
-# run if file info needed
-ogrinfo zoning_groveland.shp zoning_groveland|less
-
-# update table (ensure parameters are correct)
-psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'zoning_groveland.shp', data_date = '2024-04-02', update_date = '2024-04-02'  WHERE county = 'LAKE' and city_name = 'GROVELAND'"
-
-# update dev
-update_zoning2.py lake groveland
-# copy the commands generated at the end of the output
-
-# grab raw_zon_lake_groveland.backup from plato at /var/www/apps/mapwise/htdocs/x342
-# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
-
-# run the copied commands on both m1 and prod
-
-# QA and mark as done
-
 #------------------------
 # leesburg
 #------------------------
@@ -1145,192 +1067,10 @@ ogrinfo zoning_leesburg.shp zoning_leesburg|less
 psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'zoning_leesburg.shp', data_date = '2024-04-02', update_date = '2024-04-02'  WHERE county = 'LAKE' and city_name = 'LEESBURG'"
 
 # update dev
-update_zoning2.py lake leesburg
+update_zoning.py lake leesburg
 # copy the commands generated at the end of the output
 
 # grab raw_zon_lake_leesburg.backup from plato at /var/www/apps/mapwise/htdocs/x342
-# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
-
-# run the copied commands on both m1 and prod
-
-# QA and mark as done
-
-#------------------------
-# minneola
-#------------------------
-# go to working directory
-cd /srv/datascrub/08_Land_Use_and_Zoning/zoning/florida/county/lake/current/source_data/minneola
-
-# run to grab data
-ags_extract_data2.py zoning_minneola delete 15
-
-# run if file info needed
-ogrinfo zoning_minneola.shp zoning_minneola|less
-
-# update table (ensure parameters are correct)
-psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'zoning_minneola.shp', data_date = '2024-04-02', update_date = '2024-04-02'  WHERE county = 'LAKE' and city_name = 'MINNEOLA'"
-
-# update dev
-update_zoning2.py lake minneola
-# copy the commands generated at the end of the output
-
-# grab raw_zon_lake_minneola.backup from plato at /var/www/apps/mapwise/htdocs/x342
-# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
-
-# run the copied commands on both m1 and prod
-
-# QA and mark as done
-
-#------------------------
-# mount_dora
-#------------------------
-# go to working directory
-cd /srv/datascrub/08_Land_Use_and_Zoning/zoning/florida/county/lake/current/source_data/mount_dora
-
-# run to grab data
-ags_extract_data2.py zoning_mount_dora delete 15
-
-# run if file info needed
-ogrinfo zoning_mount_dora.shp zoning_mount_dora|less
-
-# update table (ensure parameters are correct)
-psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'zoning_mount_dora.shp', data_date = '2024-04-02', update_date = '2024-04-02'  WHERE county = 'LAKE' and city_name = 'MOUNT_DORA'"
-
-# update dev
-update_zoning2.py lake mount_dora
-# copy the commands generated at the end of the output
-
-# grab raw_zon_lake_mount_dora.backup from plato at /var/www/apps/mapwise/htdocs/x342
-# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
-
-# run the copied commands on both m1 and prod
-
-# QA and mark as done
-
-#------------------------
-# tavares
-#------------------------
-# go to working directory
-cd /srv/datascrub/08_Land_Use_and_Zoning/zoning/florida/county/lake/current/source_data/tavares
-
-# run to grab data
-ags_extract_data2.py zoning_tavares delete 15
-
-# run if file info needed
-ogrinfo zoning_tavares.shp zoning_tavares|less
-
-# update table (ensure parameters are correct)
-psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'zoning_tavares.shp', data_date = '2024-04-02', update_date = '2024-04-02'  WHERE county = 'LAKE' and city_name = 'TAVARES'"
-
-# update dev
-update_zoning2.py lake tavares
-# copy the commands generated at the end of the output
-
-# grab raw_zon_lake_tavares.backup from plato at /var/www/apps/mapwise/htdocs/x342
-# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
-
-# run the copied commands on both m1 and prod
-
-# QA and mark as done
-
-#------------------------
-# umatilla
-#------------------------
-# go to working directory
-cd /srv/datascrub/08_Land_Use_and_Zoning/zoning/florida/county/lake/current/source_data/umatilla
-
-# run to grab data
-ags_extract_data2.py zoning_umatilla delete 15
-
-# run if file info needed
-ogrinfo zoning_umatilla.shp zoning_umatilla|less
-
-# update table (ensure parameters are correct)
-psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'zoning_umatilla.shp', data_date = '2024-04-02', update_date = '2024-04-02'  WHERE county = 'LAKE' and city_name = 'UMATILLA'"
-
-# update dev
-update_zoning2.py lake umatilla
-# copy the commands generated at the end of the output
-
-# grab raw_zon_lake_umatilla.backup from plato at /var/www/apps/mapwise/htdocs/x342
-# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
-
-# run the copied commands on both m1 and prod
-
-# QA and mark as done
-
-#------------------------
-# howey-in-the-hills
-#------------------------
-# go to working directory
-cd /srv/datascrub/08_Land_Use_and_Zoning/zoning/florida/county/lake/current/source_data/howey-in-the-hills
-
-# run to grab data
-ags_extract_data2.py zoning_howey-in-the-hills delete 15
-
-# run if file info needed
-ogrinfo zoning_howey-in-the-hills.shp zoning_howey-in-the-hills|less
-
-# update table (ensure parameters are correct)
-psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'zoning_howey-in-the-hills.shp', data_date = '2024-04-02', update_date = '2024-04-02'  WHERE county = 'LAKE' and city_name = 'HOWEY-IN-THE-HILLS'"
-
-# update dev
-update_zoning2.py lake howey-in-the-hills
-# copy the commands generated at the end of the output
-
-# grab raw_zon_lake_howey-in-the-hills.backup from plato at /var/www/apps/mapwise/htdocs/x342
-# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
-
-# run the copied commands on both m1 and prod
-
-# QA and mark as done
-
-#------------------------
-# mascotte
-#------------------------
-# go to working directory
-cd /srv/datascrub/08_Land_Use_and_Zoning/zoning/florida/county/lake/current/source_data/mascotte
-
-# run to grab data
-ags_extract_data2.py zoning_mascotte delete 15
-
-# run if file info needed
-ogrinfo zoning_mascotte.shp zoning_mascotte|less
-
-# update table (ensure parameters are correct)
-psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'zoning_mascotte.shp', data_date = '2024-04-02', update_date = '2024-04-02'  WHERE county = 'LAKE' and city_name = 'MASCOTTE'"
-
-# update dev
-update_zoning2.py lake mascotte
-# copy the commands generated at the end of the output
-
-# grab raw_zon_lake_mascotte.backup from plato at /var/www/apps/mapwise/htdocs/x342
-# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
-
-# run the copied commands on both m1 and prod
-
-# QA and mark as done
-
-#------------------------
-# montverde
-#------------------------
-# go to working directory
-cd /srv/datascrub/08_Land_Use_and_Zoning/zoning/florida/county/lake/current/source_data/montverde
-
-# run to grab data
-ags_extract_data2.py zoning_montverde delete 15
-
-# run if file info needed
-ogrinfo zoning_montverde.shp zoning_montverde|less
-
-# update table (ensure parameters are correct)
-psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'zoning_montverde.shp', data_date = '2024-04-02', update_date = '2024-04-02'  WHERE county = 'LAKE' and city_name = 'MONTVERDE'"
-
-# update dev
-update_zoning2.py lake montverde
-# copy the commands generated at the end of the output
-
-# grab raw_zon_lake_montverde.backup from plato at /var/www/apps/mapwise/htdocs/x342
 # move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
 
 # run the copied commands on both m1 and prod
@@ -1353,7 +1093,7 @@ ogrinfo Zoning.shp Zoning|less
 psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'Zoning.shp', data_date = '2024-04-02', update_date = '2024-04-02'  WHERE county = 'LAKE' and city_name = 'UNINCORPORATED'"
 
 # update dev
-update_zoning2.py lake unincorporated
+update_zoning.py lake unincorporated
 # copy the commands generated at the end of the output
 
 # grab raw_zon_lake_unincorp.backup from plato at /var/www/apps/mapwise/htdocs/x342
@@ -1382,7 +1122,7 @@ ogrinfo Zoning.shp Zoning|less
 psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET srs_epsg = 2237, shp_name = 'Zoning.shp', data_date = '2024-08-02', update_date = '2025-05-24'  WHERE county = 'LEE' and city_name = 'CAPE_CORAL'"
 
 # update dev
-update_zoning2.py lee cape_coral
+update_zoning.py lee cape_coral
 # copy the commands generated at the end of the output
 
 # grab raw_zon_lee_cape_coral.backup from plato at /var/www/apps/mapwise/htdocs/x342
@@ -1413,7 +1153,7 @@ ogrinfo Zoning.shp Zoning|less
 psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET srs_epsg = 6443, shp_name = 'Zoning.shp', data_date = '2025-05-10', update_date = '2025-05-24'  WHERE county = 'LEE' and city_name = 'FORT_MYERS'"
 
 # update dev
-update_zoning2.py lee fort_myers
+update_zoning.py lee fort_myers
 # copy the commands generated at the end of the output
 
 # grab raw_zon_lee_fort_myers.backup from plato at /var/www/apps/mapwise/htdocs/x342
@@ -1440,7 +1180,7 @@ ogrinfo Zoning.shp Zoning|less
 psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET srs_epsg = 2236, shp_name = 'Zoning.shp', data_date = '2025-05-10', update_date = '2025-05-24'  WHERE county = 'LEE' and city_name = 'UNINCORPORATED'"
 
 # update dev
-update_zoning2.py lee unincorporated
+update_zoning.py lee unincorporated
 # copy the commands generated at the end of the output
 
 # grab raw_zon_lee_unincorp.backup from plato at /var/www/apps/mapwise/htdocs/x342
@@ -1470,7 +1210,7 @@ ogrinfo Zoning.shp Zoning|less
 psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'Zoning.shp', data_date = '2024-04-04', update_date = '2024-04-04'  WHERE county = 'LEON' and city_name = 'COUNTY_UNIFIED'"
 
 # update dev
-update_zoning2.py leon county_unified
+update_zoning.py leon county_unified
 # copy the commands generated at the end of the output
 
 # grab raw_zon_leon_county_unified.backup from plato at /var/www/apps/mapwise/htdocs/x342
@@ -1503,7 +1243,7 @@ ogr2ogr -explodecollections zoning_bradenton_single.shp zoning_bradenton.shp
 psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET srs_epsg = 4326, shp_name = 'zoning_bradenton_single.shp', data_date = '2025-05-24', update_date = '2025-05-24'  WHERE county = 'MANATEE' and city_name = 'BRADENTON'"
 
 # update dev
-update_zoning2.py manatee bradenton
+update_zoning.py manatee bradenton
 # copy the commands generated at the end of the output
 
 # grab raw_zon_manatee_bradenton.backup from plato at /var/www/apps/mapwise/htdocs/x342
@@ -1528,7 +1268,7 @@ ogrinfo Zoning.shp Zoning|less
 psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET srs_epsg = 3857, shp_name = 'Zoning.shp', data_date = '2025-01-28', update_date = '2025-05-24'  WHERE county = 'MANATEE' and city_name = 'UNINCORPORATED'"
 
 # update dev
-update_zoning2.py manatee unincorporated
+update_zoning.py manatee unincorporated
 # copy the commands generated at the end of the output
 
 # grab raw_zon_manatee_unincorp.backup from plato at /var/www/apps/mapwise/htdocs/x342
@@ -1574,9 +1314,6 @@ update_zoning2.py marion ocala
 # go to working directory
 cd /srv/datascrub/08_Land_Use_and_Zoning/zoning/florida/county/marion/current/source_data/unincorporated
 
-# run to grab data
-ags_extract_data2.py zoning_marion delete 15
-
 # run if file info needed
 ogrinfo zoning_marion.shp zoning_marion|less
 
@@ -1584,10 +1321,10 @@ ogrinfo zoning_marion.shp zoning_marion|less
 ogr2ogr -explodecollections zoning_marion_single.shp zoning_marion.shp
 
 # update table (ensure parameters are correct)
-psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET srs_epsg = 4326, shp_name = 'zoning_marion_single.shp', data_date = '2025-05-26', update_date = '2025-05-26'  WHERE county = 'MARION' and city_name = 'UNINCORPORATED'"
+psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'zoning_marion_single.shp', data_date = '2024-04-02', update_date = '2024-04-02'  WHERE county = 'MARION' and city_name = 'UNINCORPORATED'"
 
 # update dev
-update_zoning2.py marion unincorporated
+update_zoning.py marion unincorporated
 # copy the commands generated at the end of the output
 
 # grab raw_zon_marion_unincorp.backup from plato at /var/www/apps/mapwise/htdocs/x342
@@ -1622,7 +1359,7 @@ ogrinfo zoning_stuart.shp zoning_stuart|less
 psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'zoning_stuart.shp', data_date = '2024-04-04', update_date = '2024-04-04'  WHERE county = 'MARTIN' and city_name = 'STUART'"
 
 # update dev
-update_zoning2.py martin stuart
+update_zoning.py martin stuart
 # copy the commands generated at the end of the output
 
 # grab raw_zon_martin_stuart.backup from plato at /var/www/apps/mapwise/htdocs/x342
@@ -1654,7 +1391,7 @@ ogrinfo Zoning.shp Zoning|less
 psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'Zoning.shp', data_date = '2024-03-31', update_date = '2024-04-04'  WHERE county = 'MARTIN' and city_name = 'UNINCORPORATED'"
 
 # update dev
-update_zoning2.py martin unincorporated
+update_zoning.py martin unincorporated
 # copy the commands generated at the end of the output
 
 # grab raw_zon_martin_unincorp.backup from plato at /var/www/apps/mapwise/htdocs/x342
@@ -1681,7 +1418,7 @@ ogrinfo zoning_miami-dade_incorporated.shp zoning_miami-dade_incorporated|less
 psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'zoning_miami-dade_incorporated.shp', data_date = '2024-04-02', update_date = '2024-04-04'  WHERE county = 'MIAMI-DADE' and city_name = 'INCORPORATED'"
 
 # update dev
-update_zoning2.py miami-dade incorporated
+update_zoning.py miami-dade incorporated
 # copy the commands generated at the end of the output
 
 # grab raw_zon_miami-dade_incorporated.backup from plato at /var/www/apps/mapwise/htdocs/x342
@@ -1708,7 +1445,7 @@ ogrinfo County_Zoning.shp County_Zoning|less
 psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET srs_epsg = 3857, shp_name = 'County_Zoning.shp', data_date = '2025-04-18', update_date = '2025-05-23'  WHERE county = 'MIAMI-DADE' and city_name = 'UNINCORPORATED';"
 
 # update dev
-update_zoning2.py miami-dade unincorporated
+update_zoning.py miami-dade unincorporated
 # copy the commands generated at the end of the output
 
 # grab raw_zon_miami-dade_unincorp.backup from plato at /var/www/apps/mapwise/htdocs/x342
@@ -1738,7 +1475,7 @@ ogrinfo zoning_nassau.shp zoning_nassau|less
 psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'zoning_nassau.shp', data_date = '2024-04-02', update_date = '2024-04-04'  WHERE county = 'NASSAU' and city_name = 'UNINCORPORATED'"
 
 # update dev
-update_zoning2.py nassau unincorporated
+update_zoning.py nassau unincorporated
 # copy the commands generated at the end of the output
 
 # grab raw_zon_nassau_unincorp.backup from plato at /var/www/apps/mapwise/htdocs/x342
@@ -1771,7 +1508,7 @@ ogrinfo zngpy.shp zngpy|less
 psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'zngpy.shp', data_date = '2024-03-31', update_date = '2024-04-04'  WHERE county = 'OKALOOSA' and city_name = 'UNINCORPORATED'"
 
 # update dev
-update_zoning2.py okaloosa unincorporated
+update_zoning.py okaloosa unincorporated
 # copy the commands generated at the end of the output
 
 # grab raw_zon_okaloosa_unincorp.backup from plato at /var/www/apps/mapwise/htdocs/x342
@@ -1803,7 +1540,7 @@ ogrinfo zoning_apopka.shp zoning_apopka|less
 psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'zoning_apopka.shp', data_date = '2025-04-30', update_date = '2025-05-17'  WHERE county = 'ORANGE' and city_name = 'APOPKA'"
 
 # update dev
-update_zoning2.py orange apopka
+update_zoning.py orange apopka
 # copy the commands generated at the end of the output
 
 # grab raw_zon_orange_apopka.backup from plato at /var/www/apps/mapwise/htdocs/x342
@@ -1828,7 +1565,7 @@ ogrinfo Eatonville_Zoning.shp Eatonville_Zoning|less
 psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'Eatonville_Zoning.shp', data_date = '2024-01-04', update_date = '2025-05-09'  WHERE county = 'ORANGE' and city_name = 'EATONVILLE'"
 
 # update dev
-update_zoning2.py orange eatonville
+update_zoning.py orange eatonville
 # copy the commands generated at the end of the output
 
 # grab raw_zon_orange_eatonville.backup from plato at /var/www/apps/mapwise/htdocs/x342
@@ -1856,7 +1593,7 @@ ogrinfo zoning_ocoee.shp zoning_ocoee|less
 psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'zoning_ocoee.shp', data_date = '2024-04-02', update_date = '2024-04-04'  WHERE county = 'ORANGE' and city_name = 'OCOEE'"
 
 # update dev
-update_zoning2.py orange ocoee
+update_zoning.py orange ocoee
 # copy the commands generated at the end of the output
 
 # grab raw_zon_orange_ocoee.backup from plato at /var/www/apps/mapwise/htdocs/x342
@@ -1881,7 +1618,7 @@ ogrinfo Orlando_Zoning.shp Orlando_Zoning|less
 psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'Orlando_Zoning.shp', data_date = 'YYYY-MM-DD', update_date = 'YYYY-MM-DD'  WHERE county = 'ORANGE' and city_name = 'ORLANDO'"
 
 # update dev
-update_zoning2.py orange orlando
+update_zoning.py orange orlando
 # copy the commands generated at the end of the output
 
 # grab raw_zon_orange_orlando.backup from plato at /var/www/apps/mapwise/htdocs/x342
@@ -1908,7 +1645,7 @@ ogrinfo Orange_County_Zoning.shp Orange_County_Zoning|less
 psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'Orange_County_Zoning.shp', data_date = 'YYYY-MM-DD', update_date = 'YYYY-MM-DD'  WHERE county = 'ORANGE' and city_name = 'UNINCORPORATED'"
 
 # update dev
-update_zoning2.py orange unincorporated
+update_zoning.py orange unincorporated
 # copy the commands generated at the end of the output
 
 # grab raw_zon_orange_unincorp.backup from plato at /var/www/apps/mapwise/htdocs/x342
@@ -1941,7 +1678,7 @@ ogr2ogr -explodecollections zoning_kissimmee_single.shp zoning_kissimmee.shp
 psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET srs_epsg = 4326, shp_name = 'zoning_kissimmee_single.shp', data_date = '2025-05-25', update_date = '2025-05-25'  WHERE county = 'OSCEOLA' and city_name = 'KISSIMMEE'"
 
 # update dev
-update_zoning2.py osceola kissimmee
+update_zoning.py osceola kissimmee
 # copy the commands generated at the end of the output
 
 # grab raw_zon_osceola_kissimmee.backup from plato at /var/www/apps/mapwise/htdocs/x342
@@ -1967,7 +1704,7 @@ ogrinfo zoning_st_cloud.shp zoning_st_cloud|less
 psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET temp_table_name = 'raw_osceola_st_cloud', srs_epsg = 4326, shp_name = 'zoning_st_cloud.shp', data_date = '2025-05-25', update_date = '2025-05-25'  WHERE county = 'OSCEOLA' and city_name = 'ST_CLOUD'"
 
 # update dev
-update_zoning2.py osceola st_cloud
+update_zoning.py osceola st_cloud
 # copy the commands generated at the end of the output
 
 # grab raw_zon_osceola_st_cloud.backup from plato at /var/www/apps/mapwise/htdocs/x342
@@ -2023,7 +1760,7 @@ ogrinfo Zoning_single.shp Zoning_single|less
 psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'Zoning_single.shp', data_date = '2025-02-12', update_date = '2025-05-11'  WHERE county = 'PALM_BEACH' and city_name = 'COUNTY_UNIFIED'"
 
 # update dev
-update_zoning2.py palm_beach county_unified
+update_zoning.py palm_beach county_unified
 # copy the commands generated at the end of the output
 
 # grab raw_zon_palm_beach_county_unified.backup from plato at /var/www/apps/mapwise/htdocs/x342
@@ -2035,7 +1772,7 @@ update_zoning2.py palm_beach county_unified
 
 # Note: 3/31/2024 - Remove UNINCORPORATED and replace with COUNTY_UNIFIED
 # psql -d gisdev -U postgres -c "DELETE FROM zoning WHERE county = 'PALM_BEACH' and city_name = 'UNINCORPORATED'"
-#update_zoning2.py palm_beach unincorporated
+#update_zoning.py palm_beach unincorporated
 ```
 
 ### Pasco
@@ -2060,7 +1797,7 @@ ogrinfo zoning_pasco_unincorporated.shp zoning_pasco_unincorporated|less
 psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET srs_epsg = 4326, shp_name = 'zoning_pasco_unincorporated.shp', data_date = '2025-05-24', update_date = '2025-05-24'  WHERE county = 'PASCO' and city_name = 'UNINCORPORATED'"
 
 # update dev
-update_zoning2.py pasco unincorporated
+update_zoning.py pasco unincorporated
 # copy the commands generated at the end of the output
 
 # grab raw_zon_pasco_unincorp.backup from plato at /var/www/apps/mapwise/htdocs/x342
@@ -2099,7 +1836,7 @@ ogrinfo Belleair_Zoning_PPC.shp Belleair_Zoning_PPC|less
 psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'Belleair_Zoning_PPC.shp', data_date = '2024-03-19', update_date = '2025-05-22'  WHERE county = 'PINELLAS' and city_name = 'BELLEAIR';"
 
 # update dev
-update_zoning2.py pinellas belleair
+update_zoning.py pinellas belleair
 # copy the commands generated at the end of the output
 
 # grab raw_zon_pinellas_belleair.backup from plato at /var/www/apps/mapwise/htdocs/x342
@@ -2125,7 +1862,7 @@ ogrinfo zoning_clearwater.shp zoning_clearwater|less
 psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'zoning_clearwater.shp', data_date = '2025-05-22', update_date = '2025-05-22'  WHERE county = 'PINELLAS' and city_name = 'CLEARWATER';"
 
 # update dev
-update_zoning2.py pinellas clearwater
+update_zoning.py pinellas clearwater
 # copy the commands generated at the end of the output
 
 # grab raw_zon_pinellas_clearwater.backup from plato at /var/www/apps/mapwise/htdocs/x342
@@ -2154,7 +1891,7 @@ ogrinfo zoning_dunedin_2882.shp zoning_dunedin_2882|less
 psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'zoning_dunedin_2882.shp', data_date = '2025-05-23', update_date = '2025-05-23'  WHERE county = 'PINELLAS' and city_name = 'DUNEDIN';"
 
 # update dev
-update_zoning2.py pinellas dunedin
+update_zoning.py pinellas dunedin
 # copy the commands generated at the end of the output
 
 # grab raw_zon_pinellas_dunedin.backup from plato at /var/www/apps/mapwise/htdocs/x342
@@ -2187,7 +1924,7 @@ ogrinfo Indian_Rocks_Beach_Zoning_PPC.shp Indian_Rocks_Beach_Zoning_PPC|less
 psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET srs_epsg = 2882, shp_name = 'Indian_Rocks_Beach_Zoning_PPC.shp', data_date = '2024-03-19', update_date = '2025-05-23'  WHERE county = 'PINELLAS' and city_name = 'INDIAN_ROCKS_BEACH';"
 
 # update dev
-update_zoning2.py pinellas indian_rocks_beach
+update_zoning.py pinellas indian_rocks_beach
 # copy the commands generated at the end of the output
 
 # grab raw_zon_pinellas_indian_rocks_beach.backup from plato at /var/www/apps/mapwise/htdocs/x342
@@ -2220,7 +1957,7 @@ ogrinfo Indian_Shores_Zoning_PPC.shp Indian_Shores_Zoning_PPC|less
 psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET srs_epsg = 2882, shp_name = 'Indian_Shores_Zoning_PPC.shp', data_date = '2025-05-07', update_date = '2025-05-23'  WHERE county = 'PINELLAS' and city_name = 'INDIAN_SHORES';"
 
 # update dev
-update_zoning2.py pinellas indian_shores
+update_zoning.py pinellas indian_shores
 # copy the commands generated at the end of the output
 
 # grab raw_zon_pinellas_indian_shores.backup from plato at /var/www/apps/mapwise/htdocs/x342
@@ -2253,7 +1990,7 @@ ogrinfo Kenneth_City_Zoning_PPC.shp Kenneth_City_Zoning_PPC|less
 psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET srs_epsg = 2882, shp_name = 'Kenneth_City_Zoning_PPC.shp', data_date = '2024-06-19', update_date = '2025-05-23'  WHERE county = 'PINELLAS' and city_name = 'KENNETH_CITY';"
 
 # update dev
-update_zoning2.py pinellas kenneth_city
+update_zoning.py pinellas kenneth_city
 # copy the commands generated at the end of the output
 
 # grab raw_zon_pinellas_kenneth_city.backup from plato at /var/www/apps/mapwise/htdocs/x342
@@ -2286,7 +2023,7 @@ ogrinfo Madeira_Beach_Zoning_PPC.shp Madeira_Beach_Zoning_PPC|less
 psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET srs_epsg = 2882, shp_name = 'Madeira_Beach_Zoning_PPC.shp', data_date = '2024-06-19', update_date = '2025-05-23'  WHERE county = 'PINELLAS' and city_name = 'MADEIRA_BEACH';"
 
 # update dev
-update_zoning2.py pinellas madeira_beach
+update_zoning.py pinellas madeira_beach
 # copy the commands generated at the end of the output
 
 # grab raw_zon_pinellas_madeira_beach.backup from plato at /var/www/apps/mapwise/htdocs/x342
@@ -2309,7 +2046,7 @@ ogrinfo zoning_north_redington_beach.shp zoning_north_redington_beach|less
 psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'zoning_north_redington_beach.shp', data_date = '2024-04-02', update_date = '2024-04-04'  WHERE county = 'PINELLAS' and city_name = 'NORTH_REDINGTON_BEACH'"
 
 # update dev
-update_zoning2.py pinellas north_redington_beach
+update_zoning.py pinellas north_redington_beach
 # copy the commands generated at the end of the output
 
 # grab raw_zon_pinellas_north_redington_beach.backup from plato at /var/www/apps/mapwise/htdocs/x342
@@ -2342,7 +2079,7 @@ ogrinfo zoning_pinellas_park_2882.shp zoning_pinellas_park_2882|less
 psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'zoning_pinellas_park_2882.shp', data_date = '2024-04-02', update_date = '2024-04-04'  WHERE county = 'PINELLAS' and city_name = 'PINELLAS_PARK'"
 
 # update dev
-update_zoning2.py pinellas pinellas_park
+update_zoning.py pinellas pinellas_park
 # copy the commands generated at the end of the output
 
 # grab raw_zon_pinellas_pinellas_park.backup from plato at /var/www/apps/mapwise/htdocs/x342
@@ -2375,7 +2112,7 @@ ogrinfo Redington_Shores_Zoning_PPC.shp Redington_Shores_Zoning_PPC|less
 psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET srs_epsg = 2882, shp_name = 'Redington_Shores_Zoning_PPC.shp', data_date = '2024-06-19', update_date = '2025-05-23'  WHERE county = 'PINELLAS' and city_name = 'REDINGTON_SHORES';"
 
 # update dev
-update_zoning2.py pinellas redington_shores
+update_zoning.py pinellas redington_shores
 # copy the commands generated at the end of the output
 
 # grab raw_zon_pinellas_redington_shores.backup from plato at /var/www/apps/mapwise/htdocs/x342
@@ -2409,7 +2146,7 @@ ogrinfo Seminole_Zoning_PPC.shp Seminole_Zoning_PPC|less
 psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET srs_epsg = 2882, shp_name = 'Seminole_Zoning_PPC.shp', data_date = '2024-10-09', update_date = '2025-05-23'  WHERE county = 'PINELLAS' and city_name = 'SEMINOLE'"
 
 # update dev
-update_zoning2.py pinellas seminole
+update_zoning.py pinellas seminole
 # copy the commands generated at the end of the output
 
 # grab raw_zon_pinellas_seminole.backup from plato at /var/www/apps/mapwise/htdocs/x342
@@ -2442,7 +2179,7 @@ ogrinfo South_Pasadena_Zoning_PPC.shp South_Pasadena_Zoning_PPC|less
 psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET srs_epsg = 2882, shp_name = 'South_Pasadena_Zoning_PPC.shp', data_date = '2024-08-13', update_date = '2025-05-23'  WHERE county = 'PINELLAS' and city_name = 'SOUTH_PASADENA';"
 
 # update dev
-update_zoning2.py pinellas south_pasadena
+update_zoning.py pinellas south_pasadena
 # copy the commands generated at the end of the output
 
 # grab raw_zon_pinellas_south_pasadena.backup from plato at /var/www/apps/mapwise/htdocs/x342
@@ -2470,7 +2207,7 @@ ogrinfo Zoning_Districts.shp Zoning_Districts|less
 psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET srs_epsg = 2882, shp_name = 'Zoning_Districts.shp', data_date = '2024-11-13', update_date = '2025-05-23'  WHERE county = 'PINELLAS' and city_name = 'ST_PETERSBURG'"
 
 # update dev
-update_zoning2.py pinellas st_petersburg
+update_zoning.py pinellas st_petersburg
 # copy the commands generated at the end of the output
 
 # grab raw_zon_pinellas_st_petersburg.backup from plato at /var/www/apps/mapwise/htdocs/x342
@@ -2503,7 +2240,7 @@ ogrinfo Treasure_Island_Zoning_PPC.shp Treasure_Island_Zoning_PPC|less
 psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET srs_epsg = 2882, shp_name = 'Treasure_Island_Zoning_PPC.shp', data_date = '2024-06-12', update_date = '2025-05-23'  WHERE county = 'PINELLAS' and city_name = 'TREASURE_ISLAND'"
 
 # update dev
-update_zoning2.py pinellas treasure_island
+update_zoning.py pinellas treasure_island
 # copy the commands generated at the end of the output
 
 # grab raw_zon_pinellas_treasure_island.backup from plato at /var/www/apps/mapwise/htdocs/x342
@@ -2536,7 +2273,7 @@ ogrinfo Zoning_Unincorporated.shp Zoning_Unincorporated|less
 psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET srs_epsg = 2882, shp_name = 'Zoning_Unincorporated.shp', data_date = '2025-01-28', update_date = '2024-04-04'  WHERE county = 'PINELLAS' and city_name = 'UNINCORPORATED'"
 
 # update dev
-update_zoning2.py pinellas unincorporated
+update_zoning.py pinellas unincorporated
 # copy the commands generated at the end of the output
 
 # grab raw_zon_pinellas_unincorp.backup from plato at /var/www/apps/mapwise/htdocs/x342
@@ -2571,7 +2308,7 @@ ogrinfo Zoning.shp Zoning|less
 psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET srs_epsg = 2237, shp_name = 'Zoning.shp', data_date = '2025-05-12', update_date = '2025-05-24'  WHERE county = 'POLK' and city_name = 'LAKELAND'"
 
 # update dev
-update_zoning2.py polk lakeland
+update_zoning.py polk lakeland
 # copy the commands generated at the end of the output
 
 # grab raw_zon_polk_lakeland.backup from plato at /var/www/apps/mapwise/htdocs/x342
@@ -2592,7 +2329,7 @@ ogrinfo dea7bacb-e26f-4777-a3c5-644d3c25be8e202045-1-vhh0md.mldaj.shp dea7bacb-e
 
 # process data
 ogr2ogr -explodecollections zoning_single.shp dea7bacb-e26f-4777-a3c5-644d3c25be8e202045-1-vhh0md.mldaj.shp 
-update_zoning2.py polk lakeland
+update_zoning.py polk lakeland
 
 ```
 
@@ -2612,7 +2349,7 @@ ogrinfo zoning_putnam_unincorporated.shp zoning_putnam_unincorporated|less
 psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'zoning_putnam_unincorporated.shp', data_date = '2024-04-02', update_date = '2024-04-04'  WHERE county = 'PUTNAM' and city_name = 'UNINCORPORATED'"
 
 # update dev
-update_zoning2.py putnam unincorporated
+update_zoning.py putnam unincorporated
 # copy the commands generated at the end of the output
 
 # grab raw_zon_putnam_unincorp.backup from plato at /var/www/apps/mapwise/htdocs/x342
@@ -2648,7 +2385,7 @@ ogrinfo Zoning.shp Zoning|less
 psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'Zoning.shp', data_date = '2024-03-11', update_date = '2024-04-04'  WHERE county = 'SANTA_ROSA' and city_name = 'UNINCORPORATED'"
 
 # update dev
-update_zoning2.py santa_rosa unincorporated
+update_zoning.py santa_rosa unincorporated
 # copy the commands generated at the end of the output
 
 # grab raw_zon_santa_rosa_unincorp.backup from plato at /var/www/apps/mapwise/htdocs/x342
@@ -2681,7 +2418,7 @@ zip zoning_north_port zoning_north_port.*
 psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'zoning_north_port.shp', srs_epsg = '4326', data_date = '2024-10-28', update_date = '2025-04-16'  WHERE county = 'SARASOTA' and city_name = 'NORTH_PORT'"
 
 # update dev
-update_zoning2.py sarasota north_port
+update_zoning.py sarasota north_port
 # copy the commands generated at the end of the output
 
 # grab raw_zon_sarasota_north_port.backup from plato at /var/www/apps/mapwise/htdocs/x342
@@ -2712,7 +2449,7 @@ ogrinfo Zoning_Districts.shp Zoning_Districts|less
 psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'Zoning_Districts.shp', data_date = '2025-04-01', update_date = '2025-01-01', srs_epsg = '2882'  WHERE county = 'SARASOTA' and city_name = 'SARASOTA'"
 
 # update dev
-update_zoning2.py sarasota sarasota
+update_zoning.py sarasota sarasota
 # copy the commands generated at the end of the output
 
 # grab raw_zon_sarasota_sarasota.backup from plato at /var/www/apps/mapwise/htdocs/x342
@@ -2755,7 +2492,7 @@ ogr2ogr zoning_venice_dissolve.shp zoning_venice.shp -dialect sqlite -sql "SELEC
 psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'zoning_venice_dissolve.shp', data_date = '2025-05-01', update_date = '2025-05-01', srs_epsg = '4326'  WHERE county = 'SARASOTA' and city_name = 'VENICE'"
 
 # update dev
-update_zoning2.py sarasota venice
+update_zoning.py sarasota venice
 # copy the commands generated at the end of the output
 
 # grab raw_zon_sarasota_venice.backup from plato at /var/www/apps/mapwise/htdocs/x342
@@ -2787,7 +2524,7 @@ ogrinfo CountyZoning.shp CountyZoning|less
 psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'CountyZoning.shp', data_date = '2025-04-21', update_date = '2025-05-01', srs_epsg = '2882'  WHERE county = 'SARASOTA' and city_name = 'UNINCORPORATED'"
 
 # update dev
-update_zoning2.py sarasota unincorporated
+update_zoning.py sarasota unincorporated
 # copy the commands generated at the end of the output
 
 # grab raw_zon_sarasota_unincorp.backup from plato at /var/www/apps/mapwise/htdocs/x342
@@ -2820,7 +2557,7 @@ ogr2ogr -explodecollections -select "ZONING" Zoning_single.shp Zoning.shp
 psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET srs_epsg = 2236, shp_name = 'Zoning_single.shp', data_date = '2024-12-18', update_date = '2025-05-24'  WHERE county = 'SEMINOLE' and city_name = 'ALTAMONTE_SPRINGS'"
 
 # update dev
-update_zoning2.py seminole altamonte_springs
+update_zoning.py seminole altamonte_springs
 # copy the commands generated at the end of the output
 
 # grab raw_zon_seminole_altamonte_springs.backup from plato at /var/www/apps/mapwise/htdocs/x342
@@ -2846,7 +2583,7 @@ ogrinfo zoning_casselberry.shp zoning_casselberry|less
 psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET srs_epsg = 4326, shp_name = 'zoning_casselberry.shp', data_date = '2025-05-25', update_date = '2025-05-25'  WHERE county = 'SEMINOLE' and city_name = 'CASSELBERRY'"
 
 # update dev
-update_zoning2.py seminole casselberry
+update_zoning.py seminole casselberry
 # copy the commands generated at the end of the output
 
 # grab raw_zon_seminole_casselberry.backup from plato at /var/www/apps/mapwise/htdocs/x342
@@ -2872,7 +2609,7 @@ ogrinfo zoning_lake_mary.shp zoning_lake_mary|less
 psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET srs_epsg = 4326, shp_name = 'zoning_lake_mary.shp', data_date = '2025-05-25', update_date = '2025-05-25'  WHERE county = 'SEMINOLE' and city_name = 'LAKE_MARY'"
 
 # update dev
-update_zoning2.py seminole lake_mary
+update_zoning.py seminole lake_mary
 # copy the commands generated at the end of the output
 
 # grab raw_zon_seminole_lake_mary.backup from plato at /var/www/apps/mapwise/htdocs/x342
@@ -2898,7 +2635,7 @@ ogrinfo zoning_longwood.shp zoning_longwood|less
 psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'zoning_longwood.shp', data_date = '2024-04-02', update_date = '2024-04-02'  WHERE county = 'SEMINOLE' and city_name = 'LONGWOOD'"
 
 # update dev
-update_zoning2.py seminole longwood
+update_zoning.py seminole longwood
 # copy the commands generated at the end of the output
 
 # grab raw_zon_seminole_longwood.backup from plato at /var/www/apps/mapwise/htdocs/x342
@@ -2924,7 +2661,7 @@ ogrinfo zoning_oviedo.shp zoning_oviedo|less
 psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET srs_epsg = 4326, shp_name = 'zoning_oviedo.shp', data_date = '2025-05-25', update_date = '2025-05-25'  WHERE county = 'SEMINOLE' and city_name = 'OVIEDO'"
 
 # update dev
-update_zoning2.py seminole oviedo
+update_zoning.py seminole oviedo
 # copy the commands generated at the end of the output
 
 # grab raw_zon_seminole_oviedo.backup from plato at /var/www/apps/mapwise/htdocs/x342
@@ -2950,7 +2687,7 @@ ogrinfo zoning_sanford.shp zoning_sanford|less
 psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET srs_epsg = 4326, shp_name = 'zoning_sanford.shp', data_date = '2025-05-25', update_date = '2025-05-25'  WHERE county = 'SEMINOLE' and city_name = 'SANFORD'"
 
 # update dev
-update_zoning2.py seminole sanford
+update_zoning.py seminole sanford
 # copy the commands generated at the end of the output
 
 # grab raw_zon_seminole_sanford.backup from plato at /var/www/apps/mapwise/htdocs/x342
@@ -2976,7 +2713,7 @@ ogrinfo zoning_winter_springs.shp zoning_winter_springs|less
 psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET srs_epsg = 4326, shp_name = 'zoning_winter_springs.shp', data_date = '2025-05-25', update_date = '2025-05-25'  WHERE county = 'SEMINOLE' and city_name = 'WINTER_SPRINGS'"
 
 # update dev
-update_zoning2.py seminole winter_springs
+update_zoning.py seminole winter_springs
 # copy the commands generated at the end of the output
 
 # grab raw_zon_seminole_winter_springs.backup from plato at /var/www/apps/mapwise/htdocs/x342
@@ -3001,7 +2738,7 @@ ogr2ogr -explodecollections -select "ZONING, ORDINANCE" Zoning_single.shp LandUs
 
 psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'Zoning_single.shp', data_date = '2024-03-19', update_date = '2024-04-02'  WHERE county = 'SEMINOLE' and city_name = 'UNINCORPORATED'"
 
-update_zoning2.py seminole unincorporated
+update_zoning.py seminole unincorporated
 
 ```
 
@@ -3022,7 +2759,7 @@ ogrinfo Zoning.shp Zoning|less
 
 psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'Zoning.shp', data_date = '2024-03-16', update_date = '2024-04-02'  WHERE county = 'ST_JOHNS' and city_name = 'UNINCORPORATED'"
 
-update_zoning2.py st_johns unincorporated
+update_zoning.py st_johns unincorporated
 
 ```
 
@@ -3043,7 +2780,7 @@ ogrinfo zoning_port_st_lucie.shp zoning_port_st_lucie|less
 
 psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'zoning_port_st_lucie.shp', data_date = '2024-04-03', update_date = '2024-04-02'  WHERE county = 'ST_LUCIE' and city_name = 'PORT_ST_LUCIE'"
 
-update_zoning2.py st_lucie port_st_lucie
+update_zoning.py st_lucie port_st_lucie
 
 #------------------------
 # unincorporated
@@ -3059,7 +2796,7 @@ ogrinfo Zoning.shp Zoning|less
 
 psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'Zoning.shp', data_date = '2024-03-13', update_date = '2024-04-02'  WHERE county = 'ST_LUCIE' and city_name = 'UNINCORPORATED'"
 
-update_zoning2.py st_lucie unincorporated
+update_zoning.py st_lucie unincorporated
 ```
 
 ### Sumter
@@ -3079,7 +2816,7 @@ ogrinfo zoning_sumter.shp zoning_sumter|less
 
 psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'zoning_sumter.shp', data_date = '2024-04-04', update_date = '2024-04-04'  WHERE county = 'SUMTER' and city_name = 'UNINCORPORATED'"
 
-update_zoning2.py sumter unincorporated
+update_zoning.py sumter unincorporated
 
 ```
 
@@ -3103,7 +2840,7 @@ ogrinfo Countywide_Zoning.shp Countywide_Zoning|less
 psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET temp_table_name = 'raw_volusia_countywide', zon_code_col = 'genl_zcode', srs_epsg = 2881, shp_name = 'Countywide_Zoning.shp', data_date = '2025-03-26', update_date = '2025-05-24'  WHERE county = 'VOLUSIA' and city_name = 'COUNTYWIDE';"
 
 # update dev
-update_zoning2.py volusia countywide
+update_zoning.py volusia countywide
 # copy the commands generated at the end of the output
 
 # grab raw_zon_volusia_countywide.backup from plato at /var/www/apps/mapwise/htdocs/x342
@@ -3127,7 +2864,7 @@ ogrinfo New_Zoning.shp New_Zoning|less
 
 psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'New_Zoning.shp', data_date = '2024-02-08', update_date = '2024-04-01'  WHERE county = 'VOLUSIA' and city_name = 'DAYTONA_BEACH'"
 
-update_zoning2.py volusia daytona_beach
+update_zoning.py volusia daytona_beach
 
 #------------------------
 # port_orange
@@ -3143,7 +2880,7 @@ ogrinfo zoning_port_orange.shp zoning_port_orange|less
 
 psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'zoning_port_orange.shp', data_date = '2024-04-01', update_date = '2024-04-01'  WHERE county = 'VOLUSIA' and city_name = 'PORT_ORANGE'"
 
-update_zoning2.py volusia port_orange
+update_zoning.py volusia port_orange
 
 #------------------------
 # unincorporated
@@ -3158,7 +2895,7 @@ ogrinfo Zoning.shp Zoning|less
 
 psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'Zoning.shp', data_date = '2024-03-28', update_date = '2024-04-01'  WHERE county = 'VOLUSIA' and city_name = 'UNINCORPORATED'"
 
-update_zoning2.py volusia unincorporated
+update_zoning.py volusia unincorporated
 
 ```
 
@@ -3181,7 +2918,7 @@ ogrinfo zoning_walton.shp zoning_walton|less
 psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'zoning_walton.shp', data_date = '2025-04-27', update_date = '2025-05-01', srs_epsg = '4236'  WHERE county = 'WALTON' and city_name = 'UNINCORPORATED'"
 
 # update dev
-update_zoning2.py walton unincorporated
+update_zoning.py walton unincorporated
 # copy the commands generated at the end of the output
 
 # grab raw_zon_walton_unincorp.backup from plato at /var/www/apps/mapwise/htdocs/x342
