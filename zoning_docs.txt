@@ -1052,6 +1052,32 @@ update_zoning2.py indian_river unincorporated
 
 ```bash
 #------------------------
+# astatula
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/zoning/florida/county/lake/current/source_data/astatula
+
+# run to grab data
+ags_extract_data2.py zoning_astatula delete 15
+
+# run if file info needed
+ogrinfo zoning_astatula.shp zoning_astatula|less
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET zon_code_col = 'ZoningCode', srs_epsg = 4326, shp_name = 'zoning_astatula.shp', data_date = '2025-05-27', update_date = '2025-05-27'  WHERE county = 'LAKE' and city_name = 'ASTATULA'"
+
+# update dev
+update_zoning2.py lake astatula
+# copy the commands generated at the end of the output
+
+# grab raw_zon_lake_astatula.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+
+#------------------------
 # clermont
 #------------------------
 # go to working directory
@@ -1064,7 +1090,7 @@ ags_extract_data2.py zoning_clermont delete 15
 ogrinfo zoning_clermont.shp zoning_clermont|less
 
 # update table (ensure parameters are correct)
-psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'zoning_clermont.shp', data_date = '2024-04-02', update_date = '2024-04-02'  WHERE county = 'LAKE' and city_name = 'CLERMONT'"
+psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET zon_code_col = 'ZoningCode', srs_epsg = 4326, shp_name = 'zoning_clermont.shp', data_date = '2025-05-26', update_date = '2025-05-26'  WHERE county = 'LAKE' and city_name = 'CLERMONT'"
 
 # update dev
 update_zoning2.py lake clermont
@@ -1090,7 +1116,7 @@ ags_extract_data2.py zoning_fruitland_park delete 15
 ogrinfo zoning_fruitland_park.shp zoning_fruitland_park|less
 
 # update table (ensure parameters are correct)
-psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'zoning_fruitland_park.shp', data_date = '2024-04-02', update_date = '2024-04-02'  WHERE county = 'LAKE' and city_name = 'FRUITLAND_PARK'"
+psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET zon_code_col = 'ZoningCode', srs_epsg = 4326, shp_name = 'zoning_fruitland_park.shp', data_date = '2025-05-26', update_date = '2025-05-26'  WHERE county = 'LAKE' and city_name = 'FRUITLAND_PARK'"
 
 # update dev
 update_zoning2.py lake fruitland_park
@@ -1116,7 +1142,7 @@ ags_extract_data2.py zoning_groveland delete 15
 ogrinfo zoning_groveland.shp zoning_groveland|less
 
 # update table (ensure parameters are correct)
-psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'zoning_groveland.shp', data_date = '2024-04-02', update_date = '2024-04-02'  WHERE county = 'LAKE' and city_name = 'GROVELAND'"
+psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET zon_code_col = 'ZoningCode', srs_epsg = 4326, shp_name = 'zoning_groveland.shp', data_date = '2025-05-26', update_date = '2025-05-26'  WHERE county = 'LAKE' and city_name = 'GROVELAND'"
 
 # update dev
 update_zoning2.py lake groveland
@@ -1142,7 +1168,7 @@ ags_extract_data2.py zoning_leesburg delete 15
 ogrinfo zoning_leesburg.shp zoning_leesburg|less
 
 # update table (ensure parameters are correct)
-psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'zoning_leesburg.shp', data_date = '2024-04-02', update_date = '2024-04-02'  WHERE county = 'LAKE' and city_name = 'LEESBURG'"
+psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET zon_code_col = 'USE_ZONE', srs_epsg = 4326, shp_name = 'zoning_leesburg.shp', data_date = '2025-05-26', update_date = '2025-05-26'  WHERE county = 'LAKE' and city_name = 'LEESBURG'"
 
 # update dev
 update_zoning2.py lake leesburg
@@ -1168,7 +1194,7 @@ ags_extract_data2.py zoning_minneola delete 15
 ogrinfo zoning_minneola.shp zoning_minneola|less
 
 # update table (ensure parameters are correct)
-psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'zoning_minneola.shp', data_date = '2024-04-02', update_date = '2024-04-02'  WHERE county = 'LAKE' and city_name = 'MINNEOLA'"
+psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET zon_code_col = 'ZoningCode', srs_epsg = 4326, shp_name = 'zoning_minneola.shp', data_date = '2025-05-26', update_date = '2025-05-26'  WHERE county = 'LAKE' and city_name = 'MINNEOLA'"
 
 # update dev
 update_zoning2.py lake minneola
@@ -1194,7 +1220,7 @@ ags_extract_data2.py zoning_mount_dora delete 15
 ogrinfo zoning_mount_dora.shp zoning_mount_dora|less
 
 # update table (ensure parameters are correct)
-psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'zoning_mount_dora.shp', data_date = '2024-04-02', update_date = '2024-04-02'  WHERE county = 'LAKE' and city_name = 'MOUNT_DORA'"
+psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET zon_code_col = 'ZoningCode', srs_epsg = 4326, shp_name = 'zoning_mount_dora.shp', data_date = '2025-05-26', update_date = '2025-05-26'  WHERE county = 'LAKE' and city_name = 'MOUNT_DORA'"
 
 # update dev
 update_zoning2.py lake mount_dora
@@ -1220,7 +1246,7 @@ ags_extract_data2.py zoning_tavares delete 15
 ogrinfo zoning_tavares.shp zoning_tavares|less
 
 # update table (ensure parameters are correct)
-psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'zoning_tavares.shp', data_date = '2024-04-02', update_date = '2024-04-02'  WHERE county = 'LAKE' and city_name = 'TAVARES'"
+psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET zon_code_col = 'ZoningCode', srs_epsg = 4326, shp_name = 'zoning_tavares.shp', data_date = '2025-05-26', update_date = '2025-05-26'  WHERE county = 'LAKE' and city_name = 'TAVARES'"
 
 # update dev
 update_zoning2.py lake tavares
@@ -1246,7 +1272,7 @@ ags_extract_data2.py zoning_umatilla delete 15
 ogrinfo zoning_umatilla.shp zoning_umatilla|less
 
 # update table (ensure parameters are correct)
-psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'zoning_umatilla.shp', data_date = '2024-04-02', update_date = '2024-04-02'  WHERE county = 'LAKE' and city_name = 'UMATILLA'"
+psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET zon_code_col = 'ZoningCode', srs_epsg = 4326, shp_name = 'zoning_umatilla.shp', data_date = '2025-05-26', update_date = '2025-05-26'  WHERE county = 'LAKE' and city_name = 'UMATILLA'"
 
 # update dev
 update_zoning2.py lake umatilla
@@ -1263,22 +1289,22 @@ update_zoning2.py lake umatilla
 # howey-in-the-hills
 #------------------------
 # go to working directory
-cd /srv/datascrub/08_Land_Use_and_Zoning/zoning/florida/county/lake/current/source_data/howey-in-the-hills
+cd /srv/datascrub/08_Land_Use_and_Zoning/zoning/florida/county/lake/current/source_data/howey_in_the_hills
 
 # run to grab data
-ags_extract_data2.py zoning_howey-in-the-hills delete 15
+ags_extract_data2.py zoning_howey_in_the_hills delete 15
 
 # run if file info needed
-ogrinfo zoning_howey-in-the-hills.shp zoning_howey-in-the-hills|less
+ogrinfo zoning_howey_in_the_hills.shp zoning_howey-in-the-hills|less
 
 # update table (ensure parameters are correct)
-psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'zoning_howey-in-the-hills.shp', data_date = '2024-04-02', update_date = '2024-04-02'  WHERE county = 'LAKE' and city_name = 'HOWEY-IN-THE-HILLS'"
+psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET zon_code_col = 'ZoningCode', srs_epsg = 4326, shp_name = 'zoning_howey_in_the_hills.shp', data_date = '2025-05-26', update_date = '2025-05-26'  WHERE county = 'LAKE' and city_name = 'HOWEY_IN_THE_HILLS';"
 
 # update dev
-update_zoning2.py lake howey-in-the-hills
+update_zoning2.py lake howey_in_the_hills
 # copy the commands generated at the end of the output
 
-# grab raw_zon_lake_howey-in-the-hills.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# grab raw_zon_lake_howey_in_the_hills.backup from plato at /var/www/apps/mapwise/htdocs/x342
 # move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
 
 # run the copied commands on both m1 and prod
@@ -1298,7 +1324,7 @@ ags_extract_data2.py zoning_mascotte delete 15
 ogrinfo zoning_mascotte.shp zoning_mascotte|less
 
 # update table (ensure parameters are correct)
-psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'zoning_mascotte.shp', data_date = '2024-04-02', update_date = '2024-04-02'  WHERE county = 'LAKE' and city_name = 'MASCOTTE'"
+psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET zon_code_col = 'ZoningCode', srs_epsg = 4326, shp_name = 'zoning_mascotte.shp', data_date = '2025-05-26', update_date = '2025-05-26'  WHERE county = 'LAKE' and city_name = 'MASCOTTE'"
 
 # update dev
 update_zoning2.py lake mascotte
@@ -1324,7 +1350,7 @@ ags_extract_data2.py zoning_montverde delete 15
 ogrinfo zoning_montverde.shp zoning_montverde|less
 
 # update table (ensure parameters are correct)
-psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'zoning_montverde.shp', data_date = '2024-04-02', update_date = '2024-04-02'  WHERE county = 'LAKE' and city_name = 'MONTVERDE'"
+psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET zon_code_col = 'ZoningCode', srs_epsg = 4326, shp_name = 'zoning_montverde.shp', data_date = '2025-05-26', update_date = '2025-05-26'  WHERE county = 'LAKE' and city_name = 'MONTVERDE'"
 
 # update dev
 update_zoning2.py lake montverde
@@ -1343,14 +1369,17 @@ update_zoning2.py lake montverde
 # go to working directory
 cd /srv/datascrub/08_Land_Use_and_Zoning/zoning/florida/county/lake/current/source_data/unincorporated
 
-# download data
-download_data.py /data/zoning/lake/unincorporated
+# OLD: download data
+# download_data.py /data/zoning/lake/unincorporated
+
+# AGS: run to grab data
+ags_extract_data2.py zoning_lake_unincorp delete 15
 
 # run if file info needed
-ogrinfo Zoning.shp Zoning|less
+ogrinfo zoning_lake_unincorp.shp zoning_lake_unincorp|less
 
 # update table (ensure parameters are correct)
-psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'Zoning.shp', data_date = '2024-04-02', update_date = '2024-04-02'  WHERE county = 'LAKE' and city_name = 'UNINCORPORATED'"
+psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET zon_code_col = 'Zoning', zon_code2_col = 'ZoningDist', zon_desc_col = 'ZoningNm', ord_num_col = 'OrdNum', srs_epsg = 4326, shp_name = 'zoning_lake_unincorp.shp', data_date = '2025-05-26', update_date = '2025-05-26'  WHERE county = 'LAKE' and city_name = 'UNINCORPORATED'"
 
 # update dev
 update_zoning2.py lake unincorporated
