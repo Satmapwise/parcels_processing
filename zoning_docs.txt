@@ -3053,6 +3053,14 @@ psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'Z
 
 update_zoning2.py st_johns unincorporated
 
+# copy the commands generated at the end of the output
+
+# grab raw_zon_st_johns_unincorp.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
 ```
 
 ### St Lucie
@@ -3074,6 +3082,15 @@ psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'z
 
 update_zoning2.py st_lucie port_st_lucie
 
+# copy the commands generated at the end of the output
+
+# grab raw_zon_st_lucie_port_st_lucie.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+
 #------------------------
 # unincorporated
 #------------------------
@@ -3089,6 +3106,15 @@ ogrinfo Zoning.shp Zoning|less
 psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'Zoning.shp', data_date = '2024-03-13', update_date = '2024-04-02'  WHERE county = 'ST_LUCIE' and city_name = 'UNINCORPORATED'"
 
 update_zoning2.py st_lucie unincorporated
+
+# copy the commands generated at the end of the output
+
+# grab raw_zon_st_lucie_unincorp.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
 ```
 
 ### Sumter
@@ -3110,6 +3136,14 @@ psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'z
 
 update_zoning2.py sumter unincorporated
 
+# copy the commands generated at the end of the output
+
+# grab raw_zon_sumter_unincorp.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
 ```
 
 ### Volusia
@@ -3158,6 +3192,15 @@ psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'N
 
 update_zoning2.py volusia daytona_beach
 
+# copy the commands generated at the end of the output
+
+# grab raw_zon_volusia_daytona_beach.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+
 #------------------------
 # port_orange
 #------------------------
@@ -3174,6 +3217,15 @@ psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'z
 
 update_zoning2.py volusia port_orange
 
+# copy the commands generated at the end of the output
+
+# grab raw_zon_volusia_port_orange.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+
 #------------------------
 # unincorporated
 #------------------------
@@ -3189,6 +3241,14 @@ psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'Z
 
 update_zoning2.py volusia unincorporated
 
+# copy the commands generated at the end of the output
+
+# grab raw_zon_volusia_unincorp.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
 ```
 
 ### Walton
