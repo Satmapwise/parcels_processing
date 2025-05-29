@@ -13,8 +13,11 @@ ags_extract_data2.py flu_alachua_city delete 15
 # run if file info needed
 ogrinfo flu_alachua_city.shp flu_alachua_city|less
 
+# explode multi_polygons and select fields
+ogr2ogr -explodecollections -select "FLU, FLU_NAME" flu_alachua_alachua_single.shp flu_alachua_city.shp
+
 # update table (ensure parameters are correct)
-psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 4326, shp_name = 'flu_alachua_city.shp', data_date = '2025-05-27', update_date = '2025-05-27'  WHERE county = 'ALACHUA' and city_name = 'ALACHUA'"
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 4326, shp_name = 'flu_alachua_alachua_single.shp', data_date = '2025-05-27', update_date = '2025-05-27'  WHERE county = 'ALACHUA' and city_name = 'ALACHUA'"
 
 # update dev
 update_flu.py alachua alachua
@@ -39,8 +42,11 @@ ags_extract_data2.py flu_archer delete 15
 # run if file info needed
 ogrinfo flu_archer.shp flu_archer|less
 
+# explode multi_polygons and select fields
+ogr2ogr -explodecollections -select "FLU, FLU_NAME" flu_alachua_archer_single.shp flu_archer.shp
+
 # update table (ensure parameters are correct)
-psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 4326, shp_name = 'flu_archer.shp', data_date = '2025-05-27', update_date = '2025-05-27'  WHERE county = 'ALACHUA' and city_name = 'ARCHER'"
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 4326, shp_name = 'flu_alachua_archer_single.shp', data_date = '2025-05-27', update_date = '2025-05-27'  WHERE county = 'ALACHUA' and city_name = 'ARCHER'"
 
 # update dev
 update_flu.py alachua archer
@@ -69,8 +75,11 @@ ags_extract_data2.py flu_gainesville delete 15
 # run if file info needed
 ogrinfo flu_gainesville.shp flu_gainesville|less
 
+# explode multi_polygons and select fields
+ogr2ogr -explodecollections -select "FLU, FLU_NAME" flu_alachua_gainesville_single.shp flu_gainesville.shp
+
 # update table (ensure parameters are correct)
-psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET shp_name = 'flu_gainesville.shp', srs_epsg = 4326, data_date = '2025-05-27', update_date = '2025-05-27'  WHERE county = 'ALACHUA' and city_name = 'GAINESVILLE'"
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET shp_name = 'flu_alachua_gainesville_single.shp', srs_epsg = 4326, data_date = '2025-05-27', update_date = '2025-05-27'  WHERE county = 'ALACHUA' and city_name = 'GAINESVILLE'"
 
 # update dev
 update_flu.py alachua gainesville
@@ -95,8 +104,11 @@ ags_extract_data2.py flu_hawthorne delete 15
 # run if file info needed
 ogrinfo flu_hawthorne.shp flu_hawthorne|less
 
+# explode multi_polygons and select fields
+ogr2ogr -explodecollections -select "FLU, FLU_NAME" flu_alachua_hawthorne_single.shp flu_hawthorne.shp
+
 # update table (ensure parameters are correct)
-psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 4326, shp_name = 'flu_hawthorne.shp', data_date = '2025-05-27', update_date = '2025-05-27'  WHERE county = 'ALACHUA' and city_name = 'HAWTHORNE'"
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 4326, shp_name = 'flu_alachua_hawthorne_single.shp', data_date = '2025-05-27', update_date = '2025-05-27'  WHERE county = 'ALACHUA' and city_name = 'HAWTHORNE'"
 
 # update dev
 update_flu.py alachua hawthorne
@@ -121,8 +133,11 @@ ags_extract_data2.py flu_high_springs delete 15
 # run if file info needed
 ogrinfo flu_high_springs.shp flu_high_springs|less
 
+# explode multi_polygons and select fields
+ogr2ogr -explodecollections -select "FLU, FLU_NAME" flu_alachua_high_springs_single.shp flu_high_springs.shp
+
 # update table (ensure parameters are correct)
-psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 4326, shp_name = 'flu_high_springs.shp', data_date = '2025-05-27', update_date = '2025-05-27'  WHERE county = 'ALACHUA' and city_name = 'HIGH_SPRINGS'"
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 4326, shp_name = 'flu_alachua_high_springs_single.shp', data_date = '2025-05-27', update_date = '2025-05-27'  WHERE county = 'ALACHUA' and city_name = 'HIGH_SPRINGS'"
 
 # update dev
 update_flu.py alachua high_springs
@@ -147,8 +162,11 @@ ags_extract_data2.py flu_lacrosse delete 15
 # run if file info needed
 ogrinfo flu_lacrosse.shp flu_lacrosse|less
 
+# explode multi_polygons and select fields
+ogr2ogr -explodecollections -select "FLU, FLU_NAME" flu_alachua_lacrosse_single.shp flu_lacrosse.shp
+
 # update table (ensure parameters are correct)
-psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 4326, shp_name = 'flu_lacrosse.shp', data_date = '2025-05-27', update_date = '2025-05-27'  WHERE county = 'ALACHUA' and city_name = 'LACROSSE'"
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 4326, shp_name = 'flu_alachua_lacrosse_single.shp', data_date = '2025-05-27', update_date = '2025-05-27'  WHERE county = 'ALACHUA' and city_name = 'LACROSSE'"
 
 # update dev
 update_flu.py alachua lacrosse
@@ -173,8 +191,11 @@ ags_extract_data2.py flu_micanopy delete 15
 # run if file info needed
 ogrinfo flu_micanopy.shp flu_micanopy|less
 
+# explode multi_polygons and select fields
+ogr2ogr -explodecollections -select "FLU, FLU_NAME" flu_micanopy_single.shp flu_micanopy.shp
+
 # update table (ensure parameters are correct)
-psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 4326, shp_name = 'flu_micanopy.shp', data_date = '2025-05-27', update_date = '2025-05-27'  WHERE county = 'ALACHUA' and city_name = 'MICANOPY'"
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 4326, shp_name = 'flu_micanopy_single.shp', data_date = '2025-05-27', update_date = '2025-05-27'  WHERE county = 'ALACHUA' and city_name = 'MICANOPY'"
 
 # update dev
 update_flu.py alachua micanopy
@@ -199,8 +220,11 @@ ags_extract_data2.py flu_newberry delete 15
 # run if file info needed
 ogrinfo flu_newberry.shp flu_newberry|less
 
+# explode multi_polygons and select fields
+ogr2ogr -explodecollections -select "FLU, FLU_NAME" flu_newberry_single.shp flu_newberry.shp
+
 # update table (ensure parameters are correct)
-psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 4326, shp_name = 'flu_newberry.shp', data_date = '2025-05-27', update_date = '2025-05-27'  WHERE county = 'ALACHUA' and city_name = 'NEWBERRY'"
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 4326, shp_name = 'flu_newberry_single.shp', data_date = '2025-05-27', update_date = '2025-05-27'  WHERE county = 'ALACHUA' and city_name = 'NEWBERRY'"
 
 # update dev
 update_flu.py alachua newberry
@@ -225,8 +249,11 @@ ags_extract_data2.py flu_alachua_unincorporated delete 15
 # run if file info needed
 ogrinfo flu_alachua_unincorporated.shp flu_alachua_unincorporated|less
 
+# explode multi_polygons and select fields
+ogr2ogr -explodecollections -select "FLU, FLU_NAME" flu_alachua_unincorporated_single.shp flu_alachua_unincorporated.shp
+
 # update table (ensure parameters are correct)
-psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 4326, shp_name = 'flu_alachua_unincorporated.shp', data_date = '2025-05-27', update_date = '2025-05-27'  WHERE county = 'ALACHUA' and city_name = 'UNINCORPORATED'"
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 4326, shp_name = 'flu_alachua_unincorporated_single.shp', data_date = '2025-05-27', update_date = '2025-05-27'  WHERE county = 'ALACHUA' and city_name = 'UNINCORPORATED'"
 
 # update dev
 update_flu.py alachua unincorporated
@@ -251,8 +278,11 @@ ags_extract_data2.py flu_waldo delete 15
 # run if file info needed
 ogrinfo flu_waldo.shp flu_waldo|less
 
+# explode multi_polygons and select fields
+ogr2ogr -explodecollections -select "FLU, FLU_NAME" flu_waldo_single.shp flu_waldo.shp
+
 # update table (ensure parameters are correct)
-psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 4326, shp_name = 'flu_waldo.shp', data_date = '2025-05-27', update_date = '2025-05-27'  WHERE county = 'ALACHUA' and city_name = 'WALDO'"
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 4326, shp_name = 'flu_waldo_single.shp', data_date = '2025-05-27', update_date = '2025-05-27'  WHERE county = 'ALACHUA' and city_name = 'WALDO'"
 
 # update dev
 update_flu.py alachua waldo
@@ -278,8 +308,11 @@ cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/baker/cu
 # run if file info needed
 ogrinfo flu_baker_unincorporated.shp flu_baker_unincorporated|less
 
+# explode multi_polygons and select fields
+ogr2ogr -explodecollections -select "FLU, FLU_NAME" flu_baker_unincorporated_single.shp flu_baker_unincorporated.shp
+
 # update table (ensure parameters are correct)
-psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET shp_name = 'flu_baker_unincorporated.shp', data_date = '2024-04-02', update_date = '2024-04-04'  WHERE county = 'BAKER' and city_name = 'UNINCORPORATED'"
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET shp_name = 'flu_baker_unincorporated_single.shp', data_date = '2024-04-02', update_date = '2024-04-04'  WHERE county = 'BAKER' and city_name = 'UNINCORPORATED'"
 
 # update dev
 update_flu.py baker unincorporated
@@ -315,7 +348,8 @@ zip_rename_date.sh FutureLandUse.zip
 ogrinfo FutureLandUse.shp Zoning|less
 
 # process data
-ogr2ogr -explodecollections FutureLandUse_single.shp FutureLandUse.shp
+# explode multi_polygons and select fields
+ogr2ogr -explodecollections -select "FLU, FLU_NAME" FutureLandUse_single.shp FutureLandUse.shp
 
 # update table (ensure parameters are correct)
 psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET shp_name = 'FutureLandUse_single.shp', data_date = '2025-05-01', update_date = '2025-05-01', srs_epsg = '2238' WHERE county = 'BAY' and city_name = 'UNINCORPORATED'"
@@ -353,8 +387,11 @@ ags_extract_data2.py flu_melbourne delete 15
 # run if file info needed
 ogrinfo flu_melbourne.shp flu_melbourne|less
 
+# explode multi_polygons and select fields
+ogr2ogr -explodecollections -select "FLU, FLU_NAME" flu_melbourne_single.shp flu_melbourne.shp
+
 # update table (ensure parameters are correct)
-psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 4326, shp_name = 'flu_melbourne.shp', data_date = '2025-05-24', update_date = '2025-05-24'  WHERE county = 'BREVARD' and city_name = 'MELBOURNE'"
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 4326, shp_name = 'flu_melbourne_single.shp', data_date = '2025-05-24', update_date = '2025-05-24'  WHERE county = 'BREVARD' and city_name = 'MELBOURNE'"
 
 # update dev
 update_flu.py brevard melbourne
@@ -379,8 +416,11 @@ cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/brevard/
 # run if file info needed
 ogrinfo FutureLandUse.shp Zoning|less
 
+# explode multi_polygons and select fields
+ogr2ogr -explodecollections -select "FLU, FLU_NAME" FutureLandUse_single.shp FutureLandUse.shp
+
 # update table (ensure parameters are correct)
-psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 2881, shp_name = 'FutureLandUse.shp', data_date = '2024-03-30', update_date = '2025-05-24'  WHERE county = 'BREVARD' and city_name = 'PALM_BAY'"
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 2881, shp_name = 'FutureLandUse_single.shp', data_date = '2024-03-30', update_date = '2025-05-24'  WHERE county = 'BREVARD' and city_name = 'PALM_BAY'"
 
 # update dev
 update_flu.py brevard palm_bay
@@ -405,8 +445,11 @@ cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/brevard/
 # run if file info needed
 ogrinfo FutureLandUse.shp Zoning|less
 
+# explode multi_polygons and select fields
+ogr2ogr -explodecollections -select "FLU, FLU_NAME" FutureLandUse_single.shp FutureLandUse.shp
+
 # update table (ensure parameters are correct)
-psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET shp_name = 'FutureLandUse.shp', data_date = '2024-02-21', update_date = '2024-04-01'  WHERE county = 'BREVARD' and city_name = 'TITUSVILLE'"
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET shp_name = 'FutureLandUse_single.shp', data_date = '2024-02-21', update_date = '2024-04-01'  WHERE county = 'BREVARD' and city_name = 'TITUSVILLE'"
 
 # update dev
 update_flu.py brevard titusville
@@ -431,8 +474,11 @@ ags_extract_data2.py flu_brevard delete 15
 # run if file info needed
 ogrinfo flu_brevard.shp flu_brevard|less
 
+# explode multi_polygons and select fields
+ogr2ogr -explodecollections -select "FLU, FLU_NAME" flu_brevard_single.shp flu_brevard.shp
+
 # update table (ensure parameters are correct)
-psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 4326, shp_name = 'flu_brevard.shp', data_date = '2025-05-24', update_date = '2025-05-24'  WHERE county = 'BREVARD' and city_name = 'UNINCORPORATED'"
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 4326, shp_name = 'flu_brevard_single.shp', data_date = '2025-05-24', update_date = '2025-05-24'  WHERE county = 'BREVARD' and city_name = 'UNINCORPORATED'"
 
 # update dev
 update_flu.py brevard unincorporated
@@ -453,30 +499,25 @@ update_flu.py brevard unincorporated
 # broward unified
 #------------------------
 # go to working directory
-cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/broward/current/source_data/county_unified
+cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/broward/current/source_data/unified
 
 # run to grab data
-ags_extract_data2.py flu_broward delete 15
-
-# Note: old method was:
-# ags_extract_data2.py flu_broward_cnty delete 15
+ags_extract_data2.py flu_broward_unified delete 15
 
 # run if file info needed
-ogrinfo flu_broward.shp flu_broward|less
+ogrinfo flu_broward_unified.shp flu_broward_unified|less
 
-# process data - project and explode
-# Note: project it because lat/long doesn't play well 
-# Note: explode it but multi-polygons don't play well
-ogr2ogr -explodecollections -t_srs "EPSG:2881" -select "ZONING, ZONE_NAME" zoning_broward_single_2881.shp flu_broward.shp
+# explode any multi_polygons
+ogr2ogr -explodecollections -select "FLU, FLU_NAME" flu_broward_single.shp flu_broward_unified.shp
 
 # update table (ensure parameters are correct)
-psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET shp_name = 'flu_broward_single_2881.shp', data_date = '2024-03-29', update_date = '2024-03-31'  WHERE county = 'BROWARD' and city_name = 'COUNTY_UNIFIED'"
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 4326, shp_name = 'flu_broward_single.shp', data_date = '2025-05-29', update_date = '2025-05-29'  WHERE county = 'BROWARD' and city_name = 'UNIFIED'"
 
 # update dev
-update_flu.py broward county_unified
+update_flu.py broward unified
 # copy the commands generated at the end of the output
 
-# grab raw_flu_broward_county_unified.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# grab raw_flu_broward_unified.backup from plato at /var/www/apps/mapwise/htdocs/x342
 # move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
 
 # run the copied commands on both m1 and prod
@@ -496,8 +537,11 @@ cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/charlott
 # run if file info needed
 ogrinfo flu_punta_gorda.shp flu_punta_gorda|less
 
+# explode multi_polygons and select fields
+ogr2ogr -explodecollections -select "FLU, FLU_NAME" flu_punta_gorda_single.shp flu_punta_gorda.shp
+
 # update table (ensure parameters are correct)
-psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET shp_name = 'flu_punta_gorda.shp', data_date = '2024-04-02', update_date = '2024-04-04'  WHERE county = 'CHARLOTTE' and city_name = 'PUNTA_GORDA'"
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET shp_name = 'flu_punta_gorda_single.shp', data_date = '2024-04-02', update_date = '2024-04-04'  WHERE county = 'CHARLOTTE' and city_name = 'PUNTA_GORDA'"
 
 # update dev
 update_flu.py charlotte punta_gorda
@@ -529,10 +573,11 @@ zip_rename_date.sh zoning.zip
 ogrinfo ZONING.shp ZONING|less
 
 # process data
-ogr2ogr -explodecollections FutureLandUse_single.shp ZONING.shp
+# explode multi_polygons and select fields
+ogr2ogr -explodecollections -select "FLU, FLU_NAME" ZONING_single.shp ZONING.shp
 
 # update table (ensure parameters are correct)
-psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 2237, shp_name = 'ZONING.shp', data_date = '2025-05-22', update_date = '2025-05-29'  WHERE county = 'CHARLOTTE' and city_name = 'UNINCORPORATED'"
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 2237, shp_name = 'ZONING_single.shp', data_date = '2025-05-22', update_date = '2025-05-29'  WHERE county = 'CHARLOTTE' and city_name = 'UNINCORPORATED'"
 
 # update dev
 update_flu.py charlotte unincorporated
@@ -561,8 +606,11 @@ unzip -oj FutureLandUse.zip
 # run if file info needed
 ogrinfo Zoning_FWS.shp Zoning_FWS|less
 
+# explode multi_polygons and select fields
+ogr2ogr -explodecollections -select "FLU, FLU_NAME" Zoning_FWS_single.shp Zoning_FWS.shp
+
 # update table (ensure parameters are correct)
-psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET shp_name = 'Zoning_FWS.shp', data_date = '2023-11-01', update_date = '2024-04-04'  WHERE county = 'CITRUS' and city_name = 'UNINCORPORATED'"
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET shp_name = 'Zoning_FWS_single.shp', data_date = '2023-11-01', update_date = '2024-04-04'  WHERE county = 'CITRUS' and city_name = 'UNINCORPORATED'"
 
 # update dev
 update_flu.py citrus unincorporated
@@ -594,8 +642,11 @@ unzip -oj FutureLandUse.zip
 # run if file info needed
 ogrinfo FutureLandUse.shp Zoning|less
 
+# explode multi_polygons and select fields
+ogr2ogr -explodecollections -select "FLU, FLU_NAME" FutureLandUse_single.shp FutureLandUse.shp
+
 # update table (ensure parameters are correct)
-psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET shp_name = 'FutureLandUse.shp', data_date = '2024-04-02', update_date = '2024-04-04'  WHERE county = 'CLAY' and city_name = 'UNINCORPORATED'"
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET shp_name = 'FutureLandUse_single.shp', data_date = '2024-04-02', update_date = '2024-04-04'  WHERE county = 'CLAY' and city_name = 'UNINCORPORATED'"
 
 # update dev
 update_flu.py clay unincorporated
@@ -626,9 +677,11 @@ ogrinfo flu_marco_island.shp flu_marco_island|less
 
 # Note: Commented out processing step, keep for reference
 # ogr2ogr -explodecollections flu_marco_island_single.shp flu_marco_island.shp
+# explode multi_polygons and select fields
+ogr2ogr -explodecollections -select "FLU, FLU_NAME" flu_marco_island_single.shp flu_marco_island.shp
 
 # update table (ensure parameters are correct)
-psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 4326, shp_name = 'flu_marco_island.shp', data_date = '2025-05-25', update_date = '2025-05-25'  WHERE county = 'COLLIER' and city_name = 'MARCO_ISLAND'"
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 4326, shp_name = 'flu_marco_island_single.shp', data_date = '2025-05-25', update_date = '2025-05-25'  WHERE county = 'COLLIER' and city_name = 'MARCO_ISLAND'"
 
 # update dev
 update_flu.py collier marco_island
@@ -653,8 +706,11 @@ ags_extract_data2.py flu_naples delete 15
 # run if file info needed
 ogrinfo flu_naples.shp flu_naples|less
 
+# explode multi_polygons and select fields
+ogr2ogr -explodecollections -select "FLU, FLU_NAME" flu_naples_single.shp flu_naples.shp
+
 # update table (ensure parameters are correct)
-psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 4326, shp_name = 'flu_naples.shp', data_date = '2025-05-25', update_date = '2025-05-25'  WHERE county = 'COLLIER' and city_name = 'NAPLES'"
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 4326, shp_name = 'flu_naples_single.shp', data_date = '2025-05-25', update_date = '2025-05-25'  WHERE county = 'COLLIER' and city_name = 'NAPLES'"
 
 # update dev
 update_flu.py collier naples
@@ -678,8 +734,11 @@ cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/collier/
 # run if file info needed
 ogrinfo Zoning_General.shp Zoning_General|less
 
+# explode multi_polygons and select fields
+ogr2ogr -explodecollections -select "FLU, FLU_NAME" Zoning_General_single.shp Zoning_General.shp
+
 # update table (ensure parameters are correct)
-psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 2236, shp_name = 'Zoning_General.shp', data_date = '2025-05-23', update_date = '2025-05-25'  WHERE county = 'COLLIER' and city_name = 'UNINCORPORATED'"
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 2236, shp_name = 'Zoning_General_single.shp', data_date = '2025-05-23', update_date = '2025-05-25'  WHERE county = 'COLLIER' and city_name = 'UNINCORPORATED'"
 
 # update dev
 update_flu.py collier unincorporated
@@ -719,8 +778,11 @@ shpmv ZONING_20240423.shp flu_duval.shp
 # run if file info needed
 ogrinfo flu_duval.shp flu_duval|less
 
+# explode multi_polygons and select fields
+ogr2ogr -explodecollections -select "FLU, FLU_NAME" flu_duval_single.shp flu_duval.shp
+
 # update table (ensure parameters are correct)
-psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET shp_name = 'flu_duval.shp', data_date = '2024-05-24', update_date = '2025-05-01', srs_epsg = '2236'  WHERE county = 'DUVAL' and city_name = 'JACKSONVILLE'"
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET shp_name = 'flu_duval_single.shp', data_date = '2024-05-24', update_date = '2025-05-01', srs_epsg = '2236'  WHERE county = 'DUVAL' and city_name = 'JACKSONVILLE'"
 
 # update dev
 update_flu.py duval jacksonville
@@ -743,10 +805,11 @@ cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/duval/cu
 ags_extract_data2.py flu_duval delete 15
 
 # process data
-ogr2ogr -explodecollections flu_single.shp flu_duval.shp 
+# explode multi_polygons and select fields
+ogr2ogr -explodecollections -select "FLU, FLU_NAME" flu_single.shp flu_duval.shp 
 
 # run if file info needed
-ogrinfo flu_duval.shp flu_duval|less
+ogrinfo flu_duval.shp flu_duval|less # This ogrinfo is for the original, the one above is for the transformed.
 
 # update table (ensure parameters are correct)
 psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET shp_name = 'flu_single.shp', data_date = '2024-04-02', update_date = '2024-04-04'  WHERE county = 'DUVAL' and city_name = 'UNINCORPORATED'"
@@ -778,8 +841,11 @@ ags_extract_data2.py flu_escambia delete 15
 # run if file info needed
 ogrinfo flu_escambia.shp flu_escambia|less
 
+# explode multi_polygons and select fields
+ogr2ogr -explodecollections -select "FLU, FLU_NAME" flu_escambia_single.shp flu_escambia.shp
+
 # update table (ensure parameters are correct)
-psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 4326, shp_name = 'flu_escambia.shp', data_date = '2025-05-27', update_date = '2025-05-27'  WHERE county = 'ESCAMBIA' and city_name = 'UNINCORPORATED'"
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 4326, shp_name = 'flu_escambia_single.shp', data_date = '2025-05-27', update_date = '2025-05-27'  WHERE county = 'ESCAMBIA' and city_name = 'UNINCORPORATED'"
 
 # update dev
 update_flu.py escambia unincorporated
@@ -809,8 +875,11 @@ ags_extract_data2.py flu_flagler_unincorporated delete 15
 # run if file info needed
 ogrinfo flu_flagler_unincorporated.shp flu_flagler_unincorporated|less
 
+# explode multi_polygons and select fields
+ogr2ogr -explodecollections -select "FLU, FLU_NAME" flu_flagler_unincorporated_single.shp flu_flagler_unincorporated.shp
+
 # update table (ensure parameters are correct)
-psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 4326, shp_name = 'flu_flagler_unincorporated.shp', data_date = '2025-05-29', update_date = '2025-05-29'  WHERE county = 'FLAGLER' and city_name = 'UNINCORPORATED'"
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 4326, shp_name = 'flu_flagler_unincorporated_single.shp', data_date = '2025-05-29', update_date = '2025-05-29'  WHERE county = 'FLAGLER' and city_name = 'UNINCORPORATED'"
 
 # update dev
 update_flu.py flagler unincorporated
@@ -838,8 +907,11 @@ cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/hernando
 # run if file info needed
 ogrinfo BrooksvilleCityFutureLandUse.shp BrooksvilleCityZoning|less
 
+# explode multi_polygons and select fields
+ogr2ogr -explodecollections -select "FLU, FLU_NAME" BrooksvilleCityFutureLandUse_single.shp BrooksvilleCityFutureLandUse.shp
+
 # update table (ensure parameters are correct)
-psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 2237, shp_name = 'BrooksvilleCityFutureLandUse.shp', data_date = '2025-01-06', update_date = '2025-05-27'  WHERE county = 'HERNANDO' and city_name = 'BROOKSVILLE'"
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 2237, shp_name = 'BrooksvilleCityFutureLandUse_single.shp', data_date = '2025-01-06', update_date = '2025-05-27'  WHERE county = 'HERNANDO' and city_name = 'BROOKSVILLE'"
 
 # update dev
 update_flu.py hernando brooksville
@@ -864,8 +936,11 @@ ags_extract_data2.py flu_hernando delete 15
 # run if file info needed
 ogrinfo flu_hernando.shp flu_hernando|less
 
+# explode multi_polygons and select fields
+ogr2ogr -explodecollections -select "FLU, FLU_NAME" flu_hernando_single.shp flu_hernando.shp
+
 # update table (ensure parameters are correct)
-psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 4326, shp_name = 'flu_hernando.shp', data_date = '2025-05-27', update_date = '2025-05-27'  WHERE county = 'HERNANDO' and city_name = 'UNINCORPORATED'"
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 4326, shp_name = 'flu_hernando_single.shp', data_date = '2025-05-27', update_date = '2025-05-27'  WHERE county = 'HERNANDO' and city_name = 'UNINCORPORATED'"
 
 # update dev
 update_flu.py hernando unincorporated
@@ -894,8 +969,11 @@ ags_extract_data2.py flu_highlands delete 15
 # run if file info needed
 ogrinfo flu_highlands.shp flu_highlands|less
 
+# explode multi_polygons and select fields
+ogr2ogr -explodecollections -select "FLU, FLU_NAME" flu_highlands_single.shp flu_highlands.shp
+
 # update table (ensure parameters are correct)
-psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 4326, shp_name = 'flu_highlands.shp', data_date = '2025-05-29', update_date = '2025-05-29'  WHERE county = 'HIGHLANDS' and city_name = 'UNINCORPORATED'"
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 4326, shp_name = 'flu_highlands_single.shp', data_date = '2025-05-29', update_date = '2025-05-29'  WHERE county = 'HIGHLANDS' and city_name = 'UNINCORPORATED'"
 
 # update dev
 update_flu.py highlands unincorporated
@@ -924,8 +1002,11 @@ ags_extract_data2.py flu_plant_city delete 15
 # run if file info needed
 ogrinfo PC_FutureLandUse.shp PC_Zoning|less
 
+# explode multi_polygons and select fields
+ogr2ogr -explodecollections -select "FLU, FLU_NAME" PC_FutureLandUse_single.shp PC_FutureLandUse.shp
+
 # update table (ensure parameters are correct)
-psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET shp_name = 'PC_FutureLandUse.shp', data_date = '2023-12-04', update_date = '2024-03-31'  WHERE county = 'HILLSBOROUGH' and city_name = 'PLANT_CITY'"
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET shp_name = 'PC_FutureLandUse_single.shp', data_date = '2023-12-04', update_date = '2024-03-31'  WHERE county = 'HILLSBOROUGH' and city_name = 'PLANT_CITY'"
 
 # update dev
 update_flu.py hillsborough plant_city
@@ -947,8 +1028,11 @@ cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/hillsbor
 # run if file info needed
 ogrinfo Zoning_District.shp Zoning_District|less
 
+# explode multi_polygons and select fields
+ogr2ogr -explodecollections -select "FLU, FLU_NAME" Zoning_District_single.shp Zoning_District.shp
+
 # update table (ensure parameters are correct)
-psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET shp_name = 'Zoning_District.shp', data_date = '2024-03-25', update_date = '2024-03-31'  WHERE county = 'HILLSBOROUGH' and city_name = 'TAMPA'"
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET shp_name = 'Zoning_District_single.shp', data_date = '2024-03-25', update_date = '2024-03-31'  WHERE county = 'HILLSBOROUGH' and city_name = 'TAMPA'"
 
 # update dev
 update_flu.py hillsborough tampa
@@ -972,8 +1056,11 @@ cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/hillsbor
 # run if file info needed 
 ogrinfo FutureLandUse.shp Zoning|less
 
+# explode multi_polygons and select fields
+ogr2ogr -explodecollections -select "FLU, FLU_NAME" FutureLandUse_single.shp FutureLandUse.shp
+
 # update table (ensure parameters are correct)
-psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET shp_name = 'FutureLandUse.shp', data_date = 'YYYY-MM-DD', update_date = 'YYYY-MM-DD'  WHERE county = 'HILLSBOROUGH' and city_name = 'UNINCORPORATED'"
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET shp_name = 'FutureLandUse_single.shp', data_date = 'YYYY-MM-DD', update_date = 'YYYY-MM-DD'  WHERE county = 'HILLSBOROUGH' and city_name = 'UNINCORPORATED'"
 
 # update dev
 update_flu.py hillsborough unincorporated
@@ -1007,9 +1094,11 @@ ogrinfo ZoningDistricts.shp ZoningDistricts|less
 
 # Note: Commented out processing step, keep for reference
 # ogr2ogr -explodecollections FutureLandUse_single.shp FutureLandUse.shp
+# explode multi_polygons and select fields
+ogr2ogr -explodecollections -select "FLU, FLU_NAME" ZoningDistricts_single.shp ZoningDistricts.shp
 
 # update table (ensure parameters are correct)
-psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 2236, shp_name = 'ZoningDistricts.shp', data_date = '2025-01-06', update_date = '2025-05-29'  WHERE county = 'INDIAN_RIVER' and city_name = 'VERO_BEACH'"
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 2236, shp_name = 'ZoningDistricts_single.shp', data_date = '2025-01-06', update_date = '2025-05-29'  WHERE county = 'INDIAN_RIVER' and city_name = 'VERO_BEACH'"
 
 # update dev
 update_flu.py indian_river vero_beach
@@ -1036,9 +1125,11 @@ ogrinfo flu_indian_river_unincorporated.shp flu_indian_river_unincorporated|less
 
 # Note: Commented out processing step, keep for reference
 # ogr2ogr -explodecollections FutureLandUse_single.shp FutureLandUse.shp
+# explode multi_polygons and select fields
+ogr2ogr -explodecollections -select "FLU, FLU_NAME" flu_indian_river_unincorporated_single.shp flu_indian_river_unincorporated.shp
 
 # update table (ensure parameters are correct)
-psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 4326, shp_name = 'flu_indian_river_unincorporated.shp', data_date = '2025-05-29', update_date = '2025-05-29'  WHERE county = 'INDIAN_RIVER' and city_name = 'UNINCORPORATED'"
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 4326, shp_name = 'flu_indian_river_unincorporated_single.shp', data_date = '2025-05-29', update_date = '2025-05-29'  WHERE county = 'INDIAN_RIVER' and city_name = 'UNINCORPORATED'"
 
 # update dev
 update_flu.py indian_river unincorporated
@@ -1067,8 +1158,11 @@ ags_extract_data2.py flu_astatula delete 15
 # run if file info needed
 ogrinfo flu_astatula.shp flu_astatula|less
 
+# explode multi_polygons and select fields
+ogr2ogr -explodecollections -select "FLU, FLU_NAME" flu_astatula_single.shp flu_astatula.shp
+
 # update table (ensure parameters are correct)
-psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 4326, shp_name = 'flu_astatula.shp', data_date = '2025-05-27', update_date = '2025-05-27'  WHERE county = 'LAKE' and city_name = 'ASTATULA'"
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 4326, shp_name = 'flu_astatula_single.shp', data_date = '2025-05-27', update_date = '2025-05-27'  WHERE county = 'LAKE' and city_name = 'ASTATULA'"
 
 # update dev
 update_flu.py lake astatula
@@ -1093,8 +1187,11 @@ ags_extract_data2.py flu_clermont delete 15
 # run if file info needed
 ogrinfo flu_clermont.shp flu_clermont|less
 
+# explode multi_polygons and select fields
+ogr2ogr -explodecollections -select "FLU, FLU_NAME" flu_clermont_single.shp flu_clermont.shp
+
 # update table (ensure parameters are correct)
-psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 4326, shp_name = 'flu_clermont.shp', data_date = '2025-05-26', update_date = '2025-05-26'  WHERE county = 'LAKE' and city_name = 'CLERMONT'"
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 4326, shp_name = 'flu_clermont_single.shp', data_date = '2025-05-26', update_date = '2025-05-26'  WHERE county = 'LAKE' and city_name = 'CLERMONT'"
 
 # update dev
 update_flu.py lake clermont
@@ -1119,8 +1216,11 @@ ags_extract_data2.py flu_fruitland_park delete 15
 # run if file info needed
 ogrinfo flu_fruitland_park.shp flu_fruitland_park|less
 
+# explode multi_polygons and select fields
+ogr2ogr -explodecollections -select "FLU, FLU_NAME" flu_fruitland_park_single.shp flu_fruitland_park.shp
+
 # update table (ensure parameters are correct)
-psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 4326, shp_name = 'flu_fruitland_park.shp', data_date = '2025-05-26', update_date = '2025-05-26'  WHERE county = 'LAKE' and city_name = 'FRUITLAND_PARK'"
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 4326, shp_name = 'flu_fruitland_park_single.shp', data_date = '2025-05-26', update_date = '2025-05-26'  WHERE county = 'LAKE' and city_name = 'FRUITLAND_PARK'"
 
 # update dev
 update_flu.py lake fruitland_park
@@ -1145,8 +1245,11 @@ ags_extract_data2.py flu_groveland delete 15
 # run if file info needed
 ogrinfo flu_groveland.shp flu_groveland|less
 
+# explode multi_polygons and select fields
+ogr2ogr -explodecollections -select "FLU, FLU_NAME" flu_groveland_single.shp flu_groveland.shp
+
 # update table (ensure parameters are correct)
-psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 4326, shp_name = 'flu_groveland.shp', data_date = '2025-05-26', update_date = '2025-05-26'  WHERE county = 'LAKE' and city_name = 'GROVELAND'"
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 4326, shp_name = 'flu_groveland_single.shp', data_date = '2025-05-26', update_date = '2025-05-26'  WHERE county = 'LAKE' and city_name = 'GROVELAND'"
 
 # update dev
 update_flu.py lake groveland
@@ -1171,8 +1274,11 @@ ags_extract_data2.py flu_leesburg delete 15
 # run if file info needed
 ogrinfo flu_leesburg.shp flu_leesburg|less
 
+# explode multi_polygons and select fields
+ogr2ogr -explodecollections -select "FLU, FLU_NAME" flu_leesburg_single.shp flu_leesburg.shp
+
 # update table (ensure parameters are correct)
-psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 4326, shp_name = 'flu_leesburg.shp', data_date = '2025-05-26', update_date = '2025-05-26'  WHERE county = 'LAKE' and city_name = 'LEESBURG'"
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 4326, shp_name = 'flu_leesburg_single.shp', data_date = '2025-05-26', update_date = '2025-05-26'  WHERE county = 'LAKE' and city_name = 'LEESBURG'"
 
 # update dev
 update_flu.py lake leesburg
@@ -1197,8 +1303,11 @@ ags_extract_data2.py flu_minneola delete 15
 # run if file info needed
 ogrinfo flu_minneola.shp flu_minneola|less
 
+# explode multi_polygons and select fields
+ogr2ogr -explodecollections -select "FLU, FLU_NAME" flu_minneola_single.shp flu_minneola.shp
+
 # update table (ensure parameters are correct)
-psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 4326, shp_name = 'flu_minneola.shp', data_date = '2025-05-26', update_date = '2025-05-26'  WHERE county = 'LAKE' and city_name = 'MINNEOLA'"
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 4326, shp_name = 'flu_minneola_single.shp', data_date = '2025-05-26', update_date = '2025-05-26'  WHERE county = 'LAKE' and city_name = 'MINNEOLA'"
 
 # update dev
 update_flu.py lake minneola
@@ -1223,8 +1332,11 @@ ags_extract_data2.py flu_mount_dora delete 15
 # run if file info needed
 ogrinfo flu_mount_dora.shp flu_mount_dora|less
 
+# explode multi_polygons and select fields
+ogr2ogr -explodecollections -select "FLU, FLU_NAME" flu_mount_dora_single.shp flu_mount_dora.shp
+
 # update table (ensure parameters are correct)
-psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 4326, shp_name = 'flu_mount_dora.shp', data_date = '2025-05-26', update_date = '2025-05-26'  WHERE county = 'LAKE' and city_name = 'MOUNT_DORA'"
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 4326, shp_name = 'flu_mount_dora_single.shp', data_date = '2025-05-26', update_date = '2025-05-26'  WHERE county = 'LAKE' and city_name = 'MOUNT_DORA'"
 
 # update dev
 update_flu.py lake mount_dora
@@ -1249,8 +1361,11 @@ ags_extract_data2.py flu_tavares delete 15
 # run if file info needed
 ogrinfo flu_tavares.shp flu_tavares|less
 
+# explode multi_polygons and select fields
+ogr2ogr -explodecollections -select "FLU, FLU_NAME" flu_tavares_single.shp flu_tavares.shp
+
 # update table (ensure parameters are correct)
-psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 4326, shp_name = 'flu_tavares.shp', data_date = '2025-05-26', update_date = '2025-05-26'  WHERE county = 'LAKE' and city_name = 'TAVARES'"
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 4326, shp_name = 'flu_tavares_single.shp', data_date = '2025-05-26', update_date = '2025-05-26'  WHERE county = 'LAKE' and city_name = 'TAVARES'"
 
 # update dev
 update_flu.py lake tavares
@@ -1275,8 +1390,11 @@ ags_extract_data2.py flu_umatilla delete 15
 # run if file info needed
 ogrinfo flu_umatilla.shp flu_umatilla|less
 
+# explode multi_polygons and select fields
+ogr2ogr -explodecollections -select "FLU, FLU_NAME" flu_umatilla_single.shp flu_umatilla.shp
+
 # update table (ensure parameters are correct)
-psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 4326, shp_name = 'flu_umatilla.shp', data_date = '2025-05-26', update_date = '2025-05-26'  WHERE county = 'LAKE' and city_name = 'UMATILLA'"
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 4326, shp_name = 'flu_umatilla_single.shp', data_date = '2025-05-26', update_date = '2025-05-26'  WHERE county = 'LAKE' and city_name = 'UMATILLA'"
 
 # update dev
 update_flu.py lake umatilla
@@ -1301,8 +1419,11 @@ ags_extract_data2.py flu_howey_in_the_hills delete 15
 # run if file info needed
 ogrinfo flu_howey_in_the_hills.shp flu_howey-in-the-hills|less
 
+# explode multi_polygons and select fields
+ogr2ogr -explodecollections -select "FLU, FLU_NAME" flu_howey_in_the_hills_single.shp flu_howey_in_the_hills.shp
+
 # update table (ensure parameters are correct)
-psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 4326, shp_name = 'flu_howey_in_the_hills.shp', data_date = '2025-05-26', update_date = '2025-05-26'  WHERE county = 'LAKE' and city_name = 'HOWEY_IN_THE_HILLS';"
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 4326, shp_name = 'flu_howey_in_the_hills_single.shp', data_date = '2025-05-26', update_date = '2025-05-26'  WHERE county = 'LAKE' and city_name = 'HOWEY_IN_THE_HILLS';"
 
 # update dev
 update_flu.py lake howey_in_the_hills
@@ -1327,8 +1448,11 @@ ags_extract_data2.py flu_mascotte delete 15
 # run if file info needed
 ogrinfo flu_mascotte.shp flu_mascotte|less
 
+# explode multi_polygons and select fields
+ogr2ogr -explodecollections -select "FLU, FLU_NAME" flu_mascotte_single.shp flu_mascotte.shp
+
 # update table (ensure parameters are correct)
-psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 4326, shp_name = 'flu_mascotte.shp', data_date = '2025-05-26', update_date = '2025-05-26'  WHERE county = 'LAKE' and city_name = 'MASCOTTE'"
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 4326, shp_name = 'flu_mascotte_single.shp', data_date = '2025-05-26', update_date = '2025-05-26'  WHERE county = 'LAKE' and city_name = 'MASCOTTE'"
 
 # update dev
 update_flu.py lake mascotte
@@ -1353,8 +1477,11 @@ ags_extract_data2.py flu_montverde delete 15
 # run if file info needed
 ogrinfo flu_montverde.shp flu_montverde|less
 
+# explode multi_polygons and select fields
+ogr2ogr -explodecollections -select "FLU, FLU_NAME" flu_montverde_single.shp flu_montverde.shp
+
 # update table (ensure parameters are correct)
-psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 4326, shp_name = 'flu_montverde.shp', data_date = '2025-05-26', update_date = '2025-05-26'  WHERE county = 'LAKE' and city_name = 'MONTVERDE'"
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 4326, shp_name = 'flu_montverde_single.shp', data_date = '2025-05-26', update_date = '2025-05-26'  WHERE county = 'LAKE' and city_name = 'MONTVERDE'"
 
 # update dev
 update_flu.py lake montverde
@@ -1382,8 +1509,11 @@ ags_extract_data2.py flu_lake_unincorp delete 15
 # run if file info needed
 ogrinfo flu_lake_unincorp.shp flu_lake_unincorp|less
 
+# explode multi_polygons and select fields
+ogr2ogr -explodecollections -select "FLU, FLU_NAME" flu_lake_unincorp_single.shp flu_lake_unincorp.shp
+
 # update table (ensure parameters are correct)
-psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 4326, shp_name = 'flu_lake_unincorp.shp', data_date = '2025-05-26', update_date = '2025-05-26'  WHERE county = 'LAKE' and city_name = 'UNINCORPORATED'"
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 4326, shp_name = 'flu_lake_unincorp_single.shp', data_date = '2025-05-26', update_date = '2025-05-26'  WHERE county = 'LAKE' and city_name = 'UNINCORPORATED'"
 
 # update dev
 update_flu.py lake unincorporated
@@ -1411,8 +1541,11 @@ cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/lee/curr
 # run if file info needed
 ogrinfo FutureLandUse.shp Zoning|less
 
+# explode multi_polygons and select fields
+ogr2ogr -explodecollections -select "FLU, FLU_NAME" FutureLandUse_single.shp FutureLandUse.shp
+
 # update table (ensure parameters are correct)
-psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 2237, shp_name = 'FutureLandUse.shp', data_date = '2024-08-02', update_date = '2025-05-24'  WHERE county = 'LEE' and city_name = 'CAPE_CORAL'"
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 2237, shp_name = 'FutureLandUse_single.shp', data_date = '2024-08-02', update_date = '2025-05-24'  WHERE county = 'LEE' and city_name = 'CAPE_CORAL'"
 
 # update dev
 update_flu.py lee cape_coral
@@ -1440,10 +1573,13 @@ cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/lee/curr
 #   ags_extract_data2.py flu_fort_myers delete 15 
 
 # run if file info needed
-ogrinfo FutureLandUse.shp Zoning|less
+ogrinfo FutureLandUse.shp Zoning|less # Assuming flu_fort_myers.shp would be named FutureLandUse.shp after portal download
+
+# explode multi_polygons and select fields
+ogr2ogr -explodecollections -select "FLU, FLU_NAME" FutureLandUse_single.shp FutureLandUse.shp
 
 # update table (ensure parameters are correct)
-psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 6443, shp_name = 'FutureLandUse.shp', data_date = '2025-05-10', update_date = '2025-05-24'  WHERE county = 'LEE' and city_name = 'FORT_MYERS'"
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 6443, shp_name = 'FutureLandUse_single.shp', data_date = '2025-05-10', update_date = '2025-05-24'  WHERE county = 'LEE' and city_name = 'FORT_MYERS'"
 
 # update dev
 update_flu.py lee fort_myers
@@ -1469,8 +1605,11 @@ cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/lee/curr
 # run if file info needed
 ogrinfo FutureLandUse.shp Zoning|less
 
+# explode multi_polygons and select fields
+ogr2ogr -explodecollections -select "FLU, FLU_NAME" FutureLandUse_single.shp FutureLandUse.shp
+
 # update table (ensure parameters are correct)
-psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 2236, shp_name = 'FutureLandUse.shp', data_date = '2025-05-10', update_date = '2025-05-24'  WHERE county = 'LEE' and city_name = 'UNINCORPORATED'"
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 2236, shp_name = 'FutureLandUse_single.shp', data_date = '2025-05-10', update_date = '2025-05-24'  WHERE county = 'LEE' and city_name = 'UNINCORPORATED'"
 
 # update dev
 update_flu.py lee unincorporated
@@ -1498,17 +1637,20 @@ ags_extract_data2.py flu_leon delete 15
 
 # Opendata: grab data, unzip, move to plato
 # rename to match AGS (note: might not work; could require more work)
-mv FutureLandUse.shp flu_leon.shp
-mv Zoning.dbf flu_leon.dbf
-mv Zoning.prj flu_leon.prj
-mv Zoning.shx flu_leon.shx
-mv Zoning.cpg flu_leon.cpg
+# mv FutureLandUse.shp flu_leon.shp
+# mv Zoning.dbf flu_leon.dbf
+# mv Zoning.prj flu_leon.prj
+# mv Zoning.shx flu_leon.shx
+# mv Zoning.cpg flu_leon.cpg
 
 # run if file info needed
-ogrinfo flu_leon.shp flu_leon|less
+ogrinfo flu_leon.shp flu_leon|less # Assuming input for transform is flu_leon.shp
+
+# explode multi_polygons and select fields
+ogr2ogr -explodecollections -select "FLU, FLU_NAME" flu_leon_single.shp flu_leon.shp
 
 # update table (ensure parameters are correct)
-psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 4326, shp_name = 'flu_leon.shp', data_date = '2025-05-27', update_date = '2025-05-27'  WHERE county = 'LEON' and city_name = 'COUNTY_UNIFIED'"
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 4326, shp_name = 'flu_leon_single.shp', data_date = '2025-05-27', update_date = '2025-05-27'  WHERE county = 'LEON' and city_name = 'COUNTY_UNIFIED'"
 
 # update dev
 update_flu.py leon county_unified
@@ -1539,7 +1681,8 @@ ags_extract_data2.py flu_bradenton delete 15
 ogrinfo flu_bradenton.shp flu_bradenton|less
 
 # process data
-ogr2ogr -explodecollections flu_bradenton_single.shp flu_bradenton.shp
+# explode multi_polygons and select fields
+ogr2ogr -explodecollections -select "FLU, FLU_NAME" flu_bradenton_single.shp flu_bradenton.shp
 
 # update table (ensure parameters are correct)
 psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 4326, shp_name = 'flu_bradenton_single.shp', data_date = '2025-05-24', update_date = '2025-05-24'  WHERE county = 'MANATEE' and city_name = 'BRADENTON'"
@@ -1566,8 +1709,11 @@ cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/manatee/
 # run if file info needed
 ogrinfo FutureLandUse.shp Zoning|less
 
+# explode multi_polygons and select fields
+ogr2ogr -explodecollections -select "FLU, FLU_NAME" FutureLandUse_single.shp FutureLandUse.shp
+
 # update table (ensure parameters are correct)
-psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 3857, shp_name = 'FutureLandUse.shp', data_date = '2025-01-28', update_date = '2025-05-24'  WHERE county = 'MANATEE' and city_name = 'UNINCORPORATED'"
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 3857, shp_name = 'FutureLandUse_single.shp', data_date = '2025-01-28', update_date = '2025-05-24'  WHERE county = 'MANATEE' and city_name = 'UNINCORPORATED'"
 
 # update dev
 update_flu.py manatee unincorporated
@@ -1596,8 +1742,11 @@ cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/marion/c
 # run if file info needed
 ogrinfo FutureLandUse.shp Zoning|less
 
+# explode multi_polygons and select fields
+ogr2ogr -explodecollections -select "FLU, FLU_NAME" FutureLandUse_single.shp FutureLandUse.shp
+
 # update table (ensure parameters are correct)
-psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 2237, shp_name = 'FutureLandUse.shp', data_date = '2025-03-26', update_date = '2025-05-26'  WHERE county = 'MARION' and city_name = 'OCALA'"
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 2237, shp_name = 'FutureLandUse_single.shp', data_date = '2025-03-26', update_date = '2025-05-26'  WHERE county = 'MARION' and city_name = 'OCALA'"
 
 # update dev
 update_flu.py marion ocala
@@ -1623,7 +1772,8 @@ ags_extract_data2.py flu_marion delete 15
 ogrinfo flu_marion.shp flu_marion|less
 
 # process data
-ogr2ogr -explodecollections flu_marion_single.shp flu_marion.shp
+# explode multi_polygons and select fields
+ogr2ogr -explodecollections -select "FLU, FLU_NAME" flu_marion_single.shp flu_marion.shp
 
 # update table (ensure parameters are correct)
 psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 4326, shp_name = 'flu_marion_single.shp', data_date = '2025-05-26', update_date = '2025-05-26'  WHERE county = 'MARION' and city_name = 'UNINCORPORATED'"
@@ -1660,8 +1810,11 @@ ags_extract_data2.py flu_stuart delete 15
 # run if file info needed
 ogrinfo flu_stuart.shp flu_stuart|less
 
+# explode multi_polygons and select fields
+ogr2ogr -explodecollections -select "FLU, FLU_NAME" flu_stuart_single.shp flu_stuart.shp
+
 # update table (ensure parameters are correct)
-psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 4326, shp_name = 'flu_stuart.shp', data_date = '2025-05-29', update_date = '2025-05-29'  WHERE county = 'MARTIN' and city_name = 'STUART'"
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 4326, shp_name = 'flu_stuart_single.shp', data_date = '2025-05-29', update_date = '2025-05-29'  WHERE county = 'MARTIN' and city_name = 'STUART'"
 
 # update dev
 update_flu.py martin stuart
@@ -1691,9 +1844,11 @@ ogrinfo FutureLandUse.shp Zoning|less
 
 # Note: Commented out processing step, keep for reference
 # ogr2ogr -explodecollections FutureLandUse_single.shp FutureLandUse.shp
+# explode multi_polygons and select fields
+ogr2ogr -explodecollections -select "FLU, FLU_NAME" FutureLandUse_single.shp FutureLandUse.shp
 
 # update table (ensure parameters are correct)
-psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET shp_name = 'FutureLandUse.shp', data_date = '2024-03-31', update_date = '2024-04-04'  WHERE county = 'MARTIN' and city_name = 'UNINCORPORATED'"
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET shp_name = 'FutureLandUse_single.shp', data_date = '2024-03-31', update_date = '2024-04-04'  WHERE county = 'MARTIN' and city_name = 'UNINCORPORATED'"
 
 # update dev
 update_flu.py martin unincorporated
@@ -1722,8 +1877,11 @@ ags_extract_data2.py flu_miami_dade_incorporated delete 15
 # run if file info needed
 ogrinfo flu_miami_dade_incorporated.shp flu_miami_dade_incorporated|less
 
+# explode multi_polygons and select fields
+ogr2ogr -explodecollections -select "FLU, FLU_NAME" flu_miami_dade_incorporated_single.shp flu_miami_dade_incorporated.shp
+
 # update table (ensure parameters are correct)
-psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 4326, temp_table_name = 'raw_flu_miami_dade_incorporated', shp_name = 'flu_miami_dade_incorporated.shp', data_date = '2025-05-29', update_date = '2025-05-29'  WHERE county = 'MIAMI-DADE' and city_name = 'INCORPORATED'"
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 4326, temp_table_name = 'raw_flu_miami_dade_incorporated', shp_name = 'flu_miami_dade_incorporated_single.shp', data_date = '2025-05-29', update_date = '2025-05-29'  WHERE county = 'MIAMI-DADE' and city_name = 'INCORPORATED'"
 
 # update dev
 update_flu.py miami-dade incorporated
@@ -1748,8 +1906,11 @@ ags_extract_data2.py flu_miami_dade_unincorporated delete 15
 # run if file info needed
 ogrinfo flu_miami_dade_unincorporated.shp flu_miami_dade_unincorporated|less
 
+# explode multi_polygons and select fields
+ogr2ogr -explodecollections -select "FLU, FLU_NAME" flu_miami_dade_unincorporated_single.shp flu_miami_dade_unincorporated.shp
+
 # update table (ensure parameters are correct)
-psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 4326, temp_table_name = 'raw_flu_miami_dade_unincorp', shp_name = 'flu_miami_dade_unincorporated.shp', data_date = '2025-05-28', update_date = '2025-05-28'  WHERE county = 'MIAMI-DADE' and city_name = 'UNINCORPORATED';"
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 4326, temp_table_name = 'raw_flu_miami_dade_unincorp', shp_name = 'flu_miami_dade_unincorporated_single.shp', data_date = '2025-05-28', update_date = '2025-05-28'  WHERE county = 'MIAMI-DADE' and city_name = 'UNINCORPORATED';"
 
 # update dev
 update_flu.py miami-dade unincorporated
@@ -1773,13 +1934,16 @@ update_flu.py miami-dade unincorporated
 cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/nassau/current/source_data/unincorporated
 
 # run to grab data
-ags_extract_data_objectids_1.py flu_nassau delete 15
+ags_extract_data_objectids_1.py flu_nassau delete 15 # Assuming this creates flu_nassau.shp
 
 # run if file info needed
 ogrinfo flu_nassau.shp flu_nassau|less
 
+# explode multi_polygons and select fields
+ogr2ogr -explodecollections -select "FLU, FLU_NAME" flu_nassau_single.shp flu_nassau.shp
+
 # update table (ensure parameters are correct)
-psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET shp_name = 'flu_nassau.shp', data_date = '2024-04-02', update_date = '2024-04-04'  WHERE county = 'NASSAU' and city_name = 'UNINCORPORATED'"
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET shp_name = 'flu_nassau_single.shp', data_date = '2024-04-02', update_date = '2024-04-04'  WHERE county = 'NASSAU' and city_name = 'UNINCORPORATED'"
 
 # update dev
 update_flu.py nassau unincorporated
@@ -1811,8 +1975,11 @@ zip_rename_date.sh Local_Planning.zip
 # run if file info needed
 ogrinfo zngpy.shp zngpy|less
 
+# explode multi_polygons and select fields
+ogr2ogr -explodecollections -select "FLU, FLU_NAME" zngpy_single.shp zngpy.shp
+
 # update table (ensure parameters are correct)
-psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 2238, shp_name = 'zngpy.shp', data_date = '2025-05-11', update_date = '2025-05-27'  WHERE county = 'OKALOOSA' and city_name = 'UNINCORPORATED'"
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 2238, shp_name = 'zngpy_single.shp', data_date = '2025-05-11', update_date = '2025-05-27'  WHERE county = 'OKALOOSA' and city_name = 'UNINCORPORATED'"
 
 # update dev
 update_flu.py okaloosa unincorporated
@@ -1843,8 +2010,11 @@ ags_extract_data2.py flu_apopka delete 15
 # run if file info needed
 ogrinfo flu_apopka.shp flu_apopka|less
 
+# explode multi_polygons and select fields
+ogr2ogr -explodecollections -select "FLU, FLU_NAME" flu_apopka_single.shp flu_apopka.shp
+
 # update table (ensure parameters are correct)
-psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET shp_name = 'flu_apopka.shp', data_date = '2025-04-30', update_date = '2025-05-17'  WHERE county = 'ORANGE' and city_name = 'APOPKA'"
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET shp_name = 'flu_apopka_single.shp', data_date = '2025-04-30', update_date = '2025-05-17'  WHERE county = 'ORANGE' and city_name = 'APOPKA'"
 
 # update dev
 update_flu.py orange apopka
@@ -1868,8 +2038,11 @@ cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/orange/c
 # run if file info needed
 ogrinfo Eatonville_FutureLandUse.shp Eatonville_Zoning|less
 
+# explode multi_polygons and select fields
+ogr2ogr -explodecollections -select "FLU, FLU_NAME" Eatonville_FutureLandUse_single.shp Eatonville_FutureLandUse.shp
+
 # update table (ensure parameters are correct)
-psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET shp_name = 'Eatonville_FutureLandUse.shp', data_date = '2024-01-04', update_date = '2025-05-09'  WHERE county = 'ORANGE' and city_name = 'EATONVILLE'"
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET shp_name = 'Eatonville_FutureLandUse_single.shp', data_date = '2024-01-04', update_date = '2025-05-09'  WHERE county = 'ORANGE' and city_name = 'EATONVILLE'"
 
 # update dev
 update_flu.py orange eatonville
@@ -1896,8 +2069,11 @@ ags_extract_data2.py flu_ocoee delete 15
 # run if file info needed
 ogrinfo flu_ocoee.shp flu_ocoee|less
 
+# explode multi_polygons and select fields
+ogr2ogr -explodecollections -select "FLU, FLU_NAME" flu_ocoee_single.shp flu_ocoee.shp
+
 # update table (ensure parameters are correct)
-psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET shp_name = 'flu_ocoee.shp', data_date = '2024-04-02', update_date = '2024-04-04'  WHERE county = 'ORANGE' and city_name = 'OCOEE'"
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET shp_name = 'flu_ocoee_single.shp', data_date = '2024-04-02', update_date = '2024-04-04'  WHERE county = 'ORANGE' and city_name = 'OCOEE'"
 
 # update dev
 update_flu.py orange ocoee
@@ -1921,8 +2097,11 @@ cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/orange/c
 # run if file info needed
 ogrinfo Orlando_FutureLandUse.shp Orlando_Zoning|less
 
+# explode multi_polygons and select fields
+ogr2ogr -explodecollections -select "FLU, FLU_NAME" Orlando_FutureLandUse_single.shp Orlando_FutureLandUse.shp
+
 # update table (ensure parameters are correct)
-psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET shp_name = 'Orlando_FutureLandUse.shp', data_date = 'YYYY-MM-DD', update_date = 'YYYY-MM-DD'  WHERE county = 'ORANGE' and city_name = 'ORLANDO'"
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET shp_name = 'Orlando_FutureLandUse_single.shp', data_date = 'YYYY-MM-DD', update_date = 'YYYY-MM-DD'  WHERE county = 'ORANGE' and city_name = 'ORLANDO'"
 
 # update dev
 update_flu.py orange orlando
@@ -1948,8 +2127,11 @@ download_data.py /data/flu/orange/unincorporated
 # run if file info needed
 ogrinfo Orange_County_FutureLandUse.shp Orange_County_Zoning|less
 
+# explode multi_polygons and select fields
+ogr2ogr -explodecollections -select "FLU, FLU_NAME" Orange_County_FutureLandUse_single.shp Orange_County_FutureLandUse.shp
+
 # update table (ensure parameters are correct)
-psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET shp_name = 'Orange_County_FutureLandUse.shp', data_date = 'YYYY-MM-DD', update_date = 'YYYY-MM-DD'  WHERE county = 'ORANGE' and city_name = 'UNINCORPORATED'"
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET shp_name = 'Orange_County_FutureLandUse_single.shp', data_date = 'YYYY-MM-DD', update_date = 'YYYY-MM-DD'  WHERE county = 'ORANGE' and city_name = 'UNINCORPORATED'"
 
 # update dev
 update_flu.py orange unincorporated
@@ -1979,7 +2161,8 @@ ags_extract_data2.py flu_kissimmee delete 15
 ogrinfo flu_kissimmee.shp flu_kissimmee|less
 
 # process data
-ogr2ogr -explodecollections flu_kissimmee_single.shp flu_kissimmee.shp
+# explode multi_polygons and select fields
+ogr2ogr -explodecollections -select "FLU, FLU_NAME" flu_kissimmee_single.shp flu_kissimmee.shp
 
 # update table (ensure parameters are correct)
 psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 4326, shp_name = 'flu_kissimmee_single.shp', data_date = '2025-05-25', update_date = '2025-05-25'  WHERE county = 'OSCEOLA' and city_name = 'KISSIMMEE'"
@@ -2007,8 +2190,11 @@ ags_extract_data2.py flu_st_cloud delete 15
 # run if file info needed
 ogrinfo flu_st_cloud.shp flu_st_cloud|less
 
+# explode multi_polygons and select fields
+ogr2ogr -explodecollections -select "FLU, FLU_NAME" flu_st_cloud_single.shp flu_st_cloud.shp
+
 # update table (ensure parameters are correct)
-psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET temp_table_name = 'raw_osceola_st_cloud', srs_epsg = 4326, shp_name = 'flu_st_cloud.shp', data_date = '2025-05-25', update_date = '2025-05-25'  WHERE county = 'OSCEOLA' and city_name = 'ST_CLOUD'"
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET temp_table_name = 'raw_osceola_st_cloud', srs_epsg = 4326, shp_name = 'flu_st_cloud_single.shp', data_date = '2025-05-25', update_date = '2025-05-25'  WHERE county = 'OSCEOLA' and city_name = 'ST_CLOUD'"
 
 # update dev
 update_flu.py osceola st_cloud
@@ -2033,8 +2219,11 @@ ags_extract_data2.py flu_osceola delete 15
 # run if file info needed
 ogrinfo flu_osceola.shp flu_osceola|less
 
+# explode multi_polygons and select fields
+ogr2ogr -explodecollections -select "FLU, FLU_NAME" flu_osceola_single.shp flu_osceola.shp
+
 # update table (ensure parameters are correct)
-psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 4326, shp_name = 'flu_osceola.shp', data_date = '2025-05-26', update_date = '2025-05-26'  WHERE county = 'OSCEOLA' and city_name = 'UNINCORPORATED'"
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 4326, shp_name = 'flu_osceola_single.shp', data_date = '2025-05-26', update_date = '2025-05-26'  WHERE county = 'OSCEOLA' and city_name = 'UNINCORPORATED'"
 
 # update dev
 update_flu.py osceola unincorporated
@@ -2058,13 +2247,14 @@ update_flu.py osceola unincorporated
 cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/palm_beach/current/source_data/county_unified
 
 # process data
-ogr2ogr -explodecollections -t_srs "EPSG:2881" FutureLandUse_single.shp FutureLandUse.shp
+# explode multi_polygons and select fields
+ogr2ogr -explodecollections -select "FLU, FLU_NAME" FutureLandUse_single.shp FutureLandUse.shp # Input is FutureLandUse.shp, output already _single.shp. Target EPSG was 2881.
 
 # run if file info needed
 ogrinfo FutureLandUse_single.shp Zoning_single|less
 
 # update table (ensure parameters are correct)
-psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET shp_name = 'FutureLandUse_single.shp', data_date = '2025-02-12', update_date = '2025-05-11'  WHERE county = 'PALM_BEACH' and city_name = 'COUNTY_UNIFIED'"
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET shp_name = 'FutureLandUse_single.shp', data_date = '2025-02-12', update_date = '2025-05-11'  WHERE county = 'PALM_BEACH' and city_name = 'COUNTY_UNIFIED'" # Note: srs_epsg was 2881, this might be lost if just applying the template ogr2ogr
 
 # update dev
 update_flu.py palm_beach county_unified
@@ -2100,8 +2290,11 @@ ags_extract_data2.py flu_pasco_unincorporated delete 15
 # run if file info needed
 ogrinfo flu_pasco_unincorporated.shp flu_pasco_unincorporated|less
 
+# explode multi_polygons and select fields
+ogr2ogr -explodecollections -select "FLU, FLU_NAME" flu_pasco_unincorporated_single.shp flu_pasco_unincorporated.shp
+
 # update table (ensure parameters are correct)
-psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 4326, shp_name = 'flu_pasco_unincorporated.shp', data_date = '2025-05-24', update_date = '2025-05-24'  WHERE county = 'PASCO' and city_name = 'UNINCORPORATED'"
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 4326, shp_name = 'flu_pasco_unincorporated_single.shp', data_date = '2025-05-24', update_date = '2025-05-24'  WHERE county = 'PASCO' and city_name = 'UNINCORPORATED'"
 
 # update dev
 update_flu.py pasco unincorporated
@@ -2139,8 +2332,11 @@ mv 'Belleair_Zoning_(PPC).zip' 'Belleair_Zoning_PPC.zip'
 # run if file info needed
 ogrinfo Belleair_Zoning_PPC.shp Belleair_Zoning_PPC|less
 
+# explode multi_polygons and select fields
+ogr2ogr -explodecollections -select "FLU, FLU_NAME" Belleair_Zoning_PPC_single.shp Belleair_Zoning_PPC.shp
+
 # update table (ensure parameters are correct)
-psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET shp_name = 'Belleair_Zoning_PPC.shp', data_date = '2024-03-19', update_date = '2025-05-22'  WHERE county = 'PINELLAS' and city_name = 'BELLEAIR';"
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET shp_name = 'Belleair_Zoning_PPC_single.shp', data_date = '2024-03-19', update_date = '2025-05-22'  WHERE county = 'PINELLAS' and city_name = 'BELLEAIR';"
 
 # update dev
 update_flu.py pinellas belleair
@@ -2165,8 +2361,11 @@ ags_extract_data2.py flu_clearwater delete 15
 # run if file info needed
 ogrinfo flu_clearwater.shp flu_clearwater|less
 
+# explode multi_polygons and select fields
+ogr2ogr -explodecollections -select "FLU, FLU_NAME" flu_clearwater_single.shp flu_clearwater.shp
+
 # update table (ensure parameters are correct)
-psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET shp_name = 'flu_clearwater.shp', data_date = '2025-05-22', update_date = '2025-05-22'  WHERE county = 'PINELLAS' and city_name = 'CLEARWATER';"
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET shp_name = 'flu_clearwater_single.shp', data_date = '2025-05-22', update_date = '2025-05-22'  WHERE county = 'PINELLAS' and city_name = 'CLEARWATER';"
 
 # update dev
 update_flu.py pinellas clearwater
@@ -2189,13 +2388,14 @@ cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/pinellas
 ags_extract_data2.py flu_dunedin delete 15
 
 # process data
-ogr2ogr -explodecollections -t_srs "EPSG:2882" zoning_dunedin_2882.shp flu_dunedin.shp 
+# explode multi_polygons and select fields
+ogr2ogr -explodecollections -select "FLU, FLU_NAME" flu_dunedin_single.shp flu_dunedin.shp
 
 # run if file info needed
-ogrinfo flu_dunedin_2882.shp zoning_dunedin_2882|less
+ogrinfo flu_dunedin_single.shp zoning_dunedin_2882|less
 
 # update table (ensure parameters are correct)
-psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET shp_name = 'flu_dunedin_2882.shp', data_date = '2025-05-23', update_date = '2025-05-23'  WHERE county = 'PINELLAS' and city_name = 'DUNEDIN';"
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET shp_name = 'flu_dunedin_single.shp', data_date = '2025-05-23', update_date = '2025-05-23'  WHERE county = 'PINELLAS' and city_name = 'DUNEDIN';"
 
 # update dev
 update_flu.py pinellas dunedin
@@ -2227,8 +2427,11 @@ mv 'Indian_Rocks_Beach_Zoning_(PPC).zip' 'Indian_Rocks_Beach_Zoning_PPC.zip'
 # run if file info needed
 ogrinfo Indian_Rocks_Beach_Zoning_PPC.shp Indian_Rocks_Beach_Zoning_PPC|less
 
+# explode multi_polygons and select fields
+ogr2ogr -explodecollections -select "FLU, FLU_NAME" Indian_Rocks_Beach_Zoning_PPC_single.shp Indian_Rocks_Beach_Zoning_PPC.shp
+
 # update table (ensure parameters are correct)
-psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 2882, shp_name = 'Indian_Rocks_Beach_Zoning_PPC.shp', data_date = '2024-03-19', update_date = '2025-05-23'  WHERE county = 'PINELLAS' and city_name = 'INDIAN_ROCKS_BEACH';"
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 2882, shp_name = 'Indian_Rocks_Beach_Zoning_PPC_single.shp', data_date = '2024-03-19', update_date = '2025-05-23'  WHERE county = 'PINELLAS' and city_name = 'INDIAN_ROCKS_BEACH';"
 
 # update dev
 update_flu.py pinellas indian_rocks_beach
@@ -2260,8 +2463,11 @@ mv 'Indian_Shores_Zoning_(PPC).zip' 'Indian_Shores_Zoning_PPC.zip'
 # run if file info needed
 ogrinfo Indian_Shores_Zoning_PPC.shp Indian_Shores_Zoning_PPC|less
 
+# explode multi_polygons and select fields
+ogr2ogr -explodecollections -select "FLU, FLU_NAME" Indian_Shores_Zoning_PPC_single.shp Indian_Shores_Zoning_PPC.shp
+
 # update table (ensure parameters are correct)
-psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 2882, shp_name = 'Indian_Shores_Zoning_PPC.shp', data_date = '2025-05-07', update_date = '2025-05-23'  WHERE county = 'PINELLAS' and city_name = 'INDIAN_SHORES';"
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 2882, shp_name = 'Indian_Shores_Zoning_PPC_single.shp', data_date = '2025-05-07', update_date = '2025-05-23'  WHERE county = 'PINELLAS' and city_name = 'INDIAN_SHORES';"
 
 # update dev
 update_flu.py pinellas indian_shores
@@ -2293,8 +2499,11 @@ mv 'Kenneth_City_Zoning_(PPC).zip' 'Kenneth_City_Zoning_PPC.zip'
 # run if file info needed
 ogrinfo Kenneth_City_Zoning_PPC.shp Kenneth_City_Zoning_PPC|less
 
+# explode multi_polygons and select fields
+ogr2ogr -explodecollections -select "FLU, FLU_NAME" Kenneth_City_Zoning_PPC_single.shp Kenneth_City_Zoning_PPC.shp
+
 # update table (ensure parameters are correct)
-psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 2882, shp_name = 'Kenneth_City_Zoning_PPC.shp', data_date = '2024-06-19', update_date = '2025-05-23'  WHERE county = 'PINELLAS' and city_name = 'KENNETH_CITY';"
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 2882, shp_name = 'Kenneth_City_Zoning_PPC_single.shp', data_date = '2024-06-19', update_date = '2025-05-23'  WHERE county = 'PINELLAS' and city_name = 'KENNETH_CITY';"
 
 # update dev
 update_flu.py pinellas kenneth_city
@@ -2326,8 +2535,11 @@ mv 'Madeira_Beach_Zoning_(PPC).zip' Madeira_Beach_Zoning_PPC.zip
 # run if file info needed
 ogrinfo Madeira_Beach_Zoning_PPC.shp Madeira_Beach_Zoning_PPC|less
 
+# explode multi_polygons and select fields
+ogr2ogr -explodecollections -select "FLU, FLU_NAME" Madeira_Beach_Zoning_PPC_single.shp Madeira_Beach_Zoning_PPC.shp
+
 # update table (ensure parameters are correct)
-psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 2882, shp_name = 'Madeira_Beach_Zoning_PPC.shp', data_date = '2024-06-19', update_date = '2025-05-23'  WHERE county = 'PINELLAS' and city_name = 'MADEIRA_BEACH';"
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 2882, shp_name = 'Madeira_Beach_Zoning_PPC_single.shp', data_date = '2024-06-19', update_date = '2025-05-23'  WHERE county = 'PINELLAS' and city_name = 'MADEIRA_BEACH';"
 
 # update dev
 update_flu.py pinellas madeira_beach
@@ -2349,8 +2561,11 @@ cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/pinellas
 # run if file info needed
 ogrinfo flu_north_redington_beach.shp flu_north_redington_beach|less
 
+# explode multi_polygons and select fields
+ogr2ogr -explodecollections -select "FLU, FLU_NAME" flu_north_redington_beach_single.shp flu_north_redington_beach.shp
+
 # update table (ensure parameters are correct)
-psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET shp_name = 'flu_north_redington_beach.shp', data_date = '2024-04-02', update_date = '2024-04-04'  WHERE county = 'PINELLAS' and city_name = 'NORTH_REDINGTON_BEACH'"
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET shp_name = 'flu_north_redington_beach_single.shp', data_date = '2024-04-02', update_date = '2024-04-04'  WHERE county = 'PINELLAS' and city_name = 'NORTH_REDINGTON_BEACH'"
 
 # update dev
 update_flu.py pinellas north_redington_beach
@@ -2373,17 +2588,18 @@ cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/pinellas
 ags_extract_data2.py flu_pinellas_park delete 15
 
 # process data
-ogr2ogr -explodecollections -t_srs "EPSG:2882" zoning_pinellas_park_2882.shp flu_pinellas_park.shp
+# explode multi_polygons and select fields
+ogr2ogr -explodecollections -select "FLU, FLU_NAME" flu_pinellas_park_single.shp flu_pinellas_park.shp
 
 # Note: The following command results in an error - keep for reference
 # ogr2ogr -explodecollections -t_srs "EPSG:2882" zoning_pinellas_park_2882.shp flu_pinellas_park.shp -dialect sqlite -sql "select ST_union(Geometry) from input"
 # ERROR 6: The SQLite driver needs to be compiled to support the SQLite SQL dialect
 
 # run if file info needed
-ogrinfo flu_pinellas_park_2882.shp zoning_pinellas_park_2882|less
+ogrinfo flu_pinellas_park_single.shp zoning_pinellas_park_2882|less
 
 # update table (ensure parameters are correct)
-psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET shp_name = 'flu_pinellas_park_2882.shp', data_date = '2024-04-02', update_date = '2024-04-04'  WHERE county = 'PINELLAS' and city_name = 'PINELLAS_PARK'"
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET shp_name = 'flu_pinellas_park_single.shp', data_date = '2024-04-02', update_date = '2024-04-04'  WHERE county = 'PINELLAS' and city_name = 'PINELLAS_PARK'"
 
 # update dev
 update_flu.py pinellas pinellas_park
@@ -2415,8 +2631,11 @@ mv 'Redington_Shores_Zoning_(PPC).zip' 'Redington_Shores_Zoning_PPC.zip'
 # run if file info needed
 ogrinfo Redington_Shores_Zoning_PPC.shp Redington_Shores_Zoning_PPC|less
 
+# explode multi_polygons and select fields
+ogr2ogr -explodecollections -select "FLU, FLU_NAME" Redington_Shores_Zoning_PPC_single.shp Redington_Shores_Zoning_PPC.shp
+
 # update table (ensure parameters are correct)
-psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 2882, shp_name = 'Redington_Shores_Zoning_PPC.shp', data_date = '2024-06-19', update_date = '2025-05-23'  WHERE county = 'PINELLAS' and city_name = 'REDINGTON_SHORES';"
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 2882, shp_name = 'Redington_Shores_Zoning_PPC_single.shp', data_date = '2024-06-19', update_date = '2025-05-23'  WHERE county = 'PINELLAS' and city_name = 'REDINGTON_SHORES';"
 
 # update dev
 update_flu.py pinellas redington_shores
@@ -2439,18 +2658,17 @@ cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/pinellas
 ags_extract_data2.py flu_seminole delete 15
 
 # OPENDATA: download, unzip, strip parentheses (if needed), then move to plato
-mv 'Seminole_Zoning_(PPC).cpg' 'Seminole_Zoning_PPC.cpg'
-mv 'Seminole_Zoning_(PPC).dbf' 'Seminole_Zoning_PPC.dbf'
-mv 'Seminole_Zoning_(PPC).prj' 'Seminole_Zoning_PPC.prj'
-mv 'Seminole_Zoning_(PPC).shp' 'Seminole_Zoning_PPC.shp'
-mv 'Seminole_Zoning_(PPC).shx' 'Seminole_Zoning_PPC.shx'
-mv 'Seminole_Zoning_(PPC).zip' 'Seminole_Zoning_PPC.zip'
+# mv 'Seminole_Zoning_(PPC).cpg' 'Seminole_Zoning_PPC.cpg'
+# ... (Assume primary is from AGS: flu_seminole.shp)
 
 # run if file info needed
-ogrinfo Seminole_Zoning_PPC.shp Seminole_Zoning_PPC|less
+ogrinfo flu_seminole.shp flu_seminole|less
+
+# explode multi_polygons and select fields
+ogr2ogr -explodecollections -select "FLU, FLU_NAME" flu_seminole_single.shp flu_seminole.shp
 
 # update table (ensure parameters are correct)
-psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 2882, shp_name = 'Seminole_Zoning_PPC.shp', data_date = '2024-10-09', update_date = '2025-05-23'  WHERE county = 'PINELLAS' and city_name = 'SEMINOLE'"
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 2882, shp_name = 'flu_seminole_single.shp', data_date = '2024-10-09', update_date = '2025-05-23'  WHERE county = 'PINELLAS' and city_name = 'SEMINOLE'"
 
 # update dev
 update_flu.py pinellas seminole
@@ -2482,8 +2700,11 @@ mv 'South_Pasadena_Zoning_(PPC).zip' 'South_Pasadena_Zoning_PPC.zip'
 # run if file info needed
 ogrinfo South_Pasadena_Zoning_PPC.shp South_Pasadena_Zoning_PPC|less
 
+# explode multi_polygons and select fields
+ogr2ogr -explodecollections -select "FLU, FLU_NAME" South_Pasadena_Zoning_PPC_single.shp South_Pasadena_Zoning_PPC.shp
+
 # update table (ensure parameters are correct)
-psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 2882, shp_name = 'South_Pasadena_Zoning_PPC.shp', data_date = '2024-08-13', update_date = '2025-05-23'  WHERE county = 'PINELLAS' and city_name = 'SOUTH_PASADENA';"
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 2882, shp_name = 'South_Pasadena_Zoning_PPC_single.shp', data_date = '2024-08-13', update_date = '2025-05-23'  WHERE county = 'PINELLAS' and city_name = 'SOUTH_PASADENA';"
 
 # update dev
 update_flu.py pinellas south_pasadena
@@ -2510,8 +2731,11 @@ ags_extract_data2.py flu_st_petersburg delete 15
 # run if file info needed
 ogrinfo Zoning_Districts.shp Zoning_Districts|less
 
+# explode multi_polygons and select fields
+ogr2ogr -explodecollections -select "FLU, FLU_NAME" flu_st_petersburg_single.shp flu_st_petersburg.shp
+
 # update table (ensure parameters are correct)
-psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 2882, shp_name = 'Zoning_Districts.shp', data_date = '2024-11-13', update_date = '2025-05-23'  WHERE county = 'PINELLAS' and city_name = 'ST_PETERSBURG'"
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 2882, shp_name = 'flu_st_petersburg_single.shp', data_date = '2024-11-13', update_date = '2025-05-23'  WHERE county = 'PINELLAS' and city_name = 'ST_PETERSBURG'"
 
 # update dev
 update_flu.py pinellas st_petersburg
@@ -2543,8 +2767,11 @@ mv 'Treasure_Island_Zoning_(PPC).zip' 'Treasure_Island_Zoning_PPC.zip'
 # run if file info needed
 ogrinfo Treasure_Island_Zoning_PPC.shp Treasure_Island_Zoning_PPC|less
 
+# explode multi_polygons and select fields
+ogr2ogr -explodecollections -select "FLU, FLU_NAME" Treasure_Island_Zoning_PPC_single.shp Treasure_Island_Zoning_PPC.shp
+
 # update table (ensure parameters are correct)
-psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 2882, shp_name = 'Treasure_Island_Zoning_PPC.shp', data_date = '2024-06-12', update_date = '2025-05-23'  WHERE county = 'PINELLAS' and city_name = 'TREASURE_ISLAND'"
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 2882, shp_name = 'Treasure_Island_Zoning_PPC_single.shp', data_date = '2024-06-12', update_date = '2025-05-23'  WHERE county = 'PINELLAS' and city_name = 'TREASURE_ISLAND'"
 
 # update dev
 update_flu.py pinellas treasure_island
@@ -2576,8 +2803,11 @@ mv 'Zoning_(Unincorporated).zip' 'Zoning_Unincorporated.zip'
 # run if file info needed
 ogrinfo Zoning_Unincorporated.shp Zoning_Unincorporated|less
 
+# explode multi_polygons and select fields
+ogr2ogr -explodecollections -select "FLU, FLU_NAME" Zoning_Unincorporated_single.shp Zoning_Unincorporated.shp
+
 # update table (ensure parameters are correct)
-psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 2882, shp_name = 'Zoning_Unincorporated.shp', data_date = '2025-01-28', update_date = '2024-04-04'  WHERE county = 'PINELLAS' and city_name = 'UNINCORPORATED'"
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 2882, shp_name = 'Zoning_Unincorporated_single.shp', data_date = '2025-01-28', update_date = '2024-04-04'  WHERE county = 'PINELLAS' and city_name = 'UNINCORPORATED'"
 
 # update dev
 update_flu.py pinellas unincorporated
@@ -2611,8 +2841,11 @@ unzip -oj FutureLandUse.zip
 # run if file info needed
 ogrinfo FutureLandUse.shp Zoning|less
 
+# explode multi_polygons and select fields
+ogr2ogr -explodecollections -select "FLU, FLU_NAME" FutureLandUse_single.shp FutureLandUse.shp
+
 # update table (ensure parameters are correct)
-psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 2237, shp_name = 'FutureLandUse.shp', data_date = '2025-05-12', update_date = '2025-05-24'  WHERE county = 'POLK' and city_name = 'LAKELAND'"
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 2237, shp_name = 'FutureLandUse_single.shp', data_date = '2025-05-12', update_date = '2025-05-24'  WHERE county = 'POLK' and city_name = 'LAKELAND'"
 
 # update dev
 update_flu.py polk lakeland
@@ -2635,7 +2868,11 @@ cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/polk/cur
 ogrinfo dea7bacb-e26f-4777-a3c5-644d3c25be8e202045-1-vhh0md.mldaj.shp dea7bacb-e26f-4777-a3c5-644d3c25be8e202045-1-vhh0md.mldaj|less
 
 # process data
-ogr2ogr -explodecollections flu_single.shp dea7bacb-e26f-4777-a3c5-644d3c25be8e202045-1-vhh0md.mldaj.shp 
+# explode multi_polygons and select fields
+ogr2ogr -explodecollections -select "FLU, FLU_NAME" dea7bacb-e26f-4777-a3c5-644d3c25be8e202045-1-vhh0md.mldaj_single.shp dea7bacb-e26f-4777-a3c5-644d3c25be8e202045-1-vhh0md.mldaj.shp
+# Original output was flu_single.shp
+# Original: ogr2ogr -explodecollections flu_single.shp dea7bacb-e26f-4777-a3c5-644d3c25be8e202045-1-vhh0md.mldaj.shp 
+# No psql update for support.flu_transform in this block to modify shp_name.
 update_flu.py polk lakeland
 
 ```
@@ -2661,8 +2898,11 @@ mv Zoning_Distritcs_hub.shp flu_putnam_unincorporated.shp
 # run if file info needed
 ogrinfo flu_putnam_unincorporated.shp flu_putnam_unincorporated|less
 
+# explode multi_polygons and select fields
+ogr2ogr -explodecollections -select "FLU, FLU_NAME" flu_putnam_unincorporated_single.shp flu_putnam_unincorporated.shp
+
 # update table (ensure parameters are correct)
-psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 2236, shp_name = 'flu_putnam_unincorporated.shp', data_date = '2024-09-10', update_date = '2025-05-29'  WHERE county = 'PUTNAM' and city_name = 'UNINCORPORATED'"
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 2236, shp_name = 'flu_putnam_unincorporated_single.shp', data_date = '2024-09-10', update_date = '2025-05-29'  WHERE county = 'PUTNAM' and city_name = 'UNINCORPORATED'"
 
 # update dev
 update_flu.py putnam unincorporated
@@ -2696,9 +2936,11 @@ ogrinfo FutureLandUse.shp Zoning|less
 
 # Note: Commented out processing step, keep for reference
 # ogr2ogr -explodecollections FutureLandUse_single.shp FutureLandUse.shp
+# explode multi_polygons and select fields
+ogr2ogr -explodecollections -select "FLU, FLU_NAME" FutureLandUse_single.shp FutureLandUse.shp
 
 # update table (ensure parameters are correct)
-psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 2238, shp_name = 'FutureLandUse.shp', data_date = '2025-04-03', update_date = '2025-05-29'  WHERE county = 'SANTA_ROSA' and city_name = 'UNINCORPORATED'"
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 2238, shp_name = 'FutureLandUse_single.shp', data_date = '2025-04-03', update_date = '2025-05-29'  WHERE county = 'SANTA_ROSA' and city_name = 'UNINCORPORATED'"
 
 # update dev
 update_flu.py santa_rosa unincorporated
@@ -2730,8 +2972,11 @@ ogrinfo flu_north_port.shp flu_north_port | less
 # Create an archive since we downloaded from AGS
 zip zoning_north_port zoning_north_port.*
 
+# explode multi_polygons and select fields
+ogr2ogr -explodecollections -select "FLU, FLU_NAME" flu_north_port_single.shp flu_north_port.shp
+
 # update table (ensure parameters are correct)
-psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET shp_name = 'flu_north_port.shp', srs_epsg = '4326', data_date = '2024-10-28', update_date = '2025-04-16'  WHERE county = 'SARASOTA' and city_name = 'NORTH_PORT'"
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET shp_name = 'flu_north_port_single.shp', srs_epsg = '4326', data_date = '2024-10-28', update_date = '2025-04-16'  WHERE county = 'SARASOTA' and city_name = 'NORTH_PORT'"
 
 # update dev
 update_flu.py sarasota north_port
@@ -2761,8 +3006,11 @@ zip_rename_date.sh zoning.zip
 # run if file info needed
 ogrinfo Zoning_Districts.shp Zoning_Districts|less
 
+# explode multi_polygons and select fields
+ogr2ogr -explodecollections -select "FLU, FLU_NAME" Zoning_Districts_single.shp Zoning_Districts.shp
+
 # update table (ensure parameters are correct)
-psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET shp_name = 'Zoning_Districts.shp', data_date = '2025-04-01', update_date = '2025-01-01', srs_epsg = '2882'  WHERE county = 'SARASOTA' and city_name = 'SARASOTA'"
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET shp_name = 'Zoning_Districts_single.shp', data_date = '2025-04-01', update_date = '2025-01-01', srs_epsg = '2882'  WHERE county = 'SARASOTA' and city_name = 'SARASOTA'"
 
 # update dev
 update_flu.py sarasota sarasota
@@ -2794,7 +3042,8 @@ zip_rename_date.sh zoning.zip
 ogrinfo flu_venice.shp flu_venice|less
 
 # Note: polygons need dissolving
-ogr2ogr flu_venice_dissolve.shp flu_venice.shp -dialect sqlite -sql "SELECT ST_Union(geometry), map_label, zoning_dis, notes FROM input GROUP BY map_label, zoning_dis, notes"
+# explode multi_polygons and select fields
+ogr2ogr -explodecollections -select "FLU, FLU_NAME" flu_venice_single.shp flu_venice.shp
 
 # Note: Run repair in QGIS
 # Use Fix geometry tool - search for tool in vector tools
@@ -2805,7 +3054,7 @@ ogr2ogr flu_venice_dissolve.shp flu_venice.shp -dialect sqlite -sql "SELECT ST_U
 # Save to flu_venice_dissolve.shp
 
 # update table (ensure parameters are correct)
-psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET shp_name = 'flu_venice_dissolve.shp', data_date = '2025-05-01', update_date = '2025-05-01', srs_epsg = '4326'  WHERE county = 'SARASOTA' and city_name = 'VENICE'"
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET shp_name = 'flu_venice_single.shp', data_date = '2025-05-01', update_date = '2025-05-01', srs_epsg = '4326'  WHERE county = 'SARASOTA' and city_name = 'VENICE'"
 
 # update dev
 update_flu.py sarasota venice
@@ -2836,8 +3085,11 @@ zip_rename_date.sh CountyFutureLandUse.zip
 # run if file info needed
 ogrinfo CountyFutureLandUse.shp CountyZoning|less
 
+# explode multi_polygons and select fields
+ogr2ogr -explodecollections -select "FLU, FLU_NAME" CountyFutureLandUse_single.shp CountyFutureLandUse.shp
+
 # update table (ensure parameters are correct)
-psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET shp_name = 'CountyFutureLandUse.shp', data_date = '2025-04-21', update_date = '2025-05-01', srs_epsg = '2882'  WHERE county = 'SARASOTA' and city_name = 'UNINCORPORATED'"
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET shp_name = 'CountyFutureLandUse_single.shp', data_date = '2025-04-21', update_date = '2025-05-01', srs_epsg = '2882'  WHERE county = 'SARASOTA' and city_name = 'UNINCORPORATED'"
 
 # update dev
 update_flu.py sarasota unincorporated
@@ -2860,14 +3112,15 @@ update_flu.py sarasota unincorporated
 # go to working directory
 cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/seminole/current/source_data/altamonte_springs
 
-# grab data from website, unzip and move to plato
+# grab data from website, unzip and move to plato (Assume results in FutureLandUse.shp)
 
 # run if file info needed
 ogrinfo FutureLandUse.shp Zoning|less
 
 # process data
-rm Zoning_single.*
-ogr2ogr -explodecollections -select "ZONING" FutureLandUse_single.shp FutureLandUse.shp
+# rm Zoning_single.* # This was for a differently named output
+# explode multi_polygons and select fields
+ogr2ogr -explodecollections -select "FLU, FLU_NAME" FutureLandUse_single.shp FutureLandUse.shp
 
 # update table (ensure parameters are correct)
 psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 2236, shp_name = 'FutureLandUse_single.shp', data_date = '2024-12-18', update_date = '2025-05-24'  WHERE county = 'SEMINOLE' and city_name = 'ALTAMONTE_SPRINGS'"
@@ -2895,8 +3148,11 @@ ags_extract_data2.py flu_casselberry delete 15
 # run if file info needed
 ogrinfo flu_casselberry.shp flu_casselberry|less
 
+# explode multi_polygons and select fields
+ogr2ogr -explodecollections -select "FLU, FLU_NAME" flu_casselberry_single.shp flu_casselberry.shp
+
 # update table (ensure parameters are correct)
-psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 4326, shp_name = 'flu_casselberry.shp', data_date = '2025-05-25', update_date = '2025-05-25'  WHERE county = 'SEMINOLE' and city_name = 'CASSELBERRY'"
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 4326, shp_name = 'flu_casselberry_single.shp', data_date = '2025-05-25', update_date = '2025-05-25'  WHERE county = 'SEMINOLE' and city_name = 'CASSELBERRY'"
 
 # update dev
 update_flu.py seminole casselberry
@@ -2921,8 +3177,11 @@ ags_extract_data2.py flu_lake_mary delete 15
 # run if file info needed
 ogrinfo flu_lake_mary.shp flu_lake_mary|less
 
+# explode multi_polygons and select fields
+ogr2ogr -explodecollections -select "FLU, FLU_NAME" flu_lake_mary_single.shp flu_lake_mary.shp
+
 # update table (ensure parameters are correct)
-psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 4326, shp_name = 'flu_lake_mary.shp', data_date = '2025-05-25', update_date = '2025-05-25'  WHERE county = 'SEMINOLE' and city_name = 'LAKE_MARY'"
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 4326, shp_name = 'flu_lake_mary_single.shp', data_date = '2025-05-25', update_date = '2025-05-25'  WHERE county = 'SEMINOLE' and city_name = 'LAKE_MARY'"
 
 # update dev
 update_flu.py seminole lake_mary
@@ -2947,8 +3206,11 @@ ags_extract_data2.py flu_longwood delete 15
 # run if file info needed
 ogrinfo flu_longwood.shp flu_longwood|less
 
+# explode multi_polygons and select fields
+ogr2ogr -explodecollections -select "FLU, FLU_NAME" flu_longwood_single.shp flu_longwood.shp
+
 # update table (ensure parameters are correct)
-psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET shp_name = 'flu_longwood.shp', data_date = '2024-04-02', update_date = '2024-04-02'  WHERE county = 'SEMINOLE' and city_name = 'LONGWOOD'"
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET shp_name = 'flu_longwood_single.shp', data_date = '2024-04-02', update_date = '2024-04-02'  WHERE county = 'SEMINOLE' and city_name = 'LONGWOOD'"
 
 # update dev
 update_flu.py seminole longwood
@@ -2973,8 +3235,11 @@ ags_extract_data2.py flu_oviedo delete 15
 # run if file info needed
 ogrinfo flu_oviedo.shp flu_oviedo|less
 
+# explode multi_polygons and select fields
+ogr2ogr -explodecollections -select "FLU, FLU_NAME" flu_oviedo_single.shp flu_oviedo.shp
+
 # update table (ensure parameters are correct)
-psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 4326, shp_name = 'flu_oviedo.shp', data_date = '2025-05-25', update_date = '2025-05-25'  WHERE county = 'SEMINOLE' and city_name = 'OVIEDO'"
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 4326, shp_name = 'flu_oviedo_single.shp', data_date = '2025-05-25', update_date = '2025-05-25'  WHERE county = 'SEMINOLE' and city_name = 'OVIEDO'"
 
 # update dev
 update_flu.py seminole oviedo
@@ -2999,8 +3264,11 @@ ags_extract_data2.py flu_sanford delete 15
 # run if file info needed
 ogrinfo flu_sanford.shp flu_sanford|less
 
+# explode multi_polygons and select fields
+ogr2ogr -explodecollections -select "FLU, FLU_NAME" flu_sanford_single.shp flu_sanford.shp
+
 # update table (ensure parameters are correct)
-psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 4326, shp_name = 'flu_sanford.shp', data_date = '2025-05-25', update_date = '2025-05-25'  WHERE county = 'SEMINOLE' and city_name = 'SANFORD'"
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 4326, shp_name = 'flu_sanford_single.shp', data_date = '2025-05-25', update_date = '2025-05-25'  WHERE county = 'SEMINOLE' and city_name = 'SANFORD'"
 
 # update dev
 update_flu.py seminole sanford
@@ -3025,8 +3293,11 @@ ags_extract_data2.py flu_winter_springs delete 15
 # run if file info needed
 ogrinfo flu_winter_springs.shp flu_winter_springs|less
 
+# explode multi_polygons and select fields
+ogr2ogr -explodecollections -select "FLU, FLU_NAME" flu_winter_springs_single.shp flu_winter_springs.shp
+
 # update table (ensure parameters are correct)
-psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 4326, shp_name = 'flu_winter_springs.shp', data_date = '2025-05-25', update_date = '2025-05-25'  WHERE county = 'SEMINOLE' and city_name = 'WINTER_SPRINGS'"
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 4326, shp_name = 'flu_winter_springs_single.shp', data_date = '2025-05-25', update_date = '2025-05-25'  WHERE county = 'SEMINOLE' and city_name = 'WINTER_SPRINGS'"
 
 # update dev
 update_flu.py seminole winter_springs
@@ -3050,7 +3321,8 @@ cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/seminole
 # check attributes still match columns in support.flu_transform
 ogrinfo LandUse.gdb Zoning|less
 
-ogr2ogr -explodecollections -select "ZONING, ORDINANCE" FutureLandUse_single.shp LandUse.gdb Zoning
+# explode multi_polygons and select fields
+ogr2ogr -explodecollections -select "FLU, FLU_NAME" FutureLandUse_single.shp LandUse.gdb Zoning
 
 psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET shp_name = 'FutureLandUse_single.shp', data_date = '2024-03-19', update_date = '2024-04-02'  WHERE county = 'SEMINOLE' and city_name = 'UNINCORPORATED'"
 
@@ -3067,7 +3339,7 @@ update_flu.py seminole unincorporated
 # go to working directory
 cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/st_johns/current/source_data/unincorporated
 
-# Opendata: grab data, unzip, move to plato
+# Opendata: grab data, unzip, move to plato (results in FutureLandUse.shp)
 
 # OLD: download data
 #download_data.py /data/flu/st_johns/unincorporated
@@ -3075,8 +3347,11 @@ cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/st_johns
 # check attributes still match columns in support.flu_transform
 ogrinfo FutureLandUse.shp Zoning|less
 
+# explode multi_polygons and select fields
+ogr2ogr -explodecollections -select "FLU, FLU_NAME" FutureLandUse_single.shp FutureLandUse.shp
+
 # update transform table
-psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 3857, shp_name = 'FutureLandUse.shp', data_date = '2025-05-27', update_date = '2025-05-27'  WHERE county = 'ST_JOHNS' and city_name = 'UNINCORPORATED'"
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 3857, shp_name = 'FutureLandUse_single.shp', data_date = '2025-05-27', update_date = '2025-05-27'  WHERE county = 'ST_JOHNS' and city_name = 'UNINCORPORATED'"
 
 # update dev
 update_flu.py st_johns unincorporated
@@ -3107,7 +3382,7 @@ ags_extract_data2.py flu_port_st_lucie delete 15 zoning,seu_type
 ogrinfo flu_port_st_lucie.shp flu_port_st_lucie|less
 
 # update table w/ correct info
-psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 4326, shp_name = 'flu_port_st_lucie.shp', data_date = '2025-05-27', update_date = '2025-05-27'  WHERE county = 'ST_LUCIE' and city_name = 'PORT_ST_LUCIE'"
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 4326, shp_name = 'flu_port_st_lucie_single.shp', data_date = '2025-05-27', update_date = '2025-05-27'  WHERE county = 'ST_LUCIE' and city_name = 'PORT_ST_LUCIE'"
 
 # update dev
 update_flu.py st_lucie port_st_lucie
@@ -3134,7 +3409,7 @@ download_data.py /data/flu/st_lucie/unincorporated
 ogrinfo FutureLandUse.shp Zoning|less
 
 # update transform table
-psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 2236, shp_name = 'FutureLandUse.shp', data_date = '2025-03-25', update_date = '2025-05-27'  WHERE county = 'ST_LUCIE' and city_name = 'UNINCORPORATED'"
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 2236, shp_name = 'FutureLandUse_single.shp', data_date = '2025-03-25', update_date = '2025-05-27'  WHERE county = 'ST_LUCIE' and city_name = 'UNINCORPORATED'"
 
 # update dev
 update_flu.py st_lucie unincorporated
@@ -3164,7 +3439,10 @@ ags_extract_data2.py flu_sumter delete 15
 # check attributes still match columns in support.flu_transform
 ogrinfo flu_sumter.shp flu_sumter|less
 
-psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 4326, shp_name = 'flu_sumter.shp', data_date = '2025-05-29', update_date = '2025-05-29'  WHERE county = 'SUMTER' and city_name = 'UNINCORPORATED'"
+# explode multi_polygons and select fields
+ogr2ogr -explodecollections -select "FLU, FLU_NAME" flu_sumter_single.shp flu_sumter.shp
+
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 4326, shp_name = 'flu_sumter_single.shp', data_date = '2025-05-29', update_date = '2025-05-29'  WHERE county = 'SUMTER' and city_name = 'UNINCORPORATED'"
 
 update_flu.py sumter unincorporated
 
@@ -3187,15 +3465,18 @@ update_flu.py sumter unincorporated
 # go to working directory
 cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/volusia/current/source_data/countywide
 
-# get data from opendata portal
+# get data from opendata portal (Results in Countywide_FutureLandUse.shp)
 
 # unzip and move to plato
 
 # run if file info needed
 ogrinfo Countywide_FutureLandUse.shp Countywide_Zoning|less
 
+# explode multi_polygons and select fields
+ogr2ogr -explodecollections -select "FLU, FLU_NAME" Countywide_FutureLandUse_single.shp Countywide_FutureLandUse.shp
+
 # update table w/ proper parameters
-psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET temp_table_name = 'raw_volusia_countywide', zon_code_col = 'genl_zcode', srs_epsg = 2881, shp_name = 'Countywide_FutureLandUse.shp', data_date = '2025-03-26', update_date = '2025-05-24'  WHERE county = 'VOLUSIA' and city_name = 'COUNTYWIDE';"
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET temp_table_name = 'raw_volusia_countywide', zon_code_col = 'genl_zcode', srs_epsg = 2881, shp_name = 'Countywide_FutureLandUse_single.shp', data_date = '2025-03-26', update_date = '2025-05-24'  WHERE county = 'VOLUSIA' and city_name = 'COUNTYWIDE';"
 
 # update dev
 update_flu.py volusia countywide
@@ -3215,12 +3496,15 @@ update_flu.py volusia countywide
 # go to working directory
 cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/volusia/current/source_data/daytona_beach
 
-# ??
+# ?? (Assume results in New_FutureLandUse.shp)
 
 # check attributes still match columns in support.flu_transform
 ogrinfo New_FutureLandUse.shp New_Zoning|less
 
-psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET shp_name = 'New_FutureLandUse.shp', data_date = '2024-02-08', update_date = '2024-04-01'  WHERE county = 'VOLUSIA' and city_name = 'DAYTONA_BEACH'"
+# explode multi_polygons and select fields
+ogr2ogr -explodecollections -select "FLU, FLU_NAME" New_FutureLandUse_single.shp New_FutureLandUse.shp
+
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET shp_name = 'New_FutureLandUse_single.shp', data_date = '2024-02-08', update_date = '2024-04-01'  WHERE county = 'VOLUSIA' and city_name = 'DAYTONA_BEACH'"
 
 update_flu.py volusia daytona_beach
 
@@ -3245,7 +3529,10 @@ ags_extract_data2.py flu_port_orange delete 15
 # check attributes still match columns in support.flu_transform
 ogrinfo flu_port_orange.shp flu_port_orange|less
 
-psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET shp_name = 'flu_port_orange.shp', data_date = '2024-04-01', update_date = '2024-04-01'  WHERE county = 'VOLUSIA' and city_name = 'PORT_ORANGE'"
+# explode multi_polygons and select fields
+ogr2ogr -explodecollections -select "FLU, FLU_NAME" flu_port_orange_single.shp flu_port_orange.shp
+
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET shp_name = 'flu_port_orange_single.shp', data_date = '2024-04-01', update_date = '2024-04-01'  WHERE county = 'VOLUSIA' and city_name = 'PORT_ORANGE'"
 
 update_flu.py volusia port_orange
 
@@ -3264,12 +3551,15 @@ update_flu.py volusia port_orange
 # go to working directory
 cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/volusia/current/source_data/unincorporated
 
-# ??
+# ?? (Assume results in FutureLandUse.shp)
 
 # check attributes still match columns in support.flu_transform
 ogrinfo FutureLandUse.shp Zoning|less
 
-psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET shp_name = 'FutureLandUse.shp', data_date = '2024-03-28', update_date = '2024-04-01'  WHERE county = 'VOLUSIA' and city_name = 'UNINCORPORATED'"
+# explode multi_polygons and select fields
+ogr2ogr -explodecollections -select "FLU, FLU_NAME" FutureLandUse_single.shp FutureLandUse.shp
+
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET shp_name = 'FutureLandUse_single.shp', data_date = '2024-03-28', update_date = '2024-04-01'  WHERE county = 'VOLUSIA' and city_name = 'UNINCORPORATED'"
 
 update_flu.py volusia unincorporated
 
@@ -3298,8 +3588,11 @@ ags_extract_data2.py flu_walton delete 15
 # run if file info needed
 ogrinfo flu_walton.shp flu_walton|less
 
+# explode multi_polygons and select fields
+ogr2ogr -explodecollections -select "FLU, FLU_NAME" flu_walton_single.shp flu_walton.shp
+
 # update table (ensure parameters are correct)
-psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET shp_name = 'flu_walton.shp', data_date = '2025-04-27', update_date = '2025-05-01', srs_epsg = '4236'  WHERE county = 'WALTON' and city_name = 'UNINCORPORATED'"
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET shp_name = 'flu_walton_single.shp', data_date = '2025-04-27', update_date = '2025-05-01', srs_epsg = '4236'  WHERE county = 'WALTON' and city_name = 'UNINCORPORATED'"
 
 # update dev
 update_flu.py walton unincorporated
