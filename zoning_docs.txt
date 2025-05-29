@@ -523,16 +523,16 @@ download_data.py /data/zoning/charlotte/unincorporated
 unzip -oj zoning.zip
 
 # archive with date
-zip_rename_date.sh Zoning.zip
+zip_rename_date.sh zoning.zip
 
 # run if file info needed
 ogrinfo ZONING.shp ZONING|less
 
 # process data
-ogr2ogr -explodecollections Zoning_single.shp Zoning.shp
+ogr2ogr -explodecollections Zoning_single.shp ZONING.shp
 
 # update table (ensure parameters are correct)
-psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'ZONING.shp', data_date = '2022-06-09', update_date = '2024-04-04'  WHERE county = 'CHARLOTTE' and city_name = 'UNINCORPORATED'"
+psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET srs_epsg = 2237, shp_name = 'ZONING.shp', data_date = '2025-05-22', update_date = '2025-05-29'  WHERE county = 'CHARLOTTE' and city_name = 'UNINCORPORATED'"
 
 # update dev
 update_zoning2.py charlotte unincorporated
@@ -803,11 +803,14 @@ update_zoning2.py escambia unincorporated
 # go to working directory
 cd /srv/datascrub/08_Land_Use_and_Zoning/zoning/florida/county/flagler/current/source_data/unincorporated
 
+# run to get data
+ags_extract_data2.py zoning_flagler_unincorporated delete 15
+
 # run if file info needed
 ogrinfo zoning_flagler_unincorporated.shp zoning_flagler_unincorporated|less
 
 # update table (ensure parameters are correct)
-psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'zoning_flagler_unincorporated.shp', data_date = '2024-04-02', update_date = '2024-04-04'  WHERE county = 'FLAGLER' and city_name = 'UNINCORPORATED'"
+psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET srs_epsg = 4326, shp_name = 'zoning_flagler_unincorporated.shp', data_date = '2025-05-29', update_date = '2025-05-29'  WHERE county = 'FLAGLER' and city_name = 'UNINCORPORATED'"
 
 # update dev
 update_zoning2.py flagler unincorporated
@@ -892,7 +895,7 @@ ags_extract_data2.py zoning_highlands delete 15
 ogrinfo zoning_highlands.shp zoning_highlands|less
 
 # update table (ensure parameters are correct)
-psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'zoning_highlands.shp', data_date = '2024-04-02', update_date = '2024-04-04'  WHERE county = 'HIGHLANDS' and city_name = 'UNINCORPORATED'"
+psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET srs_epsg = 4326, shp_name = 'zoning_highlands.shp', data_date = '2025-05-29', update_date = '2025-05-29'  WHERE county = 'HIGHLANDS' and city_name = 'UNINCORPORATED'"
 
 # update dev
 update_zoning2.py highlands unincorporated
@@ -993,10 +996,10 @@ update_zoning2.py hillsborough unincorporated
 # go to working directory
 cd /srv/datascrub/08_Land_Use_and_Zoning/zoning/florida/county/indian_river/current/source_data/vero_beach
 
-# unzip files
+# unzip files (skip if opendata)
 unzip -oj ZoningDistricts.zip
 
-# archive with date
+# archive with date (skip if opendata)
 zip_rename_date.sh ZoningDistricts.zip
 
 # run if file info needed
@@ -1006,7 +1009,7 @@ ogrinfo ZoningDistricts.shp ZoningDistricts|less
 # ogr2ogr -explodecollections Zoning_single.shp Zoning.shp
 
 # update table (ensure parameters are correct)
-psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'ZoningDistricts.shp', data_date = '2023-12-27', update_date = '2024-04-04'  WHERE county = 'INDIAN_RIVER' and city_name = 'VERO_BEACH'"
+psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET srs_epsg = 2236, shp_name = 'ZoningDistricts.shp', data_date = '2025-01-06', update_date = '2025-05-29'  WHERE county = 'INDIAN_RIVER' and city_name = 'VERO_BEACH'"
 
 # update dev
 update_zoning2.py indian_river vero_beach
@@ -1035,7 +1038,7 @@ ogrinfo zoning_indian_river_unincorporated.shp zoning_indian_river_unincorporate
 # ogr2ogr -explodecollections Zoning_single.shp Zoning.shp
 
 # update table (ensure parameters are correct)
-psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'zoning_indian_river_unincorporated.shp', data_date = '2024-04-04', update_date = '2024-04-04'  WHERE county = 'INDIAN_RIVER' and city_name = 'UNINCORPORATED'"
+psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET srs_epsg = 4326, shp_name = 'zoning_indian_river_unincorporated.shp', data_date = '2025-05-29', update_date = '2025-05-29'  WHERE county = 'INDIAN_RIVER' and city_name = 'UNINCORPORATED'"
 
 # update dev
 update_zoning2.py indian_river unincorporated
@@ -1658,7 +1661,7 @@ ags_extract_data2.py zoning_stuart delete 15
 ogrinfo zoning_stuart.shp zoning_stuart|less
 
 # update table (ensure parameters are correct)
-psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'zoning_stuart.shp', data_date = '2024-04-04', update_date = '2024-04-04'  WHERE county = 'MARTIN' and city_name = 'STUART'"
+psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET srs_epsg = 4326, shp_name = 'zoning_stuart.shp', data_date = '2025-05-29', update_date = '2025-05-29'  WHERE county = 'MARTIN' and city_name = 'STUART'"
 
 # update dev
 update_zoning2.py martin stuart
@@ -2644,11 +2647,20 @@ update_zoning2.py polk lakeland
 # go to working directory
 cd /srv/datascrub/08_Land_Use_and_Zoning/zoning/florida/county/putnam/current/source_data/unincorporated
 
+# grab data from opendata portal, then rename
+mv Zoning_Distritcs_hub.cpg zoning_putnam_unincorporated.cpg
+mv Zoning_Distritcs_hub.dbf zoning_putnam_unincorporated.dbf
+mv Zoning_Distritcs_hub.prj zoning_putnam_unincorporated.prj
+mv Zoning_Distritcs_hub.shx zoning_putnam_unincorporated.shx
+mv Zoning_Distritcs_hub.xml zoning_putnam_unincorporated.xml
+mv Zoning_Distritcs_hub.shp zoning_putnam_unincorporated.shp
+
+
 # run if file info needed
 ogrinfo zoning_putnam_unincorporated.shp zoning_putnam_unincorporated|less
 
 # update table (ensure parameters are correct)
-psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'zoning_putnam_unincorporated.shp', data_date = '2024-04-02', update_date = '2024-04-04'  WHERE county = 'PUTNAM' and city_name = 'UNINCORPORATED'"
+psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET srs_epsg = 2236, shp_name = 'zoning_putnam_unincorporated.shp', data_date = '2024-09-10', update_date = '2025-05-29'  WHERE county = 'PUTNAM' and city_name = 'UNINCORPORATED'"
 
 # update dev
 update_zoning2.py putnam unincorporated
@@ -2671,10 +2683,10 @@ update_zoning2.py putnam unincorporated
 # go to working directory
 cd /srv/datascrub/08_Land_Use_and_Zoning/zoning/florida/county/santa_rosa/current/source_data/unincorporated
 
-# unzip files
+# unzip files (skip if opendata)
 unzip -oj zoning.zip
 
-# archive with date
+# archive with date (skip if opendata)
 zip_rename_date.sh Zoning.zip
 
 # run if file info needed
@@ -2684,7 +2696,7 @@ ogrinfo Zoning.shp Zoning|less
 # ogr2ogr -explodecollections Zoning_single.shp Zoning.shp
 
 # update table (ensure parameters are correct)
-psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'Zoning.shp', data_date = '2024-03-11', update_date = '2024-04-04'  WHERE county = 'SANTA_ROSA' and city_name = 'UNINCORPORATED'"
+psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET srs_epsg = 2238, shp_name = 'Zoning.shp', data_date = '2025-04-03', update_date = '2025-05-29'  WHERE county = 'SANTA_ROSA' and city_name = 'UNINCORPORATED'"
 
 # update dev
 update_zoning2.py santa_rosa unincorporated
@@ -3150,7 +3162,7 @@ ags_extract_data2.py zoning_sumter delete 15
 # check attributes still match columns in support.zoning_transform
 ogrinfo zoning_sumter.shp zoning_sumter|less
 
-psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET shp_name = 'zoning_sumter.shp', data_date = '2024-04-04', update_date = '2024-04-04'  WHERE county = 'SUMTER' and city_name = 'UNINCORPORATED'"
+psql -d gisdev -U postgres -c "UPDATE support.zoning_transform SET srs_epsg = 4326, shp_name = 'zoning_sumter.shp', data_date = '2025-05-29', update_date = '2025-05-29'  WHERE county = 'SUMTER' and city_name = 'UNINCORPORATED'"
 
 update_zoning2.py sumter unincorporated
 
