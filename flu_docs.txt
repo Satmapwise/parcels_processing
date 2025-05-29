@@ -8,7 +8,13 @@
 cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/alachua/current/source_data/alachua
 
 # run to grab data
-shp_name = 'flu_alachua_city.shp', srs_epsg = 4326, data_date = '2025-05-27', update_date = '2025-05-27'  WHERE county = 'ALACHUA' and city_name = 'ALACHUA'"
+ags_extract_data2.py flu_alachua_city delete 15
+
+# run if file info needed
+ogrinfo flu_alachua_city.shp flu_alachua_city|less
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 4326, shp_name = 'flu_alachua_city.shp', data_date = '2025-05-27', update_date = '2025-05-27'  WHERE county = 'ALACHUA' and city_name = 'ALACHUA'"
 
 # update dev
 update_flu.py alachua alachua
@@ -28,7 +34,13 @@ update_flu.py alachua alachua
 cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/alachua/current/source_data/archer
 
 # run to grab data
-shp_name = 'flu_archer.shp', srs_epsg = 4326, data_date = '2025-05-27', update_date = '2025-05-27'  WHERE county = 'ALACHUA' and city_name = 'ARCHER'"
+ags_extract_data2.py flu_archer delete 15
+
+# run if file info needed
+ogrinfo flu_archer.shp flu_archer|less
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 4326, shp_name = 'flu_archer.shp', data_date = '2025-05-27', update_date = '2025-05-27'  WHERE county = 'ALACHUA' and city_name = 'ARCHER'"
 
 # update dev
 update_flu.py alachua archer
@@ -48,7 +60,17 @@ update_flu.py alachua archer
 cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/alachua/current/source_data/gainesville
 
 # run to grab data
-shp_name = 'flu_gainesville.shp', srs_epsg = 4326, data_date = '2025-05-27', update_date = '2025-05-27'  WHERE county = 'ALACHUA' and city_name = 'GAINESVILLE'"
+ags_extract_data2.py flu_gainesville delete 15
+
+# OLD
+#ags_extract_data2.py flu_alachua_gainesville delete 15
+#shpmv geo_export_81a7a3be-9fa9-429d-b118-84db93ca042a.shp flu_gainesville.shp
+
+# run if file info needed
+ogrinfo flu_gainesville.shp flu_gainesville|less
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET shp_name = 'flu_gainesville.shp', srs_epsg = 4326, data_date = '2025-05-27', update_date = '2025-05-27'  WHERE county = 'ALACHUA' and city_name = 'GAINESVILLE'"
 
 # update dev
 update_flu.py alachua gainesville
@@ -68,7 +90,13 @@ update_flu.py alachua gainesville
 cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/alachua/current/source_data/hawthorne
 
 # run to grab data
-shp_name = 'flu_hawthorne.shp', srs_epsg = 4326, data_date = '2025-05-27', update_date = '2025-05-27'  WHERE county = 'ALACHUA' and city_name = 'HAWTHORNE'"
+ags_extract_data2.py flu_hawthorne delete 15
+
+# run if file info needed
+ogrinfo flu_hawthorne.shp flu_hawthorne|less
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 4326, shp_name = 'flu_hawthorne.shp', data_date = '2025-05-27', update_date = '2025-05-27'  WHERE county = 'ALACHUA' and city_name = 'HAWTHORNE'"
 
 # update dev
 update_flu.py alachua hawthorne
@@ -88,7 +116,13 @@ update_flu.py alachua hawthorne
 cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/alachua/current/source_data/high_springs
 
 # run to grab data
-shp_name = 'flu_high_springs.shp', srs_epsg = 4326, data_date = '2025-05-27', update_date = '2025-05-27'  WHERE county = 'ALACHUA' and city_name = 'HIGH_SPRINGS'"
+ags_extract_data2.py flu_high_springs delete 15
+
+# run if file info needed
+ogrinfo flu_high_springs.shp flu_high_springs|less
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 4326, shp_name = 'flu_high_springs.shp', data_date = '2025-05-27', update_date = '2025-05-27'  WHERE county = 'ALACHUA' and city_name = 'HIGH_SPRINGS'"
 
 # update dev
 update_flu.py alachua high_springs
@@ -108,7 +142,13 @@ update_flu.py alachua high_springs
 cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/alachua/current/source_data/lacrosse
 
 # run to grab data
-shp_name = 'flu_lacrosse.shp', srs_epsg = 4326, data_date = '2025-05-27', update_date = '2025-05-27'  WHERE county = 'ALACHUA' and city_name = 'LACROSSE'"
+ags_extract_data2.py flu_lacrosse delete 15
+
+# run if file info needed
+ogrinfo flu_lacrosse.shp flu_lacrosse|less
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 4326, shp_name = 'flu_lacrosse.shp', data_date = '2025-05-27', update_date = '2025-05-27'  WHERE county = 'ALACHUA' and city_name = 'LACROSSE'"
 
 # update dev
 update_flu.py alachua lacrosse
@@ -128,7 +168,13 @@ update_flu.py alachua lacrosse
 cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/alachua/current/source_data/micanopy
 
 # run to grab data
-shp_name = 'flu_micanopy.shp', srs_epsg = 4326, data_date = '2025-05-27', update_date = '2025-05-27'  WHERE county = 'ALACHUA' and city_name = 'MICANOPY'"
+ags_extract_data2.py flu_micanopy delete 15
+
+# run if file info needed
+ogrinfo flu_micanopy.shp flu_micanopy|less
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 4326, shp_name = 'flu_micanopy.shp', data_date = '2025-05-27', update_date = '2025-05-27'  WHERE county = 'ALACHUA' and city_name = 'MICANOPY'"
 
 # update dev
 update_flu.py alachua micanopy
@@ -148,7 +194,13 @@ update_flu.py alachua micanopy
 cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/alachua/current/source_data/newberry
 
 # run to grab data
-shp_name = 'flu_newberry.shp', srs_epsg = 4326, data_date = '2025-05-27', update_date = '2025-05-27'  WHERE county = 'ALACHUA' and city_name = 'NEWBERRY'"
+ags_extract_data2.py flu_newberry delete 15
+
+# run if file info needed
+ogrinfo flu_newberry.shp flu_newberry|less
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 4326, shp_name = 'flu_newberry.shp', data_date = '2025-05-27', update_date = '2025-05-27'  WHERE county = 'ALACHUA' and city_name = 'NEWBERRY'"
 
 # update dev
 update_flu.py alachua newberry
@@ -168,7 +220,13 @@ update_flu.py alachua newberry
 cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/alachua/current/source_data/unincorporated
 
 # run to grab data
-shp_name = 'flu_alachua_unincorporated.shp', srs_epsg = 4326, data_date = '2025-05-27', update_date = '2025-05-27'  WHERE county = 'ALACHUA' and city_name = 'UNINCORPORATED'"
+ags_extract_data2.py flu_alachua_unincorporated delete 15
+
+# run if file info needed
+ogrinfo flu_alachua_unincorporated.shp flu_alachua_unincorporated|less
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 4326, shp_name = 'flu_alachua_unincorporated.shp', data_date = '2025-05-27', update_date = '2025-05-27'  WHERE county = 'ALACHUA' and city_name = 'UNINCORPORATED'"
 
 # update dev
 update_flu.py alachua unincorporated
@@ -188,7 +246,13 @@ update_flu.py alachua unincorporated
 cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/alachua/current/source_data/waldo
 
 # run to grab data
-shp_name = 'flu_waldo.shp', srs_epsg = 4326, data_date = '2025-05-27', update_date = '2025-05-27'  WHERE county = 'ALACHUA' and city_name = 'WALDO'"
+ags_extract_data2.py flu_waldo delete 15
+
+# run if file info needed
+ogrinfo flu_waldo.shp flu_waldo|less
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 4326, shp_name = 'flu_waldo.shp', data_date = '2025-05-27', update_date = '2025-05-27'  WHERE county = 'ALACHUA' and city_name = 'WALDO'"
 
 # update dev
 update_flu.py alachua waldo
@@ -212,7 +276,10 @@ update_flu.py alachua waldo
 cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/baker/current/source_data/unincorporated
 
 # run if file info needed
-shp_name = 'flu_baker_unincorporated.shp', data_date = '2024-04-02', update_date = '2024-04-04'  WHERE county = 'BAKER' and city_name = 'UNINCORPORATED'"
+ogrinfo flu_baker_unincorporated.shp flu_baker_unincorporated|less
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET shp_name = 'flu_baker_unincorporated.shp', data_date = '2024-04-02', update_date = '2024-04-04'  WHERE county = 'BAKER' and city_name = 'UNINCORPORATED'"
 
 # update dev
 update_flu.py baker unincorporated
@@ -245,7 +312,17 @@ unzip -oj FutureLandUse.zip
 zip_rename_date.sh FutureLandUse.zip
 
 # run if file info needed
-shp_name = 'shp_name = 'FutureLandUse.shp', srs_epsg = 2238, data_date = '2025-05-01', update_date = '2025-05-01'  WHERE county = 'BAY' and city_name = 'UNINCORPORATED'"
+ogrinfo FutureLandUse.shp Zoning|less
+
+# process data
+ogr2ogr -explodecollections FutureLandUse_single.shp FutureLandUse.shp
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET shp_name = 'FutureLandUse_single.shp', data_date = '2025-05-01', update_date = '2025-05-01', srs_epsg = '2238' WHERE county = 'BAY' and city_name = 'UNINCORPORATED'"
+
+# Note: Bay is unified and the current delete code only deletes the UNINCORPORATED records.
+# We need to manually delete all zoning records in BAY county first.
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET shp_name = 'FutureLandUse_single.shp', data_date = '2025-05-01', update_date = '2025-05-01', srs_epsg = '2238' WHERE county = 'BAY' and city_name = 'UNINCORPORATED'"
 
 # update dev
 update_flu.py bay unincorporated
@@ -271,7 +348,13 @@ update_flu.py bay unincorporated
 cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/brevard/current/source_data/melbourne
 
 # run to grab data
-shp_name = 'flu_melbourne.shp', srs_epsg = 4326, data_date = '2025-05-24', update_date = '2025-05-24'  WHERE county = 'BREVARD' and city_name = 'MELBOURNE'"
+ags_extract_data2.py flu_melbourne delete 15
+
+# run if file info needed
+ogrinfo flu_melbourne.shp flu_melbourne|less
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 4326, shp_name = 'flu_melbourne.shp', data_date = '2025-05-24', update_date = '2025-05-24'  WHERE county = 'BREVARD' and city_name = 'MELBOURNE'"
 
 # update dev
 update_flu.py brevard melbourne
@@ -291,7 +374,13 @@ update_flu.py brevard melbourne
 cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/brevard/current/source_data/palm_bay
 
 # Note: Previous method was:
-# shp_name = 'flu_palm_bay.shp', srs_epsg = 2881, data_date = '2024-03-30', update_date = '2025-05-24'  WHERE county = 'BREVARD' and city_name = 'PALM_BAY'"
+# ags_extract_data2.py flu_palm_bay delete 15 zoning,zoningdesc
+
+# run if file info needed
+ogrinfo FutureLandUse.shp Zoning|less
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 2881, shp_name = 'FutureLandUse.shp', data_date = '2024-03-30', update_date = '2025-05-24'  WHERE county = 'BREVARD' and city_name = 'PALM_BAY'"
 
 # update dev
 update_flu.py brevard palm_bay
@@ -311,7 +400,13 @@ update_flu.py brevard palm_bay
 cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/brevard/current/source_data/titusville
 
 # Note: Previous method was:
-# shp_name = 'flu_titusville.shp', data_date = '2024-02-21', update_date = '2024-04-01'  WHERE county = 'BREVARD' and city_name = 'TITUSVILLE'"
+# ags_extract_data2.py flu_titusville delete 15
+
+# run if file info needed
+ogrinfo FutureLandUse.shp Zoning|less
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET shp_name = 'FutureLandUse.shp', data_date = '2024-02-21', update_date = '2024-04-01'  WHERE county = 'BREVARD' and city_name = 'TITUSVILLE'"
 
 # update dev
 update_flu.py brevard titusville
@@ -331,7 +426,13 @@ update_flu.py brevard titusville
 cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/brevard/current/source_data/unincorporated
 
 # run to grab data
-shp_name = 'flu_brevard.shp', srs_epsg = 4326, data_date = '2025-05-24', update_date = '2025-05-24'  WHERE county = 'BREVARD' and city_name = 'UNINCORPORATED'"
+ags_extract_data2.py flu_brevard delete 15
+
+# run if file info needed
+ogrinfo flu_brevard.shp flu_brevard|less
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 4326, shp_name = 'flu_brevard.shp', data_date = '2025-05-24', update_date = '2025-05-24'  WHERE county = 'BREVARD' and city_name = 'UNINCORPORATED'"
 
 # update dev
 update_flu.py brevard unincorporated
@@ -355,7 +456,21 @@ update_flu.py brevard unincorporated
 cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/broward/current/source_data/county_unified
 
 # run to grab data
-shp_name = 'flu_broward.shp', data_date = '2024-03-29', update_date = '2024-03-31'  WHERE county = 'BROWARD' and city_name = 'COUNTY_UNIFIED'"
+ags_extract_data2.py flu_broward delete 15
+
+# Note: old method was:
+# ags_extract_data2.py flu_broward_cnty delete 15
+
+# run if file info needed
+ogrinfo flu_broward.shp flu_broward|less
+
+# process data - project and explode
+# Note: project it because lat/long doesn't play well 
+# Note: explode it but multi-polygons don't play well
+ogr2ogr -explodecollections -t_srs "EPSG:2881" -select "ZONING, ZONE_NAME" zoning_broward_single_2881.shp flu_broward.shp
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET shp_name = 'zoning_broward_single_2881.shp', data_date = '2024-03-29', update_date = '2024-03-31'  WHERE county = 'BROWARD' and city_name = 'COUNTY_UNIFIED'"
 
 # update dev
 update_flu.py broward county_unified
@@ -379,7 +494,10 @@ update_flu.py broward county_unified
 cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/charlotte/current/source_data/punta_gorda
 
 # run if file info needed
-shp_name = 'flu_punta_gorda.shp', data_date = '2024-04-02', update_date = '2024-04-04'  WHERE county = 'CHARLOTTE' and city_name = 'PUNTA_GORDA'"
+ogrinfo flu_punta_gorda.shp flu_punta_gorda|less
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET shp_name = 'flu_punta_gorda.shp', data_date = '2024-04-02', update_date = '2024-04-04'  WHERE county = 'CHARLOTTE' and city_name = 'PUNTA_GORDA'"
 
 # update dev
 update_flu.py charlotte punta_gorda
@@ -402,13 +520,19 @@ cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/charlott
 download_data.py /data/flu/charlotte/unincorporated
 
 # unzip files
-unzip -oj flu.zip
+unzip -oj zoning.zip
 
 # archive with date
-zip_rename_date.sh flu.zip
+zip_rename_date.sh zoning.zip
 
 # run if file info needed
-shp_name = 'FUTURE_LAND_USE.shp', srs_epsg = 2237, data_date = '2025-05-22', update_date = '2025-05-29'  WHERE county = 'CHARLOTTE' and city_name = 'UNINCORPORATED'"
+ogrinfo ZONING.shp ZONING|less
+
+# process data
+ogr2ogr -explodecollections FutureLandUse_single.shp ZONING.shp
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 2237, shp_name = 'ZONING.shp', data_date = '2025-05-22', update_date = '2025-05-29'  WHERE county = 'CHARLOTTE' and city_name = 'UNINCORPORATED'"
 
 # update dev
 update_flu.py charlotte unincorporated
@@ -435,7 +559,10 @@ cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/citrus/c
 unzip -oj FutureLandUse.zip
 
 # run if file info needed
-shp_name = 'FutureLandUse_FWS.shp', data_date = '2023-11-01', update_date = '2024-04-04'  WHERE county = 'CITRUS' and city_name = 'UNINCORPORATED'"
+ogrinfo Zoning_FWS.shp Zoning_FWS|less
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET shp_name = 'Zoning_FWS.shp', data_date = '2023-11-01', update_date = '2024-04-04'  WHERE county = 'CITRUS' and city_name = 'UNINCORPORATED'"
 
 # update dev
 update_flu.py citrus unincorporated
@@ -465,7 +592,10 @@ download_data.py /data/flu/clay/unincorporated
 unzip -oj FutureLandUse.zip
 
 # run if file info needed
-shp_name = 'FutureLandUse.shp', data_date = '2024-04-02', update_date = '2024-04-04'  WHERE county = 'CLAY' and city_name = 'UNINCORPORATED'"
+ogrinfo FutureLandUse.shp Zoning|less
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET shp_name = 'FutureLandUse.shp', data_date = '2024-04-02', update_date = '2024-04-04'  WHERE county = 'CLAY' and city_name = 'UNINCORPORATED'"
 
 # update dev
 update_flu.py clay unincorporated
@@ -489,7 +619,16 @@ update_flu.py clay unincorporated
 cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/collier/current/source_data/marco_island
 
 # run to grab data
-shp_name = 'flu_marco_island.shp', srs_epsg = 4326, data_date = '2025-05-25', update_date = '2025-05-25'  WHERE county = 'COLLIER' and city_name = 'MARCO_ISLAND'"
+ags_extract_data2.py flu_marco_island delete 15
+
+# run if file info needed
+ogrinfo flu_marco_island.shp flu_marco_island|less
+
+# Note: Commented out processing step, keep for reference
+# ogr2ogr -explodecollections flu_marco_island_single.shp flu_marco_island.shp
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 4326, shp_name = 'flu_marco_island.shp', data_date = '2025-05-25', update_date = '2025-05-25'  WHERE county = 'COLLIER' and city_name = 'MARCO_ISLAND'"
 
 # update dev
 update_flu.py collier marco_island
@@ -509,7 +648,13 @@ update_flu.py collier marco_island
 cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/collier/current/source_data/naples
 
 # run to grab data
-shp_name = 'flu_naples.shp', srs_epsg = 4326, data_date = '2025-05-25', update_date = '2025-05-25'  WHERE county = 'COLLIER' and city_name = 'NAPLES'"
+ags_extract_data2.py flu_naples delete 15
+
+# run if file info needed
+ogrinfo flu_naples.shp flu_naples|less
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 4326, shp_name = 'flu_naples.shp', data_date = '2025-05-25', update_date = '2025-05-25'  WHERE county = 'COLLIER' and city_name = 'NAPLES'"
 
 # update dev
 update_flu.py collier naples
@@ -531,7 +676,10 @@ cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/collier/
 # grab from opendata portal, unzip, move to plato
 
 # run if file info needed
-shp_name = 'FutureLandUse_General.shp', srs_epsg = 2236, data_date = '2025-05-23', update_date = '2025-05-25'  WHERE county = 'COLLIER' and city_name = 'UNINCORPORATED'"
+ogrinfo Zoning_General.shp Zoning_General|less
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 2236, shp_name = 'Zoning_General.shp', data_date = '2025-05-23', update_date = '2025-05-25'  WHERE county = 'COLLIER' and city_name = 'UNINCORPORATED'"
 
 # update dev
 update_flu.py collier unincorporated
@@ -557,16 +705,1022 @@ cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/duval/cu
 # Note: Manual download - see Data Catalog
 
 # create archive
-# zip flu.zip flu_duval.*
+# zip zoning.zip zoning_duval.*
 
 # unzip files
-unzip -o flu.zip
+unzip -o zoning.zip
 
 # archive with date
-zip_rename_date.sh flu.zip
+zip_rename_date.sh zoning.zip
 
 # Rename all files associated with shapefile
-shpshp_name = 'flu_duval.shp', data_date = '2024-04-02', update_date = '2024-04-04'  WHERE county = 'MIAMI-DADE' and city_name = 'INCORPORATED'"
+shpmv ZONING_20240423.shp flu_duval.shp
+
+# run if file info needed
+ogrinfo flu_duval.shp flu_duval|less
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET shp_name = 'flu_duval.shp', data_date = '2024-05-24', update_date = '2025-05-01', srs_epsg = '2236'  WHERE county = 'DUVAL' and city_name = 'JACKSONVILLE'"
+
+# update dev
+update_flu.py duval jacksonville
+# copy the commands generated at the end of the output
+
+# grab raw_flu_duval_jacksonville.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+
+#------------------------
+# unincorporated
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/duval/current/source_data/unincorporated
+
+# run to grab data
+ags_extract_data2.py flu_duval delete 15
+
+# process data
+ogr2ogr -explodecollections flu_single.shp flu_duval.shp 
+
+# run if file info needed
+ogrinfo flu_duval.shp flu_duval|less
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET shp_name = 'flu_single.shp', data_date = '2024-04-02', update_date = '2024-04-04'  WHERE county = 'DUVAL' and city_name = 'UNINCORPORATED'"
+
+# update dev
+update_flu.py duval unincorporated
+# copy the commands generated at the end of the output
+
+# grab raw_flu_duval_unincorp.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+```
+
+### Escambia
+
+```bash
+#------------------------
+# unincorporated
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/escambia/current/source_data/unincorporated
+
+# run to grab data
+ags_extract_data2.py flu_escambia delete 15
+
+# run if file info needed
+ogrinfo flu_escambia.shp flu_escambia|less
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 4326, shp_name = 'flu_escambia.shp', data_date = '2025-05-27', update_date = '2025-05-27'  WHERE county = 'ESCAMBIA' and city_name = 'UNINCORPORATED'"
+
+# update dev
+update_flu.py escambia unincorporated
+
+# copy the commands generated at the end of the output
+
+# grab raw_flu_escambia_unincorp.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+```
+
+### Flagler
+
+```bash
+#------------------------
+# unincorporated
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/flagler/current/source_data/unincorporated
+
+# run to get data
+ags_extract_data2.py flu_flagler_unincorporated delete 15
+
+# run if file info needed
+ogrinfo flu_flagler_unincorporated.shp flu_flagler_unincorporated|less
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 4326, shp_name = 'flu_flagler_unincorporated.shp', data_date = '2025-05-29', update_date = '2025-05-29'  WHERE county = 'FLAGLER' and city_name = 'UNINCORPORATED'"
+
+# update dev
+update_flu.py flagler unincorporated
+# copy the commands generated at the end of the output
+
+# grab raw_flu_flagler_unincorp.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+```
+
+### Hernando
+
+```bash
+#------------------------
+#  brooksville
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/hernando/current/source_data/brooksville
+
+# download data from website and move to plato
+
+# run if file info needed
+ogrinfo BrooksvilleCityFutureLandUse.shp BrooksvilleCityZoning|less
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 2237, shp_name = 'BrooksvilleCityFutureLandUse.shp', data_date = '2025-01-06', update_date = '2025-05-27'  WHERE county = 'HERNANDO' and city_name = 'BROOKSVILLE'"
+
+# update dev
+update_flu.py hernando brooksville
+# copy the commands generated at the end of the output
+
+# grab raw_flu_hernando_brooksville.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+
+#------------------------
+#  unincorporated
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/hernando/current/source_data/unincorporated
+
+# run to grab data
+ags_extract_data2.py flu_hernando delete 15
+
+# run if file info needed
+ogrinfo flu_hernando.shp flu_hernando|less
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 4326, shp_name = 'flu_hernando.shp', data_date = '2025-05-27', update_date = '2025-05-27'  WHERE county = 'HERNANDO' and city_name = 'UNINCORPORATED'"
+
+# update dev
+update_flu.py hernando unincorporated
+# copy the commands generated at the end of the output
+
+# grab raw_flu_hernando_unincorp.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+```
+
+### Highlands
+
+```bash
+#------------------------
+# unincorporated
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/highlands/current/source_data/unincorporated
+
+# run to grab data
+ags_extract_data2.py flu_highlands delete 15
+
+# run if file info needed
+ogrinfo flu_highlands.shp flu_highlands|less
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 4326, shp_name = 'flu_highlands.shp', data_date = '2025-05-29', update_date = '2025-05-29'  WHERE county = 'HIGHLANDS' and city_name = 'UNINCORPORATED'"
+
+# update dev
+update_flu.py highlands unincorporated
+# copy the commands generated at the end of the output
+
+# grab raw_flu_highlands_unincorp.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+```
+
+### Hillsborough
+
+```bash
+#------------------------
+# plant_city
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/hillsborough/current/source_data/plant_city
+
+# run to grab data
+ags_extract_data2.py flu_plant_city delete 15 
+
+# run if file info needed
+ogrinfo PC_FutureLandUse.shp PC_Zoning|less
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET shp_name = 'PC_FutureLandUse.shp', data_date = '2023-12-04', update_date = '2024-03-31'  WHERE county = 'HILLSBOROUGH' and city_name = 'PLANT_CITY'"
+
+# update dev
+update_flu.py hillsborough plant_city
+# copy the commands generated at the end of the output
+
+# grab raw_flu_hillsborough_plant_city.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+
+#------------------------
+# tampa
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/hillsborough/current/source_data/tampa
+
+# run if file info needed
+ogrinfo Zoning_District.shp Zoning_District|less
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET shp_name = 'Zoning_District.shp', data_date = '2024-03-25', update_date = '2024-03-31'  WHERE county = 'HILLSBOROUGH' and city_name = 'TAMPA'"
+
+# update dev
+update_flu.py hillsborough tampa
+# copy the commands generated at the end of the output
+
+# grab raw_flu_hillsborough_tampa.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+
+#------------------------
+# unincorporated (REVIEW)
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/hillsborough/current/source_data/unincorporated
+
+# get data from opendata portal and move to plato
+
+# run if file info needed 
+ogrinfo FutureLandUse.shp Zoning|less
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET shp_name = 'FutureLandUse.shp', data_date = 'YYYY-MM-DD', update_date = 'YYYY-MM-DD'  WHERE county = 'HILLSBOROUGH' and city_name = 'UNINCORPORATED'"
+
+# update dev
+update_flu.py hillsborough unincorporated
+# copy the commands generated at the end of the output
+
+# grab raw_flu_hillsborough_unincorporated.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+```
+
+### Indian River
+
+```bash
+#------------------------
+# vero_beach
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/indian_river/current/source_data/vero_beach
+
+# unzip files (skip if opendata)
+unzip -oj ZoningDistricts.zip
+
+# archive with date (skip if opendata)
+zip_rename_date.sh ZoningDistricts.zip
+
+# run if file info needed
+ogrinfo ZoningDistricts.shp ZoningDistricts|less
+
+# Note: Commented out processing step, keep for reference
+# ogr2ogr -explodecollections FutureLandUse_single.shp FutureLandUse.shp
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 2236, shp_name = 'ZoningDistricts.shp', data_date = '2025-01-06', update_date = '2025-05-29'  WHERE county = 'INDIAN_RIVER' and city_name = 'VERO_BEACH'"
+
+# update dev
+update_flu.py indian_river vero_beach
+# copy the commands generated at the end of the output
+
+# grab raw_flu_indian_river_vero_beach.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+
+#------------------------
+# unincorporated
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/indian_river/current/source_data/unincorporated
+
+# run to grab data
+ags_extract_data2.py flu_indian_river_unincorporated delete 15 zoning,zoning_abv,comment,ordinance
+
+# run if file info needed
+ogrinfo flu_indian_river_unincorporated.shp flu_indian_river_unincorporated|less
+
+# Note: Commented out processing step, keep for reference
+# ogr2ogr -explodecollections FutureLandUse_single.shp FutureLandUse.shp
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 4326, shp_name = 'flu_indian_river_unincorporated.shp', data_date = '2025-05-29', update_date = '2025-05-29'  WHERE county = 'INDIAN_RIVER' and city_name = 'UNINCORPORATED'"
+
+# update dev
+update_flu.py indian_river unincorporated
+# copy the commands generated at the end of the output
+
+# grab raw_flu_indian_river_unincorp.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+```
+
+### Lake
+
+```bash
+#------------------------
+# astatula
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/lake/current/source_data/astatula
+
+# run to grab data
+ags_extract_data2.py flu_astatula delete 15
+
+# run if file info needed
+ogrinfo flu_astatula.shp flu_astatula|less
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 4326, shp_name = 'flu_astatula.shp', data_date = '2025-05-27', update_date = '2025-05-27'  WHERE county = 'LAKE' and city_name = 'ASTATULA'"
+
+# update dev
+update_flu.py lake astatula
+# copy the commands generated at the end of the output
+
+# grab raw_flu_lake_astatula.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+
+#------------------------
+# clermont
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/lake/current/source_data/clermont
+
+# run to grab data
+ags_extract_data2.py flu_clermont delete 15
+
+# run if file info needed
+ogrinfo flu_clermont.shp flu_clermont|less
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 4326, shp_name = 'flu_clermont.shp', data_date = '2025-05-26', update_date = '2025-05-26'  WHERE county = 'LAKE' and city_name = 'CLERMONT'"
+
+# update dev
+update_flu.py lake clermont
+# copy the commands generated at the end of the output
+
+# grab raw_flu_lake_clermont.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+
+#------------------------
+# fruitland_park
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/lake/current/source_data/fruitland_park
+
+# run to grab data
+ags_extract_data2.py flu_fruitland_park delete 15
+
+# run if file info needed
+ogrinfo flu_fruitland_park.shp flu_fruitland_park|less
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 4326, shp_name = 'flu_fruitland_park.shp', data_date = '2025-05-26', update_date = '2025-05-26'  WHERE county = 'LAKE' and city_name = 'FRUITLAND_PARK'"
+
+# update dev
+update_flu.py lake fruitland_park
+# copy the commands generated at the end of the output
+
+# grab raw_flu_lake_fruitland_park.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+
+#------------------------
+# groveland
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/lake/current/source_data/groveland
+
+# run to grab data
+ags_extract_data2.py flu_groveland delete 15
+
+# run if file info needed
+ogrinfo flu_groveland.shp flu_groveland|less
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 4326, shp_name = 'flu_groveland.shp', data_date = '2025-05-26', update_date = '2025-05-26'  WHERE county = 'LAKE' and city_name = 'GROVELAND'"
+
+# update dev
+update_flu.py lake groveland
+# copy the commands generated at the end of the output
+
+# grab raw_flu_lake_groveland.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+
+#------------------------
+# leesburg
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/lake/current/source_data/leesburg
+
+# run to grab data
+ags_extract_data2.py flu_leesburg delete 15
+
+# run if file info needed
+ogrinfo flu_leesburg.shp flu_leesburg|less
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 4326, shp_name = 'flu_leesburg.shp', data_date = '2025-05-26', update_date = '2025-05-26'  WHERE county = 'LAKE' and city_name = 'LEESBURG'"
+
+# update dev
+update_flu.py lake leesburg
+# copy the commands generated at the end of the output
+
+# grab raw_flu_lake_leesburg.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+
+#------------------------
+# minneola
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/lake/current/source_data/minneola
+
+# run to grab data
+ags_extract_data2.py flu_minneola delete 15
+
+# run if file info needed
+ogrinfo flu_minneola.shp flu_minneola|less
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 4326, shp_name = 'flu_minneola.shp', data_date = '2025-05-26', update_date = '2025-05-26'  WHERE county = 'LAKE' and city_name = 'MINNEOLA'"
+
+# update dev
+update_flu.py lake minneola
+# copy the commands generated at the end of the output
+
+# grab raw_flu_lake_minneola.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+
+#------------------------
+# mount_dora
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/lake/current/source_data/mount_dora
+
+# run to grab data
+ags_extract_data2.py flu_mount_dora delete 15
+
+# run if file info needed
+ogrinfo flu_mount_dora.shp flu_mount_dora|less
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 4326, shp_name = 'flu_mount_dora.shp', data_date = '2025-05-26', update_date = '2025-05-26'  WHERE county = 'LAKE' and city_name = 'MOUNT_DORA'"
+
+# update dev
+update_flu.py lake mount_dora
+# copy the commands generated at the end of the output
+
+# grab raw_flu_lake_mount_dora.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+
+#------------------------
+# tavares
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/lake/current/source_data/tavares
+
+# run to grab data
+ags_extract_data2.py flu_tavares delete 15
+
+# run if file info needed
+ogrinfo flu_tavares.shp flu_tavares|less
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 4326, shp_name = 'flu_tavares.shp', data_date = '2025-05-26', update_date = '2025-05-26'  WHERE county = 'LAKE' and city_name = 'TAVARES'"
+
+# update dev
+update_flu.py lake tavares
+# copy the commands generated at the end of the output
+
+# grab raw_flu_lake_tavares.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+
+#------------------------
+# umatilla
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/lake/current/source_data/umatilla
+
+# run to grab data
+ags_extract_data2.py flu_umatilla delete 15
+
+# run if file info needed
+ogrinfo flu_umatilla.shp flu_umatilla|less
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 4326, shp_name = 'flu_umatilla.shp', data_date = '2025-05-26', update_date = '2025-05-26'  WHERE county = 'LAKE' and city_name = 'UMATILLA'"
+
+# update dev
+update_flu.py lake umatilla
+# copy the commands generated at the end of the output
+
+# grab raw_flu_lake_umatilla.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+
+#------------------------
+# howey-in-the-hills
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/lake/current/source_data/howey_in_the_hills
+
+# run to grab data
+ags_extract_data2.py flu_howey_in_the_hills delete 15
+
+# run if file info needed
+ogrinfo flu_howey_in_the_hills.shp flu_howey-in-the-hills|less
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 4326, shp_name = 'flu_howey_in_the_hills.shp', data_date = '2025-05-26', update_date = '2025-05-26'  WHERE county = 'LAKE' and city_name = 'HOWEY_IN_THE_HILLS';"
+
+# update dev
+update_flu.py lake howey_in_the_hills
+# copy the commands generated at the end of the output
+
+# grab raw_flu_lake_howey_in_the_hills.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+
+#------------------------
+# mascotte
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/lake/current/source_data/mascotte
+
+# run to grab data
+ags_extract_data2.py flu_mascotte delete 15
+
+# run if file info needed
+ogrinfo flu_mascotte.shp flu_mascotte|less
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 4326, shp_name = 'flu_mascotte.shp', data_date = '2025-05-26', update_date = '2025-05-26'  WHERE county = 'LAKE' and city_name = 'MASCOTTE'"
+
+# update dev
+update_flu.py lake mascotte
+# copy the commands generated at the end of the output
+
+# grab raw_flu_lake_mascotte.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+
+#------------------------
+# montverde
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/lake/current/source_data/montverde
+
+# run to grab data
+ags_extract_data2.py flu_montverde delete 15
+
+# run if file info needed
+ogrinfo flu_montverde.shp flu_montverde|less
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 4326, shp_name = 'flu_montverde.shp', data_date = '2025-05-26', update_date = '2025-05-26'  WHERE county = 'LAKE' and city_name = 'MONTVERDE'"
+
+# update dev
+update_flu.py lake montverde
+# copy the commands generated at the end of the output
+
+# grab raw_flu_lake_montverde.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+
+#------------------------
+# unincorporated
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/lake/current/source_data/unincorporated
+
+# OLD: download data
+# download_data.py /data/flu/lake/unincorporated
+
+# AGS: run to grab data
+ags_extract_data2.py flu_lake_unincorp delete 15
+
+# run if file info needed
+ogrinfo flu_lake_unincorp.shp flu_lake_unincorp|less
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 4326, shp_name = 'flu_lake_unincorp.shp', data_date = '2025-05-26', update_date = '2025-05-26'  WHERE county = 'LAKE' and city_name = 'UNINCORPORATED'"
+
+# update dev
+update_flu.py lake unincorporated
+# copy the commands generated at the end of the output
+
+# grab raw_flu_lake_unincorp.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+```
+
+### Lee
+
+```bash
+#------------------------
+# cape_coral
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/lee/current/source_data/cape_coral
+
+# grab data from opendata portal, unzip, move to plato
+
+# run if file info needed
+ogrinfo FutureLandUse.shp Zoning|less
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 2237, shp_name = 'FutureLandUse.shp', data_date = '2024-08-02', update_date = '2025-05-24'  WHERE county = 'LEE' and city_name = 'CAPE_CORAL'"
+
+# update dev
+update_flu.py lee cape_coral
+# copy the commands generated at the end of the output
+
+# grab raw_flu_lee_cape_coral.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+
+#------------------------
+# fort_myers
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/lee/current/source_data/fort_myers
+
+# grab data from opendata portal, unzip and move to plato
+
+# Note: 4/1/2024 - fort_myers AGS is not working - no download option - contact them
+#   Previous method:
+#   ags_extract_data2.py flu_fort_myers delete 15 District,DistrictName,PUDName,PUDOrdinance
+#   Current method:
+#   ags_extract_data2.py flu_fort_myers delete 15 
+
+# run if file info needed
+ogrinfo FutureLandUse.shp Zoning|less
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 6443, shp_name = 'FutureLandUse.shp', data_date = '2025-05-10', update_date = '2025-05-24'  WHERE county = 'LEE' and city_name = 'FORT_MYERS'"
+
+# update dev
+update_flu.py lee fort_myers
+# copy the commands generated at the end of the output
+
+# grab raw_flu_lee_fort_myers.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+
+#------------------------
+# unincorporated
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/lee/current/source_data/unincorporated
+
+# grab data from opendata portal
+
+# unzip and move to plato
+
+# run if file info needed
+ogrinfo FutureLandUse.shp Zoning|less
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 2236, shp_name = 'FutureLandUse.shp', data_date = '2025-05-10', update_date = '2025-05-24'  WHERE county = 'LEE' and city_name = 'UNINCORPORATED'"
+
+# update dev
+update_flu.py lee unincorporated
+# copy the commands generated at the end of the output
+
+# grab raw_flu_lee_unincorp.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+```
+
+### Leon
+
+```bash
+#------------------------
+#  leon unified
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/leon/current/source_data/county_unified
+
+# AGS: run to grab data
+ags_extract_data2.py flu_leon delete 15
+
+# Opendata: grab data, unzip, move to plato
+# rename to match AGS (note: might not work; could require more work)
+mv FutureLandUse.shp flu_leon.shp
+mv Zoning.dbf flu_leon.dbf
+mv Zoning.prj flu_leon.prj
+mv Zoning.shx flu_leon.shx
+mv Zoning.cpg flu_leon.cpg
+
+# run if file info needed
+ogrinfo flu_leon.shp flu_leon|less
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 4326, shp_name = 'flu_leon.shp', data_date = '2025-05-27', update_date = '2025-05-27'  WHERE county = 'LEON' and city_name = 'COUNTY_UNIFIED'"
+
+# update dev
+update_flu.py leon county_unified
+
+# copy the commands generated at the end of the output
+
+# grab raw_flu_leon_county_unified.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+```
+
+### Manatee
+
+```bash
+#------------------------
+# bradenton
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/manatee/current/source_data/bradenton
+
+# run to grab data
+ags_extract_data2.py flu_bradenton delete 15
+
+# run if file info needed
+ogrinfo flu_bradenton.shp flu_bradenton|less
+
+# process data
+ogr2ogr -explodecollections flu_bradenton_single.shp flu_bradenton.shp
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 4326, shp_name = 'flu_bradenton_single.shp', data_date = '2025-05-24', update_date = '2025-05-24'  WHERE county = 'MANATEE' and city_name = 'BRADENTON'"
+
+# update dev
+update_flu.py manatee bradenton
+# copy the commands generated at the end of the output
+
+# grab raw_flu_manatee_bradenton.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+
+#------------------------
+# unincorporated
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/manatee/current/source_data/unincorporated
+
+# grab data from opendata portal, unzip, move to plato
+
+# run if file info needed
+ogrinfo FutureLandUse.shp Zoning|less
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 3857, shp_name = 'FutureLandUse.shp', data_date = '2025-01-28', update_date = '2025-05-24'  WHERE county = 'MANATEE' and city_name = 'UNINCORPORATED'"
+
+# update dev
+update_flu.py manatee unincorporated
+# copy the commands generated at the end of the output
+
+# grab raw_flu_manatee_unincorp.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+```
+
+### Marion
+
+```bash
+#------------------------
+# ocala
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/marion/current/source_data/ocala
+
+# get data from opendata portal
+# unzip and move to plato
+
+# run if file info needed
+ogrinfo FutureLandUse.shp Zoning|less
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 2237, shp_name = 'FutureLandUse.shp', data_date = '2025-03-26', update_date = '2025-05-26'  WHERE county = 'MARION' and city_name = 'OCALA'"
+
+# update dev
+update_flu.py marion ocala
+# copy the commands generated at the end of the output
+
+# grab raw_flu_marion_ocala.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+
+#------------------------
+# unincorporated
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/marion/current/source_data/unincorporated
+
+# run to grab data
+ags_extract_data2.py flu_marion delete 15
+
+# run if file info needed
+ogrinfo flu_marion.shp flu_marion|less
+
+# process data
+ogr2ogr -explodecollections flu_marion_single.shp flu_marion.shp
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 4326, shp_name = 'flu_marion_single.shp', data_date = '2025-05-26', update_date = '2025-05-26'  WHERE county = 'MARION' and city_name = 'UNINCORPORATED'"
+
+# update dev
+update_flu.py marion unincorporated
+# copy the commands generated at the end of the output
+
+# grab raw_flu_marion_unincorp.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+
+# Note: Previous issues (keep for reference)
+# PROBLEM !!! didn't download, then downloaded mostly and a couple json with problems
+# one is big box polygon, another is json to shp bails
+# ags_extract_data2.py flu_marion delete 15
+```
+
+### Martin
+
+```bash
+#------------------------
+# stuart
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/martin/current/source_data/stuart
+
+# run to grab data
+ags_extract_data2.py flu_stuart delete 15
+
+# run if file info needed
+ogrinfo flu_stuart.shp flu_stuart|less
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 4326, shp_name = 'flu_stuart.shp', data_date = '2025-05-29', update_date = '2025-05-29'  WHERE county = 'MARTIN' and city_name = 'STUART'"
+
+# update dev
+update_flu.py martin stuart
+# copy the commands generated at the end of the output
+
+# grab raw_flu_martin_stuart.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+
+#------------------------
+# unincorporated
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/martin/current/source_data/unincorporated
+
+# unzip files
+unzip -oj FutureLandUse.zip
+
+# archive with date
+zip_rename_date.sh FutureLandUse.zip
+
+# run if file info needed
+ogrinfo FutureLandUse.shp Zoning|less
+
+# Note: Commented out processing step, keep for reference
+# ogr2ogr -explodecollections FutureLandUse_single.shp FutureLandUse.shp
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET shp_name = 'FutureLandUse.shp', data_date = '2024-03-31', update_date = '2024-04-04'  WHERE county = 'MARTIN' and city_name = 'UNINCORPORATED'"
+
+# update dev
+update_flu.py martin unincorporated
+# copy the commands generated at the end of the output
+
+# grab raw_flu_martin_unincorp.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+```
+
+### Miami-Dade
+
+```bash
+#------------------------
+# incorporated
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/miami-dade/current/source_data/incorporated
+
+# run if file info needed
+ogrinfo zoning_miami-dade_incorporated.shp zoning_miami-dade_incorporated|less
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET shp_name = 'zoning_miami-dade_incorporated.shp', data_date = '2024-04-02', update_date = '2024-04-04'  WHERE county = 'MIAMI-DADE' and city_name = 'INCORPORATED'"
 
 # update dev
 update_flu.py miami-dade incorporated
@@ -590,7 +1744,10 @@ cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/miami-da
 # unzip and move to plato
 
 # run if file info needed
-shp_name = 'County_FutureLandUse.shp', srs_epsg = 3857, data_date = '2025-04-18', update_date = '2025-05-23'  WHERE county = 'MIAMI-DADE' and city_name = 'UNINCORPORATED'"
+ogrinfo County_FutureLandUse.shp County_Zoning|less
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 3857, shp_name = 'County_FutureLandUse.shp', data_date = '2025-04-18', update_date = '2025-05-23'  WHERE county = 'MIAMI-DADE' and city_name = 'UNINCORPORATED';"
 
 # update dev
 update_flu.py miami-dade unincorporated
@@ -617,7 +1774,10 @@ cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/nassau/c
 ags_extract_data_objectids_1.py flu_nassau delete 15
 
 # run if file info needed
-shp_name = 'flu_nassau.shp', data_date = '2024-04-02', update_date = '2024-04-04'  WHERE county = 'NASSAU' and city_name = 'UNINCORPORATED'"
+ogrinfo flu_nassau.shp flu_nassau|less
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET shp_name = 'flu_nassau.shp', data_date = '2024-04-02', update_date = '2024-04-04'  WHERE county = 'NASSAU' and city_name = 'UNINCORPORATED'"
 
 # update dev
 update_flu.py nassau unincorporated
@@ -647,7 +1807,10 @@ unzip -oj Local_Planning.zip
 zip_rename_date.sh Local_Planning.zip
 
 # run if file info needed
-shp_name = 'zngpy.shp', srs_epsg = 2238, data_date = '2025-05-11', update_date = '2025-05-27'  WHERE county = 'OKALOOSA' and city_name = 'UNINCORPORATED'"
+ogrinfo zngpy.shp zngpy|less
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 2238, shp_name = 'zngpy.shp', data_date = '2025-05-11', update_date = '2025-05-27'  WHERE county = 'OKALOOSA' and city_name = 'UNINCORPORATED'"
 
 # update dev
 update_flu.py okaloosa unincorporated
@@ -673,7 +1836,13 @@ cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/orange/c
 # ensure AGS link is correct, and find data date (last edit date)
 
 # run to grab data
-shp_name = 'flu_apopka.shp', data_date = '2025-04-30', update_date = '2025-05-17'  WHERE county = 'ORANGE' and city_name = 'APOPKA'"
+ags_extract_data2.py flu_apopka delete 15
+
+# run if file info needed
+ogrinfo flu_apopka.shp flu_apopka|less
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET shp_name = 'flu_apopka.shp', data_date = '2025-04-30', update_date = '2025-05-17'  WHERE county = 'ORANGE' and city_name = 'APOPKA'"
 
 # update dev
 update_flu.py orange apopka
@@ -695,7 +1864,10 @@ cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/orange/c
 # grab data via opendata portal, ensure it is in correct directory
 
 # run if file info needed
-shp_name = 'Eatonville_FutureLandUse.shp', data_date = '2024-01-04', update_date = '2025-05-09'  WHERE county = 'ORANGE' and city_name = 'EATONVILLE'"
+ogrinfo Eatonville_FutureLandUse.shp Eatonville_Zoning|less
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET shp_name = 'Eatonville_FutureLandUse.shp', data_date = '2024-01-04', update_date = '2025-05-09'  WHERE county = 'ORANGE' and city_name = 'EATONVILLE'"
 
 # update dev
 update_flu.py orange eatonville
@@ -717,7 +1889,13 @@ cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/orange/c
 # ensure AGS link is correct, and find data date
 
 # run to grab data
-shp_name = 'flu_ocoee.shp', data_date = '2024-04-02', update_date = '2024-04-04'  WHERE county = 'ORANGE' and city_name = 'OCOEE'"
+ags_extract_data2.py flu_ocoee delete 15
+
+# run if file info needed
+ogrinfo flu_ocoee.shp flu_ocoee|less
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET shp_name = 'flu_ocoee.shp', data_date = '2024-04-02', update_date = '2024-04-04'  WHERE county = 'ORANGE' and city_name = 'OCOEE'"
 
 # update dev
 update_flu.py orange ocoee
@@ -739,7 +1917,10 @@ cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/orange/c
 # download from opendata portal and move to plato
 
 # run if file info needed
-shp_name = 'Orlando_FutureLandUse.shp', data_date = 'YYYY-MM-DD', update_date = 'YYYY-MM-DD'  WHERE county = 'ORANGE' and city_name = 'ORLANDO'"
+ogrinfo Orlando_FutureLandUse.shp Orlando_Zoning|less
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET shp_name = 'Orlando_FutureLandUse.shp', data_date = 'YYYY-MM-DD', update_date = 'YYYY-MM-DD'  WHERE county = 'ORANGE' and city_name = 'ORLANDO'"
 
 # update dev
 update_flu.py orange orlando
@@ -763,7 +1944,10 @@ download_data.py /data/flu/orange/unincorporated
 # Note: if broken, use opendata portal
 
 # run if file info needed
-shp_name = 'Orange_County_FutureLandUse.shp', data_date = 'YYYY-MM-DD', update_date = 'YYYY-MM-DD'  WHERE county = 'ORANGE' and city_name = 'UNINCORPORATED'"
+ogrinfo Orange_County_FutureLandUse.shp Orange_County_Zoning|less
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET shp_name = 'Orange_County_FutureLandUse.shp', data_date = 'YYYY-MM-DD', update_date = 'YYYY-MM-DD'  WHERE county = 'ORANGE' and city_name = 'UNINCORPORATED'"
 
 # update dev
 update_flu.py orange unincorporated
@@ -787,7 +1971,16 @@ update_flu.py orange unincorporated
 cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/osceola/current/source_data/kissimmee
 
 # run to grab data
-shp_name = 'flu_kissimmee.shp', srs_epsg = 4326, data_date = '2025-05-25', update_date = '2025-05-25'  WHERE county = 'OSCEOLA' and city_name = 'KISSIMMEE'"
+ags_extract_data2.py flu_kissimmee delete 15
+
+# run if file info needed
+ogrinfo flu_kissimmee.shp flu_kissimmee|less
+
+# process data
+ogr2ogr -explodecollections flu_kissimmee_single.shp flu_kissimmee.shp
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 4326, shp_name = 'flu_kissimmee_single.shp', data_date = '2025-05-25', update_date = '2025-05-25'  WHERE county = 'OSCEOLA' and city_name = 'KISSIMMEE'"
 
 # update dev
 update_flu.py osceola kissimmee
@@ -807,7 +2000,13 @@ update_flu.py osceola kissimmee
 cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/osceola/current/source_data/st_cloud
 
 # run to grab data
-shp_name = 'flu_st_cloud.shp', srs_epsg = 4326, data_date = '2025-05-25', update_date = '2025-05-25'  WHERE county = 'OSCEOLA' and city_name = 'ST_CLOUD'"
+ags_extract_data2.py flu_st_cloud delete 15
+
+# run if file info needed
+ogrinfo flu_st_cloud.shp flu_st_cloud|less
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET temp_table_name = 'raw_osceola_st_cloud', srs_epsg = 4326, shp_name = 'flu_st_cloud.shp', data_date = '2025-05-25', update_date = '2025-05-25'  WHERE county = 'OSCEOLA' and city_name = 'ST_CLOUD'"
 
 # update dev
 update_flu.py osceola st_cloud
@@ -827,7 +2026,13 @@ update_flu.py osceola st_cloud
 cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/osceola/current/source_data/unincorporated
 
 # run to grab data
-shp_name = 'flu_osceola.shp', srs_epsg = 4326, data_date = '2025-05-26', update_date = '2025-05-26'  WHERE county = 'OSCEOLA' and city_name = 'UNINCORPORATED'"
+ags_extract_data2.py flu_osceola delete 15
+
+# run if file info needed
+ogrinfo flu_osceola.shp flu_osceola|less
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 4326, shp_name = 'flu_osceola.shp', data_date = '2025-05-26', update_date = '2025-05-26'  WHERE county = 'OSCEOLA' and city_name = 'UNINCORPORATED'"
 
 # update dev
 update_flu.py osceola unincorporated
@@ -854,7 +2059,10 @@ cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/palm_bea
 ogr2ogr -explodecollections -t_srs "EPSG:2881" FutureLandUse_single.shp FutureLandUse.shp
 
 # run if file info needed
-shp_name = 'FutureLandUse_single.shp', data_date = '2025-02-12', update_date = '2025-05-11'  WHERE county = 'PALM_BEACH' and city_name = 'COUNTY_UNIFIED'"
+ogrinfo FutureLandUse_single.shp Zoning_single|less
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET shp_name = 'FutureLandUse_single.shp', data_date = '2025-02-12', update_date = '2025-05-11'  WHERE county = 'PALM_BEACH' and city_name = 'COUNTY_UNIFIED'"
 
 # update dev
 update_flu.py palm_beach county_unified
@@ -868,7 +2076,7 @@ update_flu.py palm_beach county_unified
 # QA and mark as done
 
 # Note: 3/31/2024 - Remove UNINCORPORATED and replace with COUNTY_UNIFIED
-# psql -d gisdev -U postgres -c "DELETE FROM flu WHERE county = 'PALM_BEACH' and city_name = 'UNINCORPORATED'"
+# psql -d gisdev -U postgres -c "DELETE FROM zoning WHERE county = 'PALM_BEACH' and city_name = 'UNINCORPORATED'"
 #update_flu.py palm_beach unincorporated
 ```
 
@@ -882,7 +2090,16 @@ update_flu.py palm_beach county_unified
 cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/pasco/current/source_data/unincorporated
 
 # run to grab data
-shp_name = 'flu_pasco_unincorporated.shp', srs_epsg = 4326, data_date = '2025-05-24', update_date = '2025-05-24'  WHERE county = 'PASCO' and city_name = 'UNINCORPORATED'"
+ags_extract_data2.py flu_pasco_unincorporated delete 15
+
+# OLD: process data
+# ogr2ogr FutureLandUse.shp Zoning_Areas_7030391369919837430.geojson
+
+# run if file info needed
+ogrinfo flu_pasco_unincorporated.shp flu_pasco_unincorporated|less
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 4326, shp_name = 'flu_pasco_unincorporated.shp', data_date = '2025-05-24', update_date = '2025-05-24'  WHERE county = 'PASCO' and city_name = 'UNINCORPORATED'"
 
 # update dev
 update_flu.py pasco unincorporated
@@ -906,7 +2123,22 @@ update_flu.py pasco unincorporated
 cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/pinellas/current/source_data/belleair
 
 # AGS: run to grab data
-shp_name = 'flu_bellair.shp', data_date = '2024-03-19', update_date = '2025-05-22'  WHERE county = 'PINELLAS' and city_name = 'BELLEAIR'"
+ags_extract_data2.py flu_bellair delete 15
+
+# OPENDATA: grab from url, unzip, then remove parenthesis from filenames
+https://new-pinellas-egis.opendata.arcgis.com/datasets/d37011e321744c5397f04cf6ed6e52db_0/explore
+mv 'Belleair_Zoning_(PPC).cpg' 'Belleair_Zoning_PPC.cpg'
+mv 'Belleair_Zoning_(PPC).dbf' 'Belleair_Zoning_PPC.dbf'
+mv 'Belleair_Zoning_(PPC).prj' 'Belleair_Zoning_PPC.prj'
+mv 'Belleair_Zoning_(PPC).shp' 'Belleair_Zoning_PPC.shp'
+mv 'Belleair_Zoning_(PPC).shx' 'Belleair_Zoning_PPC.shx'
+mv 'Belleair_Zoning_(PPC).zip' 'Belleair_Zoning_PPC.zip'
+
+# run if file info needed
+ogrinfo Belleair_Zoning_PPC.shp Belleair_Zoning_PPC|less
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET shp_name = 'Belleair_Zoning_PPC.shp', data_date = '2024-03-19', update_date = '2025-05-22'  WHERE county = 'PINELLAS' and city_name = 'BELLEAIR';"
 
 # update dev
 update_flu.py pinellas belleair
@@ -926,7 +2158,13 @@ update_flu.py pinellas belleair
 cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/pinellas/current/source_data/clearwater
 
 # run to grab data
-shp_name = 'flu_clearwater.shp', data_date = '2025-05-22', update_date = '2025-05-22'  WHERE county = 'PINELLAS' and city_name = 'CLEARWATER'"
+ags_extract_data2.py flu_clearwater delete 15
+
+# run if file info needed
+ogrinfo flu_clearwater.shp flu_clearwater|less
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET shp_name = 'flu_clearwater.shp', data_date = '2025-05-22', update_date = '2025-05-22'  WHERE county = 'PINELLAS' and city_name = 'CLEARWATER';"
 
 # update dev
 update_flu.py pinellas clearwater
@@ -946,7 +2184,16 @@ update_flu.py pinellas clearwater
 cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/pinellas/current/source_data/dunedin
 
 # run to grab data
-shp_name = 'flu_dunedin.shp', data_date = '2025-05-23', update_date = '2025-05-23'  WHERE county = 'PINELLAS' and city_name = 'DUNEDIN'"
+ags_extract_data2.py flu_dunedin delete 15
+
+# process data
+ogr2ogr -explodecollections -t_srs "EPSG:2882" zoning_dunedin_2882.shp flu_dunedin.shp 
+
+# run if file info needed
+ogrinfo zoning_dunedin_2882.shp zoning_dunedin_2882|less
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET shp_name = 'zoning_dunedin_2882.shp', data_date = '2025-05-23', update_date = '2025-05-23'  WHERE county = 'PINELLAS' and city_name = 'DUNEDIN';"
 
 # update dev
 update_flu.py pinellas dunedin
@@ -976,7 +2223,10 @@ mv 'Indian_Rocks_Beach_Zoning_(PPC).shp' 'Indian_Rocks_Beach_Zoning_PPC.shp'
 mv 'Indian_Rocks_Beach_Zoning_(PPC).zip' 'Indian_Rocks_Beach_Zoning_PPC.zip'
 
 # run if file info needed
-shp_name = 'Indian_Rocks_Beach_Zoning_PPC.shp', srs_epsg = 2882, data_date = '2024-03-19', update_date = '2025-05-23'  WHERE county = 'PINELLAS' and city_name = 'INDIAN_ROCKS_BEACH'"
+ogrinfo Indian_Rocks_Beach_Zoning_PPC.shp Indian_Rocks_Beach_Zoning_PPC|less
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 2882, shp_name = 'Indian_Rocks_Beach_Zoning_PPC.shp', data_date = '2024-03-19', update_date = '2025-05-23'  WHERE county = 'PINELLAS' and city_name = 'INDIAN_ROCKS_BEACH';"
 
 # update dev
 update_flu.py pinellas indian_rocks_beach
@@ -1006,7 +2256,10 @@ mv 'Indian_Shores_Zoning_(PPC).shp' 'Indian_Shores_Zoning_PPC.shp'
 mv 'Indian_Shores_Zoning_(PPC).zip' 'Indian_Shores_Zoning_PPC.zip'
 
 # run if file info needed
-shp_name = 'Indian_Shores_Zoning_PPC.shp', srs_epsg = 2882, data_date = '2025-05-07', update_date = '2025-05-23'  WHERE county = 'PINELLAS' and city_name = 'INDIAN_SHORES'"
+ogrinfo Indian_Shores_Zoning_PPC.shp Indian_Shores_Zoning_PPC|less
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 2882, shp_name = 'Indian_Shores_Zoning_PPC.shp', data_date = '2025-05-07', update_date = '2025-05-23'  WHERE county = 'PINELLAS' and city_name = 'INDIAN_SHORES';"
 
 # update dev
 update_flu.py pinellas indian_shores
@@ -1036,7 +2289,10 @@ mv 'Kenneth_City_Zoning_(PPC).shx' 'Kenneth_City_Zoning_PPC.shx'
 mv 'Kenneth_City_Zoning_(PPC).zip' 'Kenneth_City_Zoning_PPC.zip'
 
 # run if file info needed
-shp_name = 'Kenneth_City_Zoning_PPC.shp', srs_epsg = 2882, data_date = '2024-06-19', update_date = '2025-05-23'  WHERE county = 'PINELLAS' and city_name = 'KENNETH_CITY'"
+ogrinfo Kenneth_City_Zoning_PPC.shp Kenneth_City_Zoning_PPC|less
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 2882, shp_name = 'Kenneth_City_Zoning_PPC.shp', data_date = '2024-06-19', update_date = '2025-05-23'  WHERE county = 'PINELLAS' and city_name = 'KENNETH_CITY';"
 
 # update dev
 update_flu.py pinellas kenneth_city
@@ -1066,7 +2322,10 @@ mv 'Madeira_Beach_Zoning_(PPC).shp' Madeira_Beach_Zoning_PPC.shp
 mv 'Madeira_Beach_Zoning_(PPC).zip' Madeira_Beach_Zoning_PPC.zip
 
 # run if file info needed
-shp_name = 'Madeira_Beach_Zoning_PPC.shp', srs_epsg = 2882, data_date = '2024-06-19', update_date = '2025-05-23'  WHERE county = 'PINELLAS' and city_name = 'MADEIRA_BEACH'"
+ogrinfo Madeira_Beach_Zoning_PPC.shp Madeira_Beach_Zoning_PPC|less
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 2882, shp_name = 'Madeira_Beach_Zoning_PPC.shp', data_date = '2024-06-19', update_date = '2025-05-23'  WHERE county = 'PINELLAS' and city_name = 'MADEIRA_BEACH';"
 
 # update dev
 update_flu.py pinellas madeira_beach
@@ -1086,7 +2345,10 @@ update_flu.py pinellas madeira_beach
 cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/pinellas/current/source_data/north_redington_beach
 
 # run if file info needed
-shp_name = 'flu_north_redington_beach.shp', data_date = '2024-04-02', update_date = '2024-04-04'  WHERE county = 'PINELLAS' and city_name = 'NORTH_REDINGTON_BEACH'"
+ogrinfo flu_north_redington_beach.shp flu_north_redington_beach|less
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET shp_name = 'flu_north_redington_beach.shp', data_date = '2024-04-02', update_date = '2024-04-04'  WHERE county = 'PINELLAS' and city_name = 'NORTH_REDINGTON_BEACH'"
 
 # update dev
 update_flu.py pinellas north_redington_beach
@@ -1106,7 +2368,20 @@ update_flu.py pinellas north_redington_beach
 cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/pinellas/current/source_data/pinellas_park
 
 # run to grab data
-shp_name = 'flu_pinellas_park.shp', data_date = '2024-04-02', update_date = '2024-04-04'  WHERE county = 'PINELLAS' and city_name = 'PINELLAS_PARK'"
+ags_extract_data2.py flu_pinellas_park delete 15
+
+# process data
+ogr2ogr -explodecollections -t_srs "EPSG:2882" zoning_pinellas_park_2882.shp flu_pinellas_park.shp
+
+# Note: The following command results in an error - keep for reference
+# ogr2ogr -explodecollections -t_srs "EPSG:2882" zoning_pinellas_park_2882.shp flu_pinellas_park.shp -dialect sqlite -sql "select ST_union(Geometry) from input"
+# ERROR 6: The SQLite driver needs to be compiled to support the SQLite SQL dialect
+
+# run if file info needed
+ogrinfo zoning_pinellas_park_2882.shp zoning_pinellas_park_2882|less
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET shp_name = 'zoning_pinellas_park_2882.shp', data_date = '2024-04-02', update_date = '2024-04-04'  WHERE county = 'PINELLAS' and city_name = 'PINELLAS_PARK'"
 
 # update dev
 update_flu.py pinellas pinellas_park
@@ -1136,7 +2411,10 @@ mv 'Redington_Shores_Zoning_(PPC).shp' 'Redington_Shores_Zoning_PPC.shp'
 mv 'Redington_Shores_Zoning_(PPC).zip' 'Redington_Shores_Zoning_PPC.zip'
 
 # run if file info needed
-shp_name = 'Redington_Shores_Zoning_PPC.shp', srs_epsg = 2882, data_date = '2024-06-19', update_date = '2025-05-23'  WHERE county = 'PINELLAS' and city_name = 'REDINGTON_SHORES'"
+ogrinfo Redington_Shores_Zoning_PPC.shp Redington_Shores_Zoning_PPC|less
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 2882, shp_name = 'Redington_Shores_Zoning_PPC.shp', data_date = '2024-06-19', update_date = '2025-05-23'  WHERE county = 'PINELLAS' and city_name = 'REDINGTON_SHORES';"
 
 # update dev
 update_flu.py pinellas redington_shores
@@ -1156,7 +2434,21 @@ update_flu.py pinellas redington_shores
 cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/pinellas/current/source_data/seminole
 
 # AGS: check link and run to grab data
-shp_name = 'flu_seminole.shp', srs_epsg = 2882, data_date = '2024-10-09', update_date = '2025-05-23'  WHERE county = 'PINELLAS' and city_name = 'SEMINOLE'"
+ags_extract_data2.py flu_seminole delete 15
+
+# OPENDATA: download, unzip, strip parentheses (if needed), then move to plato
+mv 'Seminole_Zoning_(PPC).cpg' 'Seminole_Zoning_PPC.cpg'
+mv 'Seminole_Zoning_(PPC).dbf' 'Seminole_Zoning_PPC.dbf'
+mv 'Seminole_Zoning_(PPC).prj' 'Seminole_Zoning_PPC.prj'
+mv 'Seminole_Zoning_(PPC).shp' 'Seminole_Zoning_PPC.shp'
+mv 'Seminole_Zoning_(PPC).shx' 'Seminole_Zoning_PPC.shx'
+mv 'Seminole_Zoning_(PPC).zip' 'Seminole_Zoning_PPC.zip'
+
+# run if file info needed
+ogrinfo Seminole_Zoning_PPC.shp Seminole_Zoning_PPC|less
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 2882, shp_name = 'Seminole_Zoning_PPC.shp', data_date = '2024-10-09', update_date = '2025-05-23'  WHERE county = 'PINELLAS' and city_name = 'SEMINOLE'"
 
 # update dev
 update_flu.py pinellas seminole
@@ -1186,7 +2478,10 @@ mv 'South_Pasadena_Zoning_(PPC).shx' 'South_Pasadena_Zoning_PPC.shx'
 mv 'South_Pasadena_Zoning_(PPC).zip' 'South_Pasadena_Zoning_PPC.zip'
 
 # run if file info needed
-shp_name = 'South_Pasadena_Zoning_PPC.shp', srs_epsg = 2882, data_date = '2024-08-13', update_date = '2025-05-23'  WHERE county = 'PINELLAS' and city_name = 'SOUTH_PASADENA'"
+ogrinfo South_Pasadena_Zoning_PPC.shp South_Pasadena_Zoning_PPC|less
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 2882, shp_name = 'South_Pasadena_Zoning_PPC.shp', data_date = '2024-08-13', update_date = '2025-05-23'  WHERE county = 'PINELLAS' and city_name = 'SOUTH_PASADENA';"
 
 # update dev
 update_flu.py pinellas south_pasadena
@@ -1206,7 +2501,15 @@ update_flu.py pinellas south_pasadena
 cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/pinellas/current/source_data/st_petersburg
 
 # AGS: run to grab data
-shp_name = 'flu_st_petersburg.shp', srs_epsg = 2882, data_date = '2024-11-13', update_date = '2025-05-23'  WHERE county = 'PINELLAS' and city_name = 'ST_PETERSBURG'"
+ags_extract_data2.py flu_st_petersburg delete 15
+
+# Opendata: grab, unzip, and move to plato
+
+# run if file info needed
+ogrinfo Zoning_Districts.shp Zoning_Districts|less
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 2882, shp_name = 'Zoning_Districts.shp', data_date = '2024-11-13', update_date = '2025-05-23'  WHERE county = 'PINELLAS' and city_name = 'ST_PETERSBURG'"
 
 # update dev
 update_flu.py pinellas st_petersburg
@@ -1236,7 +2539,10 @@ mv 'Treasure_Island_Zoning_(PPC).shp' 'Treasure_Island_Zoning_PPC.shp'
 mv 'Treasure_Island_Zoning_(PPC).zip' 'Treasure_Island_Zoning_PPC.zip'
 
 # run if file info needed
-shp_name = 'Treasure_Island_Zoning_PPC.shp', srs_epsg = 2882, data_date = '2024-06-12', update_date = '2025-05-23'  WHERE county = 'PINELLAS' and city_name = 'TREASURE_ISLAND'"
+ogrinfo Treasure_Island_Zoning_PPC.shp Treasure_Island_Zoning_PPC|less
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 2882, shp_name = 'Treasure_Island_Zoning_PPC.shp', data_date = '2024-06-12', update_date = '2025-05-23'  WHERE county = 'PINELLAS' and city_name = 'TREASURE_ISLAND'"
 
 # update dev
 update_flu.py pinellas treasure_island
@@ -1266,7 +2572,10 @@ mv 'Zoning_(Unincorporated).shp' 'Zoning_Unincorporated.shp'
 mv 'Zoning_(Unincorporated).zip' 'Zoning_Unincorporated.zip'
 
 # run if file info needed
-shp_name = 'Zoning_Unincorporated.shp', srs_epsg = 2882, data_date = '2025-01-28', update_date = '2024-04-04'  WHERE county = 'PINELLAS' and city_name = 'UNINCORPORATED'"
+ogrinfo Zoning_Unincorporated.shp Zoning_Unincorporated|less
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 2882, shp_name = 'Zoning_Unincorporated.shp', data_date = '2025-01-28', update_date = '2024-04-04'  WHERE county = 'PINELLAS' and city_name = 'UNINCORPORATED'"
 
 # update dev
 update_flu.py pinellas unincorporated
@@ -1298,7 +2607,10 @@ cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/polk/cur
 unzip -oj FutureLandUse.zip
 
 # run if file info needed
-shp_name = 'FutureLandUse.shp', srs_epsg = 2237, data_date = '2025-05-12', update_date = '2025-05-24'  WHERE county = 'POLK' and city_name = 'LAKELAND'"
+ogrinfo FutureLandUse.shp Zoning|less
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 2237, shp_name = 'FutureLandUse.shp', data_date = '2025-05-12', update_date = '2025-05-24'  WHERE county = 'POLK' and city_name = 'LAKELAND'"
 
 # update dev
 update_flu.py polk lakeland
@@ -1312,7 +2624,7 @@ update_flu.py polk lakeland
 # QA and mark as done
 
 #------------------------
-# unincorporated - no flu, right?
+# unincorporated - no zoning, right?
 #------------------------
 # go to working directory
 cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/polk/current/source_data/unincorporated
@@ -1336,16 +2648,19 @@ update_flu.py polk lakeland
 cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/putnam/current/source_data/unincorporated
 
 # grab data from opendata portal, then rename
-mv Zoning_Distritcs_hub.cpg zoning_putnam_unincorporated.cpg
-mv Zoning_Distritcs_hub.dbf zoning_putnam_unincorporated.dbf
-mv Zoning_Distritcs_hub.prj zoning_putnam_unincorporated.prj
-mv Zoning_Distritcs_hub.shx zoning_putnam_unincorporated.shx
+mv Zoning_Distritcs_hub.cpg flu_putnam_unincorporated.cpg
+mv Zoning_Distritcs_hub.dbf flu_putnam_unincorporated.dbf
+mv Zoning_Distritcs_hub.prj flu_putnam_unincorporated.prj
+mv Zoning_Distritcs_hub.shx flu_putnam_unincorporated.shx
 mv Zoning_Distritcs_hub.xml zoning_putnam_unincorporated.xml
 mv Zoning_Distritcs_hub.shp flu_putnam_unincorporated.shp
 
 
 # run if file info needed
-shp_name = 'flu_putnam_unincorporated.shp', srs_epsg = 2236, data_date = '2024-09-10', update_date = '2025-05-29'  WHERE county = 'PUTNAM' and city_name = 'UNINCORPORATED'"
+ogrinfo flu_putnam_unincorporated.shp flu_putnam_unincorporated|less
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 2236, shp_name = 'flu_putnam_unincorporated.shp', data_date = '2024-09-10', update_date = '2025-05-29'  WHERE county = 'PUTNAM' and city_name = 'UNINCORPORATED'"
 
 # update dev
 update_flu.py putnam unincorporated
@@ -1369,13 +2684,19 @@ update_flu.py putnam unincorporated
 cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/santa_rosa/current/source_data/unincorporated
 
 # unzip files (skip if opendata)
-unzip -oj flu.zip
+unzip -oj zoning.zip
 
 # archive with date (skip if opendata)
 zip_rename_date.sh FutureLandUse.zip
 
 # run if file info needed
-shp_name = 'FutureLandUse.shp', srs_epsg = 2238, data_date = '2025-04-03', update_date = '2025-05-29'  WHERE county = 'SANTA_ROSA' and city_name = 'UNINCORPORATED'"
+ogrinfo FutureLandUse.shp Zoning|less
+
+# Note: Commented out processing step, keep for reference
+# ogr2ogr -explodecollections FutureLandUse_single.shp FutureLandUse.shp
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 2238, shp_name = 'FutureLandUse.shp', data_date = '2025-04-03', update_date = '2025-05-29'  WHERE county = 'SANTA_ROSA' and city_name = 'UNINCORPORATED'"
 
 # update dev
 update_flu.py santa_rosa unincorporated
@@ -1399,7 +2720,16 @@ update_flu.py santa_rosa unincorporated
 cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/sarasota/current/source_data/north_port
 
 # run to grab data
-shp_name = 'flu_north_port.shp', srs_epsg = 4326, data_date = '2024-10-28', update_date = '2025-04-16'  WHERE county = 'SARASOTA' and city_name = 'NORTH_PORT'"
+ags_extract_data2.py flu_north_port delete 15
+
+# run if file info needed
+ogrinfo flu_north_port.shp flu_north_port | less
+
+# Create an archive since we downloaded from AGS
+zip zoning_north_port zoning_north_port.*
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET shp_name = 'flu_north_port.shp', srs_epsg = '4326', data_date = '2024-10-28', update_date = '2025-04-16'  WHERE county = 'SARASOTA' and city_name = 'NORTH_PORT'"
 
 # update dev
 update_flu.py sarasota north_port
@@ -1421,13 +2751,16 @@ cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/sarasota
 # TODO: Convert to AGS download
 
 # download data
-mv 'Zoning_Districts_(View_Only)_3527818835144821311.zip' flu.zip
+mv 'Zoning_Districts_(View_Only)_3527818835144821311.zip' zoning.zip
 
 # archive with date
-zip_rename_date.sh flu.zip
+zip_rename_date.sh zoning.zip
 
 # run if file info needed
-shp_name = 'FutureLandUse_Districts.shp', srs_epsg = 2882, data_date = '2025-04-01', update_date = '2025-01-01'  WHERE county = 'SARASOTA' and city_name = 'SARASOTA'"
+ogrinfo Zoning_Districts.shp Zoning_Districts|less
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET shp_name = 'Zoning_Districts.shp', data_date = '2025-04-01', update_date = '2025-01-01', srs_epsg = '2882'  WHERE county = 'SARASOTA' and city_name = 'SARASOTA'"
 
 # update dev
 update_flu.py sarasota sarasota
@@ -1447,7 +2780,30 @@ update_flu.py sarasota sarasota
 cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/sarasota/current/source_data/venice
 
 # run to grab data
-shp_name = 'flu_venice.shp', srs_epsg = 4326, data_date = '2025-05-01', update_date = '2025-05-01'  WHERE county = 'SARASOTA' and city_name = 'VENICE'"
+ags_extract_data2.py flu_venice delete 15
+
+# create archive
+zip zoning.zip zoning_venice.*
+
+# archive with date
+zip_rename_date.sh zoning.zip
+
+# run if file info needed
+ogrinfo flu_venice.shp flu_venice|less
+
+# Note: polygons need dissolving
+ogr2ogr flu_venice_dissolve.shp flu_venice.shp -dialect sqlite -sql "SELECT ST_Union(geometry), map_label, zoning_dis, notes FROM input GROUP BY map_label, zoning_dis, notes"
+
+# Note: Run repair in QGIS
+# Use Fix geometry tool - search for tool in vector tools
+# Save to flu_venice_fixed.shp
+
+# Note: Dissolve
+# Manual dissolve in QGIS using dissolve tool
+# Save to flu_venice_dissolve.shp
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET shp_name = 'flu_venice_dissolve.shp', data_date = '2025-05-01', update_date = '2025-05-01', srs_epsg = '4326'  WHERE county = 'SARASOTA' and city_name = 'VENICE'"
 
 # update dev
 update_flu.py sarasota venice
@@ -1476,7 +2832,10 @@ unzip -o CountyFutureLandUse.zip
 zip_rename_date.sh CountyFutureLandUse.zip
 
 # run if file info needed
-shp_name = 'CountyFutureLandUse.shp', srs_epsg = 2882, data_date = '2025-04-21', update_date = '2025-05-01'  WHERE county = 'SARASOTA' and city_name = 'UNINCORPORATED'"
+ogrinfo CountyFutureLandUse.shp CountyZoning|less
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET shp_name = 'CountyFutureLandUse.shp', data_date = '2025-04-21', update_date = '2025-05-01', srs_epsg = '2882'  WHERE county = 'SARASOTA' and city_name = 'UNINCORPORATED'"
 
 # update dev
 update_flu.py sarasota unincorporated
@@ -1502,7 +2861,14 @@ cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/seminole
 # grab data from website, unzip and move to plato
 
 # run if file info needed
-shp_name = 'FutureLandUse.shp', srs_epsg = 2236, data_date = '2024-12-18', update_date = '2025-05-24'  WHERE county = 'SEMINOLE' and city_name = 'ALTAMONTE_SPRINGS'"
+ogrinfo FutureLandUse.shp Zoning|less
+
+# process data
+rm Zoning_single.*
+ogr2ogr -explodecollections -select "ZONING" FutureLandUse_single.shp FutureLandUse.shp
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 2236, shp_name = 'FutureLandUse_single.shp', data_date = '2024-12-18', update_date = '2025-05-24'  WHERE county = 'SEMINOLE' and city_name = 'ALTAMONTE_SPRINGS'"
 
 # update dev
 update_flu.py seminole altamonte_springs
@@ -1522,7 +2888,13 @@ update_flu.py seminole altamonte_springs
 cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/seminole/current/source_data/casselberry
 
 # run to grab data
-shp_name = 'flu_casselberry.shp', srs_epsg = 4326, data_date = '2025-05-25', update_date = '2025-05-25'  WHERE county = 'SEMINOLE' and city_name = 'CASSELBERRY'"
+ags_extract_data2.py flu_casselberry delete 15
+
+# run if file info needed
+ogrinfo flu_casselberry.shp flu_casselberry|less
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 4326, shp_name = 'flu_casselberry.shp', data_date = '2025-05-25', update_date = '2025-05-25'  WHERE county = 'SEMINOLE' and city_name = 'CASSELBERRY'"
 
 # update dev
 update_flu.py seminole casselberry
@@ -1542,7 +2914,13 @@ update_flu.py seminole casselberry
 cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/seminole/current/source_data/lake_mary
 
 # run to grab data
-shp_name = 'flu_lake_mary.shp', srs_epsg = 4326, data_date = '2025-05-25', update_date = '2025-05-25'  WHERE county = 'SEMINOLE' and city_name = 'LAKE_MARY'"
+ags_extract_data2.py flu_lake_mary delete 15
+
+# run if file info needed
+ogrinfo flu_lake_mary.shp flu_lake_mary|less
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 4326, shp_name = 'flu_lake_mary.shp', data_date = '2025-05-25', update_date = '2025-05-25'  WHERE county = 'SEMINOLE' and city_name = 'LAKE_MARY'"
 
 # update dev
 update_flu.py seminole lake_mary
@@ -1562,7 +2940,13 @@ update_flu.py seminole lake_mary
 cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/seminole/current/source_data/longwood
 
 # run to grab data
-shp_name = 'flu_longwood.shp', data_date = '2024-04-02', update_date = '2024-04-02'  WHERE county = 'SEMINOLE' and city_name = 'LONGWOOD'"
+ags_extract_data2.py flu_longwood delete 15
+
+# run if file info needed
+ogrinfo flu_longwood.shp flu_longwood|less
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET shp_name = 'flu_longwood.shp', data_date = '2024-04-02', update_date = '2024-04-02'  WHERE county = 'SEMINOLE' and city_name = 'LONGWOOD'"
 
 # update dev
 update_flu.py seminole longwood
@@ -1582,7 +2966,13 @@ update_flu.py seminole longwood
 cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/seminole/current/source_data/oviedo
 
 # run to grab data
-shp_name = 'flu_oviedo.shp', srs_epsg = 4326, data_date = '2025-05-25', update_date = '2025-05-25'  WHERE county = 'SEMINOLE' and city_name = 'OVIEDO'"
+ags_extract_data2.py flu_oviedo delete 15
+
+# run if file info needed
+ogrinfo flu_oviedo.shp flu_oviedo|less
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 4326, shp_name = 'flu_oviedo.shp', data_date = '2025-05-25', update_date = '2025-05-25'  WHERE county = 'SEMINOLE' and city_name = 'OVIEDO'"
 
 # update dev
 update_flu.py seminole oviedo
@@ -1602,7 +2992,13 @@ update_flu.py seminole oviedo
 cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/seminole/current/source_data/sanford
 
 # run to grab data
-shp_name = 'flu_sanford.shp', srs_epsg = 4326, data_date = '2025-05-25', update_date = '2025-05-25'  WHERE county = 'SEMINOLE' and city_name = 'SANFORD'"
+ags_extract_data2.py flu_sanford delete 15
+
+# run if file info needed
+ogrinfo flu_sanford.shp flu_sanford|less
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 4326, shp_name = 'flu_sanford.shp', data_date = '2025-05-25', update_date = '2025-05-25'  WHERE county = 'SEMINOLE' and city_name = 'SANFORD'"
 
 # update dev
 update_flu.py seminole sanford
@@ -1622,7 +3018,13 @@ update_flu.py seminole sanford
 cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/seminole/current/source_data/winter_springs
 
 # run to grab data
-shp_name = 'flu_winter_springs.shp', srs_epsg = 4326, data_date = '2025-05-25', update_date = '2025-05-25'  WHERE county = 'SEMINOLE' and city_name = 'WINTER_SPRINGS'"
+ags_extract_data2.py flu_winter_springs delete 15
+
+# run if file info needed
+ogrinfo flu_winter_springs.shp flu_winter_springs|less
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 4326, shp_name = 'flu_winter_springs.shp', data_date = '2025-05-25', update_date = '2025-05-25'  WHERE county = 'SEMINOLE' and city_name = 'WINTER_SPRINGS'"
 
 # update dev
 update_flu.py seminole winter_springs
@@ -1644,9 +3046,9 @@ cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/seminole
 # ??
 
 # check attributes still match columns in support.flu_transform
-ogrinfo LandUse.gdb FutureLandUse|less
+ogrinfo LandUse.gdb Zoning|less
 
-ogr2ogr -explodecollections -select "FUTURE_LAND_USE, ORDINANCE" FutureLandUse_single.shp LandUse.gdb FutureLandUse
+ogr2ogr -explodecollections -select "ZONING, ORDINANCE" FutureLandUse_single.shp LandUse.gdb Zoning
 
 psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET shp_name = 'FutureLandUse_single.shp', data_date = '2024-03-19', update_date = '2024-04-02'  WHERE county = 'SEMINOLE' and city_name = 'UNINCORPORATED'"
 
@@ -1669,7 +3071,10 @@ cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/st_johns
 #download_data.py /data/flu/st_johns/unincorporated
 
 # check attributes still match columns in support.flu_transform
-shp_name = 'FutureLandUse.shp', srs_epsg = 3857, data_date = '2025-05-27', update_date = '2025-05-27'  WHERE county = 'ST_JOHNS' and city_name = 'UNINCORPORATED'"
+ogrinfo FutureLandUse.shp Zoning|less
+
+# update transform table
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 3857, shp_name = 'FutureLandUse.shp', data_date = '2025-05-27', update_date = '2025-05-27'  WHERE county = 'ST_JOHNS' and city_name = 'UNINCORPORATED'"
 
 # update dev
 update_flu.py st_johns unincorporated
@@ -1694,7 +3099,13 @@ update_flu.py st_johns unincorporated
 cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/st_lucie/current/source_data/port_st_lucie
 
 # run to grab data
-shp_name = 'flu_port_st_lucie.shp', srs_epsg = 4326, data_date = '2025-05-27', update_date = '2025-05-27'  WHERE county = 'ST_LUCIE' and city_name = 'PORT_ST_LUCIE'"
+ags_extract_data2.py flu_port_st_lucie delete 15 zoning,seu_type
+
+# check attributes still match columns in support.flu_transform
+ogrinfo flu_port_st_lucie.shp flu_port_st_lucie|less
+
+# update table w/ correct info
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 4326, shp_name = 'flu_port_st_lucie.shp', data_date = '2025-05-27', update_date = '2025-05-27'  WHERE county = 'ST_LUCIE' and city_name = 'PORT_ST_LUCIE'"
 
 # update dev
 update_flu.py st_lucie port_st_lucie
@@ -1718,7 +3129,10 @@ cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/st_lucie
 download_data.py /data/flu/st_lucie/unincorporated
 
 # check attributes still match columns in support.flu_transform
-shp_name = 'FutureLandUse.shp', srs_epsg = 2236, data_date = '2025-03-25', update_date = '2025-05-27'  WHERE county = 'ST_LUCIE' and city_name = 'UNINCORPORATED'"
+ogrinfo FutureLandUse.shp Zoning|less
+
+# update transform table
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 2236, shp_name = 'FutureLandUse.shp', data_date = '2025-03-25', update_date = '2025-05-27'  WHERE county = 'ST_LUCIE' and city_name = 'UNINCORPORATED'"
 
 # update dev
 update_flu.py st_lucie unincorporated
@@ -1743,7 +3157,43 @@ update_flu.py st_lucie unincorporated
 cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/sumter/current/source_data/unincorporated
 
 # run to grab data
-shp_name = 'flu_sumter.shp', srs_epsg = 2881, data_date = '2025-03-26', update_date = '2025-05-24'  WHERE county = 'VOLUSIA' and city_name = 'COUNTYWIDE'"
+ags_extract_data2.py flu_sumter delete 15
+
+# check attributes still match columns in support.flu_transform
+ogrinfo flu_sumter.shp flu_sumter|less
+
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 4326, shp_name = 'flu_sumter.shp', data_date = '2025-05-29', update_date = '2025-05-29'  WHERE county = 'SUMTER' and city_name = 'UNINCORPORATED'"
+
+update_flu.py sumter unincorporated
+
+# copy the commands generated at the end of the output
+
+# grab raw_flu_sumter_unincorp.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+```
+
+### Volusia
+
+```bash
+#------------------------
+# countywide
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/volusia/current/source_data/countywide
+
+# get data from opendata portal
+
+# unzip and move to plato
+
+# run if file info needed
+ogrinfo Countywide_FutureLandUse.shp Countywide_Zoning|less
+
+# update table w/ proper parameters
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET temp_table_name = 'raw_volusia_countywide', zon_code_col = 'genl_zcode', srs_epsg = 2881, shp_name = 'Countywide_FutureLandUse.shp', data_date = '2025-03-26', update_date = '2025-05-24'  WHERE county = 'VOLUSIA' and city_name = 'COUNTYWIDE';"
 
 # update dev
 update_flu.py volusia countywide
@@ -1788,7 +3238,66 @@ update_flu.py volusia daytona_beach
 cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/volusia/current/source_data/port_orange
 
 # run to grab data
-shp_name = 'flu_port_orange.shp', srs_epsg = 4236, data_date = '2025-04-27', update_date = '2025-05-01'  WHERE county = 'WALTON' and city_name = 'UNINCORPORATED'"
+ags_extract_data2.py flu_port_orange delete 15
+
+# check attributes still match columns in support.flu_transform
+ogrinfo flu_port_orange.shp flu_port_orange|less
+
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET shp_name = 'flu_port_orange.shp', data_date = '2024-04-01', update_date = '2024-04-01'  WHERE county = 'VOLUSIA' and city_name = 'PORT_ORANGE'"
+
+update_flu.py volusia port_orange
+
+# copy the commands generated at the end of the output
+
+# grab raw_flu_volusia_port_orange.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+
+#------------------------
+# unincorporated
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/volusia/current/source_data/unincorporated
+
+# ??
+
+# check attributes still match columns in support.flu_transform
+ogrinfo FutureLandUse.shp Zoning|less
+
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET shp_name = 'FutureLandUse.shp', data_date = '2024-03-28', update_date = '2024-04-01'  WHERE county = 'VOLUSIA' and city_name = 'UNINCORPORATED'"
+
+update_flu.py volusia unincorporated
+
+# copy the commands generated at the end of the output
+
+# grab raw_flu_volusia_unincorp.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+```
+
+### Walton
+
+```bash
+#------------------------
+# unincorporated
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/walton/current/source_data/unincorporated
+
+# run to grab data
+ags_extract_data2.py flu_walton delete 15
+
+# run if file info needed
+ogrinfo flu_walton.shp flu_walton|less
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET shp_name = 'flu_walton.shp', data_date = '2025-04-27', update_date = '2025-05-01', srs_epsg = '4236'  WHERE county = 'WALTON' and city_name = 'UNINCORPORATED'"
 
 # update dev
 update_flu.py walton unincorporated
