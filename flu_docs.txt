@@ -470,7 +470,7 @@ ogrinfo flu_broward.shp flu_broward|less
 ogr2ogr -explodecollections -t_srs "EPSG:2881" -select "ZONING, ZONE_NAME" zoning_broward_single_2881.shp flu_broward.shp
 
 # update table (ensure parameters are correct)
-psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET shp_name = 'zoning_broward_single_2881.shp', data_date = '2024-03-29', update_date = '2024-03-31'  WHERE county = 'BROWARD' and city_name = 'COUNTY_UNIFIED'"
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET shp_name = 'flu_broward_single_2881.shp', data_date = '2024-03-29', update_date = '2024-03-31'  WHERE county = 'BROWARD' and city_name = 'COUNTY_UNIFIED'"
 
 # update dev
 update_flu.py broward county_unified
@@ -1716,11 +1716,14 @@ update_flu.py martin unincorporated
 # go to working directory
 cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/miami-dade/current/source_data/incorporated
 
+# run to grab data
+ags_extract_data2.py flu_miami_dade_incorporated delete 15
+
 # run if file info needed
-ogrinfo zoning_miami-dade_incorporated.shp zoning_miami-dade_incorporated|less
+ogrinfo flu_miami_dade_incorporated.shp flu_miami_dade_incorporated|less
 
 # update table (ensure parameters are correct)
-psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET shp_name = 'zoning_miami-dade_incorporated.shp', data_date = '2024-04-02', update_date = '2024-04-04'  WHERE county = 'MIAMI-DADE' and city_name = 'INCORPORATED'"
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 4326, temp_table_name = 'raw_flu_miami_dade_incorporated', shp_name = 'flu_miami_dade_incorporated.shp', data_date = '2025-05-29', update_date = '2025-05-29'  WHERE county = 'MIAMI-DADE' and city_name = 'INCORPORATED'"
 
 # update dev
 update_flu.py miami-dade incorporated
@@ -1739,15 +1742,14 @@ update_flu.py miami-dade incorporated
 # go to working directory
 cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/miami-dade/current/source_data/unincorporated
 
-# get data from opendata portal
-
-# unzip and move to plato
+# run to grab data
+ags_extract_data2.py flu_miami_dade_unincorporated delete 15
 
 # run if file info needed
-ogrinfo County_FutureLandUse.shp County_Zoning|less
+ogrinfo flu_miami_dade_unincorporated.shp flu_miami_dade_unincorporated|less
 
 # update table (ensure parameters are correct)
-psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 3857, shp_name = 'County_FutureLandUse.shp', data_date = '2025-04-18', update_date = '2025-05-23'  WHERE county = 'MIAMI-DADE' and city_name = 'UNINCORPORATED';"
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 4326, temp_table_name = 'raw_flu_miami_dade_unincorp', shp_name = 'flu_miami_dade_unincorporated.shp', data_date = '2025-05-28', update_date = '2025-05-28'  WHERE county = 'MIAMI-DADE' and city_name = 'UNINCORPORATED';"
 
 # update dev
 update_flu.py miami-dade unincorporated
@@ -2190,10 +2192,10 @@ ags_extract_data2.py flu_dunedin delete 15
 ogr2ogr -explodecollections -t_srs "EPSG:2882" zoning_dunedin_2882.shp flu_dunedin.shp 
 
 # run if file info needed
-ogrinfo zoning_dunedin_2882.shp zoning_dunedin_2882|less
+ogrinfo flu_dunedin_2882.shp zoning_dunedin_2882|less
 
 # update table (ensure parameters are correct)
-psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET shp_name = 'zoning_dunedin_2882.shp', data_date = '2025-05-23', update_date = '2025-05-23'  WHERE county = 'PINELLAS' and city_name = 'DUNEDIN';"
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET shp_name = 'flu_dunedin_2882.shp', data_date = '2025-05-23', update_date = '2025-05-23'  WHERE county = 'PINELLAS' and city_name = 'DUNEDIN';"
 
 # update dev
 update_flu.py pinellas dunedin
@@ -2378,10 +2380,10 @@ ogr2ogr -explodecollections -t_srs "EPSG:2882" zoning_pinellas_park_2882.shp flu
 # ERROR 6: The SQLite driver needs to be compiled to support the SQLite SQL dialect
 
 # run if file info needed
-ogrinfo zoning_pinellas_park_2882.shp zoning_pinellas_park_2882|less
+ogrinfo flu_pinellas_park_2882.shp zoning_pinellas_park_2882|less
 
 # update table (ensure parameters are correct)
-psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET shp_name = 'zoning_pinellas_park_2882.shp', data_date = '2024-04-02', update_date = '2024-04-04'  WHERE county = 'PINELLAS' and city_name = 'PINELLAS_PARK'"
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET shp_name = 'flu_pinellas_park_2882.shp', data_date = '2024-04-02', update_date = '2024-04-04'  WHERE county = 'PINELLAS' and city_name = 'PINELLAS_PARK'"
 
 # update dev
 update_flu.py pinellas pinellas_park
