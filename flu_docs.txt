@@ -1,0 +1,1803 @@
+### Alachua
+
+```bash
+#------------------------
+# alachua
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/alachua/current/source_data/alachua
+
+# run to grab data
+shp_name = 'flu_alachua_city.shp', srs_epsg = 4326, data_date = '2025-05-27', update_date = '2025-05-27'  WHERE county = 'ALACHUA' and city_name = 'ALACHUA'"
+
+# update dev
+update_flu.py alachua alachua
+# copy the commands generated at the end of the output
+
+# grab raw_flu_alachua_alachua.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+
+#------------------------
+# archer
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/alachua/current/source_data/archer
+
+# run to grab data
+shp_name = 'flu_archer.shp', srs_epsg = 4326, data_date = '2025-05-27', update_date = '2025-05-27'  WHERE county = 'ALACHUA' and city_name = 'ARCHER'"
+
+# update dev
+update_flu.py alachua archer
+# copy the commands generated at the end of the output
+
+# grab raw_flu_alachua_archer.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+
+#------------------------
+# gainesville
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/alachua/current/source_data/gainesville
+
+# run to grab data
+shp_name = 'flu_gainesville.shp', srs_epsg = 4326, data_date = '2025-05-27', update_date = '2025-05-27'  WHERE county = 'ALACHUA' and city_name = 'GAINESVILLE'"
+
+# update dev
+update_flu.py alachua gainesville
+# copy the commands generated at the end of the output
+
+# grab raw_flu_alachua_gainesville.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+
+#------------------------
+# hawthorne
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/alachua/current/source_data/hawthorne
+
+# run to grab data
+shp_name = 'flu_hawthorne.shp', srs_epsg = 4326, data_date = '2025-05-27', update_date = '2025-05-27'  WHERE county = 'ALACHUA' and city_name = 'HAWTHORNE'"
+
+# update dev
+update_flu.py alachua hawthorne
+# copy the commands generated at the end of the output
+
+# grab raw_flu_alachua_hawthorne.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+
+#------------------------
+# high_springs
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/alachua/current/source_data/high_springs
+
+# run to grab data
+shp_name = 'flu_high_springs.shp', srs_epsg = 4326, data_date = '2025-05-27', update_date = '2025-05-27'  WHERE county = 'ALACHUA' and city_name = 'HIGH_SPRINGS'"
+
+# update dev
+update_flu.py alachua high_springs
+# copy the commands generated at the end of the output
+
+# grab raw_flu_alachua_high_springs.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+
+#------------------------
+# lacrosse
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/alachua/current/source_data/lacrosse
+
+# run to grab data
+shp_name = 'flu_lacrosse.shp', srs_epsg = 4326, data_date = '2025-05-27', update_date = '2025-05-27'  WHERE county = 'ALACHUA' and city_name = 'LACROSSE'"
+
+# update dev
+update_flu.py alachua lacrosse
+# copy the commands generated at the end of the output
+
+# grab raw_flu_alachua_lacrosse.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+
+#------------------------
+# micanopy
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/alachua/current/source_data/micanopy
+
+# run to grab data
+shp_name = 'flu_micanopy.shp', srs_epsg = 4326, data_date = '2025-05-27', update_date = '2025-05-27'  WHERE county = 'ALACHUA' and city_name = 'MICANOPY'"
+
+# update dev
+update_flu.py alachua micanopy
+# copy the commands generated at the end of the output
+
+# grab raw_flu_alachua_micanopy.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+
+#------------------------
+# newberry
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/alachua/current/source_data/newberry
+
+# run to grab data
+shp_name = 'flu_newberry.shp', srs_epsg = 4326, data_date = '2025-05-27', update_date = '2025-05-27'  WHERE county = 'ALACHUA' and city_name = 'NEWBERRY'"
+
+# update dev
+update_flu.py alachua newberry
+# copy the commands generated at the end of the output
+
+# grab raw_flu_alachua_newberry.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+
+#------------------------
+# unincorporated
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/alachua/current/source_data/unincorporated
+
+# run to grab data
+shp_name = 'flu_alachua_unincorporated.shp', srs_epsg = 4326, data_date = '2025-05-27', update_date = '2025-05-27'  WHERE county = 'ALACHUA' and city_name = 'UNINCORPORATED'"
+
+# update dev
+update_flu.py alachua unincorporated
+# copy the commands generated at the end of the output
+
+# grab raw_flu_alachua_unincorp.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+
+#------------------------
+# waldo
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/alachua/current/source_data/waldo
+
+# run to grab data
+shp_name = 'flu_waldo.shp', srs_epsg = 4326, data_date = '2025-05-27', update_date = '2025-05-27'  WHERE county = 'ALACHUA' and city_name = 'WALDO'"
+
+# update dev
+update_flu.py alachua waldo
+# copy the commands generated at the end of the output
+
+# grab raw_flu_alachua_waldo.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+```
+
+### Baker
+
+```bash
+#------------------------
+# unincorporated
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/baker/current/source_data/unincorporated
+
+# run if file info needed
+shp_name = 'flu_baker_unincorporated.shp', data_date = '2024-04-02', update_date = '2024-04-04'  WHERE county = 'BAKER' and city_name = 'UNINCORPORATED'"
+
+# update dev
+update_flu.py baker unincorporated
+# copy the commands generated at the end of the output
+
+# grab raw_flu_baker_unincorp.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+```
+
+### Bay
+
+```bash
+#------------------------
+# unincorporated / unified?
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/bay/current/source_data/unincorporated
+
+# download data
+download_data.py /data/flu/bay/unincorporated
+
+# unzip files
+unzip -oj FutureLandUse.zip
+
+# archive with date
+zip_rename_date.sh FutureLandUse.zip
+
+# run if file info needed
+shp_name = 'shp_name = 'FutureLandUse.shp', srs_epsg = 2238, data_date = '2025-05-01', update_date = '2025-05-01'  WHERE county = 'BAY' and city_name = 'UNINCORPORATED'"
+
+# update dev
+update_flu.py bay unincorporated
+# copy the commands generated at the end of the output
+
+# grab raw_flu_bay_unincorp.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+
+# Note: bay is unified, extra code implemented to update city names
+```
+
+### Brevard
+
+```bash
+#------------------------
+# melbourne
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/brevard/current/source_data/melbourne
+
+# run to grab data
+shp_name = 'flu_melbourne.shp', srs_epsg = 4326, data_date = '2025-05-24', update_date = '2025-05-24'  WHERE county = 'BREVARD' and city_name = 'MELBOURNE'"
+
+# update dev
+update_flu.py brevard melbourne
+# copy the commands generated at the end of the output
+
+# grab raw_flu_brevard_melbourne.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+
+#------------------------
+# palm_bay
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/brevard/current/source_data/palm_bay
+
+# Note: Previous method was:
+# shp_name = 'flu_palm_bay.shp', srs_epsg = 2881, data_date = '2024-03-30', update_date = '2025-05-24'  WHERE county = 'BREVARD' and city_name = 'PALM_BAY'"
+
+# update dev
+update_flu.py brevard palm_bay
+# copy the commands generated at the end of the output
+
+# grab raw_flu_brevard_palm_bay.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+
+#------------------------
+# titusville
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/brevard/current/source_data/titusville
+
+# Note: Previous method was:
+# shp_name = 'flu_titusville.shp', data_date = '2024-02-21', update_date = '2024-04-01'  WHERE county = 'BREVARD' and city_name = 'TITUSVILLE'"
+
+# update dev
+update_flu.py brevard titusville
+# copy the commands generated at the end of the output
+
+# grab raw_flu_brevard_titusville.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+
+#------------------------
+# unincorporated
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/brevard/current/source_data/unincorporated
+
+# run to grab data
+shp_name = 'flu_brevard.shp', srs_epsg = 4326, data_date = '2025-05-24', update_date = '2025-05-24'  WHERE county = 'BREVARD' and city_name = 'UNINCORPORATED'"
+
+# update dev
+update_flu.py brevard unincorporated
+# copy the commands generated at the end of the output
+
+# grab raw_flu_brevard_unincorp.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+```
+
+### Broward
+
+```bash
+#------------------------
+# broward unified
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/broward/current/source_data/county_unified
+
+# run to grab data
+shp_name = 'flu_broward.shp', data_date = '2024-03-29', update_date = '2024-03-31'  WHERE county = 'BROWARD' and city_name = 'COUNTY_UNIFIED'"
+
+# update dev
+update_flu.py broward county_unified
+# copy the commands generated at the end of the output
+
+# grab raw_flu_broward_county_unified.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+```
+
+### Charlotte
+
+```bash
+#------------------------
+# punta_gorda
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/charlotte/current/source_data/punta_gorda
+
+# run if file info needed
+shp_name = 'flu_punta_gorda.shp', data_date = '2024-04-02', update_date = '2024-04-04'  WHERE county = 'CHARLOTTE' and city_name = 'PUNTA_GORDA'"
+
+# update dev
+update_flu.py charlotte punta_gorda
+# copy the commands generated at the end of the output
+
+# grab raw_flu_charlotte_punta_gorda.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+
+#------------------------
+# unincorporated
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/charlotte/current/source_data/unincorporated
+
+# download data
+download_data.py /data/flu/charlotte/unincorporated
+
+# unzip files
+unzip -oj flu.zip
+
+# archive with date
+zip_rename_date.sh flu.zip
+
+# run if file info needed
+shp_name = 'FUTURE_LAND_USE.shp', srs_epsg = 2237, data_date = '2025-05-22', update_date = '2025-05-29'  WHERE county = 'CHARLOTTE' and city_name = 'UNINCORPORATED'"
+
+# update dev
+update_flu.py charlotte unincorporated
+# copy the commands generated at the end of the output
+
+# grab raw_flu_charlotte_unincorp.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+```
+
+### Citrus
+
+```bash
+#------------------------
+# unincorporated
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/citrus/current/source_data/unincorporated
+
+# unzip files
+unzip -oj FutureLandUse.zip
+
+# run if file info needed
+shp_name = 'FutureLandUse_FWS.shp', data_date = '2023-11-01', update_date = '2024-04-04'  WHERE county = 'CITRUS' and city_name = 'UNINCORPORATED'"
+
+# update dev
+update_flu.py citrus unincorporated
+# copy the commands generated at the end of the output
+
+# grab raw_flu_citrus_unincorp.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+```
+
+### Clay
+
+```bash
+#------------------------
+# unincorporated
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/clay/current/source_data/unincorporated
+
+# download data
+download_data.py /data/flu/clay/unincorporated
+
+# unzip files
+unzip -oj FutureLandUse.zip
+
+# run if file info needed
+shp_name = 'FutureLandUse.shp', data_date = '2024-04-02', update_date = '2024-04-04'  WHERE county = 'CLAY' and city_name = 'UNINCORPORATED'"
+
+# update dev
+update_flu.py clay unincorporated
+# copy the commands generated at the end of the output
+
+# grab raw_flu_clay_unincorp.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+```
+
+### Collier
+
+```bash
+#------------------------
+# marco_island
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/collier/current/source_data/marco_island
+
+# run to grab data
+shp_name = 'flu_marco_island.shp', srs_epsg = 4326, data_date = '2025-05-25', update_date = '2025-05-25'  WHERE county = 'COLLIER' and city_name = 'MARCO_ISLAND'"
+
+# update dev
+update_flu.py collier marco_island
+# copy the commands generated at the end of the output
+
+# grab raw_flu_collier_marco_island.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+
+#------------------------
+# naples
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/collier/current/source_data/naples
+
+# run to grab data
+shp_name = 'flu_naples.shp', srs_epsg = 4326, data_date = '2025-05-25', update_date = '2025-05-25'  WHERE county = 'COLLIER' and city_name = 'NAPLES'"
+
+# update dev
+update_flu.py collier naples
+# copy the commands generated at the end of the output
+
+# grab raw_flu_collier_naples.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+
+#------------------------
+# unincorporated
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/collier/current/source_data/unincorporated
+
+# grab from opendata portal, unzip, move to plato
+
+# run if file info needed
+shp_name = 'FutureLandUse_General.shp', srs_epsg = 2236, data_date = '2025-05-23', update_date = '2025-05-25'  WHERE county = 'COLLIER' and city_name = 'UNINCORPORATED'"
+
+# update dev
+update_flu.py collier unincorporated
+# copy the commands generated at the end of the output
+
+# grab raw_flu_collier_unincorp.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+```
+
+### Duval
+
+```bash
+#------------------------
+# jacksonville
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/duval/current/source_data/jacksonville
+
+# Note: Manual download - see Data Catalog
+
+# create archive
+# zip flu.zip flu_duval.*
+
+# unzip files
+unzip -o flu.zip
+
+# archive with date
+zip_rename_date.sh flu.zip
+
+# Rename all files associated with shapefile
+shpshp_name = 'flu_duval.shp', data_date = '2024-04-02', update_date = '2024-04-04'  WHERE county = 'MIAMI-DADE' and city_name = 'INCORPORATED'"
+
+# update dev
+update_flu.py miami-dade incorporated
+# copy the commands generated at the end of the output
+
+# grab raw_flu_miami-dade_incorporated.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+
+#------------------------
+# unincorporated
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/miami-dade/current/source_data/unincorporated
+
+# get data from opendata portal
+
+# unzip and move to plato
+
+# run if file info needed
+shp_name = 'County_FutureLandUse.shp', srs_epsg = 3857, data_date = '2025-04-18', update_date = '2025-05-23'  WHERE county = 'MIAMI-DADE' and city_name = 'UNINCORPORATED'"
+
+# update dev
+update_flu.py miami-dade unincorporated
+# copy the commands generated at the end of the output
+
+# grab raw_flu_miami-dade_unincorp.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+```
+
+### Nassau
+
+```bash
+#------------------------
+# unincorporated
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/nassau/current/source_data/unincorporated
+
+# run to grab data
+ags_extract_data_objectids_1.py flu_nassau delete 15
+
+# run if file info needed
+shp_name = 'flu_nassau.shp', data_date = '2024-04-02', update_date = '2024-04-04'  WHERE county = 'NASSAU' and city_name = 'UNINCORPORATED'"
+
+# update dev
+update_flu.py nassau unincorporated
+# copy the commands generated at the end of the output
+
+# grab raw_flu_nassau_unincorp.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+```
+
+### Okaloosa
+
+```bash
+#------------------------
+# unincorporated
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/okaloosa/current/source_data/unincorporated
+
+# unzip files
+unzip -oj Local_Planning.zip
+
+# archive with date
+zip_rename_date.sh Local_Planning.zip
+
+# run if file info needed
+shp_name = 'zngpy.shp', srs_epsg = 2238, data_date = '2025-05-11', update_date = '2025-05-27'  WHERE county = 'OKALOOSA' and city_name = 'UNINCORPORATED'"
+
+# update dev
+update_flu.py okaloosa unincorporated
+# copy the commands generated at the end of the output
+
+# grab raw_flu_okaloosa_unincorp.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+```
+
+### Orange
+
+```bash
+#------------------------
+# apopka
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/orange/current/source_data/apopka
+
+# ensure AGS link is correct, and find data date (last edit date)
+
+# run to grab data
+shp_name = 'flu_apopka.shp', data_date = '2025-04-30', update_date = '2025-05-17'  WHERE county = 'ORANGE' and city_name = 'APOPKA'"
+
+# update dev
+update_flu.py orange apopka
+# copy the commands generated at the end of the output
+
+# grab raw_flu_orange_apopka.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+
+#------------------------
+# eatonville
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/orange/current/source_data/eatonville
+
+# grab data via opendata portal, ensure it is in correct directory
+
+# run if file info needed
+shp_name = 'Eatonville_FutureLandUse.shp', data_date = '2024-01-04', update_date = '2025-05-09'  WHERE county = 'ORANGE' and city_name = 'EATONVILLE'"
+
+# update dev
+update_flu.py orange eatonville
+# copy the commands generated at the end of the output
+
+# grab raw_flu_orange_eatonville.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+
+#------------------------
+# ocoee (REVIEW)
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/orange/current/source_data/ocoee
+
+# ensure AGS link is correct, and find data date
+
+# run to grab data
+shp_name = 'flu_ocoee.shp', data_date = '2024-04-02', update_date = '2024-04-04'  WHERE county = 'ORANGE' and city_name = 'OCOEE'"
+
+# update dev
+update_flu.py orange ocoee
+# copy the commands generated at the end of the output
+
+# grab raw_flu_orange_ocoee.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+
+#------------------------
+# orlando
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/orange/current/source_data/orlando
+
+# download from opendata portal and move to plato
+
+# run if file info needed
+shp_name = 'Orlando_FutureLandUse.shp', data_date = 'YYYY-MM-DD', update_date = 'YYYY-MM-DD'  WHERE county = 'ORANGE' and city_name = 'ORLANDO'"
+
+# update dev
+update_flu.py orange orlando
+# copy the commands generated at the end of the output
+
+# grab raw_flu_orange_orlando.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+
+#------------------------
+# unincorporated (REVIEW)
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/orange/current/source_data/unincorporated
+
+# download data
+download_data.py /data/flu/orange/unincorporated
+# Note: if broken, use opendata portal
+
+# run if file info needed
+shp_name = 'Orange_County_FutureLandUse.shp', data_date = 'YYYY-MM-DD', update_date = 'YYYY-MM-DD'  WHERE county = 'ORANGE' and city_name = 'UNINCORPORATED'"
+
+# update dev
+update_flu.py orange unincorporated
+# copy the commands generated at the end of the output
+
+# grab raw_flu_orange_unincorp.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+```
+
+### Osceola
+
+```bash
+#------------------------
+# kissimmee
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/osceola/current/source_data/kissimmee
+
+# run to grab data
+shp_name = 'flu_kissimmee.shp', srs_epsg = 4326, data_date = '2025-05-25', update_date = '2025-05-25'  WHERE county = 'OSCEOLA' and city_name = 'KISSIMMEE'"
+
+# update dev
+update_flu.py osceola kissimmee
+# copy the commands generated at the end of the output
+
+# grab raw_flu_osceola_kissimmee.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+
+#------------------------
+# st_cloud
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/osceola/current/source_data/st_cloud
+
+# run to grab data
+shp_name = 'flu_st_cloud.shp', srs_epsg = 4326, data_date = '2025-05-25', update_date = '2025-05-25'  WHERE county = 'OSCEOLA' and city_name = 'ST_CLOUD'"
+
+# update dev
+update_flu.py osceola st_cloud
+# copy the commands generated at the end of the output
+
+# grab raw_flu_osceola_st_cloud.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+
+#------------------------
+# unincorporated
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/osceola/current/source_data/unincorporated
+
+# run to grab data
+shp_name = 'flu_osceola.shp', srs_epsg = 4326, data_date = '2025-05-26', update_date = '2025-05-26'  WHERE county = 'OSCEOLA' and city_name = 'UNINCORPORATED'"
+
+# update dev
+update_flu.py osceola unincorporated
+# copy the commands generated at the end of the output
+
+# grab raw_flu_osceola_unincorp.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+```
+
+### Palm Beach
+
+```bash
+#------------------------
+# palm_beach unified
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/palm_beach/current/source_data/county_unified
+
+# process data
+ogr2ogr -explodecollections -t_srs "EPSG:2881" FutureLandUse_single.shp FutureLandUse.shp
+
+# run if file info needed
+shp_name = 'FutureLandUse_single.shp', data_date = '2025-02-12', update_date = '2025-05-11'  WHERE county = 'PALM_BEACH' and city_name = 'COUNTY_UNIFIED'"
+
+# update dev
+update_flu.py palm_beach county_unified
+# copy the commands generated at the end of the output
+
+# grab raw_flu_palm_beach_county_unified.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+
+# Note: 3/31/2024 - Remove UNINCORPORATED and replace with COUNTY_UNIFIED
+# psql -d gisdev -U postgres -c "DELETE FROM flu WHERE county = 'PALM_BEACH' and city_name = 'UNINCORPORATED'"
+#update_flu.py palm_beach unincorporated
+```
+
+### Pasco
+
+```bash
+#------------------------
+# unincorporated
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/pasco/current/source_data/unincorporated
+
+# run to grab data
+shp_name = 'flu_pasco_unincorporated.shp', srs_epsg = 4326, data_date = '2025-05-24', update_date = '2025-05-24'  WHERE county = 'PASCO' and city_name = 'UNINCORPORATED'"
+
+# update dev
+update_flu.py pasco unincorporated
+# copy the commands generated at the end of the output
+
+# grab raw_flu_pasco_unincorp.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+```
+
+### Pinellas
+
+```bash
+#------------------------
+# belleair
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/pinellas/current/source_data/belleair
+
+# AGS: run to grab data
+shp_name = 'flu_bellair.shp', data_date = '2024-03-19', update_date = '2025-05-22'  WHERE county = 'PINELLAS' and city_name = 'BELLEAIR'"
+
+# update dev
+update_flu.py pinellas belleair
+# copy the commands generated at the end of the output
+
+# grab raw_flu_pinellas_belleair.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+
+#------------------------
+# clearwater
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/pinellas/current/source_data/clearwater
+
+# run to grab data
+shp_name = 'flu_clearwater.shp', data_date = '2025-05-22', update_date = '2025-05-22'  WHERE county = 'PINELLAS' and city_name = 'CLEARWATER'"
+
+# update dev
+update_flu.py pinellas clearwater
+# copy the commands generated at the end of the output
+
+# grab raw_flu_pinellas_clearwater.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+
+#------------------------
+# dunedin
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/pinellas/current/source_data/dunedin
+
+# run to grab data
+shp_name = 'flu_dunedin.shp', data_date = '2025-05-23', update_date = '2025-05-23'  WHERE county = 'PINELLAS' and city_name = 'DUNEDIN'"
+
+# update dev
+update_flu.py pinellas dunedin
+# copy the commands generated at the end of the output
+
+# grab raw_flu_pinellas_dunedin.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+
+#------------------------
+# indian_rocks_beach
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/pinellas/current/source_data/indian_rocks_beach
+
+# grab from opendata portal
+
+# move to plato, unzip, and strip parentheses if needed
+mv 'Indian_Rocks_Beach_Zoning_(PPC).cpg' 'Indian_Rocks_Beach_Zoning_PPC.cpg'
+mv 'Indian_Rocks_Beach_Zoning_(PPC).prj' 'Indian_Rocks_Beach_Zoning_PPC.prj'
+mv 'Indian_Rocks_Beach_Zoning_(PPC).shx' 'Indian_Rocks_Beach_Zoning_PPC.shx'
+mv 'Indian_Rocks_Beach_Zoning_(PPC).dbf' 'Indian_Rocks_Beach_Zoning_PPC.dbf'
+mv 'Indian_Rocks_Beach_Zoning_(PPC).shp' 'Indian_Rocks_Beach_Zoning_PPC.shp'
+mv 'Indian_Rocks_Beach_Zoning_(PPC).zip' 'Indian_Rocks_Beach_Zoning_PPC.zip'
+
+# run if file info needed
+shp_name = 'Indian_Rocks_Beach_Zoning_PPC.shp', srs_epsg = 2882, data_date = '2024-03-19', update_date = '2025-05-23'  WHERE county = 'PINELLAS' and city_name = 'INDIAN_ROCKS_BEACH'"
+
+# update dev
+update_flu.py pinellas indian_rocks_beach
+# copy the commands generated at the end of the output
+
+# grab raw_flu_pinellas_indian_rocks_beach.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+
+#------------------------
+# indian_shores
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/pinellas/current/source_data/indian_shores
+
+# grab from opendata portal
+
+# move to plato, unzip, and strip parentheses if needed
+mv 'Indian_Shores_Zoning_(PPC).cpg' 'Indian_Shores_Zoning_PPC.cpg'
+mv 'Indian_Shores_Zoning_(PPC).prj' 'Indian_Shores_Zoning_PPC.prj'
+mv 'Indian_Shores_Zoning_(PPC).shx' 'Indian_Shores_Zoning_PPC.shx'
+mv 'Indian_Shores_Zoning_(PPC).dbf' 'Indian_Shores_Zoning_PPC.dbf'
+mv 'Indian_Shores_Zoning_(PPC).shp' 'Indian_Shores_Zoning_PPC.shp'
+mv 'Indian_Shores_Zoning_(PPC).zip' 'Indian_Shores_Zoning_PPC.zip'
+
+# run if file info needed
+shp_name = 'Indian_Shores_Zoning_PPC.shp', srs_epsg = 2882, data_date = '2025-05-07', update_date = '2025-05-23'  WHERE county = 'PINELLAS' and city_name = 'INDIAN_SHORES'"
+
+# update dev
+update_flu.py pinellas indian_shores
+# copy the commands generated at the end of the output
+
+# grab raw_flu_pinellas_indian_shores.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+
+#------------------------
+# kenneth_city
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/pinellas/current/source_data/kenneth_city
+
+# grab from opendata portal
+
+# move to plato, unzip, and strip parentheses if needed
+mv 'Kenneth_City_Zoning_(PPC).cpg' 'Kenneth_City_Zoning_PPC.cpg'
+mv 'Kenneth_City_Zoning_(PPC).dbf' 'Kenneth_City_Zoning_PPC.dbf'
+mv 'Kenneth_City_Zoning_(PPC).prj' 'Kenneth_City_Zoning_PPC.prj'
+mv 'Kenneth_City_Zoning_(PPC).shp' 'Kenneth_City_Zoning_PPC.shp'
+mv 'Kenneth_City_Zoning_(PPC).shx' 'Kenneth_City_Zoning_PPC.shx'
+mv 'Kenneth_City_Zoning_(PPC).zip' 'Kenneth_City_Zoning_PPC.zip'
+
+# run if file info needed
+shp_name = 'Kenneth_City_Zoning_PPC.shp', srs_epsg = 2882, data_date = '2024-06-19', update_date = '2025-05-23'  WHERE county = 'PINELLAS' and city_name = 'KENNETH_CITY'"
+
+# update dev
+update_flu.py pinellas kenneth_city
+# copy the commands generated at the end of the output
+
+# grab raw_flu_pinellas_kenneth_city.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+
+#------------------------
+# madeira_beach
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/pinellas/current/source_data/madeira_beach
+
+# grab from opendata portal
+
+# move to plato, unzip, and strip parentheses if needed
+mv 'Madeira_Beach_Zoning_(PPC).cpg' Madeira_Beach_Zoning_PPC.cpg
+mv 'Madeira_Beach_Zoning_(PPC).prj' Madeira_Beach_Zoning_PPC.prj
+mv 'Madeira_Beach_Zoning_(PPC).shx' Madeira_Beach_Zoning_PPC.shx
+mv 'Madeira_Beach_Zoning_(PPC).dbf' Madeira_Beach_Zoning_PPC.dbf
+mv 'Madeira_Beach_Zoning_(PPC).shp' Madeira_Beach_Zoning_PPC.shp
+mv 'Madeira_Beach_Zoning_(PPC).zip' Madeira_Beach_Zoning_PPC.zip
+
+# run if file info needed
+shp_name = 'Madeira_Beach_Zoning_PPC.shp', srs_epsg = 2882, data_date = '2024-06-19', update_date = '2025-05-23'  WHERE county = 'PINELLAS' and city_name = 'MADEIRA_BEACH'"
+
+# update dev
+update_flu.py pinellas madeira_beach
+# copy the commands generated at the end of the output
+
+# grab raw_flu_pinellas_madeira_beach.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+
+#------------------------
+# north_redington_beach
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/pinellas/current/source_data/north_redington_beach
+
+# run if file info needed
+shp_name = 'flu_north_redington_beach.shp', data_date = '2024-04-02', update_date = '2024-04-04'  WHERE county = 'PINELLAS' and city_name = 'NORTH_REDINGTON_BEACH'"
+
+# update dev
+update_flu.py pinellas north_redington_beach
+# copy the commands generated at the end of the output
+
+# grab raw_flu_pinellas_north_redington_beach.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+
+#------------------------
+# pinellas_park
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/pinellas/current/source_data/pinellas_park
+
+# run to grab data
+shp_name = 'flu_pinellas_park.shp', data_date = '2024-04-02', update_date = '2024-04-04'  WHERE county = 'PINELLAS' and city_name = 'PINELLAS_PARK'"
+
+# update dev
+update_flu.py pinellas pinellas_park
+# copy the commands generated at the end of the output
+
+# grab raw_flu_pinellas_pinellas_park.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+
+#------------------------
+# redington_shores
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/pinellas/current/source_data/redington_shores
+
+# grab from opendata portal
+
+# move to plato, unzip, and strip parentheses if needed
+mv 'Redington_Shores_Zoning_(PPC).cpg' 'Redington_Shores_Zoning_PPC.cpg'
+mv 'Redington_Shores_Zoning_(PPC).prj' 'Redington_Shores_Zoning_PPC.prj'
+mv 'Redington_Shores_Zoning_(PPC).shx' 'Redington_Shores_Zoning_PPC.shx'
+mv 'Redington_Shores_Zoning_(PPC).dbf' 'Redington_Shores_Zoning_PPC.dbf'
+mv 'Redington_Shores_Zoning_(PPC).shp' 'Redington_Shores_Zoning_PPC.shp'
+mv 'Redington_Shores_Zoning_(PPC).zip' 'Redington_Shores_Zoning_PPC.zip'
+
+# run if file info needed
+shp_name = 'Redington_Shores_Zoning_PPC.shp', srs_epsg = 2882, data_date = '2024-06-19', update_date = '2025-05-23'  WHERE county = 'PINELLAS' and city_name = 'REDINGTON_SHORES'"
+
+# update dev
+update_flu.py pinellas redington_shores
+# copy the commands generated at the end of the output
+
+# grab raw_flu_pinellas_redington_shores.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+
+#------------------------
+# seminole
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/pinellas/current/source_data/seminole
+
+# AGS: check link and run to grab data
+shp_name = 'flu_seminole.shp', srs_epsg = 2882, data_date = '2024-10-09', update_date = '2025-05-23'  WHERE county = 'PINELLAS' and city_name = 'SEMINOLE'"
+
+# update dev
+update_flu.py pinellas seminole
+# copy the commands generated at the end of the output
+
+# grab raw_flu_pinellas_seminole.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+
+#------------------------
+# south_pasadena
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/pinellas/current/source_data/south_pasadena
+
+# grab from opendata portal
+
+# move to plato, unzip, and strip parentheses if needed
+mv 'South_Pasadena_Zoning_(PPC).cpg' 'South_Pasadena_Zoning_PPC.cpg'
+mv 'South_Pasadena_Zoning_(PPC).dbf' 'South_Pasadena_Zoning_PPC.dbf'
+mv 'South_Pasadena_Zoning_(PPC).prj' 'South_Pasadena_Zoning_PPC.prj'
+mv 'South_Pasadena_Zoning_(PPC).shp' 'South_Pasadena_Zoning_PPC.shp'
+mv 'South_Pasadena_Zoning_(PPC).shx' 'South_Pasadena_Zoning_PPC.shx'
+mv 'South_Pasadena_Zoning_(PPC).zip' 'South_Pasadena_Zoning_PPC.zip'
+
+# run if file info needed
+shp_name = 'South_Pasadena_Zoning_PPC.shp', srs_epsg = 2882, data_date = '2024-08-13', update_date = '2025-05-23'  WHERE county = 'PINELLAS' and city_name = 'SOUTH_PASADENA'"
+
+# update dev
+update_flu.py pinellas south_pasadena
+# copy the commands generated at the end of the output
+
+# grab raw_flu_pinellas_south_pasadena.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+
+#------------------------
+# st_petersburg
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/pinellas/current/source_data/st_petersburg
+
+# AGS: run to grab data
+shp_name = 'flu_st_petersburg.shp', srs_epsg = 2882, data_date = '2024-11-13', update_date = '2025-05-23'  WHERE county = 'PINELLAS' and city_name = 'ST_PETERSBURG'"
+
+# update dev
+update_flu.py pinellas st_petersburg
+# copy the commands generated at the end of the output
+
+# grab raw_flu_pinellas_st_petersburg.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+
+#------------------------
+# treasure_island
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/pinellas/current/source_data/treasure_island
+
+# grab from opendata portal
+
+# move to plato, unzip, and strip parentheses if needed
+mv 'Treasure_Island_Zoning_(PPC).cpg' 'Treasure_Island_Zoning_PPC.cpg'
+mv 'Treasure_Island_Zoning_(PPC).prj' 'Treasure_Island_Zoning_PPC.prj'
+mv 'Treasure_Island_Zoning_(PPC).shx' 'Treasure_Island_Zoning_PPC.shx'
+mv 'Treasure_Island_Zoning_(PPC).dbf' 'Treasure_Island_Zoning_PPC.dbf'
+mv 'Treasure_Island_Zoning_(PPC).shp' 'Treasure_Island_Zoning_PPC.shp'
+mv 'Treasure_Island_Zoning_(PPC).zip' 'Treasure_Island_Zoning_PPC.zip'
+
+# run if file info needed
+shp_name = 'Treasure_Island_Zoning_PPC.shp', srs_epsg = 2882, data_date = '2024-06-12', update_date = '2025-05-23'  WHERE county = 'PINELLAS' and city_name = 'TREASURE_ISLAND'"
+
+# update dev
+update_flu.py pinellas treasure_island
+# copy the commands generated at the end of the output
+
+# grab raw_flu_pinellas_treasure_island.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+
+#------------------------
+# unincorporated
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/pinellas/current/source_data/unincorporated
+
+# grab data from opendata portal
+
+# unzip, strip parentheses, then move to plato
+mv 'Zoning_(Unincorporated).cpg' 'Zoning_Unincorporated.cpg'
+mv 'Zoning_(Unincorporated).prj' 'Zoning_Unincorporated.prj'
+mv 'Zoning_(Unincorporated).shx' 'Zoning_Unincorporated.shx'
+mv 'Zoning_(Unincorporated).dbf' 'Zoning_Unincorporated.dbf'
+mv 'Zoning_(Unincorporated).shp' 'Zoning_Unincorporated.shp'
+mv 'Zoning_(Unincorporated).zip' 'Zoning_Unincorporated.zip'
+
+# run if file info needed
+shp_name = 'Zoning_Unincorporated.shp', srs_epsg = 2882, data_date = '2025-01-28', update_date = '2024-04-04'  WHERE county = 'PINELLAS' and city_name = 'UNINCORPORATED'"
+
+# update dev
+update_flu.py pinellas unincorporated
+# copy the commands generated at the end of the output
+
+# grab raw_flu_pinellas_unincorp.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+```
+
+### Polk
+
+```bash
+#------------------------
+# lakeland
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/polk/current/source_data/lakeland
+
+# AGS: download data
+# download_data.py /data/flu/polk/lakeland
+
+# Opendata: grab data, move to plato
+
+# unzip files
+unzip -oj FutureLandUse.zip
+
+# run if file info needed
+shp_name = 'FutureLandUse.shp', srs_epsg = 2237, data_date = '2025-05-12', update_date = '2025-05-24'  WHERE county = 'POLK' and city_name = 'LAKELAND'"
+
+# update dev
+update_flu.py polk lakeland
+# copy the commands generated at the end of the output
+
+# grab raw_flu_polk_lakeland.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+
+#------------------------
+# unincorporated - no flu, right?
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/polk/current/source_data/unincorporated
+
+# run if file info needed
+ogrinfo dea7bacb-e26f-4777-a3c5-644d3c25be8e202045-1-vhh0md.mldaj.shp dea7bacb-e26f-4777-a3c5-644d3c25be8e202045-1-vhh0md.mldaj|less
+
+# process data
+ogr2ogr -explodecollections flu_single.shp dea7bacb-e26f-4777-a3c5-644d3c25be8e202045-1-vhh0md.mldaj.shp 
+update_flu.py polk lakeland
+
+```
+
+### Putnam
+
+```bash
+#------------------------
+# unincorporated
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/putnam/current/source_data/unincorporated
+
+# grab data from opendata portal, then rename
+mv Zoning_Distritcs_hub.cpg zoning_putnam_unincorporated.cpg
+mv Zoning_Distritcs_hub.dbf zoning_putnam_unincorporated.dbf
+mv Zoning_Distritcs_hub.prj zoning_putnam_unincorporated.prj
+mv Zoning_Distritcs_hub.shx zoning_putnam_unincorporated.shx
+mv Zoning_Distritcs_hub.xml zoning_putnam_unincorporated.xml
+mv Zoning_Distritcs_hub.shp flu_putnam_unincorporated.shp
+
+
+# run if file info needed
+shp_name = 'flu_putnam_unincorporated.shp', srs_epsg = 2236, data_date = '2024-09-10', update_date = '2025-05-29'  WHERE county = 'PUTNAM' and city_name = 'UNINCORPORATED'"
+
+# update dev
+update_flu.py putnam unincorporated
+# copy the commands generated at the end of the output
+
+# grab raw_flu_putnam_unincorp.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+```
+
+### Santa Rosa
+
+```bash
+#------------------------
+# unincorporated
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/santa_rosa/current/source_data/unincorporated
+
+# unzip files (skip if opendata)
+unzip -oj flu.zip
+
+# archive with date (skip if opendata)
+zip_rename_date.sh FutureLandUse.zip
+
+# run if file info needed
+shp_name = 'FutureLandUse.shp', srs_epsg = 2238, data_date = '2025-04-03', update_date = '2025-05-29'  WHERE county = 'SANTA_ROSA' and city_name = 'UNINCORPORATED'"
+
+# update dev
+update_flu.py santa_rosa unincorporated
+# copy the commands generated at the end of the output
+
+# grab raw_flu_santa_rosa_unincorp.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+```
+
+### Sarasota
+
+```bash
+# ----------------------------------------
+# north_port
+# ----------------------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/sarasota/current/source_data/north_port
+
+# run to grab data
+shp_name = 'flu_north_port.shp', srs_epsg = 4326, data_date = '2024-10-28', update_date = '2025-04-16'  WHERE county = 'SARASOTA' and city_name = 'NORTH_PORT'"
+
+# update dev
+update_flu.py sarasota north_port
+# copy the commands generated at the end of the output
+
+# grab raw_flu_sarasota_north_port.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+
+# ----------------------------------------
+# sarasota
+# ----------------------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/sarasota/current/source_data/sarasota
+
+# TODO: Convert to AGS download
+
+# download data
+mv 'Zoning_Districts_(View_Only)_3527818835144821311.zip' flu.zip
+
+# archive with date
+zip_rename_date.sh flu.zip
+
+# run if file info needed
+shp_name = 'FutureLandUse_Districts.shp', srs_epsg = 2882, data_date = '2025-04-01', update_date = '2025-01-01'  WHERE county = 'SARASOTA' and city_name = 'SARASOTA'"
+
+# update dev
+update_flu.py sarasota sarasota
+# copy the commands generated at the end of the output
+
+# grab raw_flu_sarasota_sarasota.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+
+# ----------------------------------------
+# venice
+# ----------------------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/sarasota/current/source_data/venice
+
+# run to grab data
+shp_name = 'flu_venice.shp', srs_epsg = 4326, data_date = '2025-05-01', update_date = '2025-05-01'  WHERE county = 'SARASOTA' and city_name = 'VENICE'"
+
+# update dev
+update_flu.py sarasota venice
+# copy the commands generated at the end of the output
+
+# grab raw_flu_sarasota_venice.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+
+# ----------------------------------------
+# unincorporated
+# ----------------------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/sarasota/current/source_data/unincorporated
+
+# Note: Manual download
+# TODO: Convert to AGS download
+
+# unzip files
+unzip -o CountyFutureLandUse.zip
+
+# archive with date
+zip_rename_date.sh CountyFutureLandUse.zip
+
+# run if file info needed
+shp_name = 'CountyFutureLandUse.shp', srs_epsg = 2882, data_date = '2025-04-21', update_date = '2025-05-01'  WHERE county = 'SARASOTA' and city_name = 'UNINCORPORATED'"
+
+# update dev
+update_flu.py sarasota unincorporated
+# copy the commands generated at the end of the output
+
+# grab raw_flu_sarasota_unincorp.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+```
+
+### Seminole
+
+```bash
+#------------------------
+# altamonte_springs
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/seminole/current/source_data/altamonte_springs
+
+# grab data from website, unzip and move to plato
+
+# run if file info needed
+shp_name = 'FutureLandUse.shp', srs_epsg = 2236, data_date = '2024-12-18', update_date = '2025-05-24'  WHERE county = 'SEMINOLE' and city_name = 'ALTAMONTE_SPRINGS'"
+
+# update dev
+update_flu.py seminole altamonte_springs
+# copy the commands generated at the end of the output
+
+# grab raw_flu_seminole_altamonte_springs.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+
+#------------------------
+# casselberry
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/seminole/current/source_data/casselberry
+
+# run to grab data
+shp_name = 'flu_casselberry.shp', srs_epsg = 4326, data_date = '2025-05-25', update_date = '2025-05-25'  WHERE county = 'SEMINOLE' and city_name = 'CASSELBERRY'"
+
+# update dev
+update_flu.py seminole casselberry
+# copy the commands generated at the end of the output
+
+# grab raw_flu_seminole_casselberry.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+
+#------------------------
+# lake_mary
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/seminole/current/source_data/lake_mary
+
+# run to grab data
+shp_name = 'flu_lake_mary.shp', srs_epsg = 4326, data_date = '2025-05-25', update_date = '2025-05-25'  WHERE county = 'SEMINOLE' and city_name = 'LAKE_MARY'"
+
+# update dev
+update_flu.py seminole lake_mary
+# copy the commands generated at the end of the output
+
+# grab raw_flu_seminole_lake_mary.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+
+#------------------------
+# longwood
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/seminole/current/source_data/longwood
+
+# run to grab data
+shp_name = 'flu_longwood.shp', data_date = '2024-04-02', update_date = '2024-04-02'  WHERE county = 'SEMINOLE' and city_name = 'LONGWOOD'"
+
+# update dev
+update_flu.py seminole longwood
+# copy the commands generated at the end of the output
+
+# grab raw_flu_seminole_longwood.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+
+#------------------------
+# oviedo
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/seminole/current/source_data/oviedo
+
+# run to grab data
+shp_name = 'flu_oviedo.shp', srs_epsg = 4326, data_date = '2025-05-25', update_date = '2025-05-25'  WHERE county = 'SEMINOLE' and city_name = 'OVIEDO'"
+
+# update dev
+update_flu.py seminole oviedo
+# copy the commands generated at the end of the output
+
+# grab raw_flu_seminole_oviedo.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+
+#------------------------
+# sanford
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/seminole/current/source_data/sanford
+
+# run to grab data
+shp_name = 'flu_sanford.shp', srs_epsg = 4326, data_date = '2025-05-25', update_date = '2025-05-25'  WHERE county = 'SEMINOLE' and city_name = 'SANFORD'"
+
+# update dev
+update_flu.py seminole sanford
+# copy the commands generated at the end of the output
+
+# grab raw_flu_seminole_sanford.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+
+#------------------------
+# winter_springs
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/seminole/current/source_data/winter_springs
+
+# run to grab data
+shp_name = 'flu_winter_springs.shp', srs_epsg = 4326, data_date = '2025-05-25', update_date = '2025-05-25'  WHERE county = 'SEMINOLE' and city_name = 'WINTER_SPRINGS'"
+
+# update dev
+update_flu.py seminole winter_springs
+# copy the commands generated at the end of the output
+
+# grab raw_flu_seminole_winter_springs.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+
+#------------------------
+# unincorporated
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/seminole/current/source_data/unincorporated
+
+# ??
+
+# check attributes still match columns in support.flu_transform
+ogrinfo LandUse.gdb FutureLandUse|less
+
+ogr2ogr -explodecollections -select "FUTURE_LAND_USE, ORDINANCE" FutureLandUse_single.shp LandUse.gdb FutureLandUse
+
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET shp_name = 'FutureLandUse_single.shp', data_date = '2024-03-19', update_date = '2024-04-02'  WHERE county = 'SEMINOLE' and city_name = 'UNINCORPORATED'"
+
+update_flu.py seminole unincorporated
+
+```
+
+### St Johns
+
+```bash
+#------------------------
+# unincorporated
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/st_johns/current/source_data/unincorporated
+
+# Opendata: grab data, unzip, move to plato
+
+# OLD: download data
+#download_data.py /data/flu/st_johns/unincorporated
+
+# check attributes still match columns in support.flu_transform
+shp_name = 'FutureLandUse.shp', srs_epsg = 3857, data_date = '2025-05-27', update_date = '2025-05-27'  WHERE county = 'ST_JOHNS' and city_name = 'UNINCORPORATED'"
+
+# update dev
+update_flu.py st_johns unincorporated
+
+# copy the commands generated at the end of the output
+
+# grab raw_flu_st_johns_unincorp.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+```
+
+### St Lucie
+
+```bash
+#------------------------
+# port_st_lucie
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/st_lucie/current/source_data/port_st_lucie
+
+# run to grab data
+shp_name = 'flu_port_st_lucie.shp', srs_epsg = 4326, data_date = '2025-05-27', update_date = '2025-05-27'  WHERE county = 'ST_LUCIE' and city_name = 'PORT_ST_LUCIE'"
+
+# update dev
+update_flu.py st_lucie port_st_lucie
+
+# copy the commands generated at the end of the output
+
+# grab raw_flu_st_lucie_port_st_lucie.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+
+#------------------------
+# unincorporated
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/st_lucie/current/source_data/unincorporated
+
+# download data
+download_data.py /data/flu/st_lucie/unincorporated
+
+# check attributes still match columns in support.flu_transform
+shp_name = 'FutureLandUse.shp', srs_epsg = 2236, data_date = '2025-03-25', update_date = '2025-05-27'  WHERE county = 'ST_LUCIE' and city_name = 'UNINCORPORATED'"
+
+# update dev
+update_flu.py st_lucie unincorporated
+
+# copy the commands generated at the end of the output
+
+# grab raw_flu_st_lucie_unincorp.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+```
+
+### Sumter
+
+```bash
+#------------------------
+# unincorporated
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/sumter/current/source_data/unincorporated
+
+# run to grab data
+shp_name = 'flu_sumter.shp', srs_epsg = 2881, data_date = '2025-03-26', update_date = '2025-05-24'  WHERE county = 'VOLUSIA' and city_name = 'COUNTYWIDE'"
+
+# update dev
+update_flu.py volusia countywide
+# copy the commands generated at the end of the output
+
+# grab raw_flu_volusia_countywide.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+
+
+#------------------------
+# daytona_beach
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/volusia/current/source_data/daytona_beach
+
+# ??
+
+# check attributes still match columns in support.flu_transform
+ogrinfo New_FutureLandUse.shp New_Zoning|less
+
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET shp_name = 'New_FutureLandUse.shp', data_date = '2024-02-08', update_date = '2024-04-01'  WHERE county = 'VOLUSIA' and city_name = 'DAYTONA_BEACH'"
+
+update_flu.py volusia daytona_beach
+
+# copy the commands generated at the end of the output
+
+# grab raw_flu_volusia_daytona_beach.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+
+#------------------------
+# port_orange
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/volusia/current/source_data/port_orange
+
+# run to grab data
+shp_name = 'flu_port_orange.shp', srs_epsg = 4236, data_date = '2025-04-27', update_date = '2025-05-01'  WHERE county = 'WALTON' and city_name = 'UNINCORPORATED'"
+
+# update dev
+update_flu.py walton unincorporated
+# copy the commands generated at the end of the output
+
+# grab raw_flu_walton_unincorp.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+```
