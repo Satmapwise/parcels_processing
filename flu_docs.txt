@@ -2282,16 +2282,45 @@ ags_extract_data2.py flu_palm_beach_unincorp delete 15
 ogr2ogr -explodecollections flu_palm_beach_unincorp_single.shp flu_palm_beach_unincorp.shp
 
 # run if file info needed
-ogrinfo flu_palm_beach_unincorp_single.shp flu_palm_beach_unincorp|less
+ogrinfo flu_palm_beach_unincorp_single.shp flu_palm_beach_unincorp_single|less
 
 # update table (ensure parameters are correct)
-psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET shp_name = 'flu_palm_beach_unincorp_single.shp', data_date = '2025-02-12', update_date = '2025-05-11'  WHERE county = 'PALM_BEACH' and city_name = 'UNINCORPORATED'"
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 4326, shp_name = 'flu_palm_beach_unincorp_single.shp', data_date = '2025-04-04', update_date = '2025-05-30'  WHERE county = 'PALM_BEACH' and city_name = 'UNINCORPORATED'"
 
 # update dev
 update_flu.py palm_beach unincorporated
 # copy the commands generated at the end of the output
 
 # grab raw_flu_palm_beach_unincorp.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+
+#------------------------
+# wellington
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/palm_beach/current/source_data/wellington
+
+# run to grab data
+ags_extract_data2.py flu_palm_beach_wellington delete 15
+
+# explode multi_polygons and select fields
+ogr2ogr -explodecollections flu_palm_beach_wellington_single.shp flu_palm_beach_wellington.shp
+
+# run if file info needed
+ogrinfo flu_palm_beach_wellington_single.shp flu_palm_beach_wellington_single|less
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 4326, temp_table_name = 'raw_flu_palm_beach_wellington', shp_name = 'flu_palm_beach_wellington_single.shp', data_date = '2025-02-20', update_date = '2025-05-30'  WHERE county = 'PALM_BEACH' and city_name = 'WELLINGTON'"
+
+# update dev
+update_flu.py palm_beach wellington
+# copy the commands generated at the end of the output
+
+# grab raw_flu_palm_beach_wellington.backup from plato at /var/www/apps/mapwise/htdocs/x342
 # move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
 
 # run the copied commands on both m1 and prod
@@ -2311,10 +2340,10 @@ ags_extract_data2.py flu_west_palm_beach delete 15
 ogr2ogr -explodecollections flu_west_palm_beach_single.shp flu_west_palm_beach.shp
 
 # run if file info needed
-ogrinfo flu_west_palm_beach.shp flu_west_palm_beach|less
+ogrinfo flu_west_palm_beach_single.shp flu_west_palm_beach_single|less
 
 # update table (ensure parameters are correct)
-psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET shp_name = 'flu_west_palm_beach_single.shp', data_date = '2025-02-12', update_date = '2025-05-11'  WHERE county = 'PALM_BEACH' and city_name = 'WEST_PALM_BEACH'"
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 4326, shp_name = 'flu_west_palm_beach_single.shp', data_date = '2025-01-13', update_date = '2025-05-30'  WHERE county = 'PALM_BEACH' and city_name = 'WEST_PALM_BEACH'"
 
 # update dev
 update_flu.py palm_beach west_palm_beach
@@ -2326,6 +2355,7 @@ update_flu.py palm_beach west_palm_beach
 # run the copied commands on both m1 and prod
 
 # QA and mark as done
+
 ```
 
 ### Pasco
