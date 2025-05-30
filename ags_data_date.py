@@ -7,7 +7,8 @@ required_modules = [
     "re", 
     "json", 
     "io", 
-    "xml.etree.ElementTree"
+    "xml.etree.ElementTree",
+    "psycopg2"
 ]
 
 missing_modules = []
@@ -32,12 +33,18 @@ import logging
 import xml.etree.ElementTree as ET
 import io
 import argparse
+import psycopg2  # Install with: pip install psycopg2-binary
+import psycopg2.extras
 from typing import Optional, Dict, List, Tuple
 from urllib.parse import urljoin
+import sys
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+# Database connection string (same as ags_extract_data2.py)
+PG_CONNECTION = 'host=localhost port=5432 dbname=gisdev user=postgres password=galactic529'
 
 class DateFinding:
     """Represents a date found by one of the methods"""
@@ -811,13 +818,113 @@ def get_arcgis_data_date(layer_url: str) -> Tuple[Optional[str], List[DateFindin
     
     return most_reliable_date, all_findings
 
-# Example usage:
+def lookup_layer_url(county: str = None, city: str = None, table_name: str = None) -> Optional[str]:
+    """
+    Look up layer URL from m_gis_data_catalog_main table based on search criteria
+    
+    Args:
+        county: County name to search for
+        city: City name to search for  
+        table_name: Specific table name to search for
+        
+    Returns:
+        Layer URL if found, None otherwise
+    """
+    try:
+        # Connect to database
+        connection = psycopg2.connect(PG_CONNECTION)
+        cursor = connection.cursor(cursor_factory=psycopg2.extras.DictCursor)
+        
+        # Build the SQL query based on provided parameters
+        where_conditions = []
+        params = []
+        
+        if table_name:
+            where_conditions.append("LOWER(table_name) = LOWER(%s)")
+            params.append(table_name)
+        
+        if county:
+            # Assume there might be a county field - adjust field name as needed
+            where_conditions.append("(LOWER(county) = LOWER(%s) OR LOWER(table_name) LIKE LOWER(%s))")
+            params.extend([county, f"%{county}%"])
+            
+        if city:
+            # Assume there might be a city field - adjust field name as needed  
+            where_conditions.append("(LOWER(city) = LOWER(%s) OR LOWER(table_name) LIKE LOWER(%s))")
+            params.extend([city, f"%{city}%"])
+        
+        if not where_conditions:
+            logger.error("No search criteria provided (county, city, or table_name required)")
+            return None
+            
+        sql = f"""
+        SELECT table_name, src_url_file, county, city 
+        FROM m_gis_data_catalog_main 
+        WHERE {' AND '.join(where_conditions)}
+        ORDER BY table_name;
+        """
+        
+        logger.debug(f"Database query: {sql}")
+        logger.debug(f"Query parameters: {params}")
+        
+        cursor.execute(sql, params)
+        rows = cursor.fetchall()
+        
+        if not rows:
+            logger.error(f"No records found for search criteria: county={county}, city={city}, table_name={table_name}")
+            return None
+        elif len(rows) == 1:
+            row = rows[0]
+            logger.info(f"Found layer: {row['table_name']} -> {row['src_url_file']}")
+            return row['src_url_file']
+        else:
+            logger.warning(f"Multiple records found ({len(rows)}). Available options:")
+            for row in rows:
+                logger.warning(f"  - {row['table_name']}: {row['src_url_file']}")
+            logger.error("Please be more specific with your search criteria")
+            return None
+            
+    except psycopg2.Error as e:
+        logger.error(f"Database error: {e}")
+        return None
+    except Exception as e:
+        logger.error(f"Error looking up layer URL: {e}")
+        return None
+    finally:
+        try:
+            cursor.close()
+            connection.close()
+        except:
+            pass
+
 if __name__ == "__main__":
     # Parse command line arguments
-    parser = argparse.ArgumentParser(description="Detect last update date of ArcGIS layer data")
-    parser.add_argument("url", help="ArcGIS layer URL to check")
-    parser.add_argument("--debug", action="store_true",
-                       help="Enable detailed debug logging")
+    parser = argparse.ArgumentParser(
+        description="Detect last update date of ArcGIS layer data",
+        epilog="""
+Examples:
+  # Direct URL mode
+  %(prog)s --url "https://gis.server.com/arcgis/rest/services/Service/MapServer/0"
+  
+  # Database lookup modes
+  %(prog)s --table "parcels_palm_beach"
+  %(prog)s --county "palm beach" 
+  %(prog)s --city "boca raton"
+  %(prog)s --county "broward" --city "fort lauderdale"
+        """,
+        formatter_class=argparse.RawDescriptionHelpFormatter
+    )
+    
+    # URL input group
+    url_group = parser.add_mutually_exclusive_group(required=True)
+    url_group.add_argument("--url", help="Direct ArcGIS layer URL to check")
+    
+    # Database lookup group  
+    url_group.add_argument("--table", help="Table name to lookup in database")
+    
+    parser.add_argument("--county", help="County name for database lookup")
+    parser.add_argument("--city", help="City name for database lookup") 
+    parser.add_argument("--debug", action="store_true", help="Enable detailed debug logging")
     
     args = parser.parse_args()
     
@@ -825,8 +932,25 @@ if __name__ == "__main__":
     if args.debug:
         logging.getLogger().setLevel(logging.DEBUG)
     
-    # Get URL from command line
-    layer_url = args.url
+    # Determine the layer URL
+    layer_url = None
+    
+    if args.url:
+        # Direct URL mode
+        layer_url = args.url
+        print(f"Using direct URL: {layer_url}")
+    else:
+        # Database lookup mode
+        if args.table:
+            layer_url = lookup_layer_url(table_name=args.table)
+        elif args.county or args.city:
+            layer_url = lookup_layer_url(county=args.county, city=args.city)
+        else:
+            parser.error("Either --url or database lookup criteria (--table, --county, --city) must be provided")
+    
+    if not layer_url:
+        print("ERROR: Could not determine layer URL")
+        sys.exit(1)
     
     print(f"\nRunning comprehensive date detection on all methods...")
     print("="*60)
