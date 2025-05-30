@@ -815,9 +815,9 @@ def get_arcgis_data_date(layer_url: str) -> Tuple[Optional[str], List[DateFindin
 if __name__ == "__main__":
     # Parse command line arguments
     parser = argparse.ArgumentParser(description="Detect last update date of ArcGIS layer data")
+    parser.add_argument("url", help="ArcGIS layer URL to check")
     parser.add_argument("--debug", action="store_true",
                        help="Enable detailed debug logging")
-    parser.add_argument("url", nargs="?", help="ArcGIS layer URL to check")
     
     args = parser.parse_args()
     
@@ -825,14 +825,10 @@ if __name__ == "__main__":
     if args.debug:
         logging.getLogger().setLevel(logging.DEBUG)
     
-    # Get URL from command line or prompt user
-    if args.url:
-        layer_url = args.url
-    else:
-        layer_url = input("Enter the layer URL: ")
+    # Get URL from command line
+    layer_url = args.url
     
     print(f"\nRunning comprehensive date detection on all methods...")
-    
     print("="*60)
     
     # Run the detection
