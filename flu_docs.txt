@@ -997,16 +997,17 @@ update_flu.py highlands unincorporated
 cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/hillsborough/current/source_data/plant_city
 
 # run to grab data
-ags_extract_data2.py flu_plant_city delete 15 
+download_data.py /data/flu/hillsborough/plant_city
+unzip -oj PC_FLU_Shapefiles.zip
 
 # run if file info needed
-ogrinfo PC_FutureLandUse.shp PC_Zoning|less
+ogrinfo PC_FLU.shp PC_FLU|less
 
 # explode multi_polygons and select fields
-ogr2ogr -explodecollections -select "FLU, FLU_NAME" PC_FutureLandUse_single.shp PC_FutureLandUse.shp
+ogr2ogr -explodecollections flu_hillsborough_plant_city_single.shp PC_FLU.shp
 
 # update table (ensure parameters are correct)
-psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET shp_name = 'PC_FutureLandUse_single.shp', data_date = '2023-12-04', update_date = '2024-03-31'  WHERE county = 'HILLSBOROUGH' and city_name = 'PLANT_CITY'"
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 2237, shp_name = 'flu_hillsborough_plant_city_single.shp', data_date = '2024-08-26', update_date = '2025-05-30'  WHERE county = 'HILLSBOROUGH' and city_name = 'PLANT_CITY'"
 
 # update dev
 update_flu.py hillsborough plant_city
@@ -1025,14 +1026,18 @@ update_flu.py hillsborough plant_city
 # go to working directory
 cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/hillsborough/current/source_data/tampa
 
+# run to grab data
+download_data.py /data/flu/hillsborough/tampa
+unzip -oj Tampa_FLU_Shapefiles.zip
+
 # run if file info needed
-ogrinfo Zoning_District.shp Zoning_District|less
+ogrinfo Tampa_FLU.shp Tampa_FLU|less
 
 # explode multi_polygons and select fields
-ogr2ogr -explodecollections -select "FLU, FLU_NAME" Zoning_District_single.shp Zoning_District.shp
+ogr2ogr -explodecollections -select "FLU, FLU_NAME" flu_hillsborough_tampa_single.shp Tampa_FLU.shp
 
 # update table (ensure parameters are correct)
-psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET shp_name = 'Zoning_District_single.shp', data_date = '2024-03-25', update_date = '2024-03-31'  WHERE county = 'HILLSBOROUGH' and city_name = 'TAMPA'"
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 2237, shp_name = 'flu_hillsborough_tampa_single.shp', data_date = '2024-08-26', update_date = '2025-05-30'  WHERE county = 'HILLSBOROUGH' and city_name = 'TAMPA'"
 
 # update dev
 update_flu.py hillsborough tampa
@@ -1046,21 +1051,53 @@ update_flu.py hillsborough tampa
 # QA and mark as done
 
 #------------------------
-# unincorporated (REVIEW)
+# temple_terrace
+#------------------------
+# go to working directory
+cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/hillsborough/current/source_data/temple_terrace
+
+# run to grab data
+download_data.py /data/flu/hillsborough/temple_terrace
+unzip -oj TempleTerrace_FLU_Shapefiles.zip
+
+# run if file info needed
+ogrinfo TempleTerrace_FLU.shp TempleTerrace_FLU|less
+
+# explode multi_polygons and select fields
+ogr2ogr -explodecollections -select "FLU, FLU_NAME" flu_hillsborough_temple_terrace_single.shp TempleTerrace_FLU.shp
+
+# update table (ensure parameters are correct)
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 2237, shp_name = 'flu_hillsborough_temple_terrace_single.shp', data_date = '2024-08-26', update_date = '2025-05-30'  WHERE county = 'HILLSBOROUGH' and city_name = 'TEMPLE_TERRACE'"
+
+# update dev
+update_flu.py hillsborough temple_terrace
+# copy the commands generated at the end of the output
+
+# grab raw_flu_hillsborough_temple_terrace.backup from plato at /var/www/apps/mapwise/htdocs/x342
+# move to /home/bmay/incoming on both mapserver-m1 and mapserver-prod
+
+# run the copied commands on both m1 and prod
+
+# QA and mark as done
+
+#------------------------
+# unincorporated
 #------------------------
 # go to working directory
 cd /srv/datascrub/08_Land_Use_and_Zoning/future_land_use/florida/county/hillsborough/current/source_data/unincorporated
 
-# get data from opendata portal and move to plato
+# run to grab data
+download_data.py /data/flu/hillsborough/unincorporated
+unzip -oj Unincorporated_FLU_Shapefiles.zip
 
 # run if file info needed 
-ogrinfo FutureLandUse.shp Zoning|less
+ogrinfo Unincorporated_FLU.shp Unincorporated_FLU|less
 
 # explode multi_polygons and select fields
-ogr2ogr -explodecollections -select "FLU, FLU_NAME" FutureLandUse_single.shp FutureLandUse.shp
+ogr2ogr -explodecollections -select "FLU, FLU_NAME" flu_hillsborough_unincorporated_single.shp Unincorporated_FLU.shp
 
 # update table (ensure parameters are correct)
-psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET shp_name = 'FutureLandUse_single.shp', data_date = 'YYYY-MM-DD', update_date = 'YYYY-MM-DD'  WHERE county = 'HILLSBOROUGH' and city_name = 'UNINCORPORATED'"
+psql -d gisdev -U postgres -c "UPDATE support.flu_transform SET srs_epsg = 2237, shp_name = 'flu_hillsborough_unincorporated_single.shp', data_date = '2024-08-26', update_date = '2025-05-30'  WHERE county = 'HILLSBOROUGH' and city_name = 'UNINCORPORATED'"
 
 # update dev
 update_flu.py hillsborough unincorporated
