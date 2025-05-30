@@ -58,29 +58,67 @@ class DateFinding:
             return f"{self.method} | {self.source}: '{self.raw_value}' | {status}"
 
 def get_most_reliable_date(findings: List[DateFinding]) -> Optional[DateFinding]:
-    """Determine the most reliable date from all findings"""
-    # Priority order for methods (most to least reliable)
-    method_priority = {
-        "Method 1": 1,  # Direct field queries
-        "Method 2": 2,  # Editing info
-        "Method 3": 3,  # Service metadata
-        "Method 4": 4,  # ArcGIS.com item
-        "Method 5": 5   # XML metadata
-    }
-    
+    """Determine the most reliable date from all findings, prioritizing recency"""
     # Filter to only reliable dates
     reliable_findings = [f for f in findings if f.reliable]
     
     if not reliable_findings:
         return None
     
-    # Sort by method priority (lower number = higher priority)
-    reliable_findings.sort(key=lambda x: method_priority.get(x.method, 999))
+    # For data update detection, the most recent date is typically most reliable
+    # Convert dates to datetime objects for comparison
+    dated_findings = []
     
-    return reliable_findings[0]
+    for finding in reliable_findings:
+        date_str = finding.converted_date or finding.raw_value
+        if not date_str:
+            continue
+            
+        try:
+            # Try to parse the date string
+            if 'T' in date_str:
+                # ISO datetime format
+                if date_str.endswith('Z'):
+                    dt = datetime.datetime.fromisoformat(date_str.replace('Z', '+00:00'))
+                else:
+                    dt = datetime.datetime.fromisoformat(date_str)
+            elif '-' in date_str:
+                # ISO date format (YYYY-MM-DD)
+                dt = datetime.datetime.strptime(date_str[:10], '%Y-%m-%d')
+            else:
+                # Skip if we can't parse it
+                continue
+                
+            dated_findings.append((dt, finding))
+            
+        except (ValueError, TypeError) as e:
+            # Skip dates we can't parse
+            logger.debug(f"Could not parse date '{date_str}' for comparison: {e}")
+            continue
+    
+    if not dated_findings:
+        # Fallback to method priority if no dates could be parsed
+        logger.debug("No dates could be parsed for recency comparison, falling back to method priority")
+        method_priority = {
+            "Method 1": 1,  # Direct field queries
+            "Method 2": 2,  # Editing info
+            "Method 3": 3,  # Service metadata
+            "Method 4": 4,  # ArcGIS.com item
+            "Method 5": 5   # XML metadata
+        }
+        reliable_findings.sort(key=lambda x: method_priority.get(x.method, 999))
+        return reliable_findings[0]
+    
+    # Sort by date (most recent first)
+    dated_findings.sort(key=lambda x: x[0], reverse=True)
+    most_recent = dated_findings[0][1]
+    
+    logger.debug(f"Most recent date selected: {most_recent.converted_date or most_recent.raw_value} from {most_recent.method} ({most_recent.source})")
+    
+    return most_recent
 
 def print_date_summary(findings: List[DateFinding], most_reliable: Optional[DateFinding]):
-    """Print a comprehensive summary of all date findings"""
+    """Print a comprehensive summary of all date findings grouped by method"""
     print("\n" + "="*80)
     print("DATE DETECTION SUMMARY")
     print("="*80)
@@ -89,23 +127,70 @@ def print_date_summary(findings: List[DateFinding], most_reliable: Optional[Date
         print("No dates found by any method.")
         return
     
-    print(f"Total dates discovered: {len(findings)}")
+    # Group findings by method
+    methods = {
+        "Method 1": [],
+        "Method 2": [], 
+        "Method 3": [],
+        "Method 4": [],
+        "Method 5": []
+    }
+    
+    for finding in findings:
+        if finding.method in methods:
+            methods[finding.method].append(finding)
+    
+    # Count statistics
     reliable_count = len([f for f in findings if f.reliable])
+    print(f"Total dates discovered: {len(findings)}")
     print(f"Reliable dates: {reliable_count}")
     print(f"Ignored dates: {len(findings) - reliable_count}")
     
-    print(f"\nALL DISCOVERED DATES:")
-    print("-" * 60)
-    for finding in findings:
-        print(f"  {finding}")
-        if finding.notes:
-            print(f"    Notes: {finding.notes}")
+    # Display findings grouped by method
+    print(f"\nDATE FINDINGS BY METHOD:")
+    print("="*80)
     
-    print(f"\nMOST RELIABLE DATE:")
-    print("-" * 60)
+    method_descriptions = {
+        "Method 1": "Query Date Fields",
+        "Method 2": "Editing Info",
+        "Method 3": "Service Metadata", 
+        "Method 4": "ArcGIS.com Item",
+        "Method 5": "XML Metadata"
+    }
+    
+    for method_key in ["Method 1", "Method 2", "Method 3", "Method 4", "Method 5"]:
+        method_findings = methods[method_key]
+        
+        print(f"\n{method_key}: {method_descriptions[method_key]}")
+        print("-" * 50)
+        
+        if not method_findings:
+            print("  No dates found")
+        else:
+            for finding in method_findings:
+                status_icon = "✓" if finding.reliable else "⚠"
+                status_text = "RELIABLE" if finding.reliable else "IGNORED"
+                
+                # Format the date display
+                if finding.converted_date and finding.converted_date != finding.raw_value:
+                    date_display = f"'{finding.raw_value}' → '{finding.converted_date}'"
+                else:
+                    date_display = f"'{finding.raw_value}'"
+                
+                print(f"  {status_icon} {finding.source}: {date_display} | {status_text}")
+                
+                if finding.notes:
+                    print(f"    Notes: {finding.notes}")
+    
+    # Show most reliable date
+    print(f"\n" + "="*80)
+    print("MOST RELIABLE DATE:")
+    print("-" * 50)
     if most_reliable:
         print(f"  ★ {most_reliable.converted_date or most_reliable.raw_value}")
         print(f"    Source: {most_reliable.method} ({most_reliable.source})")
+        if most_reliable.notes:
+            print(f"    Notes: {most_reliable.notes}")
     else:
         print("  No reliable date could be determined")
     
@@ -462,22 +547,35 @@ def get_metadata_xml_date(layer_url: str) -> List[DateFinding]:
             logger.warning(f"Method 5: Failed to parse XML metadata: {e}")
             return findings
         
-        # Define date-related tags to search for
-        date_candidates = [
+        # Define primary date-related tags to search for
+        primary_date_candidates = [
             'dateStamp', 
             'gmd:dateStamp', 
             'gmd:date', 
             'date', 
             'modifiedDate', 
-            'lastUpdate'
+            'lastUpdate',
+            'modified',
+            'created',
+            'pubDate',
+            'creation',
+            'revision',
+            'publication',
+            'lastModified',
+            'dateTime',
+            'temporal',
+            'beginDate',
+            'endDate',
+            'dateCreated',
+            'dateModified'
         ]
         
-        logger.debug(f"Method 5: Searching for date elements: {date_candidates}")
+        logger.debug(f"Method 5: Searching for primary date elements: {primary_date_candidates}")
         
-        # Search for date elements with proper namespace handling
-        for tag in date_candidates:
+        # Search for primary date elements with proper namespace handling
+        for tag in primary_date_candidates:
             try:
-                elem = None
+                elements_found = []
                 search_error = None
                 
                 if ':' in tag:
@@ -486,8 +584,8 @@ def get_metadata_xml_date(layer_url: str) -> List[DateFinding]:
                     if prefix in namespaces:
                         namespace_uri = namespaces[prefix]
                         try:
-                            # Search using namespace URI
-                            elem = root.find(f".//{{{namespace_uri}}}{local_name}")
+                            # Search using namespace URI - find ALL occurrences
+                            elements_found = root.findall(f".//{{{namespace_uri}}}{local_name}")
                             logger.debug(f"Method 5: Searching for namespaced tag {tag} -> {{{namespace_uri}}}{local_name}")
                         except Exception as ns_error:
                             search_error = f"namespace search error: {ns_error}"
@@ -496,45 +594,101 @@ def get_metadata_xml_date(layer_url: str) -> List[DateFinding]:
                         logger.debug(f"Method 5: Namespace prefix '{prefix}' not found, trying fallback search")
                         try:
                             # Fallback to searching without namespace if prefix not found
-                            elem = root.find(f".//{tag}")
+                            elements_found = root.findall(f".//{tag}")
                         except Exception as fallback_error:
                             search_error = f"fallback search error: {fallback_error}"
                             logger.debug(f"Method 5: Error in fallback search for {tag}: {fallback_error}")
                 else:
                     # Handle non-namespaced tags
                     try:
-                        elem = root.find(f".//{tag}")
+                        elements_found = root.findall(f".//{tag}")
                         logger.debug(f"Method 5: Searching for non-namespaced tag: {tag}")
                     except Exception as simple_error:
                         search_error = f"simple search error: {simple_error}"
                         logger.debug(f"Method 5: Error in simple search for {tag}: {simple_error}")
                 
-                if elem is not None and elem.text and elem.text.strip():
-                    date_text = elem.text.strip()
-                    logger.debug(f"Method 5: Found {tag}: '{date_text}'")
-                    
-                    # Try standard ISO format first
-                    if len(date_text) >= 10 and ('-' in date_text or 'T' in date_text):
-                        logger.info(f"Method 5: Found ISO date: {date_text}")
-                        findings.append(DateFinding("Method 5", tag, date_text, date_text, True))
-                        continue
-                    
-                    # Try YYYYMMDD format conversion
-                    iso_date = convert_yyyymmdd_to_iso(date_text)
-                    if iso_date:
-                        logger.info(f"Method 5: Found YYYYMMDD date converted to ISO: {iso_date} (from {date_text})")
-                        findings.append(DateFinding("Method 5", tag, date_text, iso_date, True, "Converted from YYYYMMDD format"))
-                        continue
+                # Process ALL found elements for this tag
+                for i, elem in enumerate(elements_found):
+                    if elem is not None and elem.text and elem.text.strip():
+                        date_text = elem.text.strip()
+                        tag_with_index = f"{tag}[{i+1}]" if len(elements_found) > 1 else tag
+                        logger.debug(f"Method 5: Found {tag_with_index}: '{date_text}'")
                         
-                    # If we reach here, the date format wasn't recognized
-                    findings.append(DateFinding("Method 5", tag, date_text, None, False, "Unrecognized date format"))
-                    
-                elif search_error:
+                        # Try standard ISO format first
+                        if len(date_text) >= 10 and ('-' in date_text or 'T' in date_text):
+                            logger.info(f"Method 5: Found ISO date: {date_text}")
+                            findings.append(DateFinding("Method 5", tag_with_index, date_text, date_text, True))
+                            continue
+                        
+                        # Try YYYYMMDD format conversion
+                        iso_date = convert_yyyymmdd_to_iso(date_text)
+                        if iso_date:
+                            logger.info(f"Method 5: Found YYYYMMDD date converted to ISO: {iso_date} (from {date_text})")
+                            findings.append(DateFinding("Method 5", tag_with_index, date_text, iso_date, True, "Converted from YYYYMMDD format"))
+                            continue
+                            
+                        # If we reach here, the date format wasn't recognized
+                        findings.append(DateFinding("Method 5", tag_with_index, date_text, None, False, "Unrecognized date format"))
+                
+                if search_error and not elements_found:
                     logger.debug(f"Method 5: Skipped {tag} due to {search_error}")
                         
             except Exception as tag_error:
                 logger.debug(f"Method 5: Error processing tag {tag}: {tag_error}")
                 continue
+        
+        # Additional broad search for any elements containing date-like patterns
+        logger.debug(f"Method 5: Performing broad search for date-like content")
+        try:
+            all_elements = root.iter()
+            date_pattern_count = 0
+            
+            for elem in all_elements:
+                if elem.text and elem.text.strip():
+                    text = elem.text.strip()
+                    
+                    # Skip if we already found this in our primary search
+                    already_found = any(f.raw_value == text for f in findings)
+                    if already_found:
+                        continue
+                    
+                    # Look for date-like patterns
+                    is_date_like = False
+                    
+                    # ISO date pattern (YYYY-MM-DD or YYYY-MM-DDTHH:MM:SS)
+                    if len(text) >= 10 and ('-' in text or 'T' in text):
+                        # Basic validation that it looks like a date
+                        if any(char.isdigit() for char in text) and ('20' in text or '19' in text):
+                            is_date_like = True
+                    
+                    # YYYYMMDD pattern
+                    elif len(text) == 8 and text.isdigit() and text.startswith(('19', '20')):
+                        is_date_like = True
+                    
+                    if is_date_like:
+                        date_pattern_count += 1
+                        if date_pattern_count <= 20:  # Limit to prevent spam
+                            tag_name = elem.tag if hasattr(elem, 'tag') else 'unknown'
+                            # Strip namespace prefix for display
+                            if '}' in tag_name:
+                                tag_name = tag_name.split('}')[-1]
+                            
+                            # Try standard ISO format first
+                            if len(text) >= 10 and ('-' in text or 'T' in text):
+                                findings.append(DateFinding("Method 5", f"{tag_name}(broad)", text, text, True, "Found via broad search"))
+                            else:
+                                # Try YYYYMMDD conversion
+                                iso_date = convert_yyyymmdd_to_iso(text)
+                                if iso_date:
+                                    findings.append(DateFinding("Method 5", f"{tag_name}(broad)", text, iso_date, True, "Broad search + YYYYMMDD conversion"))
+                                else:
+                                    findings.append(DateFinding("Method 5", f"{tag_name}(broad)", text, None, False, "Broad search, unrecognized format"))
+                        else:
+                            logger.debug(f"Method 5: Limiting broad search results (found {date_pattern_count}+ date-like patterns)")
+                            break
+                            
+        except Exception as broad_error:
+            logger.debug(f"Method 5: Error in broad search: {broad_error}")
         
         # Log summary of findings
         if findings:
