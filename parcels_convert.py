@@ -1829,7 +1829,12 @@ def process_raw_fdor(county) :
         # join on sales table
         sql = """INSERT INTO parcels_fdor_sales_normal_temp
             (pin, sale_amt, sale_year, sale_date, sale_vac, sale_typ, sale_qual, sale_bk, sale_pg)
-            SELECT pin, sale_amt, sale_year, sale_date, sale_vac, sale_typ, sale_qual, sale_bk, sale_pg 
+            SELECT pin, sale_amt, 
+                EXTRACT(year FROM sale_date) as sale_year, 
+                sale_date, 
+                '' as sale_vac, 
+                sale_type_alt as sale_typ, 
+                sale_qual, sale_bk, sale_pg
             FROM raw_okaloosa_sales_dwnld"""
         print sql
         cursor.execute(sql)
