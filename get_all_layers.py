@@ -1,6 +1,6 @@
 # Script to get any layer from any entity
 # get_all_layers.py <county> <city> <layer>
-# Any blank arguments default to all
+# Any blank arguments default to all (if applicable)
 
 import sys
 
@@ -156,9 +156,22 @@ entities = {
 """
 AI PROMPT:
 
-I need to make a script that chains together a series of python scripts to fetch layer data, process it, and upload it to postgres databases. all layers have the
-same steps except for downloading; the script will map out the correct tools to use based on the layer and entity (specified by county and city), and call these. 
-in addition to this, when the layer is flu or zoning, an additional step in processing will be needed. to start with the skeleton of the script, i've mapped out
-all of the entities
+I need to make a script that chains together a series of python scripts to fetch layer data, process it, and upload it to postgres databases. the download step 
+varies by layer and entity, while the processing step varies by layer and the upload step is always the same. 
+
+Main routine: 
+i've added lists of layers, counties, and city-county entities in the state of Florida. some layers are split by county, while others are split by city. we'll start 
+the skeleton of the script by focusing on zoning and flu, both of which are split by entity. first, we need a function to parse the command line input, set the queue, 
+then proceed. then, we can wrap downloading and processing together by layer in a download_process_<layer> function. the download_process function will map the entity 
+to the correct download function and run it, then run the processing script. then, the main function can proceed to the upload function, which will connect to 2 other 
+servers, transfer 2 backup files to each, then run psql commands on each to upload the data (maybe do this in a batch for a list of what download_process returns?). 
+after the whole process is done, we can generate a summary .csv that lists the layer, entity, data date, and whether it was successful or not.
+the script should be able to run in a loop, with a queue of entities to process.
+
+Additional considerations:
+The script needs robust, modular error handling, making use of the logging module. I had an idea for a tiered error handling system, where errors in main are rank 0,
+errors in download_process are rank 1, errors in upload are rank 2, and so on. I want to discuss with you to brainstorm how to approach error handling, but I want
+to at least use a pointer system to make it modular and easy to edit.
+
 
 """
