@@ -153,6 +153,22 @@ entities = {
     "franklin_apalachicola", "franklin_carrabelle", "franklin_unincorporated"
     }
 
+# Function to set the queue
+def set_queue():
+    pass
+
+# Function to download and process a layer
+def download_process_layer(layer, entity, county):
+    pass
+
+# Function to upload the data
+def upload_layer(layer, entity, county):
+    pass
+
+# Function to generate a summary
+def generate_summary(layer, entity, county):
+    pass
+
 """
 AI PROMPT:
 
@@ -161,17 +177,20 @@ varies by layer and entity, while the processing step varies by layer and the up
 
 Main routine: 
 i've added lists of layers, counties, and city-county entities in the state of Florida. some layers are split by county, while others are split by city. we'll start 
-the skeleton of the script by focusing on zoning and flu, both of which are split by entity. first, we need a function to parse the command line input, set the queue, 
+the skeleton of the script by focusing on zoning and flu, both of which are split by entity. first, we need a function to parse the command line input, set a queue, 
 then proceed. then, we can wrap downloading and processing together by layer in a download_process_<layer> function. the download_process function will map the entity 
-to the correct download function and run it, then run the processing script. then, the main function can proceed to the upload function, which will connect to 2 other 
-servers, transfer 2 backup files to each, then run psql commands on each to upload the data (maybe do this in a batch for a list of what download_process returns?). 
+to the correct download function and run it, then run the processing script. download_process can return information about the run and append a list of 
+downloaded/processed counties. the main function can loop through the queue with download_process, then proceed to the upload function with the list of 
+downloaded/processed counties. the upload function will connect to 2 other servers, transfer 2 backup files to each, then run psql commands on each to upload the data. 
 after the whole process is done, we can generate a summary .csv that lists the layer, entity, data date, and whether it was successful or not.
-the script should be able to run in a loop, with a queue of entities to process.
 
 Additional considerations:
 The script needs robust, modular error handling, making use of the logging module. I had an idea for a tiered error handling system, where errors in main are rank 0,
-errors in download_process are rank 1, errors in upload are rank 2, and so on. I want to discuss with you to brainstorm how to approach error handling, but I want
-to at least use a pointer system to make it modular and easy to edit.
-
+errors in download_process are rank 1, errors in upload are rank 2, and so on. However, my knowledge of error handling systems is relatively limited, so I want to 
+discuss with you to brainstorm how to approach error handling. I want to at least use a pointer system to make it modular and easy to edit. It needs control 
+variables to aid testing, such as a test mode to skip running the python tools as well as the upload step, and a debug mode that provides extra logging (we can 
+brainstorm how to implement this). Moreover, there the documentation directory contains a file with documetation for flu and zoning, respectively, which can provide
+context on how the download_process functions should be organized and what tools will be needed. consider that the documentation is meant for a human writing commands,
+not for automation.
 
 """
