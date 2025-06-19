@@ -163,9 +163,10 @@ entities = {
 
 class Config:
     """Configuration class to hold script settings."""
-    def __init__(self, test_mode=False, debug=False):
+    def __init__(self, test_mode=False, debug=False, isolate_logs=True):
         self.test_mode = test_mode
         self.debug = debug
+        self.isolate_logs = isolate_logs
         self.start_time = datetime.now()
         # More configuration can be added here
         # e.g. database credentials, server details
@@ -224,26 +225,58 @@ def set_queue(layer, entity):
     return queue
 
 
-def _run_command(command, work_dir):
+def _run_command(command, work_dir, logger):
     """
     Runs a shell command in a specified directory and handles execution.
     """
-    logging.debug(f"Running command: {' '.join(command)} in {work_dir}")
+    logger.debug(f"Running command: {' '.join(command)} in {work_dir}")
     if CONFIG.test_mode:
-        logging.info(f"[TEST MODE] Would run: {' '.join(command)}")
+        logger.info(f"[TEST MODE] Would run: {' '.join(command)}")
         return
     
     # Using shell=False and passing command as a list is more secure
     process = subprocess.run(command, cwd=work_dir, capture_output=True, text=True)
 
     if process.returncode != 0:
-        logging.error(f"Error executing command: {' '.join(command)}")
-        logging.error(f"STDOUT: {process.stdout}")
-        logging.error(f"STDERR: {process.stderr}")
+        logger.error(f"Error executing command: {' '.join(command)}")
+        logger.error(f"STDOUT: {process.stdout}")
+        logger.error(f"STDERR: {process.stderr}")
         raise ProcessingError(f"Command failed with exit code {process.returncode}")
     
-    logging.debug(f"Command output: {process.stdout}")
+    logger.debug(f"Command output: {process.stdout}")
     return process.stdout
+
+
+def setup_entity_logger(layer, entity, work_dir):
+    """Sets up a dedicated logger for an entity to a file."""
+    log_file_path = os.path.join(work_dir, f"{entity}.log")
+    
+    # Create a unique logger for each entity
+    logger = logging.getLogger(f"{layer}.{entity}")
+    logger.propagate = False # Prevent logs from bubbling up to the root logger
+    logger.setLevel(logging.DEBUG) # Always capture debug level to the file
+
+    # Clear existing handlers to avoid duplication if function is called multiple times
+    if logger.hasHandlers():
+        logger.handlers.clear()
+
+    # File handler - always logs DEBUG and above to the entity's log file
+    file_handler = logging.FileHandler(log_file_path, mode='w') # Overwrite log each run
+    file_formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+    file_handler.setFormatter(file_formatter)
+    file_handler.setLevel(logging.DEBUG)
+    logger.addHandler(file_handler)
+
+    # Console handler - only adds if log isolation is off
+    if not CONFIG.isolate_logs:
+        console_handler = logging.StreamHandler(sys.stdout)
+        console_level = logging.DEBUG if CONFIG.debug else logging.INFO
+        console_handler.setLevel(console_level)
+        console_formatter = logging.Formatter('%(message)s') # Keep console output clean
+        console_handler.setFormatter(console_formatter)
+        logger.addHandler(console_handler)
+        
+    return logger
 
 
 # Function to initialize the logging system
@@ -273,16 +306,21 @@ def download_process_layer(layer, queue):
     results = []
     for entity in queue:
         try:
-            logging.info(f"--- Processing entity: {entity} ---")
-            # We assume entity is county_city for now. This will need adjustment.
-            # e.g., entity = 'miami-dade_unincorporated' -> county='miami-dade', city='unincorporated'
+            # Setup working directory first as logger needs it
             parts = entity.split('_')
             county = parts[0]
             city = '_'.join(parts[1:])
+            work_dir = os.path.join('data', layer, county, city)
+            os.makedirs(work_dir, exist_ok=True)
+            
+            # Setup logger for this specific entity
+            entity_logger = setup_entity_logger(layer, entity, work_dir)
 
-            result = process_func(layer, entity, county, city)
+            entity_logger.info(f"--- Processing entity: {entity} ---")
+
+            result = process_func(layer, entity, county, city, work_dir, entity_logger)
             results.append(result)
-            logging.info(f"--- Successfully processed entity: {entity} ---")
+            entity_logger.info(f"--- Successfully processed entity: {entity} ---")
 
         except LayerProcessingError as e:
             logging.error(f"Failed to process entity {entity} for layer {layer}: {e}")
@@ -291,23 +329,19 @@ def download_process_layer(layer, queue):
     return results
 
 
-def _download_process_zoning(layer, entity, county, city):
+def _download_process_zoning(layer, entity, county, city, work_dir, logger):
     """Implementation of the zoning download and process workflow."""
-    logging.info(f"Running ZONING workflow for {entity}")
-    
-    # 1. Define paths and create directories
-    work_dir = os.path.join('data', layer, county, city)
-    os.makedirs(work_dir, exist_ok=True)
+    logger.info(f"Running ZONING workflow for {entity}")
     
     shp_name_raw = f"zoning_{entity}.shp"
     
     # --- Download Step ---
     try:
-        logging.info("Step 1: Downloading data...")
+        logger.info("Step 1: Downloading data...")
         # e.g., ags_extract_data2.py zoning_alachua_city delete 15
         download_script = os.path.join('..', '..', '..', '..', 'download_tools', 'ags_extract_data2.py')
         download_arg = f"zoning_{entity}"
-        _run_command([sys.executable, download_script, download_arg, "delete", "15"], work_dir)
+        _run_command([sys.executable, download_script, download_arg, "delete", "15"], work_dir, logger)
         # Simple check if the shapefile was created
         if not os.path.exists(os.path.join(work_dir, shp_name_raw)) and not CONFIG.test_mode:
             raise DownloadError("Shapefile not found after download script execution.", layer, entity)
@@ -316,41 +350,37 @@ def _download_process_zoning(layer, entity, county, city):
 
     # --- Processing Step ---
     try:
-        logging.info("Step 2: Processing data...")
+        logger.info("Step 2: Processing data...")
         # Note: The psql command from docs is layer-specific and complex.
         # For now, we'll just call the python processing script.
         # A full implementation would require a template for the psql command.
-        logging.info("Skipping psql update for support.zoning_transform (requires credentials).")
+        logger.info("Skipping psql update for support.zoning_transform (requires credentials).")
 
         processing_script = os.path.join('..', '..', '..', '..', 'processing_tools', 'update_zoning_v3.py')
-        _run_command([sys.executable, processing_script, county, city], work_dir)
+        _run_command([sys.executable, processing_script, county, city], work_dir, logger)
 
     except Exception as e:
         raise ProcessingError(f"Data processing failed: {e}", layer, entity) from e
     
-    logging.info("Zoning workflow completed successfully.")
+    logger.info("Zoning workflow completed successfully.")
     # In a real run, we'd extract the data_date from a file or the download process
     return {'layer': layer, 'entity': entity, 'status': 'success', 'data_date': datetime.now().date()}
 
 
-def _download_process_flu(layer, entity, county, city):
+def _download_process_flu(layer, entity, county, city, work_dir, logger):
     """Implementation of the flu download and process workflow."""
-    logging.info(f"Running FLU workflow for {entity}")
-
-    # 1. Define paths and create directories
-    work_dir = os.path.join('data', layer, county, city)
-    os.makedirs(work_dir, exist_ok=True)
+    logger.info(f"Running FLU workflow for {entity}")
     
     shp_name_raw = f"flu_{entity}.shp"
     shp_name_single = f"flu_{county}_{city}_single.shp"
 
     # --- Download Step ---
     try:
-        logging.info("Step 1: Downloading data...")
+        logger.info("Step 1: Downloading data...")
         # e.g., ags_extract_data2.py flu_alachua_city delete 15
         download_script = os.path.join('..', '..', '..', '..', 'download_tools', 'ags_extract_data2.py')
         download_arg = f"flu_{entity}"
-        _run_command([sys.executable, download_script, download_arg, "delete", "15"], work_dir)
+        _run_command([sys.executable, download_script, download_arg, "delete", "15"], work_dir, logger)
         if not os.path.exists(os.path.join(work_dir, shp_name_raw)) and not CONFIG.test_mode:
             raise DownloadError("Shapefile not found after download script execution.", layer, entity)
     except Exception as e:
@@ -358,26 +388,26 @@ def _download_process_flu(layer, entity, county, city):
 
     # --- Processing Step ---
     try:
-        logging.info("Step 2: Processing data (ogr2ogr)...")
+        logger.info("Step 2: Processing data (ogr2ogr)...")
         # e.g., ogr2ogr -explodecollections -select "FLU, FLU_NAME" flu_alachua_alachua_single.shp flu_alachua_city.shp
         _run_command([
             "ogr2ogr", "-explodecollections",
             "-select", "FLU,FLU_NAME",
             shp_name_single,
             shp_name_raw
-        ], work_dir)
+        ], work_dir, logger)
 
-        logging.info("Step 3: Processing data (update script)...")
+        logger.info("Step 3: Processing data (update script)...")
         # Note: Skipping psql update for support.flu_transform (requires credentials).
         # We assume `update_zoning_v3.py` is the generic update script for now.
         # The docs mentioned `update_flu.py` which is not present.
         processing_script = os.path.join('..', '..', '..', '..', 'processing_tools', 'update_zoning_v3.py')
-        _run_command([sys.executable, processing_script, county, city], work_dir)
+        _run_command([sys.executable, processing_script, county, city], work_dir, logger)
 
     except Exception as e:
         raise ProcessingError(f"Data processing failed: {e}", layer, entity) from e
 
-    logging.info("FLU workflow completed successfully.")
+    logger.info("FLU workflow completed successfully.")
     return {'layer': layer, 'entity': entity, 'status': 'success', 'data_date': datetime.now().date()}
 
 # Function to upload the data
@@ -431,13 +461,14 @@ def main():
     parser.add_argument("layer", help="The layer to process.", choices=list(layers))
     parser.add_argument("entity", nargs='?', help="The specific entity (e.g., miami-dade_unincorporated) to process. If omitted, all entities for the layer are processed.")
     parser.add_argument("--test-mode", action="store_true", help="Run in test mode, skipping actual execution of external tools and uploads.")
-    parser.add_argument("--debug", action="store_true", help="Enable debug logging.")
+    parser.add_argument("--debug", action="store_true", help="Enable debug logging on the console.")
+    parser.add_argument("--no-log-isolation", dest='isolate_logs', action='store_false', help="Show all logs in the console instead of isolating them to files.")
     
     args = parser.parse_args()
 
     # Initialize config and logging
     global CONFIG
-    CONFIG = Config(test_mode=args.test_mode, debug=args.debug)
+    CONFIG = Config(test_mode=args.test_mode, debug=args.debug, isolate_logs=args.isolate_logs)
     initialize_logging(CONFIG.debug)
 
     logging.info(f"Script started at {CONFIG.start_time.strftime('%Y-%m-%d %H:%M:%S')}")
