@@ -399,7 +399,6 @@ def upload_layer(results):
     # This is where SSH/SCP logic would go (e.g., using paramiko or subprocess)
     raise NotImplementedError("Upload logic is not yet implemented.")
 
-
 # Function to generate a summary
 def generate_summary(results):
     """Generates a CSV summary of the processing run."""
