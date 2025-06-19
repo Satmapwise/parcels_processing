@@ -6,6 +6,11 @@
 
 import sys
 import logging
+import argparse
+import subprocess
+from datetime import datetime
+import os
+import csv
 
 # Define layers, counties, and entities
 layers = {
@@ -156,55 +161,313 @@ entities = {
     "franklin_apalachicola", "franklin_carrabelle", "franklin_unincorporated"
     }
 
-# Function to parse the input and set the queue
-def set_queue():
+class Config:
+    """Configuration class to hold script settings."""
+    def __init__(self, test_mode=False, debug=False):
+        self.test_mode = test_mode
+        self.debug = debug
+        self.start_time = datetime.now()
+        # More configuration can be added here
+        # e.g. database credentials, server details
+        # For now, keeping it simple
+
+# Global config object
+CONFIG = Config()
+
+class LayerProcessingError(Exception):
+    """Base exception for all processing errors in this script."""
+    def __init__(self, message, layer=None, entity=None):
+        super().__init__(message)
+        self.layer = layer
+        self.entity = entity
+
+    def __str__(self):
+        return f"[{self.layer}/{self.entity}] {super().__str__()}"
+
+class DownloadError(LayerProcessingError):
+    """Exception for download failures."""
     pass
+
+class ProcessingError(LayerProcessingError):
+    """Exception for processing failures."""
+    pass
+
+class UploadError(LayerProcessingError):
+    """Exception for upload failures."""
+    pass
+
+
+# Function to parse the input and set the queue
+def set_queue(layer, entity):
+    """
+    Validates layer and entity and returns a queue of entities to process.
+    """
+    logging.info(f"Setting queue for layer '{layer}' and entity '{entity or 'all'}'")
+    if layer not in layers:
+        raise ValueError(f"Invalid layer specified: '{layer}'. Must be one of {layers}")
+
+    queue = []
+    if entity:
+        if entity not in entities and entity not in counties:
+             raise ValueError(f"Invalid entity specified: '{entity}'.")
+        queue.append(entity)
+    else:
+        # If no entity is specified, create a queue of all entities for the layer.
+        # This logic will need to be more sophisticated based on which layers use
+        # counties vs. entities. For now, we assume 'entity' level for flu/zoning.
+        logging.info(f"No entity specified, queuing all entities for layer '{layer}'")
+        for e in entities:
+            # A more robust implementation might check a mapping of layer to valid entities
+            queue.append(e)
+
+    logging.info(f"Queue set with {len(queue)} items.")
+    return queue
+
+
+def _run_command(command, work_dir):
+    """
+    Runs a shell command in a specified directory and handles execution.
+    """
+    logging.debug(f"Running command: {' '.join(command)} in {work_dir}")
+    if CONFIG.test_mode:
+        logging.info(f"[TEST MODE] Would run: {' '.join(command)}")
+        return
+    
+    # Using shell=False and passing command as a list is more secure
+    process = subprocess.run(command, cwd=work_dir, capture_output=True, text=True)
+
+    if process.returncode != 0:
+        logging.error(f"Error executing command: {' '.join(command)}")
+        logging.error(f"STDOUT: {process.stdout}")
+        logging.error(f"STDERR: {process.stderr}")
+        raise ProcessingError(f"Command failed with exit code {process.returncode}")
+    
+    logging.debug(f"Command output: {process.stdout}")
+    return process.stdout
+
 
 # Function to initialize the logging system
-def initalize_logging():
-    pass
+def initialize_logging(debug=False):
+    """Initializes the logging system."""
+    level = logging.DEBUG if debug else logging.INFO
+    logging.basicConfig(level=level, format='%(asctime)s - %(levelname)s - %(message)s', stream=sys.stdout)
+    logging.info("Logging initialized.")
 
 # Function to download and process a layer
-def download_process_layer(layer, entity, county):
-    pass
+def download_process_layer(layer, queue):
+    """
+    Dispatcher function to download and process a layer for entities in the queue.
+    """
+    logging.info(f"Starting download and process for layer '{layer}'")
+    
+    # Function dispatcher mapping layers to their processing functions
+    dispatcher = {
+        'zoning': _download_process_zoning,
+        'flu': _download_process_flu,
+    }
+
+    process_func = dispatcher.get(layer)
+    if not process_func:
+        raise NotImplementedError(f"No processing function implemented for layer '{layer}'")
+
+    results = []
+    for entity in queue:
+        try:
+            logging.info(f"--- Processing entity: {entity} ---")
+            # We assume entity is county_city for now. This will need adjustment.
+            # e.g., entity = 'miami-dade_unincorporated' -> county='miami-dade', city='unincorporated'
+            parts = entity.split('_')
+            county = parts[0]
+            city = '_'.join(parts[1:])
+
+            result = process_func(layer, entity, county, city)
+            results.append(result)
+            logging.info(f"--- Successfully processed entity: {entity} ---")
+
+        except LayerProcessingError as e:
+            logging.error(f"Failed to process entity {entity} for layer {layer}: {e}")
+            results.append({'layer': layer, 'entity': entity, 'status': 'failure', 'error': str(e), 'data_date': None})
+
+    return results
+
+
+def _download_process_zoning(layer, entity, county, city):
+    """Implementation of the zoning download and process workflow."""
+    logging.info(f"Running ZONING workflow for {entity}")
+    
+    # 1. Define paths and create directories
+    work_dir = os.path.join('data', layer, county, city)
+    os.makedirs(work_dir, exist_ok=True)
+    
+    shp_name_raw = f"zoning_{entity}.shp"
+    
+    # --- Download Step ---
+    try:
+        logging.info("Step 1: Downloading data...")
+        # e.g., ags_extract_data2.py zoning_alachua_city delete 15
+        download_script = os.path.join('..', '..', '..', '..', 'download_tools', 'ags_extract_data2.py')
+        download_arg = f"zoning_{entity}"
+        _run_command([sys.executable, download_script, download_arg, "delete", "15"], work_dir)
+        # Simple check if the shapefile was created
+        if not os.path.exists(os.path.join(work_dir, shp_name_raw)) and not CONFIG.test_mode:
+            raise DownloadError("Shapefile not found after download script execution.", layer, entity)
+    except Exception as e:
+        raise DownloadError(f"Data download failed: {e}", layer, entity) from e
+
+    # --- Processing Step ---
+    try:
+        logging.info("Step 2: Processing data...")
+        # Note: The psql command from docs is layer-specific and complex.
+        # For now, we'll just call the python processing script.
+        # A full implementation would require a template for the psql command.
+        logging.info("Skipping psql update for support.zoning_transform (requires credentials).")
+
+        processing_script = os.path.join('..', '..', '..', '..', 'processing_tools', 'update_zoning_v3.py')
+        _run_command([sys.executable, processing_script, county, city], work_dir)
+
+    except Exception as e:
+        raise ProcessingError(f"Data processing failed: {e}", layer, entity) from e
+    
+    logging.info("Zoning workflow completed successfully.")
+    # In a real run, we'd extract the data_date from a file or the download process
+    return {'layer': layer, 'entity': entity, 'status': 'success', 'data_date': datetime.now().date()}
+
+
+def _download_process_flu(layer, entity, county, city):
+    """Implementation of the flu download and process workflow."""
+    logging.info(f"Running FLU workflow for {entity}")
+
+    # 1. Define paths and create directories
+    work_dir = os.path.join('data', layer, county, city)
+    os.makedirs(work_dir, exist_ok=True)
+    
+    shp_name_raw = f"flu_{entity}.shp"
+    shp_name_single = f"flu_{county}_{city}_single.shp"
+
+    # --- Download Step ---
+    try:
+        logging.info("Step 1: Downloading data...")
+        # e.g., ags_extract_data2.py flu_alachua_city delete 15
+        download_script = os.path.join('..', '..', '..', '..', 'download_tools', 'ags_extract_data2.py')
+        download_arg = f"flu_{entity}"
+        _run_command([sys.executable, download_script, download_arg, "delete", "15"], work_dir)
+        if not os.path.exists(os.path.join(work_dir, shp_name_raw)) and not CONFIG.test_mode:
+            raise DownloadError("Shapefile not found after download script execution.", layer, entity)
+    except Exception as e:
+        raise DownloadError(f"Data download failed: {e}", layer, entity) from e
+
+    # --- Processing Step ---
+    try:
+        logging.info("Step 2: Processing data (ogr2ogr)...")
+        # e.g., ogr2ogr -explodecollections -select "FLU, FLU_NAME" flu_alachua_alachua_single.shp flu_alachua_city.shp
+        _run_command([
+            "ogr2ogr", "-explodecollections",
+            "-select", "FLU,FLU_NAME",
+            shp_name_single,
+            shp_name_raw
+        ], work_dir)
+
+        logging.info("Step 3: Processing data (update script)...")
+        # Note: Skipping psql update for support.flu_transform (requires credentials).
+        # We assume `update_zoning_v3.py` is the generic update script for now.
+        # The docs mentioned `update_flu.py` which is not present.
+        processing_script = os.path.join('..', '..', '..', '..', 'processing_tools', 'update_zoning_v3.py')
+        _run_command([sys.executable, processing_script, county, city], work_dir)
+
+    except Exception as e:
+        raise ProcessingError(f"Data processing failed: {e}", layer, entity) from e
+
+    logging.info("FLU workflow completed successfully.")
+    return {'layer': layer, 'entity': entity, 'status': 'success', 'data_date': datetime.now().date()}
 
 # Function to upload the data
-def upload_layer(layer, queue):
-    pass
+def upload_layer(results):
+    """
+    Uploads processed data. Connects to servers, transfers files, runs psql.
+    """
+    logging.info("Starting upload process...")
+    successful_items = [r for r in results if 'success' in r['status']]
+    
+    if not successful_items:
+        logging.info("No successful items to upload.")
+        return
+
+    if CONFIG.test_mode:
+        logging.info(f"[TEST MODE] Would upload data for {len(successful_items)} items.")
+        return
+
+    # This is where SSH/SCP logic would go (e.g., using paramiko or subprocess)
+    raise NotImplementedError("Upload logic is not yet implemented.")
+
 
 # Function to generate a summary
-def generate_summary(layer, entity, county):
-    pass
+def generate_summary(results):
+    """Generates a CSV summary of the processing run."""
+    if not results:
+        logging.warning("No results to generate a summary for.")
+        return
+
+    summary_filename = f"summary_{CONFIG.start_time.strftime('%Y%m%d_%H%M%S')}.csv"
+    logging.info(f"Generating summary file: {summary_filename}")
+
+    headers = ['layer', 'entity', 'status', 'data_date', 'error']
+    
+    try:
+        with open(summary_filename, 'w', newline='') as csvfile:
+            writer = csv.DictWriter(csvfile, fieldnames=headers)
+            writer.writeheader()
+            for result in results:
+                # Ensure all keys are present
+                row = {h: result.get(h, '') for h in headers}
+                writer.writerow(row)
+        logging.info("Summary file generated successfully.")
+    except IOError as e:
+        logging.error(f"Could not write summary file: {e}")
+
 
 # Main function
 def main():
-    pass
+    """Main script execution."""
+    parser = argparse.ArgumentParser(description="Download, process, and upload geospatial data layers.")
+    parser.add_argument("layer", help="The layer to process.", choices=list(layers))
+    parser.add_argument("entity", nargs='?', help="The specific entity (e.g., miami-dade_unincorporated) to process. If omitted, all entities for the layer are processed.")
+    parser.add_argument("--test-mode", action="store_true", help="Run in test mode, skipping actual execution of external tools and uploads.")
+    parser.add_argument("--debug", action="store_true", help="Enable debug logging.")
+    
+    args = parser.parse_args()
+
+    # Initialize config and logging
+    global CONFIG
+    CONFIG = Config(test_mode=args.test_mode, debug=args.debug)
+    initialize_logging(CONFIG.debug)
+
+    logging.info(f"Script started at {CONFIG.start_time.strftime('%Y-%m-%d %H:%M:%S')}")
+    if CONFIG.test_mode:
+        logging.warning("--- RUNNING IN TEST MODE ---")
+
+    results = []
+    try:
+        # 1. Set the queue of entities to process
+        queue = set_queue(args.layer, args.entity)
+
+        # 2. Download and process the layer for each entity
+        results = download_process_layer(args.layer, queue)
+
+        # 3. Upload the processed data
+        upload_layer(results)
+
+    except (ValueError, NotImplementedError) as e:
+        logging.critical(f"A critical error occurred: {e}")
+        sys.exit(1)
+    except Exception as e:
+        logging.critical(f"An unexpected error occurred in the main workflow: {e}", exc_info=True)
+        sys.exit(1)
+    finally:
+        # 4. Generate a summary of the run
+        generate_summary(results)
+        end_time = datetime.now()
+        logging.info(f"Script finished at {end_time.strftime('%Y-%m-%d %H:%M:%S')}. Total runtime: {end_time - CONFIG.start_time}")
+
 
 if __name__ == "__main__":
     main()
-
-"""
-AI PROMPT:
-
-I need to make a script that chains together a series of python scripts to fetch layer data, process it, and upload it to postgres databases. the download step 
-varies by layer and entity, while the processing step varies by layer and the upload step is always the same. 
-
-Main routine: 
-i've added lists of layers, counties, and city-county entities in the state of Florida. some layers are split by county, while others are split by city. we'll start 
-the skeleton of the script by focusing on zoning and flu, both of which are split by entity. first, we need a function to parse the command line input, set a queue 
-of entities, and then proceed. we can call download_process_layer with the layer to map to the proper download_process function and run a loop for each queue item. 
-then, the download_process_<layer> function will map the item to the correct download function and run it, then run the processing script. download_process_layer can 
-return information about the run and append a list of downloaded/processed items. the main function can then proceed to the upload function with the list of 
-downloaded/processed items. the upload function will connect to 2 other servers, transfer 2 backup files to each, then run psql commands on each to upload the data. 
-after the whole process is done, we can generate a summary .csv that lists the layer, entity, data date, and whether it was successful or not.
-
-Additional considerations:
-The script needs robust, modular error handling, making use of the logging module. I had an idea for a tiered error handling system using custom exceptions, where errors 
-in main are rank 0, errors in a main function like download_process_layer are rank 1, errors in a function like download_process_<layer> are rank 2, and so on. 
-However, my knowledge of error handling systems is relatively limited, so I want to discuss with you to brainstorm how to approach error handling. I want to at least 
-use a pointer system to make it modular and easy to edit. It needs control variables to aid testing, such as a test mode to skip running the python tools as well as 
-the upload step, and a debug mode that provides extra logging (we can brainstorm how to implement this). Moreover, there the documentation directory contains a file 
-with documetation for flu and zoning, respectively, which can provide context on how the download_process functions should be organized and what tools will be needed. 
-consider that the documentation is meant for a human writing commands, not for automation.
-
-"""
