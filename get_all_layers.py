@@ -1,8 +1,11 @@
 # Script to get any layer from any entity
-# get_all_layers.py <county> <city> <layer>
-# Any blank arguments default to all (if applicable)
+# get_all_layers.py <layer> <entity>
+# Layer is required, entity is optional
+#   <entity> is a specific county or county_city (depending on layer) to download, process, and upload
+#   if <entity> is not provided, all entities for the layer will be downloaded, processed, and uploaded
 
 import sys
+import logging
 
 # Define layers, counties, and entities
 layers = {
@@ -153,8 +156,12 @@ entities = {
     "franklin_apalachicola", "franklin_carrabelle", "franklin_unincorporated"
     }
 
-# Function to set the queue
+# Function to parse the input and set the queue
 def set_queue():
+    pass
+
+# Function to initialize the logging system
+def initalize_logging():
     pass
 
 # Function to download and process a layer
@@ -162,12 +169,19 @@ def download_process_layer(layer, entity, county):
     pass
 
 # Function to upload the data
-def upload_layer(layer, entity, county):
+def upload_layer(layer, queue):
     pass
 
 # Function to generate a summary
 def generate_summary(layer, entity, county):
     pass
+
+# Main function
+def main():
+    pass
+
+if __name__ == "__main__":
+    main()
 
 """
 AI PROMPT:
@@ -177,20 +191,20 @@ varies by layer and entity, while the processing step varies by layer and the up
 
 Main routine: 
 i've added lists of layers, counties, and city-county entities in the state of Florida. some layers are split by county, while others are split by city. we'll start 
-the skeleton of the script by focusing on zoning and flu, both of which are split by entity. first, we need a function to parse the command line input, set a queue, 
-then proceed. then, we can wrap downloading and processing together by layer in a download_process_<layer> function. the download_process function will map the entity 
-to the correct download function and run it, then run the processing script. download_process can return information about the run and append a list of 
-downloaded/processed counties. the main function can loop through the queue with download_process, then proceed to the upload function with the list of 
-downloaded/processed counties. the upload function will connect to 2 other servers, transfer 2 backup files to each, then run psql commands on each to upload the data. 
+the skeleton of the script by focusing on zoning and flu, both of which are split by entity. first, we need a function to parse the command line input, set a queue 
+of entities, and then proceed. we can call download_process_layer with the layer to map to the proper download_process function and run a loop for each queue item. 
+then, the download_process_<layer> function will map the item to the correct download function and run it, then run the processing script. download_process_layer can 
+return information about the run and append a list of downloaded/processed items. the main function can then proceed to the upload function with the list of 
+downloaded/processed items. the upload function will connect to 2 other servers, transfer 2 backup files to each, then run psql commands on each to upload the data. 
 after the whole process is done, we can generate a summary .csv that lists the layer, entity, data date, and whether it was successful or not.
 
 Additional considerations:
-The script needs robust, modular error handling, making use of the logging module. I had an idea for a tiered error handling system, where errors in main are rank 0,
-errors in download_process are rank 1, errors in upload are rank 2, and so on. However, my knowledge of error handling systems is relatively limited, so I want to 
-discuss with you to brainstorm how to approach error handling. I want to at least use a pointer system to make it modular and easy to edit. It needs control 
-variables to aid testing, such as a test mode to skip running the python tools as well as the upload step, and a debug mode that provides extra logging (we can 
-brainstorm how to implement this). Moreover, there the documentation directory contains a file with documetation for flu and zoning, respectively, which can provide
-context on how the download_process functions should be organized and what tools will be needed. consider that the documentation is meant for a human writing commands,
-not for automation.
+The script needs robust, modular error handling, making use of the logging module. I had an idea for a tiered error handling system using custom exceptions, where errors 
+in main are rank 0, errors in a main function like download_process_layer are rank 1, errors in a function like download_process_<layer> are rank 2, and so on. 
+However, my knowledge of error handling systems is relatively limited, so I want to discuss with you to brainstorm how to approach error handling. I want to at least 
+use a pointer system to make it modular and easy to edit. It needs control variables to aid testing, such as a test mode to skip running the python tools as well as 
+the upload step, and a debug mode that provides extra logging (we can brainstorm how to implement this). Moreover, there the documentation directory contains a file 
+with documetation for flu and zoning, respectively, which can provide context on how the download_process functions should be organized and what tools will be needed. 
+consider that the documentation is meant for a human writing commands, not for automation.
 
 """
