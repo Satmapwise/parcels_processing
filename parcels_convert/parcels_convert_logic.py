@@ -996,6 +996,112 @@ def get_collier_config(path_processing, pg_connection, pg_psql):
     }
     return config
 
+def get_columbia_config(path_processing, pg_connection, pg_psql):
+    """Returns the processing configuration for Columbia County."""
+    
+    config = {
+        'county_name': 'Columbia',
+        'path_processing': path_processing,
+        'pg_connection': pg_connection,
+        'pg_psql': pg_psql,
+        
+        'create_raw_tables_sql': "/srv/mapwise_dev/county/columbia/processing/database/sql_files/create_raw_tables.sql",
+
+        'preprocess_commands': [],
+        'processing_scripts': [],
+
+        'copy_commands': [
+            {'table': 'raw_columbia_sales_export', 'file': 'source_data/sales_dnld_2014-01-01_current.txt', 'header': False},
+            {'table': 'raw_columbia_sales_owner_export', 'file': 'source_data/sales_owner_mailing_dnld_2014-01-01_current.txt', 'header': False}
+        ],
+
+        'sql_updates': [
+            {
+                'description': 'Format sale1 dates.',
+                'sql': """
+                    UPDATE raw_columbia_sales_export SET sale1_date = split_part(sale1_date, '/', 3) || '-' || split_part(sale1_date, '/', 1) || '-' || split_part(sale1_date, '/', 2);
+                    UPDATE raw_columbia_sales_export SET sale1_date = split_part(sale1_date, '-', 1) || '-0' || split_part(sale1_date, '-', 2) || '-' || split_part(sale1_date, '-', 3)
+                        WHERE length(split_part(sale1_date, '-', 2)) = 1;
+                    UPDATE raw_columbia_sales_export SET sale1_date = split_part(sale1_date, '-', 1) || '-' || split_part(sale1_date, '-', 2) || '-0' || split_part(sale1_date, '-', 3)
+                        WHERE length(split_part(sale1_date, '-', 3)) = 1;
+                """
+            },
+            {
+                'description': 'Format sale2 dates.',
+                'sql': """
+                    UPDATE raw_columbia_sales_export SET sale2_date = split_part(sale2_date, '/', 3) || '-' || split_part(sale2_date, '/', 1) || '-' || split_part(sale2_date, '/', 2);
+                    UPDATE raw_columbia_sales_export SET sale2_date = split_part(sale2_date, '-', 1) || '-0' || split_part(sale2_date, '-', 2) || '-' || split_part(sale2_date, '-', 3)
+                        WHERE length(split_part(sale2_date, '-', 2)) = 1;
+                    UPDATE raw_columbia_sales_export SET sale2_date = split_part(sale2_date, '-', 1) || '-' || split_part(sale2_date, '-', 2) || '-0' || split_part(sale2_date, '-', 3)
+                        WHERE length(split_part(sale2_date, '-', 3)) = 1;
+                """
+            },
+            {
+                'description': 'Format sale3 dates.',
+                'sql': """
+                    UPDATE raw_columbia_sales_export SET sale3_date = split_part(sale3_date, '/', 3) || '-' || split_part(sale3_date, '/', 1) || '-' || split_part(sale3_date, '/', 2);
+                    UPDATE raw_columbia_sales_export SET sale3_date = split_part(sale3_date, '-', 1) || '-0' || split_part(sale3_date, '-', 2) || '-' || split_part(sale3_date, '-', 3)
+                        WHERE length(split_part(sale3_date, '-', 2)) = 1;
+                    UPDATE raw_columbia_sales_export SET sale3_date = split_part(sale3_date, '-', 1) || '-' || split_part(sale3_date, '-', 2) || '-0' || split_part(sale3_date, '-', 3)
+                        WHERE length(split_part(sale3_date, '-', 3)) = 1;
+                """
+            },
+            {
+                'description': 'Call FDOR processing for Columbia County',
+                'sql': "SELECT process_raw_fdor('COLUMBIA');" # This is a placeholder
+            },
+            {
+                'description': 'Update sales info in parcels template.',
+                'sql': """
+                    UPDATE parcels_template_columbia as interim
+                    SET
+                        sale1_date = cast(denormal.sale1_date as text),
+                        sale1_year = CAST(split_part(denormal.sale1_date, '-', 1) as int),
+                        sale1_amt = denormal.sale1_amt,
+                        sale1_typ = denormal.sale1_typ,
+                        sale1_vac = denormal.sale1_vac,
+                        sale1_qual = denormal.sale1_qual,
+                        sale1_bk = denormal.sale1_bk,
+                        sale1_pg = denormal.sale1_pg,
+                        sale2_date = cast(denormal.sale2_date as text),
+                        sale2_year = CAST(split_part(denormal.sale2_date, '-', 1) as int),
+                        sale2_amt = denormal.sale2_amt,
+                        sale2_typ = denormal.sale2_typ,
+                        sale2_vac = denormal.sale2_vac,
+                        sale2_qual = denormal.sale2_qual,
+                        sale2_bk = denormal.sale2_bk,
+                        sale2_pg = denormal.sale2_pg,
+                        sale3_date = cast(denormal.sale3_date as text),
+                        sale3_year = CAST(split_part(denormal.sale3_date, '-', 1) as int),
+                        sale3_amt = denormal.sale3_amt,
+                        sale3_typ = denormal.sale3_typ,
+                        sale3_vac = denormal.sale3_vac,
+                        sale3_qual = denormal.sale3_qual,
+                        sale3_bk = denormal.sale3_bk,
+                        sale3_pg = denormal.sale3_pg,
+                        o_name1 = denormal.o_name1
+                    FROM raw_columbia_sales_export as denormal
+                    WHERE interim.pin_clean = replace(denormal.pin,'-','');
+                """
+            },
+            {
+                'description': 'Update owner mailing addresses.',
+                'sql': """
+                    UPDATE parcels_template_columbia as p SET
+                        o_name1 = o.o_name1,
+                        o_address1 = o.o_address1,
+                        o_address2 = o.o_address2,
+                        o_city = o.o_city,
+                        o_state = o.o_state,
+                        o_zipcode = o.o_zipcode
+                    FROM raw_columbia_sales_owner_export as o
+                    WHERE p.o_name1 = o.o_name1;
+                """
+            }
+        ]
+    }
+    return config
+
 if __name__ == '__main__':
     # This is an example of how to run the process for a county.
     # It requires environment variables or another method to be set up
