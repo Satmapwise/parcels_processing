@@ -524,6 +524,64 @@ def get_brevard_config(path_processing, pg_connection, pg_psql):
     }
     return config
 
+def get_broward_config(path_processing, pg_connection, pg_psql):
+    """Returns the processing configuration for Broward County."""
+    
+    path_source_data = f"{path_processing}/source_data"
+    
+    config = {
+        'county_name': 'Broward',
+        'path_processing': path_processing,
+        'pg_connection': pg_connection,
+        'pg_psql': pg_psql,
+        
+        'create_raw_tables_sql': "/srv/mapwise_dev/county/broward/processing/database/sql_files/create_raw_tables.sql",
+
+        'preprocess_commands': [
+            {'command': f"java -jar /srv/tools/ajack-1.0.0.jar -o -f POSTGRES_CSV -t bcpa_tax_roll -d {path_source_data}/export {path_source_data}/BCPA_TAX_ROLL.mdb"},
+            {'command': f"sed 's/\\t//g' {path_source_data}/export/bcpa_tax_roll.csv > {path_source_data}/export/bcpa_tax_roll2.csv"},
+            {'command': f"tr -cd '\\11\\12\\15\\40-\\133\\135-\\176' < {path_source_data}/export/bcpa_tax_roll2.csv > {path_source_data}/export/bcpa_tax_roll3.csv"}
+        ],
+        
+        'processing_scripts': [
+            {'script': '/srv/tools/python/parcel_processing/broward/broward-convert-current.py', 'description': 'RUN broward-convert-current.py'},
+            {'script': '/srv/tools/python/parcel_processing/broward/broward-raw-bldg.py', 'description': 'RUN broward-raw-bldg.py'}
+        ],
+
+        'copy_commands': [
+            {'table': 'parcels_template_broward', 'file': 'parcels_new.txt', 'header': False},
+            {'table': 'raw_broward_bldg', 'file': 'parcels_bldg.txt', 'header': False}
+        ],
+
+        'sql_updates': [
+            {
+                'description': 'Create building summary table.',
+                'sql': """
+                    SELECT 
+                        bldg.pin, 
+                        max(cast(bldg.stories as integer)) as max_stories, 
+                        sum(cast(bldg.res_units as integer)) as sum_units, 
+                        sum(cast(bldg.sqft_tot as integer)) as sum_sqft_tot, 
+                        sum(cast(trunc(cast(bldg.num_bed as numeric)) as integer)) as sum_num_beds,
+                        sum(cast(trunc(cast(bldg.num_bath as numeric)) as integer)) as sum_num_baths
+                    INTO raw_broward_bldg_sum
+                    from raw_broward_bldg as bldg
+                    group by bldg.pin;
+                """
+            },
+            {
+                'description': 'Update parcels template with building info.',
+                'sql': """
+                    UPDATE parcels_template_broward
+                    SET stories = bldg.max_stories
+                    FROM raw_broward_bldg_sum as bldg
+                    WHERE parcels_template_broward.pin = bldg.pin;
+                """
+            }
+        ]
+    }
+    return config
+
 if __name__ == '__main__':
     # This is an example of how to run the process for a county.
     # It requires environment variables or another method to be set up
