@@ -239,7 +239,255 @@ def process_raw_grizzly(county):
     cursor.close()
     connection.close()
 
-def process_raw_fdor(county):
-    # Placeholder for patching in tests
+# =======================================================================================
+# QPUBLIC RAW
+# - INPUT = Raw text files
+# - OUTPUT = raw data tables and parcels_template_<county> postgres tables
+# =======================================================================================
+def process_raw_qpublic(county):
     pass
+
+# =======================================================================================
+# GADSDEN COUNTY RAW
+# - INPUT = Raw text files
+# - OUTPUT = raw data tables and parcels_template_<county> postgres tables
+# =======================================================================================
+def process_raw_gadsden() :
+
+    # change working directory
+    os.chdir(pathProcessing)
+    print 'Current working directory: ',os.getcwd()
+
+    county_upper = county.upper()
+    county_lower = county.lower()
+
+    # Connect to postgres and open cursor
+    connection = psycopg2.connect(pg_connection)
+    cursor = connection.cursor()
+
+    # create raw tables
+    sql_file = "/srv/mapwise_dev/county/gadsden/processing/database/sql_files/create_raw_tables.sql"
+    print 'SQL COMMAND: ', sql_file
+    mycmd = pg_psql + ' -f "' + sql_file + '"'
+    print mycmd
+    os.system(mycmd)
+
+    #-----------------------------------------------------------------------------------------
+    # PROCESS WEB SALES DOWNLOAD FILE
+    #-----------------------------------------------------------------------------------------    
+    print 'RUN gadsden-convert-sales-csv.py'
+    mycmd = '/srv/tools/python/parcel_processing/gadsden/gadsden-convert-sales-csv.py'
+    os.system(mycmd)
+    print mycmd
+    
+    #-----------------------------------------------------------------------------------------
+    # LOAD RAW FILES
+    #-----------------------------------------------------------------------------------------
+    sql = "\\copy raw_gadsden_sales_dwnld from 'parcels_sales.txt' with delimiter as E'\\t' null as ''"
+    #print 'SQL COMMAND: ', sql
+    mycmd = pg_psql + ' -c "' + sql + '"'
+    print mycmd
+    os.system(mycmd)
+    
+    #-----------------------------------------------------------------------------------------
+    # process_raw_fdor - create parcels_template_<county>
+    #-----------------------------------------------------------------------------------------
+    process_raw_fdor(county)
+
+
+    #-----------------------------------------------------------------------------------------
+    # update owner name and mailing address
+    #-----------------------------------------------------------------------------------------
+    # No owner info in web download
+    sql = """
+        UPDATE parcels_template_gadsden as p SET
+            o_name1 = 'Owner Name Missing - ' || o.pin,
+            o_name2 = null,
+            o_address1 = null,
+            o_address2 = null,
+            o_address3 = null,
+            o_city = null,
+            o_state = null,
+            o_zipcode = null,
+            o_zipcode4 = null
+            FROM raw_gadsden_sales_dwnld as o
+            WHERE p.pin = o.pin
+    ;"""
+    print sql
+    cursor.execute(sql)
+    connection.commit()
+    
+    # close communication with the database
+    cursor.close()
+    connection.close()
+
+
+# =======================================================================================
+# GILCHRIST COUNTY RAW
+# - INPUT = Raw text files
+# - OUTPUT = raw data tables and parcels_template_<county> postgres tables
+# =======================================================================================
+def process_raw_gilchrist() :
+
+    # change working directory
+    os.chdir(pathProcessing)
+    print 'Current working directory: ',os.getcwd()
+
+    county_upper = county.upper()
+    county_lower = county.lower()
+
+    # Connect to postgres and open cursor
+    connection = psycopg2.connect(pg_connection)
+    cursor = connection.cursor()
+
+    # create raw tables
+    sql_file = "/srv/mapwise_dev/county/gilchrist/processing/database/sql_files/create_raw_tables.sql"
+    print 'SQL COMMAND: ', sql_file
+    mycmd = pg_psql + ' -f "' + sql_file + '"'
+    print mycmd
+    os.system(mycmd)
+
+    #-----------------------------------------------------------------------------------------
+    # PROCESS WEB SALES DOWNLOAD FILE
+    #-----------------------------------------------------------------------------------------    
+    print 'RUN gilchrist-convert-sales-csv.py'
+    mycmd = '/srv/tools/python/parcel_processing/gilchrist/gilchrist-convert-sales-csv.py'
+    os.system(mycmd)
+    print mycmd
+    
+    #-----------------------------------------------------------------------------------------
+    # LOAD RAW FILES
+    #-----------------------------------------------------------------------------------------
+    sql = "\\copy raw_gilchrist_sales_dwnld from 'parcels_sales.txt' with delimiter as E'\\t' null as ''"
+    mycmd = pg_psql + ' -c "' + sql + '"'
+    print mycmd
+    os.system(mycmd)
+    
+    #exit()
+    
+    #-----------------------------------------------------------------------------------------
+    # 3/8/2022 - update pin to make it clean
+    #-----------------------------------------------------------------------------------------
+    sql = """
+        UPDATE raw_gilchrist_sales_dwnld SET
+            pin = pin_clean
+    ;"""
+    print sql
+    cursor.execute(sql)
+    connection.commit()
+    
+    #exit()
+    
+    #-----------------------------------------------------------------------------------------
+    # process_raw_fdor - create parcels_template_<county>
+    #-----------------------------------------------------------------------------------------
+    process_raw_fdor(county)
+
+
+    #-----------------------------------------------------------------------------------------
+    # update owner name and mailing address
+    #-----------------------------------------------------------------------------------------
+    sql = """
+        UPDATE parcels_template_gilchrist as p SET
+            o_name1 = 'Owner Name Missing - ' || o.pin,
+            o_name2 = null,
+            o_address1 = null,
+            o_address2 = null,
+            o_address3 = null,
+            o_city = null,
+            o_state = null,
+            o_zipcode = null,
+            o_zipcode4 = null
+            FROM raw_gilchrist_sales_dwnld as o
+            WHERE p.pin = o.pin
+    ;"""
+    print sql
+    cursor.execute(sql)
+    connection.commit()
+    
+    # close communication with the database
+    cursor.close()
+    connection.close()
+    
+    #exit()
+
+
+# =======================================================================================
+# GLADES COUNTY RAW - FDOR + WEB SALES DOWNLOAD VERSION
+# - INPUT = Raw text files
+# - OUTPUT = raw data tables and parcels_template_<county> postgres tables
+# =======================================================================================
+def process_raw_glades() :
+
+    # change working directory
+    os.chdir(pathProcessing)
+    print 'Current working directory: ',os.getcwd()
+
+    county_upper = county.upper()
+    county_lower = county.lower()
+
+    # Connect to postgres and open cursor
+    connection = psycopg2.connect(pg_connection)
+    cursor = connection.cursor()
+
+    
+    # create raw tables
+    sql_file = "/srv/mapwise_dev/county/glades/processing/database/sql_files/create_raw_tables.sql"
+    print 'SQL COMMAND: ', sql_file
+    mycmd = pg_psql + ' -f "' + sql_file + '"'
+    print mycmd
+    os.system(mycmd)
+
+    #-----------------------------------------------------------------------------------------
+    # PROCESS WEB SALES DOWNLOAD FILE
+    #-----------------------------------------------------------------------------------------    
+    print 'RUN glades-convert-sales.py'
+    mycmd = '/srv/tools/python/parcel_processing/glades/glades-convert-sales-csv.py'
+    os.system(mycmd)
+    print mycmd
+    
+    #-----------------------------------------------------------------------------------------
+    # LOAD RAW FILES
+    #-----------------------------------------------------------------------------------------
+    sql = "\\copy raw_glades_sales_dwnld from 'parcels_sales.txt' with delimiter as E'\\t' null as ''"
+    #print 'SQL COMMAND: ', sql
+    mycmd = pg_psql + ' -c "' + sql + '"'
+    print mycmd
+    os.system(mycmd)
+    
+    #exit()
+    
+    #-----------------------------------------------------------------------------------------
+    # process_raw_fdor - create parcels_template_<county>
+    #-----------------------------------------------------------------------------------------
+    process_raw_fdor(county)
+
+    #-----------------------------------------------------------------------------------------
+    # update owner name and mailing address
+    #-----------------------------------------------------------------------------------------
+    # No owner info in Glades sales download
+
+    sql = """
+        UPDATE parcels_template_glades as p SET
+            o_name1 = 'Owner Name Missing - ' || o.pin,
+            o_name2 = null,
+            o_address1 = null,
+            o_address2 = null,
+            o_address3 = null,
+            o_city = null,
+            o_state = null,
+            o_zipcode = null,
+            o_zipcode4 = null
+            FROM raw_glades_sales_dwnld as o
+            WHERE p.pin = replace(o.pin,'-','')
+    ;"""
+    print sql
+    cursor.execute(sql)
+    connection.commit()
+    
+    # close communication with the database
+    cursor.close()
+    connection.close()
+
+    #exit()
 
