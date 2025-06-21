@@ -893,6 +893,109 @@ def get_clay_config(path_processing, pg_connection, pg_psql):
     }
     return config
 
+def get_collier_config(path_processing, pg_connection, pg_psql):
+    """Returns the processing configuration for Collier County."""
+    
+    path_source_data = f"{path_processing}/source_data"
+
+    config = {
+        'county_name': 'Collier',
+        'path_processing': path_processing,
+        'pg_connection': pg_connection,
+        'pg_psql': pg_psql,
+        
+        'create_raw_tables_sql': "/srv/mapwise_dev/county/collier/processing/database/sql_files/create_raw_tables.sql",
+
+        'preprocess_commands': [
+            {'command': f"tr -cd '\\11\\12\\15\\40-\\133\\135-\\176' < {path_source_data}/INT_LEGAL.csv > {path_source_data}/INT_LEGAL2.csv"}
+        ],
+        
+        'processing_scripts': [
+            {'script': '/srv/tools/python/parcel_processing/collier/collier-parcels.py', 'description': 'RUN collier-parcels.py'},
+            {'script': '/srv/tools/python/parcel_processing/collier/collier-sales.py', 'description': 'RUN collier-sales.py'},
+            {'script': '/srv/tools/python/parcel_processing/collier/collier-legal.py', 'description': 'RUN collier-legal.py'},
+            {'script': '/srv/tools/python/parcel_processing/collier/collier-building.py', 'description': 'RUN collier-building.py'},
+            {'script': '/srv/tools/python/parcel_processing/collier/collier-subcondos.py', 'description': 'RUN collier-subcondos.py'}
+        ],
+
+        'copy_commands': [
+            {'table': 'parcels_template_collier', 'file': 'parcels_new.txt', 'header': False},
+            {'table': 'raw_collier_sales', 'file': 'sales_new.txt', 'header': False},
+            {'table': 'raw_collier_legal', 'file': 'legal_new.txt', 'header': False},
+            {'table': 'raw_collier_subcondos', 'file': 'subcondos_new.txt', 'header': False},
+            {'table': 'raw_collier_bldg', 'file': 'buildings_new.txt', 'header': False},
+            {'table': 'raw_collier_bldg_old', 'file': 'parcels_bldg.txt', 'header': False},
+            {'table': 'raw_collier_bldg_lut_total', 'file': 'source_data/raw_data/bldg_class_lut_total.txt', 'header': True},
+            {'table': 'raw_collier_bldg_lut_base', 'file': 'source_data/raw_data/bldg_class_lut_base_sqft.txt', 'header': True}
+        ],
+
+        'sql_updates': [
+            {
+                'description': 'Update subdivision names.',
+                'sql': """
+                    UPDATE parcels_template_collier as p
+                    SET subdiv_nm = sub.description
+                    FROM raw_collier_subcondos as sub
+                    WHERE p.subdiv_id = sub.subdiv_id;
+                """
+            },
+            {
+                'description': 'Create building statistics summary table.',
+                'sql': """
+                    SELECT 
+                        bldg.pin2, 
+                        min(cast(bldg.yrblt_act as integer)) as min_yrblt_act,
+                        min(cast(bldg.yrblt_eff as integer)) as min_yrblt_eff,
+                        sum(cast(bldg.sqft_htd as integer)) as sum_sqft_htd,
+                        sum(cast(bldg.sqft_tot as integer)) as sum_sqft_adj, 
+                        max(cast(trunc(cast(bldg.stories as numeric)) as integer)) as max_stories
+                    INTO raw_collier_bldg_stats
+                    FROM raw_collier_bldg as bldg JOIN raw_collier_bldg_lut_base as bldg_lut ON bldg.class = bldg_lut.bldg_class
+                    GROUP BY bldg.pin2;
+                """
+            },
+            {
+                'description': 'Update parcels template with building stats.',
+                'sql': """
+                    UPDATE parcels_template_collier
+                    SET
+                        yrblt_act = bldg.min_yrblt_act,
+                        yrblt_eff = bldg.min_yrblt_eff,
+                        sqft_htd = bldg.sum_sqft_htd, 
+                        sqft_adj = bldg.sum_sqft_adj, 
+                        stories = bldg.max_stories
+                    FROM raw_collier_bldg_stats as bldg
+                    WHERE parcels_template_collier.pin2 = bldg.pin2;
+                """
+            },
+            {
+                'description': 'Create old building statistics summary table.',
+                'sql': """
+                    SELECT 
+                        bldg.pin, 
+                        min(cast(bldg.yrblt_act as integer)) as min_yrblt_act,
+                        min(cast(bldg.yrblt_eff as integer)) as min_yrblt_eff,
+                        sum(cast(bldg.sqft_htd as integer)) as sum_sqft_htd,
+                        sum(cast(bldg.sqft_tot as integer)) as sum_sqft_adj, 
+                        max(cast(trunc(cast(bldg.stories as numeric)) as integer)) as max_stories
+                    INTO raw_collier_bldg_stats_old
+                    FROM raw_collier_bldg_old as bldg JOIN raw_collier_bldg_lut_base as bldg_lut ON bldg.class = bldg_lut.bldg_class
+                    GROUP BY bldg.pin;
+                """
+            },
+            {
+                'description': 'Update parcels template with old building stats (for stories).',
+                'sql': """
+                    UPDATE parcels_template_collier
+                    SET stories = bldg.max_stories
+                    FROM raw_collier_bldg_stats_old as bldg
+                    WHERE parcels_template_collier.pin = bldg.pin;
+                """
+            }
+        ]
+    }
+    return config
+
 if __name__ == '__main__':
     # This is an example of how to run the process for a county.
     # It requires environment variables or another method to be set up
