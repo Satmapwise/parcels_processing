@@ -17,7 +17,7 @@ BASIC PROCESSING FLOW
 def process_raw_grizzly(county):
     # change working directory
     os.chdir(pathProcessing)
-    print 'Current working directory: ', os.getcwd()
+    print('Current working directory: ', os.getcwd())
 
     county_lower = county.lower()
 
@@ -27,23 +27,23 @@ def process_raw_grizzly(county):
 
     # create raw tables
     sql_file = "/srv/mapwise_dev/county/{0}/processing/database/sql_files/create_raw_tables.sql".format(county_lower)
-    print 'SQL COMMAND: ', sql_file
+    print('SQL COMMAND: ', sql_file)
     mycmd = pg_psql + ' -f "' + sql_file + '"'
-    print mycmd
+    print(mycmd)
     os.system(mycmd)
 
     # -----------------------------------------------------------------------------------------
     # LOAD RAW FILES
     # -----------------------------------------------------------------------------------------
     if county_lower == 'desoto':
-        print '\nRUN desoto-convert-land-denormal.py'
+        print('\nRUN desoto-convert-land-denormal.py')
         mycmd = '/srv/tools/python/parcel_processing/de_soto/desoto-convert-land-denormal.py'
-        print mycmd
+        print(mycmd)
         os.system(mycmd)
 
         sql = "\\copy raw_desoto_land from 'parcels_land.txt' with delimiter as E'\\t' null as ''"
         mycmd = pg_psql + ' -c "' + sql + '"'
-        print mycmd
+        print(mycmd)
         os.system(mycmd)
 
     # Load sales export
@@ -54,14 +54,14 @@ def process_raw_grizzly(county):
     sales_export_file = 'source_data/sales_dnld_2014-01-01_current.txt'
     sql = "\\copy raw_{0}_sales_export from '{1}' {2} delimiter as E'\\t' null as ''".format(county_lower, sales_export_file, copy_options)
     mycmd = pg_psql + ' -c "' + sql + '"'
-    print mycmd
+    print(mycmd)
     os.system(mycmd)
 
     # Load sales owner export
     owner_export_file = 'source_data/sales_owner_mailing_dnld_2014-01-01_current.txt'
     sql = "\\copy raw_{0}_sales_owner_export from '{1}' with delimiter as E'\\t' null as ''".format(county_lower, owner_export_file)
     mycmd = pg_psql + ' -c "' + sql + '"'
-    print mycmd
+    print(mycmd)
     os.system(mycmd)
 
     # -----------------------------------------------------------------------------------------
@@ -81,14 +81,14 @@ def process_raw_grizzly(county):
             UPDATE raw_{0}_sales_export SET {1} = split_part({1}, '-', 1) || '-' || split_part({1}, '-', 2) || '-0' || split_part({1}, '-', 3)
                 WHERE length(split_part({1}, '-', 3)) = 1;
         """.format(county_lower, sale_date_col)
-        print sql
+        print(sql)
         cursor.execute(sql)
         connection.commit()
 
     # PIN Cleaning
     if county_lower in ['bradford', 'desoto', 'lafayette', 'okeechobee']:
         sql = "UPDATE raw_{0}_sales_export SET pin = replace(pin,'-','');".format(county_lower)
-        print sql
+        print(sql)
         cursor.execute(sql)
         connection.commit()
 
@@ -104,7 +104,7 @@ def process_raw_grizzly(county):
     # County-specific pin_clean update
     if county_lower in ['desoto', 'okeechobee']:
         sql = "UPDATE parcels_template_{0} SET pin_clean = replace(pin,'-','');".format(county_lower)
-        print sql
+        print(sql)
         cursor.execute(sql)
         connection.commit()
 
@@ -118,7 +118,8 @@ def process_raw_grizzly(county):
         elif county_lower in ['columbia', 'okeechobee', 'union']:
             where_clause = "interim.pin_clean = replace(denormal.pin,'-','')"
 
-        sale_columns = """
+        sale_columns = (
+            """
             sale1_date = cast(denormal.sale1_date as text),
             sale1_year = CAST(split_part(denormal.sale1_date, '-', 1) as int),
             sale1_amt = denormal.sale1_amt,
@@ -127,27 +128,28 @@ def process_raw_grizzly(county):
             sale1_qual = denormal.sale1_qual,
             sale1_bk = denormal.sale1_bk,
             sale1_pg = denormal.sale1_pg,
-            o_name1 = denormal.o_name1
-        """
+            o_name1 = denormal.o_name1"""
+        )
         if county_lower in ['bradford', 'columbia', 'desoto', 'okeechobee', 'union']:
-            sale_columns += """,
-            sale2_date = cast(denormal.sale2_date as text),
-            sale2_year = CAST(split_part(denormal.sale2_date, '-', 1) as int),
-            sale2_amt = denormal.sale2_amt,
-            sale2_typ = denormal.sale2_typ,
-            sale2_vac = denormal.sale2_vac,
-            sale2_qual = denormal.sale2_qual,
-            sale2_bk = denormal.sale2_bk,
-            sale2_pg = denormal.sale2_pg,
-            sale3_date = cast(denormal.sale3_date as text),
-            sale3_year = CAST(split_part(denormal.sale3_date, '-', 1) as int),
-            sale3_amt = denormal.sale3_amt,
-            sale3_typ = denormal.sale3_typ,
-            sale3_vac = denormal.sale3_vac,
-            sale3_qual = denormal.sale3_qual,
-            sale3_bk = denormal.sale3_bk,
-            sale3_pg = denormal.sale3_pg
-            """
+            sale_columns += (
+                ",\n"
+                "sale2_date = cast(denormal.sale2_date as text),\n"
+                "sale2_year = CAST(split_part(denormal.sale2_date, '-', 1) as int),\n"
+                "sale2_amt = denormal.sale2_amt,\n"
+                "sale2_typ = denormal.sale2_typ,\n"
+                "sale2_vac = denormal.sale2_vac,\n"
+                "sale2_qual = denormal.sale2_qual,\n"
+                "sale2_bk = denormal.sale2_bk,\n"
+                "sale2_pg = denormal.sale2_pg,\n"
+                "sale3_date = cast(denormal.sale3_date as text),\n"
+                "sale3_year = CAST(split_part(denormal.sale3_date, '-', 1) as int),\n"
+                "sale3_amt = denormal.sale3_amt,\n"
+                "sale3_typ = denormal.sale3_typ,\n"
+                "sale3_vac = denormal.sale3_vac,\n"
+                "sale3_qual = denormal.sale3_qual,\n"
+                "sale3_bk = denormal.sale3_bk,\n"
+                "sale3_pg = denormal.sale3_pg"
+            )
 
         sql = """UPDATE parcels_template_{0} as interim
             SET -- all sales columns
@@ -155,7 +157,7 @@ def process_raw_grizzly(county):
             FROM raw_{0}_sales_export as denormal
             WHERE {2};""".format(county_lower, sale_columns, where_clause)
 
-        print sql
+        print(sql)
         cursor.execute(sql)
         connection.commit()
 
@@ -185,7 +187,7 @@ def process_raw_grizzly(county):
         FROM raw_{0}_sales_owner_export as o
         WHERE p.o_name1 = o.o_name1
     ;""".format(county_lower, owner_update_set_clause)
-    print sql
+    print(sql)
     cursor.execute(sql)
     connection.commit()
     
@@ -202,7 +204,7 @@ def process_raw_grizzly(county):
                 FROM raw_lafayette_sales_export as o
                 WHERE p.pin = o.pin and o.sale1_date > '2021-09-01'
         ;"""
-        #print sql
+        #print(sql)
         #cursor.execute(sql)
         #connection.commit()
 
@@ -214,7 +216,7 @@ def process_raw_grizzly(county):
                 o_zipcode = substring(o_address2 from 24 for 5)
                 WHERE o_city = '' and o_state = ''
         ;"""
-        #print sql
+        #print(sql)
         #cursor.execute(sql)
         #connection.commit()
     
@@ -228,7 +230,7 @@ def process_raw_grizzly(county):
         #        o_zipcode = substring(o_address2 from 24 for 5)
         #        WHERE o_city = '' and o_state = ''
         #;"""
-        #print sql
+        #print(sql)
         #cursor.execute(sql)
         #connection.commit()
         pass

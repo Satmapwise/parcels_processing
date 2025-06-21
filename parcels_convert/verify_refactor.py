@@ -2,16 +2,16 @@ import os
 import sys
 from unittest.mock import MagicMock, patch
 
-# To allow importing from the parent directory
-# sys.path.insert(1, os.path.join(sys.path[0], '..'))
+# Add the parent directory to the path so we can import from parcels_convert
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # We need to mock modules that might not be installed in the test environment
 # and that interact with external systems.
-# sys.modules['psycopg2'] = MagicMock()
+sys.modules['psycopg2'] = MagicMock()
 
 # Now we can import the function to be tested
-from .parcels_convert_chunk import process_raw_grizzly
-from . import parcels_convert_chunk
+from parcels_convert.parcels_convert_chunk import process_raw_grizzly
+import parcels_convert.parcels_convert_chunk
 
 # Define mock objects for variables that would be defined in the global scope of the main script
 pg_connection = "dbname='test' user='user' host='localhost' password='password'"
@@ -39,9 +39,9 @@ def run_verification(mock_chdir, mock_connect, mock_os_system, mock_process_raw_
     mock_connection.cursor.return_value = mock_cursor
 
     # These would be defined in the global scope of the real script
-    parcels_convert_chunk.pg_connection = pg_connection
-    parcels_convert_chunk.pathProcessing = pathProcessing
-    parcels_convert_chunk.pg_psql = pg_psql
+    parcels_convert.parcels_convert_chunk.pg_connection = pg_connection
+    parcels_convert.parcels_convert_chunk.pathProcessing = pathProcessing
+    parcels_convert.parcels_convert_chunk.pg_psql = pg_psql
 
     counties = [
         'bradford', 'columbia', 'desoto', 'lafayette', 'okeechobee',
@@ -91,8 +91,10 @@ def run_verification(mock_chdir, mock_connect, mock_os_system, mock_process_raw_
 if __name__ == '__main__':
     # Add the necessary global variables to the chunk module's namespace before running
     # This is a bit of a hack to make the chunk file runnable standalone for testing
-    import parcels_convert.parcels_convert_chunk
-    import psycopg2
+    
+    # Safely handle psycopg2 import - use the mock if the real module isn't available
+    psycopg2 = sys.modules['psycopg2']
+    
     parcels_convert.parcels_convert_chunk.os = os
     parcels_convert.parcels_convert_chunk.psycopg2 = psycopg2
 
