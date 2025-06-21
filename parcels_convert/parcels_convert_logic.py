@@ -1102,6 +1102,110 @@ def get_columbia_config(path_processing, pg_connection, pg_psql):
     }
     return config
 
+def get_desoto_config(path_processing, pg_connection, pg_psql):
+    """Returns the processing configuration for DeSoto County."""
+    
+    config = {
+        'county_name': 'DeSoto',
+        'path_processing': path_processing,
+        'pg_connection': pg_connection,
+        'pg_psql': pg_psql,
+        
+        'create_raw_tables_sql': "/srv/mapwise_dev/county/desoto/processing/database/sql_files/create_raw_tables.sql",
+
+        'preprocess_commands': [],
+        
+        'processing_scripts': [
+            {'script': '/srv/tools/python/parcel_processing/de_soto/desoto-convert-land-denormal.py', 'description': 'RUN desoto-convert-land-denormal.py'}
+        ],
+
+        'copy_commands': [
+            {'table': 'raw_desoto_land', 'file': 'parcels_land.txt', 'header': False},
+            {'table': 'raw_desoto_sales_export', 'file': 'source_data/sales_dnld_2014-01-01_current.txt', 'header': False},
+            {'table': 'raw_desoto_sales_owner_export', 'file': 'source_data/sales_owner_mailing_dnld_2014-01-01_current.txt', 'header': False}
+        ],
+
+        'sql_updates': [
+            {
+                'description': 'Format sale1 dates.',
+                'sql': """
+                    UPDATE raw_desoto_sales_export SET sale1_date = split_part(sale1_date, '/', 3) || '-' || split_part(sale1_date, '/', 1) || '-' || split_part(sale1_date, '/', 2);
+                    UPDATE raw_desoto_sales_export SET sale1_date = split_part(sale1_date, '-', 1) || '-0' || split_part(sale1_date, '-', 2) || '-' || split_part(sale1_date, '-', 3)
+                        WHERE length(split_part(sale1_date, '-', 2)) = 1;
+                    UPDATE raw_desoto_sales_export SET sale1_date = split_part(sale1_date, '-', 1) || '-' || split_part(sale1_date, '-', 2) || '-0' || split_part(sale1_date, '-', 3)
+                        WHERE length(split_part(sale1_date, '-', 3)) = 1;
+                """
+            },
+            {
+                'description': 'Format sale2 dates.',
+                'sql': """
+                    UPDATE raw_desoto_sales_export SET sale2_date = split_part(sale2_date, '/', 3) || '-' || split_part(sale2_date, '/', 1) || '-' || split_part(sale2_date, '/', 2);
+                    UPDATE raw_desoto_sales_export SET sale2_date = split_part(sale2_date, '-', 1) || '-0' || split_part(sale2_date, '-', 2) || '-' || split_part(sale2_date, '-', 3)
+                        WHERE length(split_part(sale2_date, '-', 2)) = 1;
+                    UPDATE raw_desoto_sales_export SET sale2_date = split_part(sale2_date, '-', 1) || '-' || split_part(sale2_date, '-', 2) || '-0' || split_part(sale2_date, '-', 3)
+                        WHERE length(split_part(sale2_date, '-', 3)) = 1;
+                """
+            },
+            {
+                'description': 'Format sale3 dates.',
+                'sql': """
+                    UPDATE raw_desoto_sales_export SET sale3_date = split_part(sale3_date, '/', 3) || '-' || split_part(sale3_date, '/', 1) || '-' || split_part(sale3_date, '/', 2);
+                    UPDATE raw_desoto_sales_export SET sale3_date = split_part(sale3_date, '-', 1) || '-0' || split_part(sale3_date, '-', 2) || '-' || split_part(sale3_date, '-', 3)
+                        WHERE length(split_part(sale3_date, '-', 2)) = 1;
+                    UPDATE raw_desoto_sales_export SET sale3_date = split_part(sale3_date, '-', 1) || '-' || split_part(sale3_date, '-', 2) || '-0' || split_part(sale3_date, '-', 3)
+                        WHERE length(split_part(sale3_date, '-', 3)) = 1;
+                """
+            },
+            {
+                'description': 'Strip dashes from PIN in sales data.',
+                'sql': "UPDATE raw_desoto_sales_export SET pin = replace(pin,'-','');"
+            },
+            {
+                'description': 'Call FDOR processing for DeSoto County',
+                'sql': "SELECT process_raw_fdor('DESOTO');" # This is a placeholder
+            },
+            {
+                'description': 'Clean PIN in main table.',
+                'sql': "UPDATE parcels_template_desoto SET pin_clean = replace(pin,'-','');"
+            },
+            {
+                'description': 'Update sales info in parcels template.',
+                'sql': """
+                    UPDATE parcels_template_desoto as interim
+                    SET
+                        sale1_date = cast(denormal.sale1_date as text),
+                        sale1_year = CAST(split_part(denormal.sale1_date, '-', 1) as int),
+                        sale1_amt = denormal.sale1_amt,
+                        sale1_typ = denormal.sale1_typ,
+                        sale1_vac = denormal.sale1_vac,
+                        sale1_qual = denormal.sale1_qual,
+                        sale1_bk = denormal.sale1_bk,
+                        sale1_pg = denormal.sale1_pg,
+                        sale2_date = cast(denormal.sale2_date as text),
+                        sale2_year = CAST(split_part(denormal.sale2_date, '-', 1) as int),
+                        sale2_amt = denormal.sale2_amt,
+                        sale2_typ = denormal.sale2_typ,
+                        sale2_vac = denormal.sale2_vac,
+                        sale2_qual = denormal.sale2_qual,
+                        sale2_bk = denormal.sale2_bk,
+                        sale2_pg = denormal.sale2_pg,
+                        sale3_date = cast(denormal.sale3_date as text),
+                        sale3_year = CAST(split_part(denormal.sale3_date, '-', 1) as int),
+                        sale3_amt = denormal.sale3_amt,
+                        sale3_typ = denormal.sale3_typ,
+                        sale3_vac = denormal.sale3_vac,
+                        sale3_qual = denormal.sale3_qual,
+                        sale3_bk = denormal.sale3_bk,
+                        sale3_pg = denormal.sale3_pg,
+                        o_name1 = denormal.o_name1
+                    FROM raw_desoto_sales_export as denormal
+                    WHERE interim.pin = denormal.pin;
+                """
+            }
+        ]
+    }
+    return config
+
 if __name__ == '__main__':
     # This is an example of how to run the process for a county.
     # It requires environment variables or another method to be set up
