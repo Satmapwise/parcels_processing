@@ -1626,7 +1626,7 @@ def process_raw_fdor(county) :
         # join on sales table
         sql = """INSERT INTO parcels_fdor_sales_normal_temp
             (pin, sale_amt, sale_year, sale_date, sale_vac, sale_typ, sale_qual, sale_bk, sale_pg)
-            SELECT pin, sale_amt, sale_year, sale_date, sale_vac, sale_typ, sale_qual, sale_bk, sale_pg 
+            SELECT REPLACE (pin, '-', ''), sale_amt, sale_year, sale_date, sale_vac, sale_typ, sale_qual, sale_bk, sale_pg 
             FROM raw_holmes_sales_dwnld"""
         print sql
         cursor.execute(sql)
@@ -14674,7 +14674,7 @@ def process_raw_okaloosa() :
     print mycmd
     os.system(mycmd)
     
-    exit()
+    #exit()
     
     #-----------------------------------------------------------------------------------------
     # process_raw_fdor - create parcels_template_<county>
@@ -18383,7 +18383,7 @@ def process_raw_santa_rosa() :
     cursor.execute(sql)
     connection.commit()
     
-    exit()
+    #exit()
     
     #-----------------------------------------------------------------------------------------
     # process_raw_fdor - create parcels_template_<county>
@@ -24928,6 +24928,18 @@ def load_join_process(county,state) :
         cursor.execute(sql)
         connection.commit()
 
+    if (county_upper == 'MADISON' and state_upper == 'FL') :
+        sql = """
+        DELETE FROM """ + parcels_county + """ 
+            WHERE ctid = ANY(ARRAY(SELECT ctid 
+            FROM (SELECT row_number() OVER (PARTITION BY pin), ctid 
+                FROM """ + parcels_county + """) x 
+                WHERE x.row_number > 1));
+        """
+        print sql    
+        cursor.execute(sql)
+        connection.commit() 
+        
     if (county_upper == 'MANATEE' and state_upper == 'FL') :
         sql = """
         DELETE FROM """ + parcels_county + """ 
@@ -29823,5 +29835,5 @@ if myFunction == 'do_all_mapwise' :
 
     dump_saunders_sales_new(county)
     
-    #drop_temp_tables(state,county)
+    drop_temp_tables(state,county)
     
