@@ -7,6 +7,7 @@
 # uses a configuration-based approach to handle county-specific workflows.
 
 import os
+import sys
 import psycopg2
 import textwrap
 
@@ -1201,6 +1202,48 @@ def get_desoto_config(path_processing, pg_connection, pg_psql):
                     FROM raw_desoto_sales_export as denormal
                     WHERE interim.pin = denormal.pin;
                 """
+            }
+        ]
+    }
+    return config
+
+def get_dixie_config(path_processing, pg_connection, pg_psql):
+    """Returns the processing configuration for Dixie County."""
+    
+    config = {
+        'county_name': 'Dixie',
+        'path_processing': path_processing,
+        'pg_connection': pg_connection,
+        'pg_psql': pg_psql,
+        
+        'create_raw_tables_sql': "/srv/mapwise_dev/county/dixie/processing/database/sql_files/create_raw_tables.sql",
+
+        'preprocess_commands': [],
+        
+        'processing_scripts': [
+            {'script': '/srv/tools/python/parcel_processing/dixie/dixie-convert-sales-csv.py', 'description': 'RUN dixie-convert-sales.py'}
+        ],
+
+        'copy_commands': [
+            {'table': 'raw_dixie_sales_dwnld', 'file': 'parcels_sales.txt', 'header': False}
+        ],
+
+        'sql_updates': [
+            {
+                'description': 'Call FDOR processing for Dixie County',
+                'sql': "SELECT process_raw_fdor('DIXIE');" # This is a placeholder
+            },
+            {
+                'description': 'Update owner information (placeholder).',
+                'sql': "UPDATE parcels_template_dixie as p SET o_name1 = 'Owner Name Missing - ' || o.pin, o_name2 = null, o_address1 = null, o_address2 = null, o_address3 = null, o_city = null, o_state = null, o_zipcode = null, o_zipcode4 = null FROM raw_dixie_sales_dwnld as o WHERE p.pin = o.pin2_clean;"
+            },
+            {
+                'description': "Nullify 'UNINCORPORATED' city names.",
+                'sql': "UPDATE parcels_template_dixie as p SET s_city = null WHERE p.s_city = 'UNINCORPORATED';"
+            },
+            {
+                'description': 'Update situs city from zip codes.',
+                'sql': "UPDATE parcels_template_dixie as p SET s_city = o.po_name FROM zip_codes as o WHERE p.s_city is null and o.zip = p.s_zipcode;"
             }
         ]
     }

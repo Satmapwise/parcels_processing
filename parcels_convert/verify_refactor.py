@@ -1,7 +1,8 @@
 import unittest
-from unittest.mock import patch, MagicMock, call
+from unittest.mock import patch, MagicMock, call, ANY
 import os
 import sys
+import textwrap
 
 # This script is designed to be run from the root of the 'parcels_processing' workspace.
 # It ensures that the 'parcels_convert' module can be found.
@@ -20,6 +21,13 @@ class TestParcelProcessingRefactor(unittest.TestCase):
     This test suite uses mocking to verify the orchestration logic of `process_raw_data`
     without executing external commands or database operations.
     """
+
+    def setUp(self):
+        """Set up test environment."""
+        self.path_processing = "/srv/mapwise_dev/county/test/processing/database/current"
+        self.pg_connection_string = "dbname='test_db' user='test_user' host='localhost' password='test_password'"
+        self.pg_psql_path = "/usr/bin/psql"
+        self.mock_connection = MagicMock()
 
     @patch('parcels_convert_logic.execute_sql')
     @patch('parcels_convert_logic.psql_copy')
@@ -754,6 +762,66 @@ class TestParcelProcessingRefactor(unittest.TestCase):
         self.assertEqual(mock_execute_sql.call_count, 7)
 
         mock_connection.close.assert_called_once()
+
+    @patch('parcels_convert_logic.execute_sql')
+    @patch('parcels_convert_logic.psql_copy')
+    @patch('parcels_convert_logic.run_sql_file')
+    @patch('parcels_convert_logic.run_external_command')
+    @patch('parcels_convert_logic.os.chdir')
+    @patch('parcels_convert_logic.os.path.exists')
+    @patch('parcels_convert_logic.psycopg2.connect')
+    def test_dixie_processing_orchestration(
+        self,
+        mock_connect,
+        mock_path_exists,
+        mock_chdir,
+        mock_run_external_command,
+        mock_run_sql_file,
+        mock_psql_copy,
+        mock_execute_sql
+    ):
+        """Verify the orchestration logic for Dixie County."""
+        
+        # Setup mock return values
+        mock_path_exists.return_value = True
+        mock_connect.return_value = self.mock_connection
+
+        # Get configuration
+        config = parcels_convert_logic.get_dixie_config(
+            self.path_processing, self.pg_connection_string, self.pg_psql_path
+        )
+        
+        # Execute the processing
+        parcels_convert_logic.process_raw_data(config)
+        
+        # Assertions
+        mock_path_exists.assert_called_once_with(self.path_processing)
+        mock_chdir.assert_called_once_with(self.path_processing)
+        
+        mock_run_sql_file.assert_called_once_with(
+            "/srv/mapwise_dev/county/dixie/processing/database/sql_files/create_raw_tables.sql",
+            self.pg_psql_path
+        )
+
+        mock_run_external_command.assert_called_once_with(
+            '/srv/tools/python/parcel_processing/dixie/dixie-convert-sales-csv.py',
+            'RUN dixie-convert-sales.py'
+        )
+
+        mock_psql_copy.assert_called_once_with(
+            table_name='raw_dixie_sales_dwnld',
+            file_name='parcels_sales.txt',
+            psql_path=self.pg_psql_path,
+            header=False
+        )
+
+        expected_sql_calls = [
+            call(self.mock_connection, "SELECT process_raw_fdor('DIXIE');", ANY),
+            call(self.mock_connection, "UPDATE parcels_template_dixie as p SET o_name1 = 'Owner Name Missing - ' || o.pin, o_name2 = null, o_address1 = null, o_address2 = null, o_address3 = null, o_city = null, o_state = null, o_zipcode = null, o_zipcode4 = null FROM raw_dixie_sales_dwnld as o WHERE p.pin = o.pin2_clean;", ANY),
+            call(self.mock_connection, "UPDATE parcels_template_dixie as p SET s_city = null WHERE p.s_city = 'UNINCORPORATED';", ANY),
+            call(self.mock_connection, "UPDATE parcels_template_dixie as p SET s_city = o.po_name FROM zip_codes as o WHERE p.s_city is null and o.zip = p.s_zipcode;", ANY)
+        ]
+        mock_execute_sql.assert_has_calls(expected_sql_calls)
 
 if __name__ == '__main__':
     # This allows running the tests directly
