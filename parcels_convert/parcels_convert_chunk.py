@@ -239,3 +239,7 @@ def process_raw_grizzly(county):
     cursor.close()
     connection.close()
 
+def process_raw_fdor(county):
+    # Placeholder for patching in tests
+    pass
+

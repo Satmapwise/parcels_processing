@@ -23,14 +23,58 @@ def process_raw_fdor(county):
     print("--- Mock process_raw_fdor called for {} ---".format(county))
 
 
+def test_logic(county, mock_connection, mock_cursor, mock_os_system, mock_process_raw_fdor, mock_chdir):
+    """
+    =======================================================================================
+    TEST LOGIC FUNCTION - PASTE YOUR CODE HERE
+    =======================================================================================
+    
+    This is where you paste the code you want to test. The function receives all the mocked
+    objects so you can verify what operations would be performed.
+    
+    USAGE:
+    1. Copy the code section you want to test from parcels_convert.py
+    2. Paste it into this function, replacing the existing code
+    3. Run this script to see what operations your code would perform
+    4. The script will show you all os.system calls, SQL queries, and function calls
+    
+    PARAMETERS:
+    - county: The county name being processed
+    - mock_connection: Mocked database connection
+    - mock_cursor: Mocked database cursor (for SQL queries)
+    - mock_os_system: Mocked os.system (for shell commands)
+    - mock_process_raw_fdor: Mocked process_raw_fdor function
+    - mock_chdir: Mocked os.chdir (for directory changes)
+    
+    EXAMPLE:
+    If you want to test the desoto processing logic, copy the process_raw_desoto()
+    function from parcels_convert.py and paste it here, then call this script.
+    """
+    
+    # =======================================================================================
+    # PASTE YOUR CODE TO TEST HERE
+    # =======================================================================================
+    
+    # Example: Testing the refactored process_raw_grizzly function
+    process_raw_grizzly(county)
+    
+    # =======================================================================================
+    # END OF CODE TO TEST
+    # =======================================================================================
+
+
 @patch('parcels_convert.parcels_convert_chunk.process_raw_fdor', side_effect=process_raw_fdor)
 @patch('parcels_convert.parcels_convert_chunk.os.system')
 @patch('parcels_convert.parcels_convert_chunk.psycopg2.connect')
 @patch('parcels_convert.parcels_convert_chunk.os.chdir')
 def run_verification(mock_chdir, mock_connect, mock_os_system, mock_process_raw_fdor):
     """
-    Runs a dry-run of the process_raw_grizzly function, capturing all
-    shell commands and SQL queries that would have been executed.
+    =======================================================================================
+    TEST SETUP AND EXECUTION
+    =======================================================================================
+    
+    This function sets up the test environment and runs your test logic for each county.
+    You don't need to modify this function - it handles all the mocking and reporting.
     """
     # Set up the mock for the database connection and cursor
     mock_connection = MagicMock()
@@ -59,8 +103,8 @@ def run_verification(mock_chdir, mock_connect, mock_os_system, mock_process_raw_
         mock_process_raw_fdor.reset_mock()
         mock_chdir.reset_mock()
 
-        # Run the actual function
-        process_raw_grizzly(county)
+        # Run the test logic (your code goes here)
+        test_logic(county, mock_connection, mock_cursor, mock_os_system, mock_process_raw_fdor, mock_chdir)
 
         # --- Report Captured Data ---
         print("\n--- Captured os.system calls: ---")
@@ -87,6 +131,7 @@ def run_verification(mock_chdir, mock_connect, mock_os_system, mock_process_raw_
             print("process_raw_fdor was not called.")
 
         print("\n")
+
 
 if __name__ == '__main__':
     # Add the necessary global variables to the chunk module's namespace before running
