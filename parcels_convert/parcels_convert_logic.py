@@ -752,6 +752,46 @@ def get_charlotte_config(path_processing, pg_connection, pg_psql):
     }
     return config
 
+def get_citrus_config(path_processing, pg_connection, pg_psql):
+    """Returns the processing configuration for Citrus County."""
+    
+    path_source_data = f"{path_processing}/source_data"
+    
+    config = {
+        'county_name': 'Citrus',
+        'path_processing': path_processing,
+        'pg_connection': pg_connection,
+        'pg_psql': pg_psql,
+        
+        'create_raw_tables_sql': "/srv/mapwise_dev/county/citrus/processing/database/sql_files/create_raw_tables.sql",
+
+        'preprocess_commands': [
+            {'command': f"tr -cd '\\11\\12\\15\\40-\\133\\135-\\176' < {path_source_data}/VD_PARCELDATA.CSV > {path_source_data}/vd_parceldata2.dat"},
+            {'command': f"sed 's:VILLA,TWNHSE,ETC:VILLA TWNHSE ETC:g;s:COSTA & SON INC, :COSTA & SON INC:g;s:SUGARMILL WOODS, :SUGARMILL WOODS:g' {path_source_data}/vd_parceldata2.dat > {path_source_data}/vd_parceldata3.dat"},
+            {'command': f"sed 's/\\\\//g' {path_source_data}/VD_LEGAL.CSV > {path_source_data}/vd_legal2.dat"},
+            {'command': f"tr -cd '\\11\\12\\15\\40-\\133\\135-\\176' < {path_source_data}/vd_legal2.dat > {path_source_data}/vd_legal3.dat"}
+        ],
+        
+        'processing_scripts': [
+            {'script': '/srv/tools/python/parcel_processing/citrus/citrus-parcel-current.py', 'description': 'RUN citrus-parcel-current.py'},
+            {'script': '/srv/tools/python/parcel_processing/citrus/citrus-sales-current.py', 'description': 'RUN citrus-sales-current.py'},
+            {'script': '/srv/tools/python/parcel_processing/citrus/citrus-hist-current.py', 'description': 'RUN citrus-hist-current.py'},
+            {'script': '/srv/tools/python/parcel_processing/citrus/citrus-land-current.py', 'description': 'RUN citrus-land-current.py'},
+            {'script': '/srv/tools/python/parcel_processing/citrus/citrus-legal-current.py', 'description': 'RUN citrus-legal-current.py'}
+        ],
+
+        'copy_commands': [
+            {'table': 'parcels_template_citrus', 'file': 'parcels_new.txt', 'header': False},
+            {'table': 'raw_citrus_sales', 'file': 'sales_new.txt', 'header': False}
+        ],
+
+        'sql_updates': [
+            # The original script has a complex set of updates that were commented out.
+            # I am leaving this empty for now, as the final state of the script does not execute them.
+        ]
+    }
+    return config
+
 if __name__ == '__main__':
     # This is an example of how to run the process for a county.
     # It requires environment variables or another method to be set up
