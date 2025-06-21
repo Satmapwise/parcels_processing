@@ -395,6 +395,57 @@ class TestParcelProcessingRefactor(unittest.TestCase):
 
         mock_connection.close.assert_called_once()
 
+    @patch('parcels_convert_logic.execute_sql')
+    @patch('parcels_convert_logic.psql_copy')
+    @patch('parcels_convert_logic.run_sql_file')
+    @patch('parcels_convert_logic.run_external_command')
+    @patch('parcels_convert_logic.os.chdir')
+    @patch('parcels_convert_logic.os.path.exists')
+    @patch('parcels_convert_logic.psycopg2.connect')
+    def test_calhoun_processing_orchestration(
+        self,
+        mock_connect,
+        mock_path_exists,
+        mock_chdir,
+        mock_run_external_command,
+        mock_run_sql_file,
+        mock_psql_copy,
+        mock_execute_sql
+    ):
+        """
+        Verifies that process_raw_data correctly orchestrates the calls
+        for Calhoun County based on its configuration.
+        """
+        # 1. Setup Mocks
+        mock_connection = MagicMock()
+        mock_connect.return_value = mock_connection
+        mock_path_exists.return_value = True
+
+        # 2. Define test data and get config
+        path_processing = "/fake/path/processing"
+        pg_connection = "fake_connection_string"
+        pg_psql = "/usr/bin/psql"
+        
+        config = parcels_convert_logic.get_calhoun_config(path_processing, pg_connection, pg_psql)
+
+        # 3. Run the process
+        parcels_convert_logic.process_raw_data(config)
+
+        # 4. Assertions
+        mock_chdir.assert_called_once_with(path_processing)
+        mock_connect.assert_called_once_with(pg_connection)
+        
+        # Check call counts
+        self.assertEqual(mock_run_external_command.call_count, 1)
+        mock_run_sql_file.assert_called_once_with(
+            '/srv/mapwise_dev/county/calhoun/processing/database/sql_files/create_raw_tables.sql',
+            pg_psql
+        )
+        self.assertEqual(mock_psql_copy.call_count, 1)
+        self.assertEqual(mock_execute_sql.call_count, 2)
+
+        mock_connection.close.assert_called_once()
+
 if __name__ == '__main__':
     # This allows running the tests directly
     unittest.main() 

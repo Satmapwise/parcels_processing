@@ -582,6 +582,53 @@ def get_broward_config(path_processing, pg_connection, pg_psql):
     }
     return config
 
+def get_calhoun_config(path_processing, pg_connection, pg_psql):
+    """Returns the processing configuration for Calhoun County."""
+    
+    config = {
+        'county_name': 'Calhoun',
+        'path_processing': path_processing,
+        'pg_connection': pg_connection,
+        'pg_psql': pg_psql,
+        
+        'create_raw_tables_sql': "/srv/mapwise_dev/county/calhoun/processing/database/sql_files/create_raw_tables.sql",
+
+        'preprocess_commands': [],
+        
+        'processing_scripts': [
+            {'script': '/srv/tools/python/parcel_processing/calhoun/calhoun-convert-sales-csv.py', 'description': 'RUN calhoun-convert-sales-csv.py'}
+        ],
+
+        'copy_commands': [
+            {'table': 'raw_calhoun_sales_dwnld', 'file': 'parcels_sales.txt', 'header': False}
+        ],
+
+        'sql_updates': [
+            {
+                'description': 'Call FDOR processing for Calhoun County',
+                'sql': "SELECT process_raw_fdor('CALHOUN');" # This is a placeholder
+            },
+            {
+                'description': 'Update owner information from sales data',
+                'sql': """
+                    UPDATE parcels_template_calhoun as p SET
+                        o_name1 = 'Owner Name Missing - ' || o.pin,
+                        o_name2 = null,
+                        o_address1 = null,
+                        o_address2 = null,
+                        o_address3 = null,
+                        o_city = null,
+                        o_state = null,
+                        o_zipcode = null,
+                        o_zipcode4 = null
+                    FROM raw_calhoun_sales_dwnld as o
+                    WHERE p.pin = o.pin;
+                """
+            }
+        ]
+    }
+    return config
+
 if __name__ == '__main__':
     # This is an example of how to run the process for a county.
     # It requires environment variables or another method to be set up
