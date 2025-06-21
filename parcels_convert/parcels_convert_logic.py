@@ -629,6 +629,129 @@ def get_calhoun_config(path_processing, pg_connection, pg_psql):
     }
     return config
 
+def get_charlotte_config(path_processing, pg_connection, pg_psql):
+    """Returns the processing configuration for Charlotte County."""
+    
+    # Note: The original script uses pathTopDir, which is not defined in the function.
+    # Assuming it's the parent of path_processing.
+    path_top_dir = os.path.dirname(path_processing)
+    
+    config = {
+        'county_name': 'Charlotte',
+        'path_processing': path_processing,
+        'pg_connection': pg_connection,
+        'pg_psql': pg_psql,
+        
+        'create_raw_tables_sql': "/srv/mapwise_dev/county/charlotte/processing/database/sql_files/create_raw_tables.sql",
+
+        'preprocess_commands': [
+            {'command': f"tr -cd '\\11\\12\\15\\40-\\133\\135-\\176' < {path_top_dir}/current/source_data/cd.txt > {path_top_dir}/current/source_data/cd_2.txt"}
+        ],
+        
+        'processing_scripts': [
+            {'script': '/srv/tools/python/parcel_processing/charlotte/charlotte-convert-generic.py', 'description': 'RUN charlotte-convert-generic.py'},
+            {'script': '/srv/tools/python/parcel_processing/charlotte/charlotte-sales.py', 'description': 'RUN charlotte-sales.py'},
+            {'script': '/srv/tools/python/parcel_processing/charlotte/charlotte-sales-pre2009.py', 'description': 'RUN charlotte-sales-pre2009.py'}
+        ],
+
+        'copy_commands': [
+            {'table': 'parcels_template_charlotte', 'file': 'parcels_new.txt', 'header': False},
+            {'table': 'raw_charlotte_sales', 'file': 'sales_new.txt', 'header': False},
+            {'table': 'raw_charlotte_sales', 'file': 'sales_new2.txt', 'header': False},
+            {'table': 'raw_charlotte_zoning_codes', 'file': 'source_data/raw_data/zoning_codes.txt', 'header': False}
+        ],
+
+        'sql_updates': [
+            {
+                'description': 'Update zoning codes.',
+                'sql': """
+                    UPDATE parcels_template_charlotte
+                    SET zoning = zon.code2
+                    FROM raw_charlotte_zoning_codes as zon
+                    WHERE parcels_template_charlotte.zoning = zon.code;
+                """
+            },
+            {
+                'description': 'Denormalize sales data.',
+                'sql': """
+                    INSERT INTO raw_charlotte_sales_denormal 
+                    SELECT 
+                        sales_normal.pin,
+                        MAX(CASE WHEN sales_normal.i = 1 THEN sales_normal.sale_amt ELSE NULL END),
+                        MAX(CASE WHEN sales_normal.i = 1 THEN sales_normal.sale_year ELSE NULL END),
+                        MAX(CASE WHEN sales_normal.i = 1 THEN sales_normal.sale_date ELSE NULL END),
+                        Null,
+                        MAX(CASE WHEN sales_normal.i = 1 THEN sales_normal.sale_vac ELSE NULL END),
+                        MAX(CASE WHEN sales_normal.i = 1 THEN sales_normal.sale_typ ELSE NULL END),
+                        MAX(CASE WHEN sales_normal.i = 1 THEN sales_normal.sale_qual ELSE NULL END),
+                        MAX(CASE WHEN sales_normal.i = 1 THEN sales_normal.sale_multi ELSE NULL END),
+                        MAX(CASE WHEN sales_normal.i = 1 THEN sales_normal.sale_bk ELSE NULL END),
+                        MAX(CASE WHEN sales_normal.i = 1 THEN sales_normal.sale_pg ELSE NULL END),
+                        MAX(CASE WHEN sales_normal.i = 1 THEN sales_normal.sale_docnum ELSE NULL END),
+                        Null, Null,
+                        MAX(CASE WHEN sales_normal.i = 2 THEN sales_normal.sale_amt ELSE NULL END),
+                        MAX(CASE WHEN sales_normal.i = 2 THEN sales_normal.sale_year ELSE NULL END),
+                        MAX(CASE WHEN sales_normal.i = 2 THEN sales_normal.sale_date ELSE NULL END),
+                        Null,
+                        MAX(CASE WHEN sales_normal.i = 2 THEN sales_normal.sale_vac ELSE NULL END),
+                        MAX(CASE WHEN sales_normal.i = 2 THEN sales_normal.sale_typ ELSE NULL END),
+                        MAX(CASE WHEN sales_normal.i = 2 THEN sales_normal.sale_qual ELSE NULL END),
+                        MAX(CASE WHEN sales_normal.i = 2 THEN sales_normal.sale_multi ELSE NULL END),
+                        MAX(CASE WHEN sales_normal.i = 2 THEN sales_normal.sale_bk ELSE NULL END),
+                        MAX(CASE WHEN sales_normal.i = 2 THEN sales_normal.sale_pg ELSE NULL END),
+                        MAX(CASE WHEN sales_normal.i = 2 THEN sales_normal.sale_docnum ELSE NULL END),
+                        Null, Null,
+                        MAX(CASE WHEN sales_normal.i = 3 THEN sales_normal.sale_amt ELSE NULL END),
+                        MAX(CASE WHEN sales_normal.i = 3 THEN sales_normal.sale_year ELSE NULL END),
+                        MAX(CASE WHEN sales_normal.i = 3 THEN sales_normal.sale_date ELSE NULL END),
+                        Null,
+                        MAX(CASE WHEN sales_normal.i = 3 THEN sales_normal.sale_vac ELSE NULL END),
+                        MAX(CASE WHEN sales_normal.i = 3 THEN sales_normal.sale_typ ELSE NULL END),
+                        MAX(CASE WHEN sales_normal.i = 3 THEN sales_normal.sale_qual ELSE NULL END),
+                        MAX(CASE WHEN sales_normal.i = 3 THEN sales_normal.sale_multi ELSE NULL END),
+                        MAX(CASE WHEN sales_normal.i = 3 THEN sales_normal.sale_bk ELSE NULL END),
+                        MAX(CASE WHEN sales_normal.i = 3 THEN sales_normal.sale_pg ELSE NULL END),
+                        MAX(CASE WHEN sales_normal.i = 3 THEN sales_normal.sale_docnum ELSE NULL END),
+                        Null, Null,
+                        MAX(CASE WHEN sales_normal.i = 4 THEN sales_normal.sale_amt ELSE NULL END),
+                        MAX(CASE WHEN sales_normal.i = 4 THEN sales_normal.sale_year ELSE NULL END),
+                        MAX(CASE WHEN sales_normal.i = 4 THEN sales_normal.sale_date ELSE NULL END),
+                        Null,
+                        MAX(CASE WHEN sales_normal.i = 4 THEN sales_normal.sale_vac ELSE NULL END),
+                        MAX(CASE WHEN sales_normal.i = 4 THEN sales_normal.sale_typ ELSE NULL END),
+                        MAX(CASE WHEN sales_normal.i = 4 THEN sales_normal.sale_qual ELSE NULL END),
+                        MAX(CASE WHEN sales_normal.i = 4 THEN sales_normal.sale_multi ELSE NULL END),
+                        MAX(CASE WHEN sales_normal.i = 4 THEN sales_normal.sale_bk ELSE NULL END),
+                        MAX(CASE WHEN sales_normal.i = 4 THEN sales_normal.sale_pg ELSE NULL END),
+                        MAX(CASE WHEN sales_normal.i = 4 THEN sales_normal.sale_docnum ELSE NULL END),
+                        Null, Null,
+                        MAX(CASE WHEN sales_normal.i = 5 THEN sales_normal.sale_amt ELSE NULL END),
+                        MAX(CASE WHEN sales_normal.i = 5 THEN sales_normal.sale_year ELSE NULL END),
+                        MAX(CASE WHEN sales_normal.i = 5 THEN sales_normal.sale_date ELSE NULL END),
+                        Null,
+                        MAX(CASE WHEN sales_normal.i = 5 THEN sales_normal.sale_vac ELSE NULL END),
+                        MAX(CASE WHEN sales_normal.i = 5 THEN sales_normal.sale_typ ELSE NULL END),
+                        MAX(CASE WHEN sales_normal.i = 5 THEN sales_normal.sale_qual ELSE NULL END),
+                        MAX(CASE WHEN sales_normal.i = 5 THEN sales_normal.sale_multi ELSE NULL END),
+                        MAX(CASE WHEN sales_normal.i = 5 THEN sales_normal.sale_bk ELSE NULL END),
+                        MAX(CASE WHEN sales_normal.i = 5 THEN sales_normal.sale_pg ELSE NULL END),
+                        MAX(CASE WHEN sales_normal.i = 5 THEN sales_normal.sale_docnum ELSE NULL END),
+                        Null, Null
+                    FROM
+                        (SELECT 
+                            pin, sale_amt, sale_year, sale_date, sale_vac, sale_typ, sale_qual, sale_multi, sale_bk, sale_pg, sale_docnum,
+                            row_number() OVER (PARTITION BY pin ORDER BY sale_date desc) AS i
+                            FROM raw_charlotte_sales WHERE sale_date is not null
+                        ) AS sales_normal
+                        INNER JOIN 
+                            parcels_template_charlotte AS interim ON sales_normal.pin = interim.pin
+                    GROUP BY sales_normal.pin;
+                """
+            }
+        ]
+    }
+    return config
+
 if __name__ == '__main__':
     # This is an example of how to run the process for a county.
     # It requires environment variables or another method to be set up
