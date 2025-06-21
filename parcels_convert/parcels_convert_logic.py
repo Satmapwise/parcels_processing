@@ -66,7 +66,9 @@ def process_raw_data(config):
     pg_connection = config.get('pg_connection')
     pg_psql = config.get('pg_psql')
 
+    print("\n" + "="*80)
     print(f"--- Starting processing for {county_name} County ---")
+    print("="*80)
 
     # 1. Change to the processing directory
     if path_processing and os.path.exists(path_processing):
@@ -117,13 +119,17 @@ def process_raw_data(config):
     if config.get('sql_updates'):
         print("\nRunning SQL updates...")
         for sql_info in config['sql_updates']:
-            print(sql_info.get('description', ''))
+            description = sql_info.get('description', '')
+            if description:
+                print(f"\n{description}")
             execute_sql(connection, sql_info.get('sql', ''), cursor)
 
     # 8. Close the database connection
     cursor.close()
     connection.close()
+    print("\n" + "="*80)
     print(f"--- Finished processing for {county_name} County ---")
+    print("="*80)
 
 
 # ========================= COUNTY CONFIGURATIONS =========================
@@ -407,6 +413,112 @@ def get_bradford_config(path_processing, pg_connection, pg_psql):
                         FROM raw_bradford_sales_owner_export as o
                         WHERE p.o_name1 = o.o_name1;
                 """
+            }
+        ]
+    }
+    return config
+
+def get_brevard_config(path_processing, pg_connection, pg_psql):
+    """Returns the processing configuration for Brevard County."""
+    
+    # Path to the source data directory within the processing folder
+    path_source_data = f"{path_processing}/source_data"
+    
+    config = {
+        'county_name': 'Brevard',
+        'path_processing': path_processing,
+        'pg_connection': pg_connection,
+        'pg_psql': pg_psql,
+        
+        'create_raw_tables_sql': "/srv/mapwise_dev/county/brevard/processing/database/sql_files/create_raw_tables.sql",
+
+        'preprocess_commands': [
+            {'command': f'rm -r {path_source_data}/BCPAOWebData.csv'},
+            # Note: The original script changes directory here. This command assumes the access2csv tool is in the system PATH
+            # or the calling environment is configured correctly. A better long-term solution would be to not rely on os.chdir.
+            {'command': f'/home/bmay/src/access2csv/access2csv --input {path_source_data}/BCPAOWebData.accdb --output {path_source_data}/BCPAOWebData.csv'},
+            {'command': f"sed 's/\\\\/\\//g' {path_source_data}/BCPAOWebData.csv/bcpao_WebProperties.csv > {path_source_data}/BCPAOWebData.csv/bcpao_WebProperties2.csv"},
+            {'command': f"tr -cd '\\11\\12\\15\\40-\\133\\135-\\176' < {path_source_data}/BCPAOWebData.csv/bcpao_WebProperties2.csv > {path_source_data}/BCPAOWebData.csv/bcpao_WebProperties3.csv"},
+            {'command': f"tr -cd '\\11\\12\\15\\40-\\133\\135-\\176' < {path_source_data}/BCPAOWebData.csv/bcpao_WebTransfers.csv > {path_source_data}/BCPAOWebData.csv/bcpao_WebTransfers2.csv"}
+        ],
+        
+        'processing_scripts': [
+            {'script': '/srv/tools/python/parcel_processing/brevard/brevard-property-current.py', 'description': 'RUN brevard-property-current.py'},
+            {'script': '/srv/tools/python/parcel_processing/brevard/brevard-sales-current.py', 'description': 'RUN brevard-sales-current.py'},
+            {'script': '/srv/tools/python/parcel_processing/brevard/brevard-buildings-current.py', 'description': 'RUN brevard-buildings-current.py'}
+        ],
+
+        'copy_commands': [
+            {'table': 'parcels_template_brevard', 'file': 'parcels_new.txt', 'header': False},
+            {'table': 'raw_brevard_sales', 'file': 'sales_new.txt', 'header': False},
+            {'table': 'raw_brevard_buildings', 'file': 'buildings_new.txt', 'header': False}
+        ],
+
+        'sql_updates': [
+            {
+                'description': 'Denormalize sales data from raw table.',
+                'sql': """
+                    INSERT INTO raw_brevard_sales_denormal 
+                    SELECT 
+                        sales_normal.altkey,
+                        MAX(CASE WHEN sales_normal.i = 1 THEN sales_normal.sale_amt ELSE NULL END) AS sale1_amt, 
+                        MAX(CASE WHEN sales_normal.i = 1 THEN sales_normal.sale_year ELSE NULL END) AS sale1_year,
+                        MAX(CASE WHEN sales_normal.i = 1 THEN sales_normal.sale_date ELSE NULL END) AS sale1_date,
+                        Null, MAX(CASE WHEN sales_normal.i = 1 THEN sales_normal.sale_vac ELSE NULL END) AS sale1_vac,
+                        MAX(CASE WHEN sales_normal.i = 1 THEN sales_normal.sale_typ ELSE NULL END) AS sale1_typ,
+                        MAX(CASE WHEN sales_normal.i = 1 THEN sales_normal.sale_qual ELSE NULL END) AS sale1_qual,
+                        Null, MAX(CASE WHEN sales_normal.i = 1 THEN sales_normal.sale_bk ELSE NULL END) AS sale1_bk,
+                        MAX(CASE WHEN sales_normal.i = 1 THEN sales_normal.sale_pg ELSE NULL END) AS sale1_pg,
+                        Null, MAX(CASE WHEN sales_normal.i = 1 THEN sales_normal.sale_grantor ELSE NULL END) AS sale1_grantor,
+                        Null, MAX(CASE WHEN sales_normal.i = 2 THEN sales_normal.sale_amt ELSE NULL END) AS sale2_amt,
+                        MAX(CASE WHEN sales_normal.i = 2 THEN sales_normal.sale_year ELSE NULL END) AS sale2_year,
+                        MAX(CASE WHEN sales_normal.i = 2 THEN sales_normal.sale_date ELSE NULL END) AS sale2_date,
+                        Null, MAX(CASE WHEN sales_normal.i = 2 THEN sales_normal.sale_vac ELSE NULL END) AS sale2_vac,
+                        MAX(CASE WHEN sales_normal.i = 2 THEN sales_normal.sale_typ ELSE NULL END) AS sale2_typ,
+                        MAX(CASE WHEN sales_normal.i = 2 THEN sales_normal.sale_qual ELSE NULL END) AS sale2_qual,
+                        Null, MAX(CASE WHEN sales_normal.i = 2 THEN sales_normal.sale_bk ELSE NULL END) AS sale2_bk,
+                        MAX(CASE WHEN sales_normal.i = 2 THEN sales_normal.sale_pg ELSE NULL END) AS sale2_pg,
+                        Null, MAX(CASE WHEN sales_normal.i = 2 THEN sales_normal.sale_grantor ELSE NULL END) AS sale2_grantor,
+                        Null, MAX(CASE WHEN sales_normal.i = 3 THEN sales_normal.sale_amt ELSE NULL END) AS sale3_amt,
+                        MAX(CASE WHEN sales_normal.i = 3 THEN sales_normal.sale_year ELSE NULL END) AS sale3_year,
+                        MAX(CASE WHEN sales_normal.i = 3 THEN sales_normal.sale_date ELSE NULL END) AS sale3_date,
+                        Null, MAX(CASE WHEN sales_normal.i = 3 THEN sales_normal.sale_vac ELSE NULL END) AS sale3_vac,
+                        MAX(CASE WHEN sales_normal.i = 3 THEN sales_normal.sale_typ ELSE NULL END) AS sale3_typ,
+                        MAX(CASE WHEN sales_normal.i = 3 THEN sales_normal.sale_qual ELSE NULL END) AS sale3_qual,
+                        Null, MAX(CASE WHEN sales_normal.i = 3 THEN sales_normal.sale_bk ELSE NULL END) AS sale3_bk,
+                        MAX(CASE WHEN sales_normal.i = 3 THEN sales_normal.sale_pg ELSE NULL END) AS sale3_pg,
+                        Null, MAX(CASE WHEN sales_normal.i = 3 THEN sales_normal.sale_grantor ELSE NULL END) AS sale3_grantor,
+                        Null, MAX(CASE WHEN sales_normal.i = 4 THEN sales_normal.sale_amt ELSE NULL END) AS sale4_amt,
+                        MAX(CASE WHEN sales_normal.i = 4 THEN sales_normal.sale_year ELSE NULL END) AS sale4_year,
+                        MAX(CASE WHEN sales_normal.i = 4 THEN sales_normal.sale_date ELSE NULL END) AS sale4_date,
+                        Null, MAX(CASE WHEN sales_normal.i = 4 THEN sales_normal.sale_vac ELSE NULL END) AS sale4_vac,
+                        MAX(CASE WHEN sales_normal.i = 4 THEN sales_normal.sale_typ ELSE NULL END) AS sale4_typ,
+                        MAX(CASE WHEN sales_normal.i = 4 THEN sales_normal.sale_qual ELSE NULL END) AS sale4_qual,
+                        Null, MAX(CASE WHEN sales_normal.i = 4 THEN sales_normal.sale_bk ELSE NULL END) AS sale4_bk,
+                        MAX(CASE WHEN sales_normal.i = 4 THEN sales_normal.sale_pg ELSE NULL END) AS sale4_pg,
+                        Null, MAX(CASE WHEN sales_normal.i = 4 THEN sales_normal.sale_grantor ELSE NULL END) AS sale4_grantor,
+                        Null, MAX(CASE WHEN sales_normal.i = 5 THEN sales_normal.sale_amt ELSE NULL END) AS sale5_amt,
+                        MAX(CASE WHEN sales_normal.i = 5 THEN sales_normal.sale_year ELSE NULL END) AS sale5_year,
+                        MAX(CASE WHEN sales_normal.i = 5 THEN sales_normal.sale_date ELSE NULL END) AS sale5_date,
+                        Null, MAX(CASE WHEN sales_normal.i = 5 THEN sales_normal.sale_vac ELSE NULL END) AS sale5_vac,
+                        MAX(CASE WHEN sales_normal.i = 5 THEN sales_normal.sale_typ ELSE NULL END) AS sale5_typ,
+                        MAX(CASE WHEN sales_normal.i = 5 THEN sales_normal.sale_qual ELSE NULL END) AS sale5_qual,
+                        Null, MAX(CASE WHEN sales_normal.i = 5 THEN sales_normal.sale_bk ELSE NULL END) AS sale5_bk,
+                        MAX(CASE WHEN sales_normal.i = 5 THEN sales_normal.sale_pg ELSE NULL END) AS sale5_pg,
+                        Null, MAX(CASE WHEN sales_normal.i = 5 THEN sales_normal.sale_grantor ELSE NULL END) AS sale5_grantor,
+                        Null
+                    FROM (
+                        SELECT altkey, sale_amt, sale_year, sale_date, sale_vac, sale_typ, sale_qual, sale_bk, sale_pg, sale_grantor,
+                        row_number() OVER (PARTITION BY altkey ORDER BY sale_date desc) AS i
+                        FROM raw_brevard_sales WHERE sale_date is not null
+                    ) AS sales_normal
+                    INNER JOIN parcels_template_brevard AS interim ON sales_normal.altkey = interim.altkey
+                    GROUP BY sales_normal.altkey;
+                """
+            },
+            {
+                'description': 'Update parcels_template_brevard with denormalized sales info.',
+                'sql': "UPDATE parcels_template_brevard as interim SET sale1_date = cast(denormal.sale1_date as text), sale1_year = denormal.sale1_year, sale1_amt = denormal.sale1_amt;"
             }
         ]
     }
