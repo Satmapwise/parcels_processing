@@ -792,6 +792,107 @@ def get_citrus_config(path_processing, pg_connection, pg_psql):
     }
     return config
 
+def get_clay_config(path_processing, pg_connection, pg_psql):
+    """Returns the processing configuration for Clay County."""
+    
+    config = {
+        'county_name': 'Clay',
+        'path_processing': path_processing,
+        'pg_connection': pg_connection,
+        'pg_psql': pg_psql,
+        
+        'create_raw_tables_sql': "/srv/mapwise_dev/county/clay/processing/database/sql_files/create_raw_tables.sql",
+
+        'preprocess_commands': [],
+        
+        'processing_scripts': [
+            {'script': '/srv/tools/python/parcel_processing/clay/clay-gis1-property-csv.py', 'description': 'RUN clay-gis1-property-csv.py'},
+            {'script': '/srv/tools/python/parcel_processing/clay/clay-gis2-land-csv.py', 'description': 'RUN clay-gis2-land-csv.py'},
+            {'script': '/srv/tools/python/parcel_processing/clay/clay-view_FLClayView3Building-csv.py', 'description': 'RUN clay-view_FLClayView3Building-csv.py'},
+            {'script': '/srv/tools/python/parcel_processing/clay/clay-sales-view4-csv.py', 'description': 'RUN clay-sales-view4-csv.py'}
+        ],
+
+        'copy_commands': [
+            {'table': 'parcels_template_clay', 'file': 'parcels_new.txt', 'header': False},
+            {'table': 'raw_clay_bldg', 'file': 'parcels_bldg.txt', 'header': False},
+            {'table': 'raw_clay_land', 'file': 'parcels_land.txt', 'header': False},
+            {'table': 'raw_clay_sales', 'file': 'parcels_sales.txt', 'header': False}
+        ],
+
+        'sql_updates': [
+            {
+                'description': 'Create building summary table.',
+                'sql': """
+                    SELECT 
+                        bldg.pin, 
+                        min(cast(bldg.yrblt_act as integer)) as min_yrblt_act,
+                        max(cast(bldg.yrblt_eff as integer)) as max_yrblt_eff,
+                        max(cast(bldg.stories as integer)) as max_stories, 
+                        sum(cast(bldg.sqft_htd as integer)) as sum_sqft_htd, 
+                        sum(cast(bldg.sqft_tot as integer)) as sum_sqft_tot, 
+                        sum(cast(bldg.sqft_adj as integer)) as sum_sqft_adj,
+                        sum(cast(trunc(cast(bldg.num_bed as numeric)) as integer)) as sum_num_beds,
+                        sum(cast(trunc(cast(bldg.num_bath as numeric)) as integer)) as sum_num_baths
+                    INTO raw_clay_bldg_sum
+                    from raw_clay_bldg as bldg
+                    group by bldg.pin;
+                """
+            },
+            {
+                'description': 'Update parcels template with building info.',
+                'sql': """
+                    UPDATE parcels_template_clay
+                    SET
+                        yrblt_act = bldg.min_yrblt_act,
+                        yrblt_eff = bldg.max_yrblt_eff,
+                        stories = bldg.max_stories,
+                        sqft_htd = bldg.sum_sqft_htd, 
+                        sqft_tot = bldg.sum_sqft_tot, 
+                        sqft_adj = bldg.sum_sqft_adj,
+                        num_bath = bldg.sum_num_baths,
+                        num_bed = bldg.sum_num_beds
+                    FROM raw_clay_bldg_sum as bldg
+                    WHERE parcels_template_clay.pin = bldg.pin;
+                """
+            },
+            {
+                'description': 'Update zoning from land table.',
+                'sql': """
+                    UPDATE parcels_template_clay
+                    SET zoning = land.zoning
+                    FROM raw_clay_land as land
+                    WHERE parcels_template_clay.pin = land.pin;
+                """
+            },
+            {
+                'description': 'Update valuation info from FDOR table.',
+                'sql': """
+                    UPDATE parcels_template_clay as p
+                    SET
+                        mrkt_tot = fdor.jv,
+                        mrkt_lnd = fdor.lnd_val,
+                        mrkt_ag = fdor.jv_class_use,
+                        mrkt_impr = fdor.spec_feat_val,
+                        assd_tot = fdor.av_nsd,
+                        taxable_tot = fdor.tv_nsd
+                    FROM parcels_fdor_2024 as fdor
+                    WHERE fdor.co_no = 20 and p.pin = fdor.parcel_id;
+                """
+            },
+            {
+                'description': 'Remove duplicate parcels.',
+                'sql': """
+                    DELETE FROM parcels_template_clay 
+                    WHERE ctid = ANY(ARRAY(SELECT ctid 
+                    FROM (SELECT row_number() OVER (PARTITION BY altkey), ctid 
+                        FROM parcels_template_clay) x 
+                        WHERE x.row_number > 1));
+                """
+            }
+        ]
+    }
+    return config
+
 if __name__ == '__main__':
     # This is an example of how to run the process for a county.
     # It requires environment variables or another method to be set up
