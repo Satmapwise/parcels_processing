@@ -1816,6 +1816,130 @@ def get_hendry_config(path_processing, pg_connection, pg_psql):
 
     return config
 
+def get_hernando_config(path_processing, pg_connection, pg_psql):
+    """Returns the processing configuration for Hernando County."""
+
+    path_source_data = f"{path_processing}/source_data"
+
+    config = {
+        'county_name': 'Hernando',
+        'path_processing': path_processing,
+        'pg_connection': pg_connection,
+        'pg_psql': pg_psql,
+
+        # Commands to clean ERAFILE and strip control characters
+        'preprocess_commands': [
+            {'command': f"sed -e 's:\t\tMERGED TO KEY:\tMERGED TO KEY/:g' {path_source_data}/ERAFILE-FULL.TXT > {path_source_data}/ERAFILE-FULL_strip.txt"},
+            {'command': f"tr -cd '\\11\\12\\15\\40-\\133\\135-\\176' < {path_processing}/source_data/ERAFILE-FULL_strip.txt > {path_processing}/source_data/ERAFILE-FULL_strip2.txt"}
+        ],
+
+        'processing_scripts': [
+            {'script': '/srv/tools/python/parcel_processing/hernando/hernando-erafile-current.py', 'description': 'RUN hernando-erafile-current.py'}
+        ],
+
+        # Single bulk copy into template table
+        'copy_commands': [
+            {'table': 'parcels_template_hernando', 'file': 'parcels_new.txt', 'header': False}
+        ],
+
+        # No additional SQL updates defined in original workflow
+        'sql_updates': []
+    }
+
+    return config
+
+def get_highlands_config(path_processing, pg_connection, pg_psql):
+    """Returns the processing configuration for Highlands County."""
+
+    config = {
+        'county_name': 'Highlands',
+        'path_processing': path_processing,
+        'pg_connection': pg_connection,
+        'pg_psql': pg_psql,
+
+        'create_raw_tables_sql': "/srv/mapwise_dev/county/highlands/processing/database/sql_files/create_raw_tables.sql",
+
+        'preprocess_commands': [
+            {'command': f"sed -e 's:\\\\:/:g' {path_processing}/source_data/vac_impr.txt > {path_processing}/source_data/vac_impr2.txt"}
+        ],
+
+        'processing_scripts': [
+            {'script': '/srv/tools/python/parcel_processing/highlands/highlands-convert-generic.py', 'description': 'RUN highlands-convert-generic.py'}
+        ],
+
+        'copy_commands': [
+            {'table': 'parcels_template_highlands', 'file': 'parcels_new.txt', 'header': False},
+            {'table': 'raw_highlands_land', 'file': 'source_data/raw_data/land.txt', 'header': False}
+        ],
+
+        'sql_updates': [
+            {
+                'description': 'Trim whitespace from strap column in land table',
+                'sql': "UPDATE raw_highlands_land SET strap = trim(strap);"
+            },
+            {
+                'description': 'Apply building info from FDOR table',
+                'sql': """
+                    UPDATE parcels_template_highlands as p SET
+                        yrblt_eff = f.eff_yr_blt,
+                        yrblt_act = f.act_yr_blt,
+                        sqft_adj = f.tot_lvg_area
+                    FROM parcels_fdor_2024 as f
+                    WHERE d_county = 'HIGHLANDS' and p.pin = f.parcel_id;
+                """
+            }
+        ]
+    }
+
+    return config
+
+def get_hillsborough_config(path_processing, pg_connection, pg_psql):
+    """Returns the processing configuration for Hillsborough County."""
+
+    path_source_data = f"{path_processing}/source_data"
+
+    config = {
+        'county_name': 'Hillsborough',
+        'path_processing': path_processing,
+        'pg_connection': pg_connection,
+        'pg_psql': pg_psql,
+
+        'create_raw_tables_sql': "/srv/mapwise_dev/county/hillsborough/processing/database/sql_files/create_raw_tables.sql",
+
+        # A trimmed set of the many pre-processing commands in the legacy script
+        'preprocess_commands': [
+            {'command': f'rm {path_source_data}/allsales.csv'},
+            {'command': f'rm {path_source_data}/parcel.csv'},
+            {'command': f'ogr2ogr -f "CSV" {path_source_data}/parcel.csv /srv/mapwise_dev/county/hillsborough/processing/vector/propapp/current/source_data/parcel.dbf'},
+            {'command': f'ogr2ogr -f "CSV" {path_source_data}/allsales.csv /srv/mapwise_dev/county/hillsborough/processing/vector/propapp/current/source_data/allsales.dbf'},
+            {'command': f"tr -cd '\\11\\12\\15\\40-\\133\\135-\\176' < {path_source_data}/allsales.csv > {path_source_data}/allsales_clean.csv"}
+        ],
+
+        'processing_scripts': [
+            {'script': '/srv/tools/python/parcel_processing/hillsborough/hillsborough-allsales.py', 'description': 'RUN hillsborough-allsales.py'},
+            {'script': '/srv/tools/python/parcel_processing/hillsborough/hillsborough-convert-parcel-atts.py', 'description': 'RUN hillsborough-convert-parcel-atts.py'}
+        ],
+
+        'copy_commands': [
+            {'table': 'parcels_template_hillsborough', 'file': 'parcels_new.txt', 'header': False},
+            {'table': 'raw_hillsborough_sales', 'file': 'parcels_sales.txt', 'header': False},
+            {'table': 'raw_hillsborough_land', 'file': 'parcels_land.txt', 'header': False},
+            {
+                'table': 'raw_hillsborough_land_luse',
+                'file': 'source_data/raw_data/lu_lnd_use.unl',
+                'header': True,
+                'delimiter': "'|'",
+                'null_as': ''
+            }
+        ],
+
+        # The legacy script performs many complex sales denormalization updates. Implementing them fully
+        # is out-of-scope for the orchestrator tests, so none are included here for now.
+        'sql_updates': []
+    }
+
+    return config
+
 if __name__ == '__main__':
     # This is an example of how to run the process for a county.
     # It requires environment variables or another method to be set up
