@@ -1616,6 +1616,8 @@ class TestParcelProcessingRefactor(unittest.TestCase):
         # No SQL updates expected
         mock_execute_sql.assert_not_called()
 
+        mock_connection.close.assert_called_once()
+
     @patch('parcels_convert_logic.execute_sql')
     @patch('parcels_convert_logic.psql_copy')
     @patch('parcels_convert_logic.run_sql_file')
@@ -1859,6 +1861,142 @@ class TestParcelProcessingRefactor(unittest.TestCase):
             call(mock_connection, config['sql_updates'][1]['sql'], ANY)
         ]
         mock_execute_sql.assert_has_calls(expected_sql_calls, any_order=False)
+
+        mock_connection.close.assert_called_once()
+
+    # ------------------------------------------------------------------
+    # LEE COUNTY
+    # ------------------------------------------------------------------
+    @patch('parcels_convert_logic.execute_sql')
+    @patch('parcels_convert_logic.psql_copy')
+    @patch('parcels_convert_logic.run_sql_file')
+    @patch('parcels_convert_logic.run_external_command')
+    @patch('parcels_convert_logic.os.chdir')
+    @patch('parcels_convert_logic.os.path.exists')
+    @patch('parcels_convert_logic.psycopg2.connect')
+    def test_lee_processing_orchestration(
+        self,
+        mock_connect,
+        mock_path_exists,
+        mock_chdir,
+        mock_run_external_command,
+        mock_run_sql_file,
+        mock_psql_copy,
+        mock_execute_sql
+    ):
+        mock_connection = MagicMock()
+        mock_connect.return_value = mock_connection
+        mock_path_exists.return_value = True
+
+        path_processing="/fake/path/processing"
+        pg_connection="fake_conn"
+        pg_psql="/usr/bin/psql"
+
+        config=parcels_convert_logic.get_lee_config(path_processing,pg_connection,pg_psql)
+
+        parcels_convert_logic.process_raw_data(config)
+
+        mock_chdir.assert_called_once_with(path_processing)
+
+        # 4 preprocess + 1 script = 5 external commands
+        self.assertEqual(mock_run_external_command.call_count,5)
+
+        # No SQL file executed
+        mock_run_sql_file.assert_not_called()
+
+        mock_psql_copy.assert_called_once_with(table_name='parcels_template_lee',file_name='parcels_new.txt',psql_path=pg_psql,header=False)
+
+        mock_execute_sql.assert_not_called()
+
+        mock_connection.close.assert_called_once()
+
+    # ------------------------------------------------------------------
+    # LEON COUNTY
+    # ------------------------------------------------------------------
+    @patch('parcels_convert_logic.execute_sql')
+    @patch('parcels_convert_logic.psql_copy')
+    @patch('parcels_convert_logic.run_sql_file')
+    @patch('parcels_convert_logic.run_external_command')
+    @patch('parcels_convert_logic.os.chdir')
+    @patch('parcels_convert_logic.os.path.exists')
+    @patch('parcels_convert_logic.psycopg2.connect')
+    def test_leon_processing_orchestration(
+        self,
+        mock_connect,
+        mock_path_exists,
+        mock_chdir,
+        mock_run_external_command,
+        mock_run_sql_file,
+        mock_psql_copy,
+        mock_execute_sql
+    ):
+        mock_connection=MagicMock()
+        mock_connect.return_value=mock_connection
+        mock_path_exists.return_value=True
+
+        path_processing="/fake/path/processing"
+        pg_connection="fake_conn"
+        pg_psql="/usr/bin/psql"
+
+        config=parcels_convert_logic.get_leon_config(path_processing,pg_connection,pg_psql)
+
+        parcels_convert_logic.process_raw_data(config)
+
+        mock_chdir.assert_called_once_with(path_processing)
+        mock_run_sql_file.assert_called_once_with(config['create_raw_tables_sql'],pg_psql)
+
+        # 4 preprocess + 3 scripts = 7 external commands
+        self.assertEqual(mock_run_external_command.call_count,7)
+
+        # 3 copy commands
+        self.assertEqual(mock_psql_copy.call_count,3)
+
+        # No SQL updates present
+        mock_execute_sql.assert_not_called()
+
+        mock_connection.close.assert_called_once()
+
+    # ------------------------------------------------------------------
+    # LEVY COUNTY
+    # ------------------------------------------------------------------
+    @patch('parcels_convert_logic.execute_sql')
+    @patch('parcels_convert_logic.psql_copy')
+    @patch('parcels_convert_logic.run_sql_file')
+    @patch('parcels_convert_logic.run_external_command')
+    @patch('parcels_convert_logic.os.chdir')
+    @patch('parcels_convert_logic.os.path.exists')
+    @patch('parcels_convert_logic.psycopg2.connect')
+    def test_levy_processing_orchestration(
+        self,
+        mock_connect,
+        mock_path_exists,
+        mock_chdir,
+        mock_run_external_command,
+        mock_run_sql_file,
+        mock_psql_copy,
+        mock_execute_sql
+    ):
+        mock_connection=MagicMock()
+        mock_connect.return_value=mock_connection
+        mock_path_exists.return_value=True
+
+        path_processing="/fake/path/processing"
+        pg_connection="fake_conn"
+        pg_psql="/usr/bin/psql"
+
+        config=parcels_convert_logic.get_levy_config(path_processing,pg_connection,pg_psql)
+
+        parcels_convert_logic.process_raw_data(config)
+
+        mock_chdir.assert_called_once_with(path_processing)
+        mock_run_sql_file.assert_called_once_with(config['create_raw_tables_sql'],pg_psql)
+
+        # Only one processing script
+        mock_run_external_command.assert_called_once_with('/srv/tools/python/parcel_processing/levy/levy-convert-sales-csv.py','RUN levy-convert-sales-csv.py')
+
+        mock_psql_copy.assert_called_once_with(table_name='raw_levy_sales_dwnld',file_name='parcels_sales.txt',psql_path=pg_psql,header=False)
+
+        self.assertEqual(mock_execute_sql.call_count,2)
 
         mock_connection.close.assert_called_once()
 

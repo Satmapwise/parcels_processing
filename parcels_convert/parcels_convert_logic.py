@@ -2174,6 +2174,110 @@ def get_lake_config(path_processing, pg_connection, pg_psql):
 
     return config
 
+def get_lee_config(path_processing, pg_connection, pg_psql):
+    """Returns the processing configuration for Lee County."""
+
+    path_source_data = f"{path_processing}/source_data"
+
+    config = {
+        'county_name': 'Lee',
+        'path_processing': path_processing,
+        'pg_connection': pg_connection,
+        'pg_psql': pg_psql,
+
+        # Pre-processing steps reproduced from legacy script
+        'preprocess_commands': [
+            {'command': 'rm -r /srv/mapwise_dev/county/lee/processing/database/current/source_data/parcels.csv'},
+            {'command': 'ogr2ogr -overwrite -f "CSV" ' + path_source_data + '/parcels.csv ' + path_source_data + '/parcels.DBF'},
+            {'command': f"tail -n +2 {path_source_data}/parcels.csv | sort  | uniq > {path_source_data}/parcels1.csv"},
+            {'command': f"tr -cd '\\11\\12\\15\\40-\\133\\135-\\176' < {path_source_data}/parcels1.csv > {path_source_data}/parcels2.csv"}
+        ],
+
+        'processing_scripts': [
+            {'script': '/srv/tools/python/parcel_processing/lee/lee-convert-current.py', 'description': 'RUN lee-convert-current.py'}
+        ],
+
+        'copy_commands': [
+            {'table': 'parcels_template_lee', 'file': 'parcels_new.txt', 'header': False}
+        ],
+
+        # The original workflow had no ad-hoc SQL updates beyond FDOR etc.
+        'sql_updates': []
+    }
+
+    return config
+
+def get_leon_config(path_processing, pg_connection, pg_psql):
+    """Returns the processing configuration for Leon County."""
+
+    config = {
+        'county_name': 'Leon',
+        'path_processing': path_processing,
+        'pg_connection': pg_connection,
+        'pg_psql': pg_psql,
+
+        'create_raw_tables_sql': "/srv/mapwise_dev/county/leon/processing/database/sql_files/create_raw_tables.sql",
+
+        'preprocess_commands': [
+            {'command': f"sed -e 's:\\\\:/:g' {path_processing}/source_data/Certified_Data.csv > {path_processing}/source_data/CERT2.txt"},
+            {'command': f"tr -c '\\11\\12\\15\\40-\\133\\135-\\176' ' ' < {path_processing}/source_data/CERT2.txt > {path_processing}/source_data/CERT3.txt"},
+            {'command': f"tr -cd '\\11\\12\\15\\40-\\133\\135-\\176' < {path_processing}/source_data/SalesData.csv > {path_processing}/source_data/SalesData2.csv"},
+            {'command': f"tr -cd '\\11\\12\\15\\40-\\133\\135-\\176' < {path_processing}/source_data/SalesHistory.csv > {path_processing}/source_data/SalesHistory2.csv"}
+        ],
+
+        'processing_scripts': [
+            {'script': '/srv/tools/python/parcel_processing/leon/leon-parcels-current.py', 'description': 'RUN leon-parcels-current.py'},
+            {'script': '/srv/tools/python/parcel_processing/leon/leon-sales-data-csv.py', 'description': 'RUN leon-sales-data-csv.py'},
+            {'script': '/srv/tools/python/parcel_processing/leon/leon-sales-history-csv.py', 'description': 'RUN leon-sales-history-csv.py'}
+        ],
+
+        'copy_commands': [
+            {'table': 'parcels_template_leon', 'file': 'parcels_new.txt', 'header': False},
+            {'table': 'raw_leon_sales', 'file': 'sales_new.txt', 'header': False},
+            {'table': 'raw_leon_sales', 'file': 'sales_history.txt', 'header': False}
+        ],
+
+        # Complex denormalization SQL omitted for now (not used by orchestrator tests)
+        'sql_updates': []
+    }
+
+    return config
+
+def get_levy_config(path_processing, pg_connection, pg_psql):
+    """Returns the processing configuration for Levy County."""
+
+    config = {
+        'county_name': 'Levy',
+        'path_processing': path_processing,
+        'pg_connection': pg_connection,
+        'pg_psql': pg_psql,
+
+        'create_raw_tables_sql': "/srv/mapwise_dev/county/levy/processing/database/sql_files/create_raw_tables.sql",
+
+        'preprocess_commands': [],
+
+        'processing_scripts': [
+            {'script': '/srv/tools/python/parcel_processing/levy/levy-convert-sales-csv.py', 'description': 'RUN levy-convert-sales-csv.py'}
+        ],
+
+        'copy_commands': [
+            {'table': 'raw_levy_sales_dwnld', 'file': 'parcels_sales.txt', 'header': False}
+        ],
+
+        'sql_updates': [
+            {
+                'description': 'Invoke FDOR processing',
+                'sql': "SELECT process_raw_fdor('levy');"
+            },
+            {
+                'description': 'Placeholder owner update',
+                'sql': "UPDATE parcels_template_levy as p SET o_name1 = 'Owner Name Missing - ' || o.pin, o_name2 = null, o_address1 = null, o_address2 = null, o_address3 = null, o_city = null, o_state = null, o_zipcode = null, o_zipcode4 = null FROM raw_levy_sales_dwnld as o WHERE p.pin = o.pin;"
+            }
+        ]
+    }
+
+    return config
+
 if __name__ == '__main__':
     # This is an example of how to run the process for a county.
     # It requires environment variables or another method to be set up
