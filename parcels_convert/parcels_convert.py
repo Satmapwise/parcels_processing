@@ -18014,8 +18014,6 @@ def process_raw_union() :
     connection.close()
 
 
-
-
 # =======================================================================================
 # VOLUSIA COUNTY RAW
 # - INPUT = Raw text files
