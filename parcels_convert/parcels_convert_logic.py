@@ -3031,10 +3031,6 @@ def get_santa_rosa_config(path_processing, pg_connection, pg_psql):
 
     return config
 
-# ------------------------------------------------------------------
-# SARASOTA COUNTY CONFIGURATION
-# ------------------------------------------------------------------
-
 def get_sarasota_config(path_processing, pg_connection, pg_psql):
     """Returns the processing configuration for Sarasota County (simplified)."""
 
@@ -3081,10 +3077,6 @@ def get_sarasota_config(path_processing, pg_connection, pg_psql):
 
     return config
 
-# ------------------------------------------------------------------
-# SEMINOLE COUNTY CONFIGURATION
-# ------------------------------------------------------------------
-
 def get_seminole_config(path_processing, pg_connection, pg_psql):
     """Returns the processing configuration for Seminole County (simplified)."""
 
@@ -3126,10 +3118,6 @@ def get_seminole_config(path_processing, pg_connection, pg_psql):
     }
 
     return config
-
-# ------------------------------------------------------------------
-# ST JOHNS COUNTY CONFIGURATION
-# ------------------------------------------------------------------
 
 def get_st_johns_config(path_processing, pg_connection, pg_psql):
     """Returns the processing configuration for St Johns County (simplified)."""
