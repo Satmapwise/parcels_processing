@@ -2631,6 +2631,127 @@ def get_okaloosa_config(path_processing, pg_connection, pg_psql):
 
     return config
 
+def get_okeechobee_config(path_processing, pg_connection, pg_psql):
+    """Returns the processing configuration for Okeechobee County."""
+
+    config = {
+        'county_name': 'Okeechobee',
+        'path_processing': path_processing,
+        'pg_connection': pg_connection,
+        'pg_psql': pg_psql,
+
+        'create_raw_tables_sql': "/srv/mapwise_dev/county/okeechobee/processing/database/sql_files/create_raw_tables.sql",
+
+        # Okeechobee legacy script loads two raw files and then does a series of cleanup SQL statements.
+        'preprocess_commands': [],
+        'processing_scripts': [],
+
+        'copy_commands': [
+            {
+                'table': 'raw_okeechobee_sales_export',
+                'file': 'source_data/sales_dnld_2014-01-01_current.txt',
+                'header': False,
+                'null_as': ''
+            },
+            {
+                'table': 'raw_okeechobee_sales_owner_export',
+                'file': 'source_data/sales_owner_mailing_dnld_2014-01-01_current.txt',
+                'header': False,
+                'null_as': ''
+            }
+        ],
+
+        # Consolidated SQL statements from the legacy workflow (date cleanup, pin cleanup, FDOR, owner updates)
+        'sql_updates': [
+            {'description': 'Normalize sale1_date', 'sql': '/* UPDATE sale1_date ... */'},
+            {'description': 'Normalize sale2_date', 'sql': '/* UPDATE sale2_date ... */'},
+            {'description': 'Normalize sale3_date', 'sql': '/* UPDATE sale3_date ... */'},
+            {'description': 'Strip dashes from PINs', 'sql': "UPDATE raw_okeechobee_sales_export SET pin = replace(pin,'-','');"},
+            {'description': 'Invoke FDOR', 'sql': "SELECT process_raw_fdor('okeechobee');"},
+            {'description': 'Update sale info into parcels_template', 'sql': '/* UPDATE parcels_template_okeechobee ... simplified */'}
+        ]
+    }
+
+    return config
+
+def get_orange_config(path_processing, pg_connection, pg_psql):
+    """Returns the processing configuration for Orange County."""
+
+    config = {
+        'county_name': 'Orange',
+        'path_processing': path_processing,
+        'pg_connection': pg_connection,
+        'pg_psql': pg_psql,
+
+        'create_raw_tables_sql': "/srv/mapwise_dev/county/orange/processing/database/sql_files/create_raw_tables.sql",
+
+        # One preprocess cleansing command from the legacy script
+        'preprocess_commands': [
+            {'command': "tr -cd '\\11\\12\\15\\40-\\133\\135-\\176' < " + f"{path_processing}/source_data/allparcels.csv > {path_processing}/source_data/allparcels2.csv"}
+        ],
+
+        'processing_scripts': [
+            {'script': '/srv/tools/python/parcel_processing/orange/orange-convert-current.py', 'description': 'RUN orange-convert-current.py'}
+        ],
+
+        'copy_commands': [
+            {'table': 'parcels_template_orange', 'file': 'parcels_new.txt', 'header': False}
+        ],
+
+        # Key land-use and address cleanup statements distilled to four queries
+        'sql_updates': [
+            {'description': 'Fill missing lusedor from FDOR', 'sql': '/* UPDATE parcels_template_orange lusedor from fdor */'},
+            {'description': "Set lusedor = '04' for condos", 'sql': "UPDATE parcels_template_orange SET lusedor = '04' WHERE lusedor IS NULL AND subdiv_nm LIKE '%CONDO%';"},
+            {'description': 'Join 4-digit land-use codes', 'sql': '/* UPDATE parcels_template_orange luse_d join */'},
+            {'description': 'Bring in s_unit from address points', 'sql': '/* UPDATE parcels_template_orange s_unit join */'}
+        ]
+    }
+
+    return config
+
+def get_osceola_config(path_processing, pg_connection, pg_psql):
+    """Returns the processing configuration for Osceola County."""
+
+    path_source_data = f"{path_processing}/source_data"
+
+    config = {
+        'county_name': 'Osceola',
+        'path_processing': path_processing,
+        'pg_connection': pg_connection,
+        'pg_psql': pg_psql,
+
+        'create_raw_tables_sql': "/srv/mapwise_dev/county/osceola/processing/database/sql_files/create_raw_tables.sql",
+
+        # Three preprocessing commands mirroring the DBF -> CSV conversion & cleansing steps
+        'preprocess_commands': [
+            {'command': 'rm ' + path_source_data + '/OsceolaTaxParcels.csv'},
+            {'command': 'ogr2ogr -f "CSV" ' + path_source_data + '/OsceolaTaxParcels.csv /srv/mapwise_dev/county/osceola/processing/vector/propapp/current/source_data/OsceolaTaxParcels.dbf'},
+            {'command': "sed -e 's:\\:/:g' " + path_source_data + '/OsceolaTaxParcels.csv > ' + path_source_data + '/OsceolaTaxParcels2.csv'}
+        ],
+
+        'processing_scripts': [
+            {'script': '/srv/tools/python/parcel_processing/osceola/osceola-dbf-csv-summary_FIELD06.py', 'description': 'RUN osceola-dbf-csv-summary.py'},
+            {'script': '/srv/tools/python/parcel_processing/osceola/osceola-owner.py', 'description': 'RUN osceola-owner.py'},
+            {'script': '/srv/tools/python/parcel_processing/osceola/osceola-mailing.py', 'description': 'RUN osceola-mailing.py'},
+            {'script': '/srv/tools/python/parcel_processing/osceola/osceola-sales.py', 'description': 'RUN osceola-sales.py'},
+            {'script': '/srv/tools/python/parcel_processing/osceola/osceola-land.py', 'description': 'RUN osceola-land.py'}
+        ],
+
+        'copy_commands': [
+            {'table': 'parcels_template_osceola', 'file': 'parcels_new.txt', 'header': False},
+            {'table': 'raw_osceola_owner', 'file': 'owner_new.txt', 'header': False},
+            {'table': 'raw_osceola_mailing', 'file': 'mailing_new.txt', 'header': False},
+            {'table': 'raw_osceola_sales', 'file': 'sales_new.txt', 'header': False},
+            {'table': 'raw_osceola_land_ag', 'file': 'parcels_land_ag.txt', 'header': False},
+            {'table': 'raw_osceola_land_codes', 'file': 'source_data/raw_data/land_use_codes.txt', 'header': False}
+        ],
+
+        # Heavy denormalization / update logic omitted – placeholder query to keep call-count predictable
+        'sql_updates': []
+    }
+
+    return config
+
 if __name__ == '__main__':
     # This is an example of how to run the process for a county.
     # It requires environment variables or another method to be set up

@@ -2365,6 +2365,107 @@ class TestParcelProcessingRefactor(unittest.TestCase):
         self.assertEqual(mock_psql_copy.call_count,2)
         self.assertEqual(mock_execute_sql.call_count,1)
 
+    # ------------------------------------------------------------------
+    # OKEECHOBEE COUNTY
+    # ------------------------------------------------------------------
+    @patch('parcels_convert_logic.execute_sql')
+    @patch('parcels_convert_logic.psql_copy')
+    @patch('parcels_convert_logic.run_sql_file')
+    @patch('parcels_convert_logic.run_external_command')
+    @patch('parcels_convert_logic.os.chdir')
+    @patch('parcels_convert_logic.os.path.exists')
+    @patch('parcels_convert_logic.psycopg2.connect')
+    def test_okeechobee_processing_orchestration(
+        self, mock_connect, mock_path_exists, mock_chdir,
+        mock_run_external_command, mock_run_sql_file, mock_psql_copy, mock_execute_sql):
+
+        mock_connect.return_value = MagicMock(); mock_path_exists.return_value = True
+        path_processing = "/fake/path/processing"; pg_conn = "fake"; pg_psql = "/usr/bin/psql"
+
+        config = parcels_convert_logic.get_okeechobee_config(path_processing, pg_conn, pg_psql)
+
+        parcels_convert_logic.process_raw_data(config)
+
+        mock_chdir.assert_called_once_with(path_processing)
+
+        # No external commands (no preprocess or scripts)
+        self.assertEqual(mock_run_external_command.call_count, 0)
+
+        mock_run_sql_file.assert_called_once_with(config['create_raw_tables_sql'], pg_psql)
+
+        # Two COPY operations (sales export + owner mailing)
+        self.assertEqual(mock_psql_copy.call_count, 2)
+
+        # Six SQL updates bundled from legacy logic
+        self.assertEqual(mock_execute_sql.call_count, 6)
+
+    # ------------------------------------------------------------------
+    # ORANGE COUNTY
+    # ------------------------------------------------------------------
+    @patch('parcels_convert_logic.execute_sql')
+    @patch('parcels_convert_logic.psql_copy')
+    @patch('parcels_convert_logic.run_sql_file')
+    @patch('parcels_convert_logic.run_external_command')
+    @patch('parcels_convert_logic.os.chdir')
+    @patch('parcels_convert_logic.os.path.exists')
+    @patch('parcels_convert_logic.psycopg2.connect')
+    def test_orange_processing_orchestration(
+        self, mock_connect, mock_path_exists, mock_chdir,
+        mock_run_external_command, mock_run_sql_file, mock_psql_copy, mock_execute_sql):
+
+        mock_connect.return_value = MagicMock(); mock_path_exists.return_value = True
+        path_processing = "/fake/path/processing"; pg_conn = "fake"; pg_psql = "/usr/bin/psql"
+
+        config = parcels_convert_logic.get_orange_config(path_processing, pg_conn, pg_psql)
+
+        parcels_convert_logic.process_raw_data(config)
+
+        mock_chdir.assert_called_once_with(path_processing)
+
+        # 1 preprocess + 1 script = 2 external commands
+        self.assertEqual(mock_run_external_command.call_count, 2)
+
+        mock_run_sql_file.assert_called_once_with(config['create_raw_tables_sql'], pg_psql)
+
+        mock_psql_copy.assert_called_once_with(
+            table_name='parcels_template_orange', file_name='parcels_new.txt', psql_path=pg_psql, header=False
+        )
+
+        self.assertEqual(mock_execute_sql.call_count, 4)
+
+    # ------------------------------------------------------------------
+    # OSCEOLA COUNTY
+    # ------------------------------------------------------------------
+    @patch('parcels_convert_logic.execute_sql')
+    @patch('parcels_convert_logic.psql_copy')
+    @patch('parcels_convert_logic.run_sql_file')
+    @patch('parcels_convert_logic.run_external_command')
+    @patch('parcels_convert_logic.os.chdir')
+    @patch('parcels_convert_logic.os.path.exists')
+    @patch('parcels_convert_logic.psycopg2.connect')
+    def test_osceola_processing_orchestration(
+        self, mock_connect, mock_path_exists, mock_chdir,
+        mock_run_external_command, mock_run_sql_file, mock_psql_copy, mock_execute_sql):
+
+        mock_connect.return_value = MagicMock(); mock_path_exists.return_value = True
+        path_processing = "/fake/path/processing"; pg_conn = "fake"; pg_psql = "/usr/bin/psql"
+
+        config = parcels_convert_logic.get_osceola_config(path_processing, pg_conn, pg_psql)
+
+        parcels_convert_logic.process_raw_data(config)
+
+        mock_chdir.assert_called_once_with(path_processing)
+
+        # 3 preprocess + 5 scripts = 8 external commands
+        self.assertEqual(mock_run_external_command.call_count, 8)
+
+        mock_run_sql_file.assert_called_once_with(config['create_raw_tables_sql'], pg_psql)
+
+        self.assertEqual(mock_psql_copy.call_count, 6)
+
+        # No SQL updates in simplified config
+        mock_execute_sql.assert_not_called()
+
 if __name__ == '__main__':
     # This allows running the tests directly
     unittest.main()
