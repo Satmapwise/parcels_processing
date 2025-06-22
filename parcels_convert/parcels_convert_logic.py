@@ -1537,6 +1537,57 @@ def get_gadsden_config(path_processing, pg_connection, pg_psql):
     }
     return config
 
+def get_gilchrist_config(path_processing, pg_connection, pg_psql):
+    """Returns the processing configuration for Gilchrist County."""
+    
+    config = {
+        'county_name': 'Gilchrist',
+        'path_processing': path_processing,
+        'pg_connection': pg_connection,
+        'pg_psql': pg_psql,
+        
+        'create_raw_tables_sql': "/srv/mapwise_dev/county/gilchrist/processing/database/sql_files/create_raw_tables.sql",
+
+        'preprocess_commands': [],
+        
+        'processing_scripts': [
+            {'script': '/srv/tools/python/parcel_processing/gilchrist/gilchrist-convert-sales-csv.py', 'description': 'RUN gilchrist-convert-sales-csv.py'}
+        ],
+
+        'copy_commands': [
+            {'table': 'raw_gilchrist_sales_dwnld', 'file': 'parcels_sales.txt', 'header': False}
+        ],
+
+        'sql_updates': [
+            {
+                'description': 'Update pin to make it clean',
+                'sql': "UPDATE raw_gilchrist_sales_dwnld SET pin = pin_clean;"
+            },
+            {
+                'description': 'Call FDOR processing for Gilchrist County',
+                'sql': "SELECT process_raw_fdor('gilchrist');"
+            },
+            {
+                'description': 'Update owner info from raw sales file.',
+                'sql': """
+                    UPDATE parcels_template_gilchrist as p SET
+                        o_name1 = 'Owner Name Missing - ' || o.pin,
+                        o_name2 = null,
+                        o_address1 = null,
+                        o_address2 = null,
+                        o_address3 = null,
+                        o_city = null,
+                        o_state = null,
+                        o_zipcode = null,
+                        o_zipcode4 = null
+                        FROM raw_gilchrist_sales_dwnld as o
+                        WHERE p.pin = o.pin
+                ;"""
+            }
+        ]
+    }
+    return config
+
 if __name__ == '__main__':
     # This is an example of how to run the process for a county.
     # It requires environment variables or another method to be set up
