@@ -1284,6 +1284,81 @@ def get_duval_config(path_processing, pg_connection, pg_psql):
     }
     return config
 
+def get_escambia_config(path_processing, pg_connection, pg_psql):
+    """Returns the processing configuration for Escambia County."""
+    
+    config = {
+        'county_name': 'Escambia',
+        'path_processing': path_processing,
+        'pg_connection': pg_connection,
+        'pg_psql': pg_psql,
+        
+        'create_raw_tables_sql': "/srv/mapwise_dev/county/escambia/processing/database/sql_files/create_raw_tables.sql",
+
+        'preprocess_commands': [],
+        
+        'processing_scripts': [
+            {'script': '/srv/tools/python/parcel_processing/escambia/escambia-convert-sales.py', 'description': 'RUN escambia-convert-sales.py'},
+            {'script': '/srv/tools/python/parcel_processing/escambia/escambia-convert-sales-owner.py', 'description': 'RUN escambia-convert-sales-owner.py'}
+        ],
+
+        'copy_commands': [
+            {'table': 'raw_escambia_sales', 'file': 'parcels_sales.txt', 'header': False},
+            {'table': 'raw_escambia_owner', 'file': 'parcels_owner.txt', 'header': False},
+            {'table': 'raw_escambia_bldg', 'file': 'parcels_cert_bldg.txt', 'header': False}
+        ],
+
+        'sql_updates': [
+            {
+                'description': 'Call FDOR processing for Escambia County',
+                'sql': "SELECT process_raw_fdor('ESCAMBIA');"
+            },
+            {
+                'description': 'Update owner info from raw owner file.',
+                'sql': """
+                    UPDATE parcels_template_escambia as p SET
+                        o_name1 = f.o_name1,
+                        o_name2 = f.o_name2,
+                        o_address1 = f.o_address1,
+                        o_address2 = f.o_address2,
+                        o_address3 = f.o_address3,
+                        o_city = f.o_city,
+                        o_state = f.o_state,
+                        o_zipcode = f.o_zipcode,
+                        o_zipcode4 = null,
+                        o_country = null
+                        FROM raw_escambia_owner as f
+                        WHERE p.pin = f.pin
+                ;"""
+            },
+            {
+                'description': 'Summarize building info.',
+                'sql': """
+                    SELECT 
+                        bldg.pin, 
+                        sum(cast(bldg.sqft_htd as integer)) as sum_sqft_htd, 
+                        sum(cast(bldg.sqft_tot as integer)) as sum_sqft_tot, 
+                        count(*) as num_bldg
+                    INTO raw_escambia_bldg_sum
+                    from raw_escambia_bldg as bldg
+                    group by bldg.pin;
+                """
+            },
+            {
+                'description': 'Update parcels template with building info.',
+                'sql': """
+                    UPDATE parcels_template_escambia as p SET
+                        sqft_htd = f.sum_sqft_htd,
+                        sqft_tot = f.sum_sqft_tot,
+                        num_bldg = f.num_bldg
+                        FROM raw_escambia_bldg_sum as f
+                        WHERE p.pin = f.pin
+                ;"""
+            }
+        ]
+    }
+    return config
+
 if __name__ == '__main__':
     # This is an example of how to run the process for a county.
     # It requires environment variables or another method to be set up
