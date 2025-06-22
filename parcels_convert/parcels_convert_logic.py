@@ -3395,6 +3395,195 @@ def get_volusia_config(path_processing, pg_connection, pg_psql):
 
     return config
 
+def get_wakulla_config(path_processing, pg_connection, pg_psql):
+    """Returns the processing configuration for Wakulla County (simplified)."""
+
+    config = {
+        'county_name': 'Wakulla',
+        'path_processing': path_processing,
+        'pg_connection': pg_connection,
+        'pg_psql': pg_psql,
+
+        'create_raw_tables_sql': "/srv/mapwise_dev/county/wakulla/processing/database/sql_files/create_raw_tables.sql",
+
+        'processing_scripts': [
+            {
+                'script': '/srv/tools/python/parcel_processing/wakulla/wakulla-convert-sales-csv.py',
+                'description': 'RUN wakulla-convert-sales-csv.py'
+            }
+        ],
+
+        'copy_commands': [
+            {
+                'table': 'raw_wakulla_sales_dwnld',
+                'file': 'parcels_sales.txt',
+                'header': False
+            }
+        ],
+
+        'sql_updates': [
+            {
+                'description': 'Run FDOR processing for Wakulla',
+                'sql': "SELECT process_raw_fdor('wakulla');"
+            },
+            {
+                'description': 'Populate missing owner info',
+                'sql': textwrap.dedent("""
+                    UPDATE parcels_template_wakulla AS p SET
+                        o_name1    = 'Owner Name Missing - ' || o.pin,
+                        o_name2    = NULL,
+                        o_address1 = NULL,
+                        o_address2 = NULL,
+                        o_address3 = NULL,
+                        o_city     = NULL,
+                        o_state    = NULL,
+                        o_zipcode  = NULL,
+                        o_zipcode4 = NULL
+                    FROM raw_wakulla_sales_dwnld AS o
+                    WHERE p.pin = o.pin;
+                """)
+            }
+        ]
+    }
+
+    return config
+
+def get_walton_config(path_processing, pg_connection, pg_psql):
+    """Returns the processing configuration for Walton County (simplified)."""
+
+    config = {
+        'county_name': 'Walton',
+        'path_processing': path_processing,
+        'pg_connection': pg_connection,
+        'pg_psql': pg_psql,
+
+        'create_raw_tables_sql': "/srv/mapwise_dev/county/walton/processing/database/sql_files/create_raw_tables.sql",
+
+        # Two shell commands that prepare input data
+        'preprocess_commands': [
+            {'command': 'rm /srv/mapwise_dev/county/walton/processing/database/current/source_data/PA_Parcels.csv'},
+            {'command': 'ogr2ogr -f "CSV" /srv/mapwise_dev/county/walton/processing/database/current/source_data/ParcelsMerged.csv /srv/mapwise_dev/county/walton/processing/vector/propapp/current/source_data/PublicData_20240722.gdb ParcelsMerged'}
+        ],
+
+        # Two python conversion utilities from legacy flow
+        'processing_scripts': [
+            {'script': '/srv/tools/python/parcel_processing/walton/walton-convert-sales-csv.py', 'description': 'RUN walton-convert-sales-csv.py'},
+            {'script': '/srv/tools/python/parcel_processing/walton/walton-convert-parcels.py', 'description': 'RUN walton-convert-parcels.py'}
+        ],
+
+        # Load the sales download and two parcel CSV variants
+        'copy_commands': [
+            {'table': 'raw_walton_sales_dwnld', 'file': 'parcels_sales.txt', 'header': False},
+            {'table': 'parcels_template2_walton', 'file': 'parcels_new2.txt', 'header': False},
+            {'table': 'parcels_template2_walton', 'file': 'PA_parcels.csv', 'header': True}
+        ],
+
+        'sql_updates': [
+            {
+                'description': 'Run FDOR processing for Walton',
+                'sql': "SELECT process_raw_fdor('walton');"
+            },
+            {
+                'description': 'Insert records not already present in parcels_template_walton',
+                'sql': textwrap.dedent("""
+                    INSERT INTO parcels_template_walton (
+                        pin, pin_clean, pin2, o_name1, o_address1, o_address2, o_city, o_state,
+                        o_zipcode, o_zipcode4, sale1_year, sale1_date, mrkt_bld, mrkt_impr,
+                        mrkt_lnd, mrkt_ag, mrkt_tot, assd_tot, luse, luse_d, legal_full,
+                        legal1, legal2, legal3)
+                    SELECT o.pin, o.pin_clean, o.pin2, o.o_name1, o.o_address1, o.o_address2, o.o_city,
+                           o.o_state, o.o_zipcode, o.o_zipcode4, o.sale1_year, o.sale1_date,
+                           o.mrkt_bld, o.mrkt_impr, o.mrkt_lnd, o.mrkt_ag, o.mrkt_tot,
+                           o.assd_tot, o.luse, o.luse_d, o.legal_full, o.legal1, o.legal2, o.legal3
+                    FROM parcels_template2_walton AS o
+                    WHERE NOT EXISTS (
+                        SELECT 1 FROM parcels_template_walton AS p WHERE p.pin = o.pin);
+                """)
+            },
+            {
+                'description': 'Update owner mailing address information',
+                'sql': textwrap.dedent("""
+                    UPDATE parcels_template_walton AS p SET
+                        o_name1    = o.o_name1,
+                        o_name2    = o.o_name2,
+                        o_address1 = o.o_address1,
+                        o_address2 = o.o_address2,
+                        o_address3 = o.o_address3,
+                        o_city     = o.o_city,
+                        o_state    = o.o_state,
+                        o_zipcode  = o.o_zipcode,
+                        o_zipcode4 = o.o_zipcode4
+                    FROM raw_walton_sales_dwnld AS o
+                    WHERE p.pin = REPLACE(o.pin, '-', '');
+                """)
+            },
+            {
+                'description': 'Back-fill dashed PIN into pin2 field',
+                'sql': textwrap.dedent("""
+                    UPDATE parcels_template_walton AS p
+                    SET pin2 = o.pin_orig
+                    FROM parcels_std_2010_shp_temp AS o
+                    WHERE p.pin = o.pin_clean_orig AND o.d_state_orig = 'FL';
+                """)
+            }
+        ]
+    }
+
+    return config
+
+def get_washington_config(path_processing, pg_connection, pg_psql):
+    """Returns the processing configuration for Washington County (simplified)."""
+
+    config = {
+        'county_name': 'Washington',
+        'path_processing': path_processing,
+        'pg_connection': pg_connection,
+        'pg_psql': pg_psql,
+
+        'create_raw_tables_sql': "/srv/mapwise_dev/county/washington/processing/database/sql_files/create_raw_tables.sql",
+
+        'processing_scripts': [
+            {
+                'script': '/srv/tools/python/parcel_processing/washington/washington-convert-sales-csv.py',
+                'description': 'RUN washington-convert-sales-csv.py'
+            }
+        ],
+
+        'copy_commands': [
+            {
+                'table': 'raw_washington_sales_dwnld',
+                'file': 'parcels_sales.txt',
+                'header': False
+            }
+        ],
+
+        'sql_updates': [
+            {
+                'description': 'Run FDOR processing for Washington',
+                'sql': "SELECT process_raw_fdor('washington');"
+            },
+            {
+                'description': 'Populate missing owner info',
+                'sql': textwrap.dedent("""
+                    UPDATE parcels_template_washington AS p SET
+                        o_name1    = 'Owner Name Missing - ' || o.pin,
+                        o_name2    = NULL,
+                        o_address1 = NULL,
+                        o_address2 = NULL,
+                        o_address3 = NULL,
+                        o_city     = NULL,
+                        o_state    = NULL,
+                        o_zipcode  = NULL,
+                        o_zipcode4 = NULL
+                    FROM raw_washington_sales_dwnld AS o
+                    WHERE p.pin = o.pin;
+                """)
+            }
+        ]
+    }
+
+    return config
+
 
 if __name__ == '__main__':
     # This is an example of how to run the process for a county.
