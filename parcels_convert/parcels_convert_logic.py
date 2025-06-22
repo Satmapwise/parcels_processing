@@ -57,7 +57,7 @@ def run_sql_file(sql_file_path, psql_path):
 
 # ========================= CORE DATA PROCESSING ORCHESTRATOR =========================
 
-def process_raw_data(config):
+def process_raw_data(config, debug=True):
     """
     Orchestrates the data processing for a county based on a configuration object.
     This function handles the common workflow for all counties.
@@ -92,17 +92,23 @@ def process_raw_data(config):
     if config.get('preprocess_commands'):
         print("\nRunning pre-processing commands...")
         for cmd_info in config['preprocess_commands']:
+            if debug:
+                print(cmd_info.get('command'))
             run_external_command(cmd_info.get('command'), cmd_info.get('description'))
 
     # 4. Create raw tables from a .sql file
     if config.get('create_raw_tables_sql'):
         print("\nCreating raw tables...")
+        if debug:
+            print(config['create_raw_tables_sql'])
         run_sql_file(config['create_raw_tables_sql'], pg_psql)
 
     # 5. Run external Python scripts to process raw files
     if config.get('processing_scripts'):
         print("\nRunning processing scripts...")
         for script_info in config['processing_scripts']:
+            if debug:
+                print(script_info.get('script'))
             run_external_command(script_info.get('script'), script_info.get('description'))
 
     # 6. Load data into tables using psql \copy
@@ -123,6 +129,8 @@ def process_raw_data(config):
             if 'null_as' in copy_info:
                 psql_kwargs['null_as'] = copy_info['null_as']
 
+            if debug:
+                print(psql_kwargs)
             psql_copy(**psql_kwargs)
 
     # 7. Run SQL update queries
@@ -132,6 +140,8 @@ def process_raw_data(config):
             description = sql_info.get('description', '')
             if description:
                 print(f"\n{description}")
+            if debug:
+                print(sql_info.get('sql', ''))
             execute_sql(connection, sql_info.get('sql', ''), cursor)
 
     # 8. Close the database connection
