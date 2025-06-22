@@ -1940,6 +1940,129 @@ def get_hillsborough_config(path_processing, pg_connection, pg_psql):
 
     return config
 
+def get_holmes_config(path_processing, pg_connection, pg_psql):
+    """Returns the processing configuration for Holmes County."""
+
+    config = {
+        'county_name': 'Holmes',
+        'path_processing': path_processing,
+        'pg_connection': pg_connection,
+        'pg_psql': pg_psql,
+
+        'create_raw_tables_sql': "/srv/mapwise_dev/county/holmes/processing/database/sql_files/create_raw_tables.sql",
+
+        'processing_scripts': [
+            {'script': '/srv/tools/python/parcel_processing/holmes/holmes-convert-sales-csv.py', 'description': 'RUN holmes-convert-sales-csv.py'}
+        ],
+
+        'copy_commands': [
+            {'table': 'raw_holmes_sales_dwnld', 'file': 'parcels_sales.txt', 'header': False}
+        ],
+
+        'sql_updates': [
+            {
+                'description': 'Call FDOR processing for Holmes County',
+                'sql': "SELECT process_raw_fdor('holmes');"
+            },
+            {
+                'description': 'Update owner info placeholder',
+                'sql': "UPDATE parcels_template_holmes as p SET o_name1 = 'Owner Name Missing - ' || o.pin, o_name2 = null, o_address1 = null, o_address2 = null, o_address3 = null, o_city = null, o_state = null, o_zipcode = null, o_zipcode4 = null FROM raw_holmes_sales_dwnld as o WHERE p.pin = o.pin;"
+            }
+        ]
+    }
+
+    return config
+
+def get_indian_river_config(path_processing, pg_connection, pg_psql):
+    """Returns the processing configuration for Indian River County."""
+
+    path_source_data = f"{path_processing}/source_data"
+
+    config = {
+        'county_name': 'Indian River',
+        'path_processing': path_processing,
+        'pg_connection': pg_connection,
+        'pg_psql': pg_psql,
+
+        'create_raw_tables_sql': "/srv/mapwise_dev/county/indian_river/processing/database/sql_files/create_raw_tables.sql",
+
+        'preprocess_commands': [
+            {'command': 'fix_csv_cr.sh source_data/WebExport_PROPERTY.TXT source_data/WebExport_PROPERTY2.TXT "\t" 20'},
+            {'command': 'fix_csv_cr.sh source_data/WebExport_OWNER.TXT source_data/WebExport_OWNER2.TXT "\t" 20'}
+        ],
+
+        'processing_scripts': [
+            {'script': '/srv/tools/python/parcel_processing/indian_river/indian-river-property.py', 'description': 'RUN indian_river-property.py'},
+            {'script': '/srv/tools/python/parcel_processing/indian_river/indian-river-sales.py', 'description': 'RUN indian_river-sales.py'},
+            {'script': '/srv/tools/python/parcel_processing/indian_river/indian-river-owner.py', 'description': 'RUN indian_river-owner.py'},
+            {'script': '/srv/tools/python/parcel_processing/indian_river/indian-river-values.py', 'description': 'RUN indian_river-values.py'},
+            {'script': '/srv/tools/python/parcel_processing/indian_river/indian-river-land.py', 'description': 'RUN indian_river-land.py'},
+            {'script': '/srv/tools/python/parcel_processing/indian_river/indian-river-nal.py', 'description': 'RUN indian_river-nal.py'}
+        ],
+
+        'copy_commands': [
+            {'table': 'parcels_template_indian_river', 'file': 'parcels_new.txt', 'header': False},
+            {'table': 'raw_indian_river_values', 'file': 'parcels_values.txt', 'header': False},
+            {'table': 'raw_indian_river_owner', 'file': 'parcels_owner.txt', 'header': False},
+            {'table': 'raw_indian_river_sales', 'file': 'parcels_sales.txt', 'header': False},
+            {'table': 'raw_indian_river_land', 'file': 'parcels_land.txt', 'header': False}
+        ],
+
+        'sql_updates': [
+            {
+                'description': 'Update land use from NAL',
+                'sql': "UPDATE parcels_template_indian_river SET lusedor = nal.lusedor FROM raw_indian_river_nal nal WHERE parcels_template_indian_river.pin = nal.pin;"
+            },
+            {
+                'description': 'Update owner info',
+                'sql': "UPDATE parcels_template_indian_river SET o_name1 = owner.o_name1 FROM raw_indian_river_owner owner WHERE parcels_template_indian_river.altkey = owner.altkey;"
+            },
+            {
+                'description': 'Update value info',
+                'sql': "UPDATE parcels_template_indian_river SET mrkt_tot = values.mrkt_tot FROM raw_indian_river_values values WHERE parcels_template_indian_river.altkey = values.altkey;"
+            },
+            {
+                'description': 'Update building info from FDOR',
+                'sql': "UPDATE parcels_template_indian_river SET yrblt_eff = fdor.eff_yr_blt FROM parcels_fdor_2024 fdor WHERE fdor.co_no = 31 AND parcels_template_indian_river.pin = fdor.parcel_id;"
+            }
+        ]
+    }
+
+    return config
+
+def get_jackson_config(path_processing, pg_connection, pg_psql):
+    """Returns the processing configuration for Jackson County."""
+
+    config = {
+        'county_name': 'Jackson',
+        'path_processing': path_processing,
+        'pg_connection': pg_connection,
+        'pg_psql': pg_psql,
+
+        'create_raw_tables_sql': "/srv/mapwise_dev/county/jackson/processing/database/sql_files/create_raw_tables.sql",
+
+        'processing_scripts': [
+            {'script': '/srv/tools/python/parcel_processing/jackson/jackson-convert-sales-csv.py', 'description': 'RUN jackson-convert-sales-csv.py'}
+        ],
+
+        'copy_commands': [
+            {'table': 'raw_jackson_sales_dwnld', 'file': 'parcels_sales.txt', 'header': False}
+        ],
+
+        'sql_updates': [
+            {
+                'description': 'Call FDOR processing for Jackson County',
+                'sql': "SELECT process_raw_fdor('jackson');"
+            },
+            {
+                'description': 'Update owner info placeholder',
+                'sql': "UPDATE parcels_template_jackson as p SET o_name1 = 'Owner Name Missing - ' || o.pin, o_name2 = null, o_address1 = null, o_address2 = null, o_address3 = null, o_city = null, o_state = null, o_zipcode = null, o_zipcode4 = null FROM raw_jackson_sales_dwnld as o WHERE p.pin = o.pin;"
+            }
+        ]
+    }
+
+    return config
+
 if __name__ == '__main__':
     # This is an example of how to run the process for a county.
     # It requires environment variables or another method to be set up

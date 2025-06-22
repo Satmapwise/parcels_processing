@@ -1708,6 +1708,137 @@ class TestParcelProcessingRefactor(unittest.TestCase):
 
         mock_connection.close.assert_called_once()
 
+    @patch('parcels_convert_logic.execute_sql')
+    @patch('parcels_convert_logic.psql_copy')
+    @patch('parcels_convert_logic.run_sql_file')
+    @patch('parcels_convert_logic.run_external_command')
+    @patch('parcels_convert_logic.os.chdir')
+    @patch('parcels_convert_logic.os.path.exists')
+    @patch('parcels_convert_logic.psycopg2.connect')
+    def test_holmes_processing_orchestration(
+        self,
+        mock_connect,
+        mock_path_exists,
+        mock_chdir,
+        mock_run_external_command,
+        mock_run_sql_file,
+        mock_psql_copy,
+        mock_execute_sql
+    ):
+        """Verify Holmes orchestration."""
+        mock_connection = MagicMock()
+        mock_connect.return_value = mock_connection
+        mock_path_exists.return_value = True
+
+        path_processing = "/fake/path/processing"
+        pg_connection = "fake_connection_string"
+        pg_psql = "/usr/bin/psql"
+
+        config = parcels_convert_logic.get_holmes_config(path_processing, pg_connection, pg_psql)
+
+        parcels_convert_logic.process_raw_data(config)
+
+        mock_chdir.assert_called_once_with(path_processing)
+        mock_connect.assert_called_once_with(pg_connection)
+
+        # 1 processing script
+        mock_run_external_command.assert_called_once_with('/srv/tools/python/parcel_processing/holmes/holmes-convert-sales-csv.py', 'RUN holmes-convert-sales-csv.py')
+
+        mock_run_sql_file.assert_called_once_with(config['create_raw_tables_sql'], pg_psql)
+
+        mock_psql_copy.assert_called_once_with(table_name='raw_holmes_sales_dwnld', file_name='parcels_sales.txt', psql_path=pg_psql, header=False)
+
+        self.assertEqual(mock_execute_sql.call_count, 2)
+
+        mock_connection.close.assert_called_once()
+
+    @patch('parcels_convert_logic.execute_sql')
+    @patch('parcels_convert_logic.psql_copy')
+    @patch('parcels_convert_logic.run_sql_file')
+    @patch('parcels_convert_logic.run_external_command')
+    @patch('parcels_convert_logic.os.chdir')
+    @patch('parcels_convert_logic.os.path.exists')
+    @patch('parcels_convert_logic.psycopg2.connect')
+    def test_indian_river_processing_orchestration(
+        self,
+        mock_connect,
+        mock_path_exists,
+        mock_chdir,
+        mock_run_external_command,
+        mock_run_sql_file,
+        mock_psql_copy,
+        mock_execute_sql
+    ):
+        """Verify Indian River orchestration."""
+        mock_connection = MagicMock()
+        mock_connect.return_value = mock_connection
+        mock_path_exists.return_value = True
+
+        path_processing = "/fake/path/processing"
+        pg_connection = "fake_connection_string"
+        pg_psql = "/usr/bin/psql"
+
+        config = parcels_convert_logic.get_indian_river_config(path_processing, pg_connection, pg_psql)
+
+        parcels_convert_logic.process_raw_data(config)
+
+        mock_chdir.assert_called_once_with(path_processing)
+        mock_connect.assert_called_once_with(pg_connection)
+
+        # 2 preprocess + 6 processing scripts = 8 external commands
+        self.assertEqual(mock_run_external_command.call_count, 8)
+
+        mock_run_sql_file.assert_called_once_with(config['create_raw_tables_sql'], pg_psql)
+
+        self.assertEqual(mock_psql_copy.call_count, 5)
+
+        self.assertEqual(mock_execute_sql.call_count, 4)
+
+        mock_connection.close.assert_called_once()
+
+    @patch('parcels_convert_logic.execute_sql')
+    @patch('parcels_convert_logic.psql_copy')
+    @patch('parcels_convert_logic.run_sql_file')
+    @patch('parcels_convert_logic.run_external_command')
+    @patch('parcels_convert_logic.os.chdir')
+    @patch('parcels_convert_logic.os.path.exists')
+    @patch('parcels_convert_logic.psycopg2.connect')
+    def test_jackson_processing_orchestration(
+        self,
+        mock_connect,
+        mock_path_exists,
+        mock_chdir,
+        mock_run_external_command,
+        mock_run_sql_file,
+        mock_psql_copy,
+        mock_execute_sql
+    ):
+        """Verify Jackson orchestration."""
+        mock_connection = MagicMock()
+        mock_connect.return_value = mock_connection
+        mock_path_exists.return_value = True
+
+        path_processing = "/fake/path/processing"
+        pg_connection = "fake_connection_string"
+        pg_psql = "/usr/bin/psql"
+
+        config = parcels_convert_logic.get_jackson_config(path_processing, pg_connection, pg_psql)
+
+        parcels_convert_logic.process_raw_data(config)
+
+        mock_chdir.assert_called_once_with(path_processing)
+        mock_connect.assert_called_once_with(pg_connection)
+
+        mock_run_external_command.assert_called_once_with('/srv/tools/python/parcel_processing/jackson/jackson-convert-sales-csv.py', 'RUN jackson-convert-sales-csv.py')
+
+        mock_run_sql_file.assert_called_once_with(config['create_raw_tables_sql'], pg_psql)
+
+        mock_psql_copy.assert_called_once_with(table_name='raw_jackson_sales_dwnld', file_name='parcels_sales.txt', psql_path=pg_psql, header=False)
+
+        self.assertEqual(mock_execute_sql.call_count, 2)
+
+        mock_connection.close.assert_called_once()
+
 if __name__ == '__main__':
     # This allows running the tests directly
     unittest.main()
