@@ -109,12 +109,21 @@ def process_raw_data(config):
     if config.get('copy_commands'):
         print("\nLoading data into raw tables...")
         for copy_info in config['copy_commands']:
-            psql_copy(
-                table_name=copy_info.get('table'),
-                file_name=copy_info.get('file'),
-                psql_path=pg_psql,
-                header=copy_info.get('header', False)
-            )
+            # Build dynamic arguments for psql_copy allowing optional keys like "null_as" or "delimiter".
+            psql_kwargs = {
+                'table_name': copy_info.get('table'),
+                'file_name': copy_info.get('file'),
+                'psql_path': pg_psql,
+                'header': copy_info.get('header', False)
+            }
+
+            # Include optional parameters if provided in the configuration.
+            if 'delimiter' in copy_info:
+                psql_kwargs['delimiter'] = copy_info['delimiter']
+            if 'null_as' in copy_info:
+                psql_kwargs['null_as'] = copy_info['null_as']
+
+            psql_copy(**psql_kwargs)
 
     # 7. Run SQL update queries
     if config.get('sql_updates'):
@@ -1727,6 +1736,84 @@ def get_hamilton_config(path_processing, pg_connection, pg_psql):
             }
         ]
     }
+    return config
+
+def get_hendry_config(path_processing, pg_connection, pg_psql):
+    """Returns the processing configuration for Hendry County."""
+
+    config = {
+        'county_name': 'Hendry',
+        'path_processing': path_processing,
+        'pg_connection': pg_connection,
+        'pg_psql': pg_psql,
+
+        # Hendry requires no shell pre-processing or Python scripting at this stage.
+        'preprocess_commands': [],
+        'processing_scripts': [],
+
+        # SQL file that creates the necessary raw tables
+        'create_raw_tables_sql': "/srv/mapwise_dev/county/hendry/processing/database/sql_files/create_raw_tables.sql",
+
+        # Only one raw file is loaded; it is a CSV with a header row and empty-string NULL representation.
+        'copy_commands': [
+            {
+                'table': 'raw_hendry_sales_dwnld',
+                'file': 'source_data/sales_current.csv',
+                'header': True,
+                'null_as': ''
+            }
+        ],
+
+        # A series of SQL statements (7 in total) that replicate the original workflow.
+        'sql_updates': [
+            {
+                'description': 'Convert sale_date from mm/dd/yyyy to yyyy-mm-dd format',
+                'sql': """
+                    UPDATE raw_hendry_sales_dwnld
+                    SET sale_date = split_part(sale_date, '/', 3) || '-' || split_part(sale_date, '/', 1) || '-' || split_part(sale_date, '/', 2);
+                """
+            },
+            {
+                'description': 'Left-pad month with a zero when necessary',
+                'sql': """
+                    UPDATE raw_hendry_sales_dwnld
+                    SET sale_date = split_part(sale_date, '-', 1) || '-0' || split_part(sale_date, '-', 2) || '-' || split_part(sale_date, '-', 3)
+                    WHERE length(split_part(sale_date, '-', 2)) = 1;
+                """
+            },
+            {
+                'description': 'Left-pad day with a zero when necessary',
+                'sql': """
+                    UPDATE raw_hendry_sales_dwnld
+                    SET sale_date = split_part(sale_date, '-', 1) || '-' || split_part(sale_date, '-', 2) || '-0' || split_part(sale_date, '-', 3)
+                    WHERE length(split_part(sale_date, '-', 3)) = 1;
+                """
+            },
+            {
+                'description': 'Strip dollar signs from sale_amt',
+                'sql': """
+                    UPDATE raw_hendry_sales_dwnld SET sale_amt = replace(sale_amt, '$', '');
+                """
+            },
+            {
+                'description': 'Remove trailing .00 from sale_amt',
+                'sql': """
+                    UPDATE raw_hendry_sales_dwnld SET sale_amt = replace(sale_amt, '.00', '');
+                """
+            },
+            {
+                'description': 'Remove commas from sale_amt',
+                'sql': """
+                    UPDATE raw_hendry_sales_dwnld SET sale_amt = replace(sale_amt, ',', '');
+                """
+            },
+            {
+                'description': 'Invoke FDOR processing for Hendry County',
+                'sql': "SELECT process_raw_fdor('hendry');"
+            }
+        ]
+    }
+
     return config
 
 if __name__ == '__main__':
