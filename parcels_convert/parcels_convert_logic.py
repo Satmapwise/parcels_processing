@@ -3031,6 +3031,147 @@ def get_santa_rosa_config(path_processing, pg_connection, pg_psql):
 
     return config
 
+# ------------------------------------------------------------------
+# SARASOTA COUNTY CONFIGURATION
+# ------------------------------------------------------------------
+
+def get_sarasota_config(path_processing, pg_connection, pg_psql):
+    """Returns the processing configuration for Sarasota County (simplified)."""
+
+    path_source_data = f"{path_processing}/source_data"
+
+    config = {
+        'county_name': 'Sarasota',
+        'path_processing': path_processing,
+        'pg_connection': pg_connection,
+        'pg_psql': pg_psql,
+
+        'create_raw_tables_sql': "/srv/mapwise_dev/county/sarasota/processing/database/sql_files/create_raw_tables.sql",
+
+        'preprocess_commands': [
+            {'command': f"tr -cd '\\11\\12\\15\\40-\\133\\135-\\176' < {path_processing}/current/source_data/PropertyOwnerLegal.txt > {path_processing}/current/source_data/PropertyOwnerLegal_2.txt"}
+        ],
+
+        'processing_scripts': [
+            {'script': '/srv/tools/python/parcel_processing/sarasota/sarasota-property-csv.py', 'description': 'RUN property-csv'},
+            {'script': '/srv/tools/python/parcel_processing/sarasota/sarasota-land-csv.py', 'description': 'RUN land-csv'},
+            {'script': '/srv/tools/python/parcel_processing/sarasota/sarasota-buildings-csv.py', 'description': 'RUN buildings-csv'},
+            {'script': '/srv/tools/python/parcel_processing/sarasota/sarasota-sketchedarea-csv.py', 'description': 'RUN sketchedarea-csv'},
+            {'script': '/srv/tools/python/parcel_processing/sarasota/sarasota-sales-csv.py', 'description': 'RUN sales-csv'},
+            {'script': '/srv/tools/python/parcel_processing/sarasota/sarasota-values-csv.py', 'description': 'RUN values-csv'}
+        ],
+
+        'copy_commands': [
+            {'table': 'parcels_template_sarasota', 'file': 'parcels_new.txt', 'header': False},
+            {'table': 'raw_sarasota_sales_csv', 'file': 'parcels_sales_csv.txt', 'header': False},
+            {'table': 'raw_sarasota_values_csv', 'file': 'values_new.txt', 'header': False},
+            {'table': 'raw_sarasota_exemptions_csv', 'file': 'source_data/Exemptions.txt', 'header': True, 'delimiter': "','"},
+            {'table': 'raw_sarasota_bldg_csv', 'file': 'building_new.txt', 'header': False},
+            {'table': 'raw_sarasota_sketch_csv', 'file': 'sketchedarea_new.txt', 'header': False},
+            {'table': 'raw_sarasota_land_csv', 'file': 'land_new.txt', 'header': False},
+            {'table': 'raw_sarasota_subdiv', 'file': 'source_data/SubdivisionCodes.csv', 'header': True, 'delimiter': "','"}
+        ],
+
+        'sql_updates': [
+            {'description': 'Update parcel values', 'sql': '/* values update */'},
+            {'description': 'Exemption aggregation & parcel update', 'sql': '/* exemptions aggregation */'},
+            {'description': 'Placeholder for sales & building joins', 'sql': '/* joins */'}
+        ]
+    }
+
+    return config
+
+# ------------------------------------------------------------------
+# SEMINOLE COUNTY CONFIGURATION
+# ------------------------------------------------------------------
+
+def get_seminole_config(path_processing, pg_connection, pg_psql):
+    """Returns the processing configuration for Seminole County (simplified)."""
+
+    config = {
+        'county_name': 'Seminole',
+        'path_processing': path_processing,
+        'pg_connection': pg_connection,
+        'pg_psql': pg_psql,
+
+        'create_raw_tables_sql': "/srv/mapwise_dev/county/seminole/processing/database/sql_files/create_raw_tables.sql",
+
+        'preprocess_commands': [
+            {'command': f"rm -r {path_processing}/source_data/SeminoleCountyParcelData.csv"},
+            {'command': '/home/bmay/src/access2csv/access2csv --input /srv/mapwise_dev/county/seminole/processing/database/current/source_data/SeminoleCountyParcelData.accdb --output ' + path_processing + '/source_data/SeminoleCountyParcelData.csv'},
+            {'command': f"sed -e 's:\\:/:g' {path_processing}/source_data/parcel_table1.csv > {path_processing}/source_data/parceltable1a.csv"}
+        ],
+
+        'processing_scripts': [
+            {'script': '/srv/tools/python/parcel_processing/seminole/seminole-sales-current.py', 'description': 'RUN sales-current'},
+            {'script': '/srv/tools/python/parcel_processing/seminole/seminole-parcel-current.py', 'description': 'RUN parcel-current'},
+            {'script': '/srv/tools/python/parcel_processing/seminole/seminole-legal-current.py', 'description': 'RUN legal-current'},
+            {'script': '/srv/tools/python/parcel_processing/seminole/seminole-building.py', 'description': 'RUN building'},
+            {'script': '/srv/tools/python/parcel_processing/seminole/seminole-land.py', 'description': 'RUN land'}
+        ],
+
+        'copy_commands': [
+            {'table': 'parcels_template_seminole', 'file': 'parcels_new.txt', 'header': False},
+            {'table': 'raw_seminole_sales', 'file': 'sales_new.txt', 'header': False},
+            {'table': 'raw_seminole_legal', 'file': 'legal_new.txt', 'header': False},
+            {'table': 'raw_seminole_building', 'file': 'bldg_new.txt', 'header': False},
+            {'table': 'raw_seminole_land', 'file': 'land_new.txt', 'header': False}
+        ],
+
+        'sql_updates': [
+            {'description': 'Building stats aggregation & parcel update', 'sql': '/* building stats */'},
+            {'description': 'Land use updates', 'sql': '/* luse updates */'},
+            {'description': 'Legal description update', 'sql': '/* legal joins */'}
+        ]
+    }
+
+    return config
+
+# ------------------------------------------------------------------
+# ST JOHNS COUNTY CONFIGURATION
+# ------------------------------------------------------------------
+
+def get_st_johns_config(path_processing, pg_connection, pg_psql):
+    """Returns the processing configuration for St Johns County (simplified)."""
+
+    config = {
+        'county_name': 'St Johns',
+        'path_processing': path_processing,
+        'pg_connection': pg_connection,
+        'pg_psql': pg_psql,
+
+        'create_raw_tables_sql': "/srv/mapwise_dev/county/st_johns/processing/database/sql_files/create_raw_tables.sql",
+
+        'preprocess_commands': [
+            {'command': f"rm {path_processing}/source_data/salesview.csv"},
+            {'command': f"rm {path_processing}/source_data/bldview.csv"},
+            {'command': f"rm {path_processing}/source_data/siteview.csv"},
+            {'command': f"rm {path_processing}/source_data/parcelview.csv"}
+        ],
+
+        'processing_scripts': [
+            {'script': '/srv/tools/python/parcel_processing/st_johns/st_johns-convert-ParcelView.py', 'description': 'RUN convert-ParcelView'},
+            {'script': '/srv/tools/python/parcel_processing/st_johns/st_johns-convert-BldView.py', 'description': 'RUN convert-BldView'},
+            {'script': '/srv/tools/python/parcel_processing/st_johns/st_johns-convert-SiteView.py', 'description': 'RUN convert-SiteView'},
+            {'script': '/srv/tools/python/parcel_processing/st_johns/st_johns-convert-SalesView.py', 'description': 'RUN convert-SalesView'}
+        ],
+
+        'copy_commands': [
+            {'table': 'parcels_template_st_johns', 'file': 'parcels_new.txt', 'header': False},
+            {'table': 'raw_st_johns_sales', 'file': 'parcels_sales.txt', 'header': False},
+            {'table': 'raw_st_johns_bldg', 'file': 'parcels_bldg.txt', 'header': False},
+            {'table': 'raw_st_johns_situs', 'file': 'parcels_situs.txt', 'header': False}
+        ],
+
+        'sql_updates': [
+            {'description': 'Building stats aggregation & parcel update', 'sql': '/* bldg stats */'},
+            {'description': 'Situs joins', 'sql': '/* situs joins */'},
+            {'description': 'Sales denormalization placeholder', 'sql': '/* sales denorm */'}
+        ]
+    }
+
+    return config
+
 if __name__ == '__main__':
     # This is an example of how to run the process for a county.
     # It requires environment variables or another method to be set up
