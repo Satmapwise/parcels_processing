@@ -2466,6 +2466,103 @@ class TestParcelProcessingRefactor(unittest.TestCase):
         # No SQL updates in simplified config
         mock_execute_sql.assert_not_called()
 
+    # ------------------------------------------------------------------
+    # PALM BEACH COUNTY
+    # ------------------------------------------------------------------
+    @patch('parcels_convert_logic.execute_sql')
+    @patch('parcels_convert_logic.psql_copy')
+    @patch('parcels_convert_logic.run_sql_file')
+    @patch('parcels_convert_logic.run_external_command')
+    @patch('parcels_convert_logic.os.chdir')
+    @patch('parcels_convert_logic.os.path.exists')
+    @patch('parcels_convert_logic.psycopg2.connect')
+    def test_palm_beach_processing_orchestration(
+        self, mock_connect, mock_path_exists, mock_chdir,
+        mock_run_external_command, mock_run_sql_file, mock_psql_copy, mock_execute_sql):
+
+        mock_connect.return_value = MagicMock(); mock_path_exists.return_value = True
+        path_processing = "/fake/path/processing"; pg_conn = "fake"; pg_psql = "/usr/bin/psql"
+
+        config = parcels_convert_logic.get_palm_beach_config(path_processing, pg_conn, pg_psql)
+
+        parcels_convert_logic.process_raw_data(config)
+
+        mock_chdir.assert_called_once_with(path_processing)
+
+        # 5 preprocess + 9 scripts = 14 external commands
+        self.assertEqual(mock_run_external_command.call_count, 14)
+
+        mock_run_sql_file.assert_called_once_with(config['create_raw_tables_sql'], pg_psql)
+
+        self.assertEqual(mock_psql_copy.call_count, 9)
+
+        self.assertEqual(mock_execute_sql.call_count, 2)
+
+    # ------------------------------------------------------------------
+    # PASCO COUNTY
+    # ------------------------------------------------------------------
+    @patch('parcels_convert_logic.execute_sql')
+    @patch('parcels_convert_logic.psql_copy')
+    @patch('parcels_convert_logic.run_sql_file')
+    @patch('parcels_convert_logic.run_external_command')
+    @patch('parcels_convert_logic.os.chdir')
+    @patch('parcels_convert_logic.os.path.exists')
+    @patch('parcels_convert_logic.psycopg2.connect')
+    def test_pasco_processing_orchestration(
+        self, mock_connect, mock_path_exists, mock_chdir,
+        mock_run_external_command, mock_run_sql_file, mock_psql_copy, mock_execute_sql):
+
+        mock_connect.return_value = MagicMock(); mock_path_exists.return_value = True
+        path_processing = "/fake/path/processing"; pg_conn = "fake"; pg_psql = "/usr/bin/psql"
+
+        config = parcels_convert_logic.get_pasco_config(path_processing, pg_conn, pg_psql)
+
+        parcels_convert_logic.process_raw_data(config)
+
+        mock_chdir.assert_called_once_with(path_processing)
+
+        # 6 preprocess + 8 scripts = 14 external commands
+        self.assertEqual(mock_run_external_command.call_count, 14)
+
+        mock_run_sql_file.assert_called_once_with(config['create_raw_tables_sql'], pg_psql)
+
+        self.assertEqual(mock_psql_copy.call_count, 3)
+
+        # No ad-hoc SQL updates in simplified config
+        mock_execute_sql.assert_not_called()
+
+    # ------------------------------------------------------------------
+    # PINELLAS COUNTY
+    # ------------------------------------------------------------------
+    @patch('parcels_convert_logic.execute_sql')
+    @patch('parcels_convert_logic.psql_copy')
+    @patch('parcels_convert_logic.run_sql_file')
+    @patch('parcels_convert_logic.run_external_command')
+    @patch('parcels_convert_logic.os.chdir')
+    @patch('parcels_convert_logic.os.path.exists')
+    @patch('parcels_convert_logic.psycopg2.connect')
+    def test_pinellas_processing_orchestration(
+        self, mock_connect, mock_path_exists, mock_chdir,
+        mock_run_external_command, mock_run_sql_file, mock_psql_copy, mock_execute_sql):
+
+        mock_connect.return_value = MagicMock(); mock_path_exists.return_value = True
+        path_processing = "/fake/path/processing"; pg_conn = "fake"; pg_psql = "/usr/bin/psql"
+
+        config = parcels_convert_logic.get_pinellas_config(path_processing, pg_conn, pg_psql)
+
+        parcels_convert_logic.process_raw_data(config)
+
+        mock_chdir.assert_called_once_with(path_processing)
+
+        # 4 preprocess + 4 scripts = 8 external commands
+        self.assertEqual(mock_run_external_command.call_count, 8)
+
+        mock_run_sql_file.assert_called_once_with(config['create_raw_tables_sql'], pg_psql)
+
+        self.assertEqual(mock_psql_copy.call_count, 3)
+
+        self.assertEqual(mock_execute_sql.call_count, 2)
+
 if __name__ == '__main__':
     # This allows running the tests directly
     unittest.main()

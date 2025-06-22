@@ -2752,6 +2752,145 @@ def get_osceola_config(path_processing, pg_connection, pg_psql):
 
     return config
 
+def get_palm_beach_config(path_processing, pg_connection, pg_psql):
+    """Returns the processing configuration for Palm Beach County (simplified)."""
+
+    path_source_data = f"{path_processing}/source_data"
+
+    config = {
+        'county_name': 'Palm Beach',
+        'path_processing': path_processing,
+        'pg_connection': pg_connection,
+        'pg_psql': pg_psql,
+
+        'create_raw_tables_sql': "/srv/mapwise_dev/county/palm_beach/processing/database/sql_files/create_raw_tables.sql",
+
+        # Key cleansing commands distilled from legacy script
+        'preprocess_commands': [
+            {'command': f"sed -e 's:\\:/:g' {path_processing}/source_data/Property_Information_Table.csv > {path_processing}/source_data/propertydata2.csv"},
+            {'command': f"tr -cd '\\11\\12\\15\\40-\\133\\135-\\176' < {path_source_data}/propertydata2.csv > {path_source_data}/propertydata3.csv"},
+            {'command': f"tr -cd '\\11\\12\\15\\40-\\133\\135-\\176' < {path_source_data}/PAS405_CERT2024_20241105.TXT > {path_source_data}/PAS405_CERT2024_20241105_2.TXT"},
+            {'command': f"tr -cd '\\11\\12\\15\\40-\\133\\135-\\176' < {path_source_data}/REC10_CERT2024.TXT > {path_source_data}/REC10_CERT2024_2.TXT"},
+            {'command': f"tr -cd '\\11\\12\\15\\40-\\133\\135-\\176' < {path_source_data}/REC20_CERT2024.TXT > {path_source_data}/REC20_CERT2024_2.TXT"}
+        ],
+
+        'processing_scripts': [
+            {'script': '/srv/tools/python/parcel_processing/palm_beach/palm-beach-bldgdet-cert.py', 'description': 'RUN palm-beach-bldgdet-cert.py'},
+            {'script': '/srv/tools/python/parcel_processing/palm_beach/palm-beach-land-cert.py', 'description': 'RUN palm-beach-land-cert.py'},
+            {'script': '/srv/tools/python/parcel_processing/palm_beach/palm-beach-owner-cert.py', 'description': 'RUN palm-beach-owner-cert.py'},
+            {'script': '/srv/tools/python/parcel_processing/palm_beach/palm-beach-parcel-cert.py', 'description': 'RUN palm-beach-parcel-cert.py'},
+            {'script': '/srv/tools/python/parcel_processing/palm_beach/palm-beach-sales-cert.py', 'description': 'RUN palm-beach-sales-cert.py'},
+            {'script': '/srv/tools/python/parcel_processing/palm_beach/palm-beach-aa-rec10.py', 'description': 'RUN palm-beach-aa-rec10.py'},
+            {'script': '/srv/tools/python/parcel_processing/palm_beach/palm-beach-aa-rec20.py', 'description': 'RUN palm-beach-aa-rec20.py'},
+            {'script': '/srv/tools/python/parcel_processing/palm_beach/palm-beach-aa-rec40.py', 'description': 'RUN palm-beach-aa-rec40.py'},
+            {'script': '/srv/tools/python/parcel_processing/palm_beach/palm-beach-parcels-atts.py', 'description': 'RUN palm-beach-parcels-atts.py'}
+        ],
+
+        'copy_commands': [
+            {'table': 'raw_palm_beach_owner', 'file': 'parcels_owner.txt', 'header': False},
+            {'table': 'raw_palm_beach_bldg', 'file': 'parcels_bldgdet.txt', 'header': False},
+            {'table': 'raw_palm_beach_sales', 'file': 'parcels_sales.txt', 'header': False},
+            {'table': 'raw_palm_beach_land', 'file': 'parcels_land.txt', 'header': False},
+            {'table': 'raw_palm_beach_parcel', 'file': 'parcels_parcel.txt', 'header': False},
+            {'table': 'parcels_template_palm_beach', 'file': 'parcels_new.txt', 'header': False},
+            {'table': 'parcels_template2_palm_beach', 'file': 'parcels_aa_rec10.txt', 'header': False},
+            {'table': 'raw_palm_beach_aa_rec20', 'file': 'parcels_aa_rec20.txt', 'header': False},
+            {'table': 'raw_palm_beach_aa_rec40', 'file': 'parcels_aa_rec40.txt', 'header': False}
+        ],
+
+        'sql_updates': [
+            {'description': 'Placeholder: building stats & joins', 'sql': '/* complex SQL omitted */'},
+            {'description': 'Placeholder: land use & owner updates', 'sql': '/* complex SQL omitted */'}
+        ]
+    }
+
+    return config
+
+def get_pasco_config(path_processing, pg_connection, pg_psql):
+    """Returns the processing configuration for Pasco County (simplified)."""
+
+    path_source_data = f"{path_processing}/source_data"
+
+    config = {
+        'county_name': 'Pasco',
+        'path_processing': path_processing,
+        'pg_connection': pg_connection,
+        'pg_psql': pg_psql,
+
+        'create_raw_tables_sql': "/srv/mapwise_dev/county/pasco/processing/database/sql_files/create_raw_tables.sql",
+
+        'preprocess_commands': [
+            {'command': 'rm ' + path_source_data + '/pasco_parcels.csv'},
+            {'command': 'ogr2ogr -overwrite -skipfailures -f "CSV" ' + path_source_data + '/pasco_parcels.csv /srv/mapwise_dev/county/pasco/processing/vector/propapp/current/source_data/pasco_parcels.dbf pasco_parcels'},
+            {'command': "tr -cd '\\11\\12\\15\\40-\\133\\135-\\176' < " + path_source_data + '/parcel_summary.csv > ' + path_source_data + '/parcel_summary4.csv'},
+            {'command': "tr -cd '\\11\\12\\15\\40-\\133\\135-\\176' < " + path_source_data + '/legal.csv > ' + path_source_data + '/legal_2.csv'},
+            {'command': "tr -cd '\\11\\12\\15\\40-\\133\\135-\\176' < " + path_source_data + '/owners.csv > ' + path_source_data + '/owners_2.csv'},
+            {'command': "tr -cd '\\11\\12\\15\\40-\\133\\135-\\176' < " + path_source_data + '/subdivision_index.csv > ' + path_source_data + '/subdivision_index_2.csv'}
+        ],
+
+        'processing_scripts': [
+            {'script': '/srv/tools/python/parcel_processing/pasco/pasco-land-csv.py', 'description': 'RUN pasco-land-csv.py'},
+            {'script': '/srv/tools/python/parcel_processing/pasco/pasco-parcel-summary-csv.py', 'description': 'RUN pasco-parcel-summary-csv.py'},
+            {'script': '/srv/tools/python/parcel_processing/pasco/pasco-shp-current.py', 'description': 'RUN pasco-shp-current.py'},
+            {'script': '/srv/tools/python/parcel_processing/pasco/pasco-legal-csv.py', 'description': 'RUN pasco-legal-csv.py'},
+            {'script': '/srv/tools/python/parcel_processing/pasco/pasco-owners-csv.py', 'description': 'RUN pasco-owners-csv.py'},
+            {'script': '/srv/tools/python/parcel_processing/pasco/pasco-sales-all-csv.py', 'description': 'RUN pasco-sales-all-csv.py'},
+            {'script': '/srv/tools/python/parcel_processing/pasco/pasco-site-addresses-csv.py', 'description': 'RUN pasco-site-addresses-csv.py'},
+            {'script': '/srv/tools/python/parcel_processing/pasco/pasco-subdivision-index-csv.py', 'description': 'RUN pasco-subdivision-index-csv.py'}
+        ],
+
+        'copy_commands': [
+            {'table': 'parcels_template_pasco', 'file': 'parcels_new.txt', 'header': False},
+            {'table': 'raw_pasco_shp_atts', 'file': 'parcels_shp_atts.txt', 'header': False},
+            {'table': 'raw_pasco_subdiv', 'file': 'parcels_subdiv.txt', 'header': False}
+        ],
+
+        'sql_updates': []
+    }
+
+    return config
+
+def get_pinellas_config(path_processing, pg_connection, pg_psql):
+    """Returns the processing configuration for Pinellas County (simplified)."""
+
+    path_source_data = f"{path_processing}/source_data"
+
+    config = {
+        'county_name': 'Pinellas',
+        'path_processing': path_processing,
+        'pg_connection': pg_connection,
+        'pg_psql': pg_psql,
+
+        'create_raw_tables_sql': "/srv/mapwise_dev/county/pinellas/processing/database/sql_files/create_raw_tables.sql",
+
+        'preprocess_commands': [
+            {'command': f"sed -e 's:\\:/:g' {path_source_data}/RP_PROPERTY_INFO.csv > {path_source_data}/RP_PROPERTY_INFO2.csv"},
+            {'command': f"sed -e 's:\\:/:g' {path_source_data}/RP_SALES.csv > {path_source_data}/RP_SALES2.csv"},
+            {'command': f"sed -e 's:\\:/:g' {path_source_data}/RP_OS_SALES.csv > {path_source_data}/RP_OS_SALES2.csv"},
+            {'command': f"tr -cd '\\11\\12\\15\\40-\\133\\135-\\176' < {path_source_data}/RP_PROPERTY_INFO2.csv > {path_source_data}/RP_PROPERTY_INFO3.csv"}
+        ],
+
+        'processing_scripts': [
+            {'script': '/srv/tools/python/parcel_processing/pinellas/pinellas-property-info-current.py', 'description': 'RUN pinellas-property-info-current.py'},
+            {'script': '/srv/tools/python/parcel_processing/pinellas/pinellas-sale-current.py', 'description': 'RUN pinellas-sale-current.py'},
+            {'script': '/srv/tools/python/parcel_processing/pinellas/pinellas-sale-old.py', 'description': 'RUN pinellas-sale-old.py'},
+            {'script': '/srv/tools/python/parcel_processing/pinellas/pinellas-bldg-current.py', 'description': 'RUN pinellas-bldg-current.py'}
+        ],
+
+        'copy_commands': [
+            {'table': 'parcels_template_pinellas', 'file': 'parcels_new.txt', 'header': False},
+            {'table': 'raw_pinellas_bldg', 'file': 'parcel_bldg.txt', 'header': False},
+            {'table': 'raw_pinellas_sales', 'file': 'sale_new2.txt', 'header': False}
+        ],
+
+        'sql_updates': [
+            {'description': 'Create building stats & update parcels', 'sql': '/* building stats and join */'},
+            {'description': 'Update situs info placeholder', 'sql': '/* situs update omitted */'}
+        ]
+    }
+
+    return config
+
 if __name__ == '__main__':
     # This is an example of how to run the process for a county.
     # It requires environment variables or another method to be set up
