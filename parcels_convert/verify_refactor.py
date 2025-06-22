@@ -823,6 +823,77 @@ class TestParcelProcessingRefactor(unittest.TestCase):
         ]
         mock_execute_sql.assert_has_calls(expected_sql_calls)
 
+    @patch('parcels_convert_logic.execute_sql')
+    @patch('parcels_convert_logic.psql_copy')
+    @patch('parcels_convert_logic.run_sql_file')
+    @patch('parcels_convert_logic.run_external_command')
+    @patch('parcels_convert_logic.os.chdir')
+    @patch('parcels_convert_logic.os.path.exists')
+    @patch('parcels_convert_logic.psycopg2.connect')
+    def test_duval_processing_orchestration(
+        self,
+        mock_connect,
+        mock_path_exists,
+        mock_chdir,
+        mock_run_external_command,
+        mock_run_sql_file,
+        mock_psql_copy,
+        mock_execute_sql
+    ):
+        """
+        Verifies that process_raw_data correctly orchestrates the calls
+        for Duval County based on its configuration.
+        """
+        # 1. Setup Mocks
+        mock_connection = MagicMock()
+        mock_connect.return_value = mock_connection
+        mock_path_exists.return_value = True
+
+        # 2. Define test data and get config
+        path_processing = "/fake/path/processing"
+        pg_connection = "fake_connection_string"
+        pg_psql = "/usr/bin/psql"
+        
+        config = parcels_convert_logic.get_duval_config(path_processing, pg_connection, pg_psql)
+
+        # 3. Run the process
+        parcels_convert_logic.process_raw_data(config)
+
+        # 4. Assertions
+        mock_chdir.assert_called_once_with(path_processing)
+        mock_connect.assert_called_once_with(pg_connection)
+
+        # Check call counts
+        self.assertEqual(mock_run_external_command.call_count, 4) # 1 preprocess + 3 processing
+        self.assertEqual(mock_psql_copy.call_count, 7)
+        self.assertEqual(mock_execute_sql.call_count, 0)
+
+        # Check external command calls
+        expected_external_calls = [
+            call('sort sales_new.txt | uniq > sales_new2.txt', None),
+            call('/srv/tools/python/parcel_processing/duval/duval-sales-current.py', 'RUN duval-sales-current.py'),
+            call('/srv/tools/python/parcel_processing/duval/duval-owner-current.py', 'RUN duval-owner-current.py'),
+            call('/srv/tools/python/parcel_processing/duval/duval-unpack-combined-file.py', 'RUN duval-unpack-combined-file.py')
+        ]
+        mock_run_external_command.assert_has_calls(expected_external_calls, any_order=False)
+
+        # Check sql file call
+        mock_run_sql_file.assert_called_once_with(config['create_raw_tables_sql'], pg_psql)
+
+        # Check copy calls
+        expected_copy_calls = [
+            call(table_name='raw_duval_sales', file_name='sales_new2.txt', psql_path=pg_psql, header=False),
+            call(table_name='raw_duval_owner', file_name='owner_new.txt', psql_path=pg_psql, header=False),
+            call(table_name='raw_duval_situs', file_name='situs.txt', psql_path=pg_psql, header=False),
+            call(table_name='parcels_template_duval', file_name='parcel.txt', psql_path=pg_psql, header=False),
+            call(table_name='raw_duval_building1', file_name='building1.txt', psql_path=pg_psql, header=False),
+            call(table_name='raw_duval_building3', file_name='building3.txt', psql_path=pg_psql, header=False),
+            call(table_name='raw_duval_building4', file_name='building4.txt', psql_path=pg_psql, header=False)
+        ]
+        mock_psql_copy.assert_has_calls(expected_copy_calls, any_order=True)
+
+        mock_connection.close.assert_called_once()
+
 if __name__ == '__main__':
     # This allows running the tests directly
     unittest.main()

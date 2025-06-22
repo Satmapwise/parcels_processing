@@ -1249,6 +1249,41 @@ def get_dixie_config(path_processing, pg_connection, pg_psql):
     }
     return config
 
+def get_duval_config(path_processing, pg_connection, pg_psql):
+    """Returns the processing configuration for Duval County."""
+    
+    config = {
+        'county_name': 'Duval',
+        'path_processing': path_processing,
+        'pg_connection': pg_connection,
+        'pg_psql': pg_psql,
+        
+        'create_raw_tables_sql': "/srv/mapwise_dev/county/duval/processing/database/sql_files/create_raw_tables.sql",
+
+        'preprocess_commands': [
+            {'command': 'sort sales_new.txt | uniq > sales_new2.txt'}
+        ],
+        
+        'processing_scripts': [
+            {'script': '/srv/tools/python/parcel_processing/duval/duval-sales-current.py', 'description': 'RUN duval-sales-current.py'},
+            {'script': '/srv/tools/python/parcel_processing/duval/duval-owner-current.py', 'description': 'RUN duval-owner-current.py'},
+            {'script': '/srv/tools/python/parcel_processing/duval/duval-unpack-combined-file.py', 'description': 'RUN duval-unpack-combined-file.py'}
+        ],
+
+        'copy_commands': [
+            {'table': 'raw_duval_sales', 'file': 'sales_new2.txt', 'header': False},
+            {'table': 'raw_duval_owner', 'file': 'owner_new.txt', 'header': False},
+            {'table': 'raw_duval_situs', 'file': 'situs.txt', 'header': False},
+            {'table': 'parcels_template_duval', 'file': 'parcel.txt', 'header': False},
+            {'table': 'raw_duval_building1', 'file': 'building1.txt', 'header': False},
+            {'table': 'raw_duval_building3', 'file': 'building3.txt', 'header': False},
+            {'table': 'raw_duval_building4', 'file': 'building4.txt', 'header': False}
+        ],
+
+        'sql_updates': []
+    }
+    return config
+
 if __name__ == '__main__':
     # This is an example of how to run the process for a county.
     # It requires environment variables or another method to be set up
