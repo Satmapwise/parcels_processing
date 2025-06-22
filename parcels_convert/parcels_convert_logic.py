@@ -1359,6 +1359,137 @@ def get_escambia_config(path_processing, pg_connection, pg_psql):
     }
     return config
 
+def get_flagler_config(path_processing, pg_connection, pg_psql):
+    """Returns the processing configuration for Flagler County."""
+    
+    config = {
+        'county_name': 'Flagler',
+        'path_processing': path_processing,
+        'pg_connection': pg_connection,
+        'pg_psql': pg_psql,
+        
+        'create_raw_tables_sql': "/srv/mapwise_dev/county/flagler/processing/database/sql_files/create_raw_tables.sql",
+
+        'preprocess_commands': [],
+        
+        'processing_scripts': [
+            {'script': '/srv/tools/python/parcel_processing/flagler/flagler-convert-sales-csv.py', 'description': 'RUN flagler-convert-sales.py'},
+            {'script': '/srv/tools/python/parcel_processing/flagler/flagler-bldg.py', 'description': 'RUN flagler-bldg.py'}
+        ],
+
+        'copy_commands': [
+            {'table': 'raw_flagler_sales_dwnld', 'file': 'parcels_sales.txt', 'header': False},
+            {'table': 'raw_flagler_bldg', 'file': 'parcels_bldg.txt', 'header': False}
+        ],
+
+        'sql_updates': [
+            {
+                'description': 'Call FDOR processing for Flagler County',
+                'sql': "SELECT process_raw_fdor('FLAGLER');"
+            },
+            {
+                'description': 'Update owner info from raw sales file.',
+                'sql': """
+                    UPDATE parcels_template_flagler as p SET
+                        o_name1 = o.o_name1,
+                        o_name2 = o.o_name2,
+                        o_address1 = o.o_address1,
+                        o_address2 = o.o_address2,
+                        o_address3 = o.o_address3,
+                        o_city = o.o_city,
+                        o_state = o.o_state,
+                        o_zipcode = o.o_zipcode,
+                        o_zipcode4 = o.o_zipcode4
+                        FROM raw_flagler_sales_dwnld as o
+                        WHERE p.pin = o.pin
+                ;"""
+            },
+            {
+                'description': 'Summarize building info.',
+                'sql': """
+                    SELECT 
+                        bldg.pin, 
+                        min(cast(bldg.yrblt_act as integer)) as min_yrblt_act,
+                        min(cast(bldg.yrblt_eff as integer)) as min_yrblt_eff,
+                        sum(cast(bldg.sqft_htd as integer)) as sum_sqft_htd, 
+                        sum(cast(bldg.sqft_tot as integer)) as sum_sqft_tot,
+                        sum(cast(bldg.sqft_adj as integer)) as sum_sqft_adj, 
+                        sum(cast(trunc(cast(bldg.num_bed as numeric)) as integer)) as sum_num_beds,
+                        sum(cast(trunc(cast(bldg.num_bath as numeric)) as integer)) as sum_num_baths,
+                        max(cast(trunc(cast(bldg.stories as numeric)) as integer)) as max_stories
+                    INTO raw_flagler_bldg_stats
+                    from raw_flagler_bldg as bldg
+                    group by bldg.pin;
+                """
+            },
+            {
+                'description': 'Update parcels template with building info.',
+                'sql': """
+                    UPDATE parcels_template_flagler
+                    SET
+                    yrblt_act = bldg.min_yrblt_act,
+                    yrblt_eff = bldg.min_yrblt_eff,
+                    sqft_htd = bldg.sum_sqft_htd,
+                    sqft_adj = bldg.sum_sqft_adj, 
+                    sqft_tot = bldg.sum_sqft_tot, 
+                    num_bath = bldg.sum_num_baths,
+                    num_bed = bldg.sum_num_beds,
+                    stories = bldg.max_stories
+                    FROM raw_flagler_bldg_stats as bldg
+                    WHERE parcels_template_flagler.pin = bldg.pin;
+                """
+            }
+        ]
+    }
+    return config
+
+def get_franklin_config(path_processing, pg_connection, pg_psql):
+    """Returns the processing configuration for Franklin County."""
+    
+    config = {
+        'county_name': 'Franklin',
+        'path_processing': path_processing,
+        'pg_connection': pg_connection,
+        'pg_psql': pg_psql,
+        
+        'create_raw_tables_sql': "/srv/mapwise_dev/county/franklin/processing/database/sql_files/create_raw_tables.sql",
+
+        'preprocess_commands': [],
+        
+        'processing_scripts': [
+            {'script': '/srv/tools/python/parcel_processing/franklin/franklin-convert-sales-csv.py', 'description': 'RUN franklin-convert-sales-csv.py'}
+        ],
+
+        'copy_commands': [
+            {'table': 'raw_franklin_sales_dwnld', 'file': 'parcels_sales.txt', 'header': False}
+        ],
+
+        'sql_updates': [
+            {
+                'description': 'Call FDOR processing for Franklin County',
+                'sql': "SELECT process_raw_fdor('FRANKLIN');"
+            },
+            {
+                'description': 'Update owner info from raw sales file.',
+                'sql': """
+                    UPDATE parcels_template_franklin as p SET
+                        o_name1 = 'Owner Name Missing - ' || o.pin,
+                        o_name2 = null,
+                        o_address1 = null,
+                        o_address2 = null,
+                        o_address3 = null,
+                        o_city = null,
+                        o_state = null,
+                        o_zipcode = null,
+                        o_zipcode4 = null
+                        FROM raw_franklin_sales_dwnld as o
+                        WHERE p.pin = o.pin
+                ;"""
+            }
+        ]
+    }
+    return config
+
 if __name__ == '__main__':
     # This is an example of how to run the process for a county.
     # It requires environment variables or another method to be set up
