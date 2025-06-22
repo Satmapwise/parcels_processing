@@ -2826,7 +2826,7 @@ def get_pasco_config(path_processing, pg_connection, pg_psql):
             {'command': "tr -cd '\\11\\12\\15\\40-\\133\\135-\\176' < " + path_source_data + '/legal.csv > ' + path_source_data + '/legal_2.csv'},
             {'command': "tr -cd '\\11\\12\\15\\40-\\133\\135-\\176' < " + path_source_data + '/owners.csv > ' + path_source_data + '/owners_2.csv'},
             {'command': "tr -cd '\\11\\12\\15\\40-\\133\\135-\\176' < " + path_source_data + '/subdivision_index.csv > ' + path_source_data + '/subdivision_index_2.csv'}
-        ],
+        ],  
 
         'processing_scripts': [
             {'script': '/srv/tools/python/parcel_processing/pasco/pasco-land-csv.py', 'description': 'RUN pasco-land-csv.py'},
@@ -2886,6 +2886,146 @@ def get_pinellas_config(path_processing, pg_connection, pg_psql):
         'sql_updates': [
             {'description': 'Create building stats & update parcels', 'sql': '/* building stats and join */'},
             {'description': 'Update situs info placeholder', 'sql': '/* situs update omitted */'}
+        ]
+    }
+
+    return config
+
+def get_polk_config(path_processing, pg_connection, pg_psql):
+    """Returns the processing configuration for Polk County (simplified)."""
+
+    path_source_data = f"{path_processing}/source_data"
+
+    config = {
+        'county_name': 'Polk',
+        'path_processing': path_processing,
+        'pg_connection': pg_connection,
+        'pg_psql': pg_psql,
+
+        'create_raw_tables_sql': "/srv/mapwise_dev/county/polk/processing/database/sql_files/create_raw_tables.sql",
+
+        # Two key cleansing commands distilled from legacy script (owner and legal TXT files)
+        'preprocess_commands': [
+            {'command': f"tr -cd '\\11\\12\\15\\40-\\133\\135-\\176' < {path_source_data}/ftp_owner.txt > {path_source_data}/ftp_owner2.txt"},
+            {'command': f"tr -cd '\\11\\12\\15\\40-\\133\\135-\\176' < {path_source_data}/ftp_legal.txt > {path_source_data}/ftp_legal2.txt"}
+        ],
+
+        # Eight processing scripts that build the raw *.txt exports
+        'processing_scripts': [
+            {'script': '/srv/tools/python/parcel_processing/polk/polk-raw-2012-08-owner.py', 'description': 'RUN polk-raw-owner'},
+            {'script': '/srv/tools/python/parcel_processing/polk/polk-raw-2012-08-parcel.py', 'description': 'RUN polk-raw-parcel'},
+            {'script': '/srv/tools/python/parcel_processing/polk/polk-raw-2012-08-bldg.py', 'description': 'RUN polk-raw-bldg'},
+            {'script': '/srv/tools/python/parcel_processing/polk/polk-raw-2012-08-sub.py', 'description': 'RUN polk-raw-sub'},
+            {'script': '/srv/tools/python/parcel_processing/polk/polk-raw-2012-08-legal.py', 'description': 'RUN polk-raw-legal'},
+            {'script': '/srv/tools/python/parcel_processing/polk/polk-raw-2012-08-sales.py', 'description': 'RUN polk-raw-sales'},
+            {'script': '/srv/tools/python/parcel_processing/polk/polk-raw-2012-08-situs.py', 'description': 'RUN polk-raw-situs'},
+            {'script': '/srv/tools/python/parcel_processing/polk/polk-raw-2012-08-land.py', 'description': 'RUN polk-raw-land'}
+        ],
+
+        # Eight COPY operations mirroring the \copy calls in legacy script
+        'copy_commands': [
+            {'table': 'parcels_template_polk', 'file': 'parcels_new.txt', 'header': False},
+            {'table': 'raw_polk_owner', 'file': 'parcels_owner.txt', 'header': False},
+            {'table': 'raw_polk_legal_normal', 'file': 'parcels_legal.txt', 'header': False},
+            {'table': 'raw_polk_bldg', 'file': 'parcels_bldg.txt', 'header': False},
+            {'table': 'raw_polk_sub', 'file': 'parcels_sub.txt', 'header': False},
+            {'table': 'raw_polk_situs', 'file': 'parcels_situs.txt', 'header': False},
+            {'table': 'raw_polk_sales', 'file': 'parcels_sales.txt', 'header': False},
+            {'table': 'raw_polk_land', 'file': 'parcels_land.txt', 'header': False}
+        ],
+
+        # Representative SQL update steps distilled into four placeholders.
+        'sql_updates': [
+            {'description': 'Populate denormalized legal table', 'sql': '/* legal denormalization */'},
+            {'description': 'Building stats summary & parcel update', 'sql': '/* bldg stats + update */'},
+            {'description': 'Owner & situs joins', 'sql': '/* owner / situs joins */'},
+            {'description': 'Sales denormalization & parcel update', 'sql': '/* sales denormalization */'}
+        ]
+    }
+
+    return config
+
+def get_putnam_config(path_processing, pg_connection, pg_psql):
+    """Returns the processing configuration for Putnam County (simplified)."""
+
+    config = {
+        'county_name': 'Putnam',
+        'path_processing': path_processing,
+        'pg_connection': pg_connection,
+        'pg_psql': pg_psql,
+
+        'create_raw_tables_sql': "/srv/mapwise_dev/county/putnam/processing/database/sql_files/create_raw_tables.sql",
+
+        # No preprocessing or external scripts in the simplified flow.
+        'preprocess_commands': [],
+        'processing_scripts': [],
+
+        # Two CSV-based COPY operations extracted from legacy loader
+        'copy_commands': [
+            {'table': 'raw_putnam_sales', 'file': 'source_data/sales_current.csv', 'header': False, 'delimiter': "','", 'null_as': "''"},
+            {'table': 'raw_putnam_owner', 'file': 'source_data/owner_current.csv', 'header': False, 'delimiter': "','", 'null_as': "''"}
+        ],
+
+        # One representative SQL block adding helper cols + year extraction
+        'sql_updates': [
+            {'description': 'Add sale_year & type columns', 'sql': '/* alter + update sale_year */'}
+        ]
+    }
+
+    return config
+
+def get_santa_rosa_config(path_processing, pg_connection, pg_psql):
+    """Returns the processing configuration for Santa Rosa County (simplified)."""
+
+    path_source_data = f"{path_processing}/source_data"
+
+    config = {
+        'county_name': 'Santa Rosa',
+        'path_processing': path_processing,
+        'pg_connection': pg_connection,
+        'pg_psql': pg_psql,
+
+        'create_raw_tables_sql': "/srv/mapwise_dev/county/santa_rosa/processing/database/sql_files/create_raw_tables.sql",
+
+        # Minimal preprocessing – cleanse one key CSV file
+        'preprocess_commands': [
+            {'command': f"tr -cd '\\11\\12\\15\\40-\\133\\135-\\176' < {path_source_data}/CAMLE.csv > {path_source_data}/CAMLE_2.csv"}
+        ],
+
+        # Nine processing scripts covering parcel/bldg/land/sales components
+        'processing_scripts': [
+            {'script': '/srv/tools/python/parcel_processing/santa_rosa/santa_rosa-convert-sales.py', 'description': 'RUN convert-sales'},
+            {'script': '/srv/tools/python/parcel_processing/santa_rosa/santa-rosa-parcel-campa.py', 'description': 'RUN parcel-campa'},
+            {'script': '/srv/tools/python/parcel_processing/santa_rosa/santa-rosa-parcel-cflpe.py', 'description': 'RUN parcel-cflpe'},
+            {'script': '/srv/tools/python/parcel_processing/santa_rosa/santa-rosa-parcel-campr.py', 'description': 'RUN parcel-campr'},
+            {'script': '/srv/tools/python/parcel_processing/santa_rosa/santa-rosa-sales-camsa.py', 'description': 'RUN sales-camsa'},
+            {'script': '/srv/tools/python/parcel_processing/santa_rosa/santa-rosa-bldg-cambl.py', 'description': 'RUN bldg-cambl'},
+            {'script': '/srv/tools/python/parcel_processing/santa_rosa/santa-rosa-bldg-cambu.py', 'description': 'RUN bldg-cambu'},
+            {'script': '/srv/tools/python/parcel_processing/santa_rosa/santa-rosa-bldg-cambs.py', 'description': 'RUN bldg-cambs'},
+            {'script': '/srv/tools/python/parcel_processing/santa_rosa/santa-rosa-land-camla.py', 'description': 'RUN land-camla'}
+        ],
+
+        # Nine COPY operations (template + 8 raw tables)
+        'copy_commands': [
+            {'table': 'parcels_template_santa_rosa', 'file': 'parcels_new.txt', 'header': False},
+            {'table': 'raw_santa_rosa_parcel_cflpe', 'file': 'parcels_parcel_cflpe.txt', 'header': False},
+            {'table': 'raw_santa_rosa_parcel_campr', 'file': 'parcels_parcel_campr.txt', 'header': False},
+            {'table': 'raw_santa_rosa_sales_camsa', 'file': 'parcels_sales_camsa.txt', 'header': False},
+            {'table': 'raw_santa_rosa_bldg_cambl', 'file': 'parcels_bldg_cambl.txt', 'header': False},
+            {'table': 'raw_santa_rosa_bldg_cambu', 'file': 'parcels_bldg_cambu.txt', 'header': False},
+            {'table': 'raw_santa_rosa_bldg_cambs', 'file': 'parcels_bldg_cambs.txt', 'header': False},
+            {'table': 'raw_santa_rosa_land_camla', 'file': 'parcels_land_camla.txt', 'header': False},
+            {'table': 'raw_santa_rosa_legal_camle', 'file': 'parcels_legal_camle.txt', 'header': False}
+        ],
+
+        # Six placeholder SQL updates (owner joins, building stats, land value etc.)
+        'sql_updates': [
+            {'description': 'Insert download sales into raw sales table', 'sql': '/* insert into sales_camsa */'},
+            {'description': 'Owner mailing updates', 'sql': '/* owner mailing update */'},
+            {'description': 'Land value updates', 'sql': '/* land value update */'},
+            {'description': 'Building stats aggregation', 'sql': '/* bldg stats */'},
+            {'description': 'Parcel attribute updates', 'sql': '/* parcel attribute updates */'},
+            {'description': 'Misc cleanup', 'sql': '/* misc cleanup */'}
         ]
     }
 
