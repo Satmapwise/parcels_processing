@@ -1738,6 +1738,59 @@ def get_hamilton_config(path_processing, pg_connection, pg_psql):
     }
     return config
 
+def get_hardee_config(path_processing, pg_connection, pg_psql):
+    """Returns the processing configuration for Hardee County (simplified)."""
+
+    config = {
+        'county_name': 'Hardee',
+        'path_processing': path_processing,
+        'pg_connection': pg_connection,
+        'pg_psql': pg_psql,
+
+        'create_raw_tables_sql': "/srv/mapwise_dev/county/hardee/processing/database/sql_files/create_raw_tables.sql",
+
+        'processing_scripts': [
+            {
+                'script': '/srv/tools/python/parcel_processing/hardee/hardee-convert-sales-csv.py',
+                'description': 'RUN hardee-convert-sales-csv.py'
+            }
+        ],
+
+        'copy_commands': [
+            {
+                'table': 'raw_hardee_sales_dwnld',
+                'file': 'parcels_sales.txt',
+                'header': False
+            }
+        ],
+
+        'sql_updates': [
+            {
+                'description': 'Run FDOR processing for Hardee',
+                'sql': "SELECT process_raw_fdor('hardee');"
+            },
+            {
+                'description': 'Populate owner placeholder info',
+                'sql': textwrap.dedent("""
+                    UPDATE parcels_template_hardee AS p SET
+                        o_name1    = o.o_name1,
+                        o_name2    = NULL,
+                        o_address1 = NULL,
+                        o_address2 = NULL,
+                        o_address3 = NULL,
+                        o_city     = NULL,
+                        o_state    = NULL,
+                        o_zipcode  = NULL,
+                        o_zipcode4 = NULL
+                    FROM raw_hardee_sales_dwnld AS o
+                    WHERE p.pin = o.pin_clean;
+                """)
+            }
+        ]
+    }
+
+    return config
+
 def get_hendry_config(path_processing, pg_connection, pg_psql):
     """Returns the processing configuration for Hendry County."""
 
@@ -3583,63 +3636,6 @@ def get_washington_config(path_processing, pg_connection, pg_psql):
     }
 
     return config
-
-# ------ HARDEE COUNTY CONFIG (inserted between Hamilton and Hendry) ------
-
-def get_hardee_config(path_processing, pg_connection, pg_psql):
-    """Returns the processing configuration for Hardee County (simplified)."""
-
-    config = {
-        'county_name': 'Hardee',
-        'path_processing': path_processing,
-        'pg_connection': pg_connection,
-        'pg_psql': pg_psql,
-
-        'create_raw_tables_sql': "/srv/mapwise_dev/county/hardee/processing/database/sql_files/create_raw_tables.sql",
-
-        'processing_scripts': [
-            {
-                'script': '/srv/tools/python/parcel_processing/hardee/hardee-convert-sales-csv.py',
-                'description': 'RUN hardee-convert-sales-csv.py'
-            }
-        ],
-
-        'copy_commands': [
-            {
-                'table': 'raw_hardee_sales_dwnld',
-                'file': 'parcels_sales.txt',
-                'header': False
-            }
-        ],
-
-        'sql_updates': [
-            {
-                'description': 'Run FDOR processing for Hardee',
-                'sql': "SELECT process_raw_fdor('hardee');"
-            },
-            {
-                'description': 'Populate owner placeholder info',
-                'sql': textwrap.dedent("""
-                    UPDATE parcels_template_hardee AS p SET
-                        o_name1    = o.o_name1,
-                        o_name2    = NULL,
-                        o_address1 = NULL,
-                        o_address2 = NULL,
-                        o_address3 = NULL,
-                        o_city     = NULL,
-                        o_state    = NULL,
-                        o_zipcode  = NULL,
-                        o_zipcode4 = NULL
-                    FROM raw_hardee_sales_dwnld AS o
-                    WHERE p.pin = o.pin_clean;
-                """)
-            }
-        ]
-    }
-
-    return config
-
-# ------ SUSSEX COUNTY (DE) CONFIG – appended at end ------
 
 def get_sussex_config(path_processing, pg_connection, pg_psql):
     """Returns the processing configuration for Sussex County, Delaware (simplified)."""
