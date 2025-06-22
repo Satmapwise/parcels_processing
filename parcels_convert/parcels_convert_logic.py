@@ -2278,6 +2278,138 @@ def get_levy_config(path_processing, pg_connection, pg_psql):
 
     return config
 
+def get_liberty_config(path_processing, pg_connection, pg_psql):
+    """Returns the processing configuration for Liberty County."""
+
+    config = {
+        'county_name': 'Liberty',
+        'path_processing': path_processing,
+        'pg_connection': pg_connection,
+        'pg_psql': pg_psql,
+
+        'create_raw_tables_sql': "/srv/mapwise_dev/county/liberty/processing/database/sql_files/create_raw_tables.sql",
+
+        'preprocess_commands': [],
+
+        'processing_scripts': [
+            {'script': '/srv/tools/python/parcel_processing/liberty/liberty-convert-sales-csv.py', 'description': 'RUN liberty-convert-sales-csv.py'}
+        ],
+
+        'copy_commands': [
+            {'table': 'raw_liberty_sales_dwnld', 'file': 'parcels_sales.txt', 'header': False}
+        ],
+
+        'sql_updates': [
+            {
+                'description': 'Invoke FDOR processing',
+                'sql': "SELECT process_raw_fdor('liberty');"
+            },
+            {
+                'description': 'Placeholder owner update',
+                'sql': "UPDATE parcels_template_liberty as p SET o_name1 = 'Owner Name Missing - ' || o.pin, o_name2 = null, o_address1 = null, o_address2 = null, o_address3 = null, o_city = null, o_state = null, o_zipcode = null, o_zipcode4 = null FROM raw_liberty_sales_dwnld as o WHERE p.pin = o.pin;"
+            }
+        ]
+    }
+
+    return config
+
+def get_madison_config(path_processing, pg_connection, pg_psql):
+    """Returns the processing configuration for Madison County."""
+
+    config = {
+        'county_name': 'Madison',
+        'path_processing': path_processing,
+        'pg_connection': pg_connection,
+        'pg_psql': pg_psql,
+
+        'create_raw_tables_sql': "/srv/mapwise_dev/county/madison/processing/database/sql_files/create_raw_tables.sql",
+
+        'preprocess_commands': [],
+
+        'processing_scripts': [
+            {'script': '/srv/tools/python/parcel_processing/madison/madison-convert-sales-csv.py', 'description': 'RUN madison-convert-sales-csv.py'}
+        ],
+
+        'copy_commands': [
+            {'table': 'raw_madison_sales_dwnld', 'file': 'parcels_sales.txt', 'header': False}
+        ],
+
+        'sql_updates': [
+            {
+                'description': 'Invoke FDOR processing',
+                'sql': "SELECT process_raw_fdor('madison');"
+            },
+            {
+                'description': 'Placeholder owner update',
+                'sql': "UPDATE parcels_template_madison as p SET o_name1 = 'Owner Name Missing - ' || o.pin, o_name2 = null, o_address1 = null, o_address2 = null, o_address3 = null, o_city = null, o_state = null, o_zipcode = null, o_zipcode4 = null FROM raw_madison_sales_dwnld as o WHERE p.pin = o.pin_clean;"
+            }
+        ]
+    }
+
+    return config
+
+def get_manatee_config(path_processing, pg_connection, pg_psql):
+    """Returns the processing configuration for Manatee County."""
+
+    path_source_data = f"{path_processing}/source_data"
+
+    config = {
+        'county_name': 'Manatee',
+        'path_processing': path_processing,
+        'pg_connection': pg_connection,
+        'pg_psql': pg_psql,
+
+        'create_raw_tables_sql': "/srv/mapwise_dev/county/manatee/processing/database/sql_files/create_raw_tables.sql",
+
+        'preprocess_commands': [],
+
+        'processing_scripts': [
+            {'script': '/srv/tools/python/parcel_processing/manatee/manatee-parcels.py', 'description': 'RUN manatee-parcels.py'},
+            {'script': '/srv/tools/python/parcel_processing/manatee/manatee-sales.py', 'description': 'RUN manatee-sales.py'},
+            {'script': '/srv/tools/python/parcel_processing/manatee/manatee-owner.py', 'description': 'RUN manatee-owner.py'},
+            {'script': '/srv/tools/python/parcel_processing/manatee/manatee-land.py', 'description': 'RUN manatee-land.py'},
+            {'script': '/srv/tools/python/parcel_processing/manatee/manatee-agland.py', 'description': 'RUN manatee-agland.py'},
+            {'script': '/srv/tools/python/parcel_processing/manatee/manatee-aedit.py', 'description': 'RUN manatee-aedit.py'},
+            {'script': '/srv/tools/python/parcel_processing/manatee/manatee-legdat.py', 'description': 'RUN manatee-legdat.py'},
+            {'script': '/srv/tools/python/parcel_processing/manatee/manatee-aprval.py', 'description': 'RUN manatee-aprval.py'},
+            {'script': '/srv/tools/python/parcel_processing/manatee/manatee-asmt.py', 'description': 'RUN manatee-asmt.py'},
+            {'script': '/srv/tools/python/parcel_processing/manatee/manatee-dwell.py', 'description': 'RUN manatee-dwell.py'},
+            {'script': '/srv/tools/python/parcel_processing/manatee/manatee-comdat.py', 'description': 'RUN manatee-comdat.py'}
+        ],
+
+        'copy_commands': [
+            {'table': 'parcels_template_manatee', 'file': 'parcels_new.txt', 'header': False},
+            {'table': 'raw_manatee_sales', 'file': 'parcels_sales.txt', 'header': False},
+            {'table': 'raw_manatee_owner', 'file': 'parcels_owner.txt', 'header': False},
+            {'table': 'raw_manatee_land', 'file': 'parcels_land.txt', 'header': False},
+            {'table': 'raw_manatee_agland', 'file': 'parcels_agland.txt', 'header': False},
+            {'table': 'raw_manatee_agland_codes', 'file': 'source_data/raw_data/soil_codes.csv', 'header': True},
+            {'table': 'raw_manatee_aedit', 'file': 'parcels_aedit.txt', 'header': False},
+            {'table': 'raw_manatee_legal', 'file': 'parcels_legal.txt', 'header': False},
+            {'table': 'raw_manatee_aprval', 'file': 'parcels_aprval.txt', 'header': False},
+            {'table': 'raw_manatee_asmt', 'file': 'parcels_asmt.txt', 'header': False},
+            {'table': 'raw_manatee_dwell', 'file': 'parcels_dwell.txt', 'header': False},
+            {'table': 'raw_manatee_comdat', 'file': 'parcels_comdat.txt', 'header': False}
+        ],
+
+        'sql_updates': [
+            {
+                'description': 'Update owner info from raw owner table.',
+                'sql': "UPDATE parcels_template_manatee as p SET o_name1 = f.o_name1, o_name2 = f.o_name2, o_address1 = f.o_address1, o_address2 = f.o_address2, o_city = f.o_city, o_state = f.o_state, o_zipcode = f.o_zipcode, o_zipcode4 = f.o_zipcode4 FROM raw_manatee_owner as f WHERE p.pin_clean = f.pin_clean;"
+            },
+            {
+                'description': 'Update zoning from land table.',
+                'sql': "UPDATE parcels_template_manatee as p SET zoning = f.zoning FROM raw_manatee_land as f WHERE p.pin = f.pin;"
+            },
+            {
+                'description': 'Join building stats table to update parcels.',
+                'sql': "UPDATE parcels_template_manatee as p SET yrblt_act = b.min_yrblt_act, yrblt_eff = b.max_yrblt_eff, sqft_htd = b.sum_sqft_htd, sqft_tot = b.sum_sqft_tot, sqft_adj = b.sum_sqft_adj, num_bath = b.sum_num_baths, num_bed = b.sum_num_beds, stories = b.max_stories FROM raw_manatee_bldg_stats as b WHERE p.pin = b.pin;"
+            }
+        ]
+    }
+
+    return config
+
 if __name__ == '__main__':
     # This is an example of how to run the process for a county.
     # It requires environment variables or another method to be set up

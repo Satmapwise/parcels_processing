@@ -2000,6 +2000,155 @@ class TestParcelProcessingRefactor(unittest.TestCase):
 
         mock_connection.close.assert_called_once()
 
+    # ------------------------------------------------------------------
+    # LIBERTY COUNTY
+    # ------------------------------------------------------------------
+    @patch('parcels_convert_logic.execute_sql')
+    @patch('parcels_convert_logic.psql_copy')
+    @patch('parcels_convert_logic.run_sql_file')
+    @patch('parcels_convert_logic.run_external_command')
+    @patch('parcels_convert_logic.os.chdir')
+    @patch('parcels_convert_logic.os.path.exists')
+    @patch('parcels_convert_logic.psycopg2.connect')
+    def test_liberty_processing_orchestration(
+        self,
+        mock_connect,
+        mock_path_exists,
+        mock_chdir,
+        mock_run_external_command,
+        mock_run_sql_file,
+        mock_psql_copy,
+        mock_execute_sql
+    ):
+        """Verify Liberty orchestration."""
+        mock_connection = MagicMock()
+        mock_connect.return_value = mock_connection
+        mock_path_exists.return_value = True
+
+        path_processing = "/fake/path/processing"
+        pg_connection = "fake_conn"
+        pg_psql = "/usr/bin/psql"
+
+        config = parcels_convert_logic.get_liberty_config(path_processing, pg_connection, pg_psql)
+
+        parcels_convert_logic.process_raw_data(config)
+
+        mock_chdir.assert_called_once_with(path_processing)
+
+        # One processing script
+        mock_run_external_command.assert_called_once_with('/srv/tools/python/parcel_processing/liberty/liberty-convert-sales-csv.py', 'RUN liberty-convert-sales-csv.py')
+
+        # SQL file executed once
+        mock_run_sql_file.assert_called_once_with(config['create_raw_tables_sql'], pg_psql)
+
+        # One copy command
+        mock_psql_copy.assert_called_once_with(table_name='raw_liberty_sales_dwnld', file_name='parcels_sales.txt', psql_path=pg_psql, header=False)
+
+        # Two SQL updates
+        self.assertEqual(mock_execute_sql.call_count, 2)
+
+        mock_connection.close.assert_called_once()
+
+    # ------------------------------------------------------------------
+    # MADISON COUNTY
+    # ------------------------------------------------------------------
+    @patch('parcels_convert_logic.execute_sql')
+    @patch('parcels_convert_logic.psql_copy')
+    @patch('parcels_convert_logic.run_sql_file')
+    @patch('parcels_convert_logic.run_external_command')
+    @patch('parcels_convert_logic.os.chdir')
+    @patch('parcels_convert_logic.os.path.exists')
+    @patch('parcels_convert_logic.psycopg2.connect')
+    def test_madison_processing_orchestration(
+        self,
+        mock_connect,
+        mock_path_exists,
+        mock_chdir,
+        mock_run_external_command,
+        mock_run_sql_file,
+        mock_psql_copy,
+        mock_execute_sql
+    ):
+        """Verify Madison orchestration."""
+        mock_connection = MagicMock()
+        mock_connect.return_value = mock_connection
+        mock_path_exists.return_value = True
+
+        path_processing = "/fake/path/processing"
+        pg_connection = "fake_conn"
+        pg_psql = "/usr/bin/psql"
+
+        config = parcels_convert_logic.get_madison_config(path_processing, pg_connection, pg_psql)
+
+        parcels_convert_logic.process_raw_data(config)
+
+        mock_chdir.assert_called_once_with(path_processing)
+
+        # One processing script
+        mock_run_external_command.assert_called_once_with('/srv/tools/python/parcel_processing/madison/madison-convert-sales-csv.py', 'RUN madison-convert-sales-csv.py')
+
+        mock_run_sql_file.assert_called_once_with(config['create_raw_tables_sql'], pg_psql)
+
+        mock_psql_copy.assert_called_once_with(table_name='raw_madison_sales_dwnld', file_name='parcels_sales.txt', psql_path=pg_psql, header=False)
+
+        self.assertEqual(mock_execute_sql.call_count, 2)
+
+        mock_connection.close.assert_called_once()
+
+    # ------------------------------------------------------------------
+    # MANATEE COUNTY
+    # ------------------------------------------------------------------
+    @patch('parcels_convert_logic.execute_sql')
+    @patch('parcels_convert_logic.psql_copy')
+    @patch('parcels_convert_logic.run_sql_file')
+    @patch('parcels_convert_logic.run_external_command')
+    @patch('parcels_convert_logic.os.chdir')
+    @patch('parcels_convert_logic.os.path.exists')
+    @patch('parcels_convert_logic.psycopg2.connect')
+    def test_manatee_processing_orchestration(
+        self,
+        mock_connect,
+        mock_path_exists,
+        mock_chdir,
+        mock_run_external_command,
+        mock_run_sql_file,
+        mock_psql_copy,
+        mock_execute_sql
+    ):
+        """Verify Manatee orchestration."""
+        mock_connection = MagicMock()
+        mock_connect.return_value = mock_connection
+        mock_path_exists.return_value = True
+
+        path_processing = "/fake/path/processing"
+        pg_connection = "fake_conn"
+        pg_psql = "/usr/bin/psql"
+
+        config = parcels_convert_logic.get_manatee_config(path_processing, pg_connection, pg_psql)
+
+        parcels_convert_logic.process_raw_data(config)
+
+        mock_chdir.assert_called_once_with(path_processing)
+
+        # 11 processing scripts
+        self.assertEqual(mock_run_external_command.call_count, 11)
+
+        mock_run_sql_file.assert_called_once_with(config['create_raw_tables_sql'], pg_psql)
+
+        # 12 copy commands
+        self.assertEqual(mock_psql_copy.call_count, 12)
+
+        # 3 SQL updates
+        self.assertEqual(mock_execute_sql.call_count, 3)
+
+        # Verify first script present
+        self.assertIn(
+            call('/srv/tools/python/parcel_processing/manatee/manatee-parcels.py', 'RUN manatee-parcels.py'),
+            mock_run_external_command.call_args_list
+        )
+
+        mock_connection.close.assert_called_once()
+
 if __name__ == '__main__':
     # This allows running the tests directly
     unittest.main()
