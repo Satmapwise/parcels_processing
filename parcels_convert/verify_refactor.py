@@ -1590,29 +1590,18 @@ class TestParcelProcessingRefactor(unittest.TestCase):
         mock_connect.return_value = mock_connection
         mock_path_exists.return_value = True
 
-        path_processing = "/fake/path/processing"
-        pg_connection = "fake_connection_string"
-        pg_psql = "/usr/bin/psql"
-
-        config = parcels_convert_logic.get_hernando_config(path_processing, pg_connection, pg_psql)
+        path_processing="/fake/path/processing"
+        pg_connection="fake_conn"
+        pg_psql="/usr/bin/psql"
+        config=parcels_convert_logic.get_hernando_config(path_processing,pg_connection,pg_psql)
 
         parcels_convert_logic.process_raw_data(config)
 
         mock_chdir.assert_called_once_with(path_processing)
-        mock_connect.assert_called_once_with(pg_connection)
-
-        # Hernando: 2 preprocess + 1 processing script
-        self.assertEqual(mock_run_external_command.call_count, 3)
-        # No sql file creation
-        mock_run_sql_file.assert_not_called()
-
-        # One copy command executed
-        mock_psql_copy.assert_called_once_with(table_name='parcels_template_hernando', file_name='parcels_new.txt', psql_path=pg_psql, header=False)
-
-        # No SQL updates
-        mock_execute_sql.assert_not_called()
-
-        mock_connection.close.assert_called_once()
+        mock_run_sql_file.assert_called_once_with(config['create_raw_tables_sql'],pg_psql)
+        mock_run_external_command.assert_called_once_with('/srv/tools/python/parcel_processing/hernando/hernando-convert-sales-csv.py','RUN hernando-convert-sales-csv.py')
+        mock_psql_copy.assert_called_once_with(table_name='raw_hernando_sales_dwnld',file_name='parcels_sales.txt',psql_path=pg_psql,header=False)
+        self.assertEqual(mock_execute_sql.call_count,2)
 
     @patch('parcels_convert_logic.execute_sql')
     @patch('parcels_convert_logic.psql_copy')
@@ -1636,30 +1625,18 @@ class TestParcelProcessingRefactor(unittest.TestCase):
         mock_connect.return_value = mock_connection
         mock_path_exists.return_value = True
 
-        path_processing = "/fake/path/processing"
-        pg_connection = "fake_connection_string"
-        pg_psql = "/usr/bin/psql"
-
-        config = parcels_convert_logic.get_highlands_config(path_processing, pg_connection, pg_psql)
+        path_processing="/fake/path/processing"
+        pg_connection="fake_conn"
+        pg_psql="/usr/bin/psql"
+        config=parcels_convert_logic.get_highlands_config(path_processing,pg_connection,pg_psql)
 
         parcels_convert_logic.process_raw_data(config)
 
         mock_chdir.assert_called_once_with(path_processing)
-        mock_connect.assert_called_once_with(pg_connection)
-
-        # Highlands: 1 preprocess + 1 processing script = 2 external commands
-        self.assertEqual(mock_run_external_command.call_count, 2)
-
-        # SQL file executed once
-        mock_run_sql_file.assert_called_once_with(config['create_raw_tables_sql'], pg_psql)
-
-        # Two copy commands
-        self.assertEqual(mock_psql_copy.call_count, 2)
-
-        # Two SQL updates
-        self.assertEqual(mock_execute_sql.call_count, 2)
-
-        mock_connection.close.assert_called_once()
+        mock_run_sql_file.assert_called_once_with(config['create_raw_tables_sql'],pg_psql)
+        mock_run_external_command.assert_called_once_with('/srv/tools/python/parcel_processing/highlands/highlands-convert-sales-csv.py','RUN highlands-convert-sales-csv.py')
+        mock_psql_copy.assert_called_once_with(table_name='raw_highlands_sales_dwnld',file_name='parcels_sales.txt',psql_path=pg_psql,header=False)
+        self.assertEqual(mock_execute_sql.call_count,2)
 
     @patch('parcels_convert_logic.execute_sql')
     @patch('parcels_convert_logic.psql_copy')

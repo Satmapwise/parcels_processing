@@ -2063,6 +2063,115 @@ def get_jackson_config(path_processing, pg_connection, pg_psql):
 
     return config
 
+def get_jefferson_config(path_processing, pg_connection, pg_psql):
+    """Returns the processing configuration for Jefferson County."""
+
+    config = {
+        'county_name': 'Jefferson',
+        'path_processing': path_processing,
+        'pg_connection': pg_connection,
+        'pg_psql': pg_psql,
+
+        'create_raw_tables_sql': "/srv/mapwise_dev/county/jefferson/processing/database/sql_files/create_raw_tables.sql",
+
+        'processing_scripts': [
+            {'script': '/srv/tools/python/parcel_processing/jefferson/jefferson-convert-sales-csv.py', 'description': 'RUN jefferson-convert-sales-csv.py'}
+        ],
+
+        'copy_commands': [
+            {'table': 'raw_jefferson_sales_dwnld', 'file': 'parcels_sales.txt', 'header': False}
+        ],
+
+        'sql_updates': [
+            {
+                'description': 'Call FDOR processing for Jefferson County',
+                'sql': "SELECT process_raw_fdor('jefferson');"
+            },
+            {
+                'description': 'Update owner placeholder',
+                'sql': "UPDATE parcels_template_jefferson as p SET o_name1 = 'Owner Name Missing - ' || o.pin, o_name2 = null, o_address1 = null, o_address2 = null, o_address3 = null, o_city = null, o_state = null, o_zipcode = null, o_zipcode4 = null FROM raw_jefferson_sales_dwnld as o WHERE p.pin = o.pin;"
+            }
+        ]
+    }
+
+    return config
+
+def get_lafayette_config(path_processing, pg_connection, pg_psql):
+    """Returns the processing configuration for Lafayette County."""
+
+    config = {
+        'county_name': 'Lafayette',
+        'path_processing': path_processing,
+        'pg_connection': pg_connection,
+        'pg_psql': pg_psql,
+
+        'create_raw_tables_sql': "/srv/mapwise_dev/county/lafayette/processing/database/sql_files/create_raw_tables.sql",
+
+        'copy_commands': [
+            {
+                'table': 'raw_lafayette_sales_export',
+                'file': 'source_data/sales_dnld_2014-01-01_current.txt',
+                'header': True
+            },
+            {
+                'table': 'raw_lafayette_sales_owner_export',
+                'file': 'source_data/sales_owner_mailing_dnld_2014-01-01_current.txt',
+                'header': False
+            }
+        ],
+
+        'sql_updates': [
+            {
+                'description': 'Normalize sale date and clean pin',
+                'sql': """
+                    UPDATE raw_lafayette_sales_export SET sale1_date = split_part(sale1_date, '/', 3) || '-' || split_part(sale1_date, '/', 1) || '-' || split_part(sale1_date, '/', 2);
+                    UPDATE raw_lafayette_sales_export SET sale1_date = split_part(sale1_date, '-', 1) || '-0' || split_part(sale1_date, '-', 2) || '-' || split_part(sale1_date, '-', 3) WHERE length(split_part(sale1_date, '-', 2)) = 1;
+                    UPDATE raw_lafayette_sales_export SET sale1_date = split_part(sale1_date, '-', 1) || '-' || split_part(sale1_date, '-', 2) || '-0' || split_part(sale1_date, '-', 3) WHERE length(split_part(sale1_date, '-', 3)) = 1;
+                    UPDATE raw_lafayette_sales_export SET pin = replace(pin,'-','');
+                """
+            },
+            {
+                'description': 'Call FDOR processing for Lafayette County',
+                'sql': "SELECT process_raw_fdor('lafayette');"
+            },
+            {
+                'description': 'Update owner info from owner export',
+                'sql': "UPDATE parcels_template_lafayette as p SET o_name1 = o.o_name1, o_address1 = o.o_address1, o_address2 = o.o_address2, o_city = o.o_city, o_state = o.o_state, o_zipcode = o.o_zipcode FROM raw_lafayette_sales_owner_export o WHERE p.o_name1 = o.o_name1;"
+            },
+            {
+                'description': 'Fallback owner placeholder from sales export (recent sales)',
+                'sql': "UPDATE parcels_template_lafayette as p SET o_name1 = o.o_name1 FROM raw_lafayette_sales_export o WHERE p.pin = o.pin AND o.sale1_date > '2021-09-01';"
+            }
+        ]
+    }
+
+    return config
+
+def get_lake_config(path_processing, pg_connection, pg_psql):
+    """Returns the processing configuration for Lake County (minimal placeholder)."""
+
+    path_source_data = f"{path_processing}/source_data"
+
+    config = {
+        'county_name': 'Lake',
+        'path_processing': path_processing,
+        'pg_connection': pg_connection,
+        'pg_psql': pg_psql,
+
+        'create_raw_tables_sql': "/srv/mapwise_dev/county/lake/processing/database/sql_files/create_raw_tables.sql",
+
+        'preprocess_commands': [
+            {'command': f'rm {path_source_data}/Taxparcels.csv'}
+        ],
+
+        # Currently no processing scripts or copy commands defined.
+        'processing_scripts': [],
+        'copy_commands': [],
+        'sql_updates': []
+    }
+
+    return config
+
 if __name__ == '__main__':
     # This is an example of how to run the process for a county.
     # It requires environment variables or another method to be set up
