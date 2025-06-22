@@ -2845,6 +2845,87 @@ class TestParcelProcessingRefactor(unittest.TestCase):
         self.assertEqual(mock_psql_copy.call_count, 2)
         self.assertEqual(mock_execute_sql.call_count, 1)
 
+    # ------------------------------------------------------------------
+    # TAYLOR COUNTY
+    # ------------------------------------------------------------------
+    @patch('parcels_convert_logic.execute_sql')
+    @patch('parcels_convert_logic.psql_copy')
+    @patch('parcels_convert_logic.run_sql_file')
+    @patch('parcels_convert_logic.run_external_command')
+    @patch('parcels_convert_logic.os.chdir')
+    @patch('parcels_convert_logic.os.path.exists')
+    @patch('parcels_convert_logic.psycopg2.connect')
+    def test_taylor_processing_orchestration(
+        self, mock_connect, mock_path_exists, mock_chdir,
+        mock_run_external_command, mock_run_sql_file, mock_psql_copy, mock_execute_sql):
+
+        mock_connect.return_value = MagicMock(); mock_path_exists.return_value = True
+        path_processing = "/fake/path/processing"; pg_conn = "fake"; pg_psql = "/usr/bin/psql"
+
+        config = parcels_convert_logic.get_taylor_config(path_processing, pg_conn, pg_psql)
+        parcels_convert_logic.process_raw_data(config)
+
+        mock_chdir.assert_called_once_with(path_processing)
+        # 1 script = 1 external command
+        self.assertEqual(mock_run_external_command.call_count, 1)
+        mock_run_sql_file.assert_called_once_with(config['create_raw_tables_sql'], pg_psql)
+        self.assertEqual(mock_psql_copy.call_count, 1)
+        self.assertEqual(mock_execute_sql.call_count, 1)
+
+    # ------------------------------------------------------------------
+    # UNION COUNTY
+    # ------------------------------------------------------------------
+    @patch('parcels_convert_logic.execute_sql')
+    @patch('parcels_convert_logic.psql_copy')
+    @patch('parcels_convert_logic.run_sql_file')
+    @patch('parcels_convert_logic.run_external_command')
+    @patch('parcels_convert_logic.os.chdir')
+    @patch('parcels_convert_logic.os.path.exists')
+    @patch('parcels_convert_logic.psycopg2.connect')
+    def test_union_processing_orchestration(
+        self, mock_connect, mock_path_exists, mock_chdir,
+        mock_run_external_command, mock_run_sql_file, mock_psql_copy, mock_execute_sql):
+
+        mock_connect.return_value = MagicMock(); mock_path_exists.return_value = True
+        path_processing = "/fake/path/processing"; pg_conn = "fake"; pg_psql = "/usr/bin/psql"
+
+        config = parcels_convert_logic.get_union_config(path_processing, pg_conn, pg_psql)
+        parcels_convert_logic.process_raw_data(config)
+
+        mock_chdir.assert_called_once_with(path_processing)
+        # No preprocess/scripts
+        self.assertEqual(mock_run_external_command.call_count, 0)
+        mock_run_sql_file.assert_called_once_with(config['create_raw_tables_sql'], pg_psql)
+        self.assertEqual(mock_psql_copy.call_count, 2)
+        self.assertEqual(mock_execute_sql.call_count, 5)
+
+    # ------------------------------------------------------------------
+    # VOLUSIA COUNTY
+    # ------------------------------------------------------------------
+    @patch('parcels_convert_logic.execute_sql')
+    @patch('parcels_convert_logic.psql_copy')
+    @patch('parcels_convert_logic.run_sql_file')
+    @patch('parcels_convert_logic.run_external_command')
+    @patch('parcels_convert_logic.os.chdir')
+    @patch('parcels_convert_logic.os.path.exists')
+    @patch('parcels_convert_logic.psycopg2.connect')
+    def test_volusia_processing_orchestration(
+        self, mock_connect, mock_path_exists, mock_chdir,
+        mock_run_external_command, mock_run_sql_file, mock_psql_copy, mock_execute_sql):
+
+        mock_connect.return_value = MagicMock(); mock_path_exists.return_value = True
+        path_processing = "/fake/path/processing"; pg_conn = "fake"; pg_psql = "/usr/bin/psql"
+
+        config = parcels_convert_logic.get_volusia_config(path_processing, pg_conn, pg_psql)
+        parcels_convert_logic.process_raw_data(config)
+
+        mock_chdir.assert_called_once_with(path_processing)
+        # 6 preprocess + 8 scripts = 14 external commands
+        self.assertEqual(mock_run_external_command.call_count, 14)
+        mock_run_sql_file.assert_called_once_with(config['create_raw_tables_sql'], pg_psql)
+        self.assertEqual(mock_psql_copy.call_count, 8)
+        self.assertEqual(mock_execute_sql.call_count, 2)
+
 if __name__ == '__main__':
     # This allows running the tests directly
     unittest.main()

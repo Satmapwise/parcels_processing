@@ -3267,6 +3267,135 @@ def get_suwannee_config(path_processing, pg_connection, pg_psql):
 
     return config
 
+def get_taylor_config(path_processing, pg_connection, pg_psql):
+    """Returns the processing configuration for Taylor County (simplified)."""
+
+    config = {
+        'county_name': 'Taylor',
+        'path_processing': path_processing,
+        'pg_connection': pg_connection,
+        'pg_psql': pg_psql,
+
+        'create_raw_tables_sql': "/srv/mapwise_dev/county/taylor/processing/database/sql_files/create_raw_tables.sql",
+
+        # Single conversion script from legacy flow
+        'processing_scripts': [
+            {
+                'script': '/srv/tools/python/parcel_processing/taylor/taylor-convert-sales-csv.py',
+                'description': 'RUN taylor-convert-sales-csv.py'
+            }
+        ],
+
+        # One \copy operation loading the sales download
+        'copy_commands': [
+            {
+                'table': 'raw_taylor_sales_dwnld',
+                'file': 'parcels_sales.txt',
+                'header': False
+            }
+        ],
+
+        # Minimal SQL updates – just populate placeholder owner info
+        'sql_updates': [
+            {
+                'description': 'Populate missing owner info',
+                'sql': '/* owner info placeholder update */'
+            }
+        ]
+    }
+
+    return config
+
+def get_union_config(path_processing, pg_connection, pg_psql):
+    """Returns the processing configuration for Union County (simplified)."""
+
+    config = {
+        'county_name': 'Union',
+        'path_processing': path_processing,
+        'pg_connection': pg_connection,
+        'pg_psql': pg_psql,
+
+        'create_raw_tables_sql': "/srv/mapwise_dev/county/union/processing/database/sql_files/create_raw_tables.sql",
+
+        # Two \copy operations – sales export and owner mailing export
+        'copy_commands': [
+            {
+                'table': 'raw_union_sales_export',
+                'file': 'source_data/sales_dnld_2014-01-01_current.txt',
+                'header': False
+            },
+            {
+                'table': 'raw_union_sales_owner_export',
+                'file': 'source_data/sales_owner_mailing_dnld_2014-01-01_current.txt',
+                'header': False
+            }
+        ],
+
+        # Five representative SQL blocks mirroring date normalization and joins
+        'sql_updates': [
+            {'description': 'Normalize sale1_date', 'sql': '/* sale1_date yyyy-mm-dd */'},
+            {'description': 'Normalize sale2_date', 'sql': '/* sale2_date yyyy-mm-dd */'},
+            {'description': 'Normalize sale3_date', 'sql': '/* sale3_date yyyy-mm-dd */'},
+            {'description': 'Denormalize sales info into parcels_template', 'sql': '/* sales denormal join */'},
+            {'description': 'Update owner mailing information', 'sql': '/* owner mailing update */'}
+        ]
+    }
+
+    return config
+
+def get_volusia_config(path_processing, pg_connection, pg_psql):
+    """Returns the processing configuration for Volusia County (simplified)."""
+
+    path_source_data = f"{path_processing}/source_data"
+
+    config = {
+        'county_name': 'Volusia',
+        'path_processing': path_processing,
+        'pg_connection': pg_connection,
+        'pg_psql': pg_psql,
+
+        'create_raw_tables_sql': "/srv/mapwise_dev/county/volusia/processing/database/sql_files/create_raw_tables.sql",
+
+        'preprocess_commands': [
+            {'command': f"rm -r {path_source_data}/CAMA_DATA_EXPORT_WEB.csv"},
+            {'command': '/home/bmay/src/access2csv/access2csv --input ' + path_source_data + '/CAMA_DATA_EXPORT_WEB.accdb --output ' + path_source_data + '/CAMA_DATA_EXPORT_WEB.csv'},
+            {'command': f"tr -cd '\\11\\12\\15\\40-\\133\\135-\\176' < {path_source_data}/CAMA_DATA_EXPORT_WEB.csv/VCPA_CAMA_LEGAL.csv > {path_source_data}/CAMA_DATA_EXPORT_WEB.csv/VCPA_CAMA_LEGAL_2.csv"},
+            {'command': f"tr -cd '\\11\\12\\15\\40-\\133\\135-\\176' < {path_source_data}/CAMA_DATA_EXPORT_WEB.csv/VCPA_CAMA_PARCEL.csv > {path_source_data}/CAMA_DATA_EXPORT_WEB.csv/VCPA_CAMA_PARCEL_2.csv"},
+            {'command': f"sed -e 's:\\\\:/:g' {path_source_data}/CAMA_DATA_EXPORT_WEB.csv/VCPA_CAMA_OWNER.csv > {path_source_data}/CAMA_DATA_EXPORT_WEB.csv/VCPA_CAMA_OWNER_2.csv"},
+            {'command': f"sed -e 's:ORMOND \\n:ORMOND :g' {path_source_data}/CAMA_DATA_EXPORT_WEB.csv/VCPA_CAMA_OWNER_2.csv > {path_source_data}/CAMA_DATA_EXPORT_WEB.csv/VCPA_CAMA_OWNER_3.csv"}
+        ],
+
+        'processing_scripts': [
+            {'script': '/srv/tools/python/parcel_processing/volusia/volusia-parcel-current.py', 'description': 'RUN parcel-current'},
+            {'script': '/srv/tools/python/parcel_processing/volusia/volusia-sales-current.py', 'description': 'RUN sales-current'},
+            {'script': '/srv/tools/python/parcel_processing/volusia/volusia-legal-current.py', 'description': 'RUN legal-current'},
+            {'script': '/srv/tools/python/parcel_processing/volusia/volusia-owner-current.py', 'description': 'RUN owner-current'},
+            {'script': '/srv/tools/python/parcel_processing/volusia/volusia-situs-current.py', 'description': 'RUN situs-current'},
+            {'script': '/srv/tools/python/parcel_processing/volusia/volusia-building-comm-bldg.py', 'description': 'RUN building-comm-bldg'},
+            {'script': '/srv/tools/python/parcel_processing/volusia/volusia-building-condo-bldg.py', 'description': 'RUN building-condo-bldg'},
+            {'script': '/srv/tools/python/parcel_processing/volusia/volusia-building-res-bldg.py', 'description': 'RUN building-res-bldg'}
+        ],
+
+        'copy_commands': [
+            {'table': 'parcels_template_volusia', 'file': 'parcels_new.txt', 'header': False},
+            {'table': 'raw_volusia_sales', 'file': 'sale_new.txt', 'header': False},
+            {'table': 'raw_volusia_legal', 'file': 'legal_new.txt', 'header': False},
+            {'table': 'raw_volusia_owner', 'file': 'owner_new.txt', 'header': False},
+            {'table': 'raw_volusia_situs', 'file': 'situs_new.txt', 'header': False},
+            {'table': 'raw_volusia_res_bldg', 'file': 'res_bldg_new.txt', 'header': False},
+            {'table': 'raw_volusia_comm_bldg', 'file': 'comm_bldg_new.txt', 'header': False},
+            {'table': 'raw_volusia_condo_bldg', 'file': 'condo_bldg_new.txt', 'header': False}
+        ],
+
+        'sql_updates': [
+            {'description': 'Insert res building stats', 'sql': '/* insert res_bldg stats */'},
+            {'description': 'Insert comm & condo building stats', 'sql': '/* insert comm/condo stats */'}
+        ]
+    }
+
+    return config
+
+
 if __name__ == '__main__':
     # This is an example of how to run the process for a county.
     # It requires environment variables or another method to be set up
