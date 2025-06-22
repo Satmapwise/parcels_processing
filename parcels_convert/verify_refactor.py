@@ -1599,9 +1599,22 @@ class TestParcelProcessingRefactor(unittest.TestCase):
 
         mock_chdir.assert_called_once_with(path_processing)
         mock_run_sql_file.assert_called_once_with(config['create_raw_tables_sql'],pg_psql)
-        mock_run_external_command.assert_called_once_with('/srv/tools/python/parcel_processing/hernando/hernando-convert-sales-csv.py','RUN hernando-convert-sales-csv.py')
-        mock_psql_copy.assert_called_once_with(table_name='raw_hernando_sales_dwnld',file_name='parcels_sales.txt',psql_path=pg_psql,header=False)
-        self.assertEqual(mock_execute_sql.call_count,2)
+        # Expect 3 external commands (2 preprocess + 1 script)
+        self.assertEqual(mock_run_external_command.call_count, 3)
+
+        # Hernando executes raw table creation script once
+        mock_run_sql_file.assert_called_once_with(config['create_raw_tables_sql'], pg_psql)
+
+        # Verify processing script execution
+        self.assertIn(
+            call('/srv/tools/python/parcel_processing/hernando/hernando-erafile-current.py','RUN hernando-erafile-current.py'),
+            mock_run_external_command.call_args_list
+        )
+
+        mock_psql_copy.assert_called_once_with(table_name='parcels_template_hernando',file_name='parcels_new.txt',psql_path=pg_psql,header=False)
+
+        # No SQL updates expected
+        mock_execute_sql.assert_not_called()
 
     @patch('parcels_convert_logic.execute_sql')
     @patch('parcels_convert_logic.psql_copy')
@@ -1634,9 +1647,16 @@ class TestParcelProcessingRefactor(unittest.TestCase):
 
         mock_chdir.assert_called_once_with(path_processing)
         mock_run_sql_file.assert_called_once_with(config['create_raw_tables_sql'],pg_psql)
-        mock_run_external_command.assert_called_once_with('/srv/tools/python/parcel_processing/highlands/highlands-convert-sales-csv.py','RUN highlands-convert-sales-csv.py')
-        mock_psql_copy.assert_called_once_with(table_name='raw_highlands_sales_dwnld',file_name='parcels_sales.txt',psql_path=pg_psql,header=False)
-        self.assertEqual(mock_execute_sql.call_count,2)
+        # Expect 1 preprocess + 1 processing script
+        self.assertEqual(mock_run_external_command.call_count, 2)
+
+        self.assertIn(
+            call('/srv/tools/python/parcel_processing/highlands/highlands-convert-generic.py', 'RUN highlands-convert-generic.py'),
+            mock_run_external_command.call_args_list
+        )
+
+        self.assertEqual(mock_psql_copy.call_count, 2)
+        self.assertEqual(mock_execute_sql.call_count, 2)
 
     @patch('parcels_convert_logic.execute_sql')
     @patch('parcels_convert_logic.psql_copy')
@@ -1723,7 +1743,12 @@ class TestParcelProcessingRefactor(unittest.TestCase):
 
         mock_run_sql_file.assert_called_once_with(config['create_raw_tables_sql'], pg_psql)
 
-        mock_psql_copy.assert_called_once_with(table_name='raw_holmes_sales_dwnld', file_name='parcels_sales.txt', psql_path=pg_psql, header=False)
+        mock_psql_copy.assert_called_once_with(
+            table_name='raw_holmes_sales_dwnld', 
+            file_name='parcels_sales.txt', 
+            psql_path=pg_psql, 
+            header=False
+        )
 
         self.assertEqual(mock_execute_sql.call_count, 2)
 
@@ -1805,14 +1830,35 @@ class TestParcelProcessingRefactor(unittest.TestCase):
 
         mock_chdir.assert_called_once_with(path_processing)
         mock_connect.assert_called_once_with(pg_connection)
+        
+        # Check call counts
+        self.assertEqual(mock_run_external_command.call_count, 1)
+        self.assertEqual(mock_psql_copy.call_count, 1)
+        self.assertEqual(mock_execute_sql.call_count, 2)
 
-        mock_run_external_command.assert_called_once_with('/srv/tools/python/parcel_processing/jackson/jackson-convert-sales-csv.py', 'RUN jackson-convert-sales-csv.py')
+        # Check external command calls
+        mock_run_external_command.assert_called_once_with(
+            '/srv/tools/python/parcel_processing/jackson/jackson-convert-sales-csv.py', 
+            'RUN jackson-convert-sales-csv.py'
+        )
 
+        # Check sql file call
         mock_run_sql_file.assert_called_once_with(config['create_raw_tables_sql'], pg_psql)
 
-        mock_psql_copy.assert_called_once_with(table_name='raw_jackson_sales_dwnld', file_name='parcels_sales.txt', psql_path=pg_psql, header=False)
+        # Check copy calls
+        mock_psql_copy.assert_called_once_with(
+            table_name='raw_jackson_sales_dwnld', 
+            file_name='parcels_sales.txt', 
+            psql_path=pg_psql, 
+            header=False
+        )
 
-        self.assertEqual(mock_execute_sql.call_count, 2)
+        # Check sql update calls
+        expected_sql_calls = [
+            call(mock_connection, config['sql_updates'][0]['sql'], ANY),
+            call(mock_connection, config['sql_updates'][1]['sql'], ANY)
+        ]
+        mock_execute_sql.assert_has_calls(expected_sql_calls, any_order=False)
 
         mock_connection.close.assert_called_once()
 

@@ -1843,7 +1843,9 @@ def get_hernando_config(path_processing, pg_connection, pg_psql):
         ],
 
         # No additional SQL updates defined in original workflow
-        'sql_updates': []
+        'sql_updates': [],
+
+        'create_raw_tables_sql': "/srv/mapwise_dev/county/hernando/processing/database/sql_files/create_raw_tables.sql",
     }
 
     return config
