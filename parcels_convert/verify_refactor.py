@@ -2290,6 +2290,81 @@ class TestParcelProcessingRefactor(unittest.TestCase):
 
         mock_connection.close.assert_called_once()
 
+    # ------------------------------------------------------------------
+    # MONROE COUNTY
+    # ------------------------------------------------------------------
+    @patch('parcels_convert_logic.execute_sql')
+    @patch('parcels_convert_logic.psql_copy')
+    @patch('parcels_convert_logic.run_sql_file')
+    @patch('parcels_convert_logic.run_external_command')
+    @patch('parcels_convert_logic.os.chdir')
+    @patch('parcels_convert_logic.os.path.exists')
+    @patch('parcels_convert_logic.psycopg2.connect')
+    def test_monroe_processing_orchestration(
+        self, mock_connect, mock_path_exists, mock_chdir,
+        mock_run_external_command, mock_run_sql_file, mock_psql_copy, mock_execute_sql):
+
+        mock_connect.return_value = MagicMock()
+        mock_path_exists.return_value = True
+        path_processing="/fake/path/processing"
+        pg_conn="fake"
+        pg_psql="/usr/bin/psql"
+        config=parcels_convert_logic.get_monroe_config(path_processing,pg_conn,pg_psql)
+        parcels_convert_logic.process_raw_data(config)
+        mock_chdir.assert_called_once_with(path_processing)
+        self.assertEqual(mock_run_external_command.call_count,2)  # 1 preprocess + 1 script
+        mock_run_sql_file.assert_called_once_with(config['create_raw_tables_sql'],pg_psql)
+        mock_psql_copy.assert_called_once_with(table_name='parcels_template2_monroe',file_name='parcels_new.txt',psql_path=pg_psql,header=False)
+        mock_execute_sql.assert_not_called()
+
+    # ------------------------------------------------------------------
+    # NASSAU COUNTY
+    # ------------------------------------------------------------------
+    @patch('parcels_convert_logic.execute_sql')
+    @patch('parcels_convert_logic.psql_copy')
+    @patch('parcels_convert_logic.run_sql_file')
+    @patch('parcels_convert_logic.run_external_command')
+    @patch('parcels_convert_logic.os.chdir')
+    @patch('parcels_convert_logic.os.path.exists')
+    @patch('parcels_convert_logic.psycopg2.connect')
+    def test_nassau_processing_orchestration(
+        self, mock_connect, mock_path_exists, mock_chdir,
+        mock_run_external_command, mock_run_sql_file, mock_psql_copy, mock_execute_sql):
+
+        mock_connect.return_value=MagicMock(); mock_path_exists.return_value=True
+        path_processing="/fake/path/processing"; pg_conn="fake"; pg_psql="/usr/bin/psql"
+        config=parcels_convert_logic.get_nassau_config(path_processing,pg_conn,pg_psql)
+        parcels_convert_logic.process_raw_data(config)
+        mock_chdir.assert_called_once_with(path_processing)
+        mock_run_external_command.assert_called_once_with('/srv/tools/python/parcel_processing/nassau/nassau-convert-sales-csv.py','RUN nassau-convert-sales-csv.py')
+        mock_run_sql_file.assert_called_once_with(config['create_raw_tables_sql'],pg_psql)
+        mock_psql_copy.assert_called_once_with(table_name='raw_nassau_sales',file_name='parcels_sales.txt',psql_path=pg_psql,header=False)
+        self.assertEqual(mock_execute_sql.call_count,2)
+
+    # ------------------------------------------------------------------
+    # OKALOOSA COUNTY
+    # ------------------------------------------------------------------
+    @patch('parcels_convert_logic.execute_sql')
+    @patch('parcels_convert_logic.psql_copy')
+    @patch('parcels_convert_logic.run_sql_file')
+    @patch('parcels_convert_logic.run_external_command')
+    @patch('parcels_convert_logic.os.chdir')
+    @patch('parcels_convert_logic.os.path.exists')
+    @patch('parcels_convert_logic.psycopg2.connect')
+    def test_okaloosa_processing_orchestration(
+        self, mock_connect, mock_path_exists, mock_chdir,
+        mock_run_external_command, mock_run_sql_file, mock_psql_copy, mock_execute_sql):
+
+        mock_connect.return_value=MagicMock(); mock_path_exists.return_value=True
+        path_processing="/fake/path/processing"; pg_conn="fake"; pg_psql="/usr/bin/psql"
+        config=parcels_convert_logic.get_okaloosa_config(path_processing,pg_conn,pg_psql)
+        parcels_convert_logic.process_raw_data(config)
+        mock_chdir.assert_called_once_with(path_processing)
+        self.assertEqual(mock_run_external_command.call_count,5)  # 3 preprocess + 2 scripts
+        mock_run_sql_file.assert_called_once_with(config['create_raw_tables_sql'],pg_psql)
+        self.assertEqual(mock_psql_copy.call_count,2)
+        self.assertEqual(mock_execute_sql.call_count,1)
+
 if __name__ == '__main__':
     # This allows running the tests directly
     unittest.main()

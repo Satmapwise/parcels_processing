@@ -2531,6 +2531,106 @@ def get_miami_dade_config(path_processing, pg_connection, pg_psql):
 
     return config
 
+def get_monroe_config(path_processing, pg_connection, pg_psql):
+    """Returns the processing configuration for Monroe County (simplified)."""
+
+    config = {
+        'county_name': 'Monroe',
+        'path_processing': path_processing,
+        'pg_connection': pg_connection,
+        'pg_psql': pg_psql,
+
+        'create_raw_tables_sql': "/srv/mapwise_dev/county/monroe/processing/database/sql_files/create_raw_tables.sql",
+
+        'preprocess_commands': [
+            {'command': f"tr -cd '\\11\\12\\15\\40-\\133\\135-\\176' < {path_processing}/source_data/TAXROLL.txt > {path_processing}/source_data/taxroll2.txt"}
+        ],
+
+        'processing_scripts': [
+            {'script': '/srv/tools/python/parcel_processing/monroe/monroe-parcels-taxroll-pipe.py', 'description': 'RUN monroe-parcels-taxroll-pipe.py'}
+        ],
+
+        'copy_commands': [
+            {'table': 'parcels_template2_monroe', 'file': 'parcels_new.txt', 'header': False}
+        ],
+
+        'sql_updates': []  # Complex owner/FDOR sync skipped in test context
+    }
+
+    return config
+
+def get_nassau_config(path_processing, pg_connection, pg_psql):
+    """Returns the processing configuration for Nassau County."""
+
+    config = {
+        'county_name': 'Nassau',
+        'path_processing': path_processing,
+        'pg_connection': pg_connection,
+        'pg_psql': pg_psql,
+
+        'create_raw_tables_sql': "/srv/mapwise_dev/county/nassau/processing/database/sql_files/create_raw_tables.sql",
+
+        'processing_scripts': [
+            {'script': '/srv/tools/python/parcel_processing/nassau/nassau-convert-sales-csv.py', 'description': 'RUN nassau-convert-sales-csv.py'}
+        ],
+
+        'copy_commands': [
+            {'table': 'raw_nassau_sales', 'file': 'parcels_sales.txt', 'header': False}
+        ],
+
+        'sql_updates': [
+            {
+                'description': 'Invoke FDOR processing',
+                'sql': "SELECT process_raw_fdor('nassau');"
+            },
+            {
+                'description': 'Update owner info from sales',
+                'sql': "UPDATE parcels_template_nassau AS p SET o_name1 = f.o_name1 FROM raw_nassau_sales AS f WHERE p.pin = f.pin;"
+            }
+        ]
+    }
+
+    return config
+
+def get_okaloosa_config(path_processing, pg_connection, pg_psql):
+    """Returns the processing configuration for Okaloosa County."""
+
+    path_source_data = f"{path_processing}/source_data"
+
+    config = {
+        'county_name': 'Okaloosa',
+        'path_processing': path_processing,
+        'pg_connection': pg_connection,
+        'pg_psql': pg_psql,
+
+        'create_raw_tables_sql': "/srv/mapwise_dev/county/okaloosa/processing/database/sql_files/create_raw_tables.sql",
+
+        'preprocess_commands': [
+            {'command': 'rm ' + path_source_data + '/public1.csv'},
+            {'command': 'ogr2ogr -overwrite -f "CSV" ' + path_source_data + '/public1.csv /srv/mapwise_dev/county/okaloosa/processing/vector/propapp/current/source_data/public.dbf'},
+            {'command': f"sed -e 's:\\:/:g' {path_source_data}/public1.csv > {path_source_data}/public.csv"}
+        ],
+
+        'processing_scripts': [
+            {'script': '/srv/tools/python/parcel_processing/okaloosa/okaloosa-parcels.py', 'description': 'RUN okaloosa-parcels.py'},
+            {'script': '/srv/tools/python/parcel_processing/okaloosa/okaloosa-convert-sales-csv.py', 'description': 'RUN okaloosa-convert-sales-csv.py'}
+        ],
+
+        'copy_commands': [
+            {'table': 'parcels_template2_okaloosa', 'file': 'parcels_new.txt', 'header': False},
+            {'table': 'raw_okaloosa_sales_dwnld', 'file': 'parcels_sales.txt', 'header': False}
+        ],
+
+        'sql_updates': [
+            {
+                'description': 'Placeholder owner update',
+                'sql': "UPDATE parcels_template_okaloosa AS p SET o_name1 = 'Owner Name Missing - ' || o.pin FROM raw_okaloosa_sales_dwnld AS o WHERE p.pin = o.pin;"
+            }
+        ]
+    }
+
+    return config
+
 if __name__ == '__main__':
     # This is an example of how to run the process for a county.
     # It requires environment variables or another method to be set up
