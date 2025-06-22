@@ -1864,9 +1864,6 @@ class TestParcelProcessingRefactor(unittest.TestCase):
 
         mock_connection.close.assert_called_once()
 
-    # ------------------------------------------------------------------
-    # LEE COUNTY
-    # ------------------------------------------------------------------
     @patch('parcels_convert_logic.execute_sql')
     @patch('parcels_convert_logic.psql_copy')
     @patch('parcels_convert_logic.run_sql_file')
@@ -1910,9 +1907,6 @@ class TestParcelProcessingRefactor(unittest.TestCase):
 
         mock_connection.close.assert_called_once()
 
-    # ------------------------------------------------------------------
-    # LEON COUNTY
-    # ------------------------------------------------------------------
     @patch('parcels_convert_logic.execute_sql')
     @patch('parcels_convert_logic.psql_copy')
     @patch('parcels_convert_logic.run_sql_file')
@@ -1956,9 +1950,6 @@ class TestParcelProcessingRefactor(unittest.TestCase):
 
         mock_connection.close.assert_called_once()
 
-    # ------------------------------------------------------------------
-    # LEVY COUNTY
-    # ------------------------------------------------------------------
     @patch('parcels_convert_logic.execute_sql')
     @patch('parcels_convert_logic.psql_copy')
     @patch('parcels_convert_logic.run_sql_file')
@@ -2000,9 +1991,6 @@ class TestParcelProcessingRefactor(unittest.TestCase):
 
         mock_connection.close.assert_called_once()
 
-    # ------------------------------------------------------------------
-    # LIBERTY COUNTY
-    # ------------------------------------------------------------------
     @patch('parcels_convert_logic.execute_sql')
     @patch('parcels_convert_logic.psql_copy')
     @patch('parcels_convert_logic.run_sql_file')
@@ -2049,9 +2037,6 @@ class TestParcelProcessingRefactor(unittest.TestCase):
 
         mock_connection.close.assert_called_once()
 
-    # ------------------------------------------------------------------
-    # MADISON COUNTY
-    # ------------------------------------------------------------------
     @patch('parcels_convert_logic.execute_sql')
     @patch('parcels_convert_logic.psql_copy')
     @patch('parcels_convert_logic.run_sql_file')
@@ -2095,9 +2080,6 @@ class TestParcelProcessingRefactor(unittest.TestCase):
 
         mock_connection.close.assert_called_once()
 
-    # ------------------------------------------------------------------
-    # MANATEE COUNTY
-    # ------------------------------------------------------------------
     @patch('parcels_convert_logic.execute_sql')
     @patch('parcels_convert_logic.psql_copy')
     @patch('parcels_convert_logic.run_sql_file')
@@ -2149,9 +2131,6 @@ class TestParcelProcessingRefactor(unittest.TestCase):
 
         mock_connection.close.assert_called_once()
 
-    # ------------------------------------------------------------------
-    # MARION COUNTY
-    # ------------------------------------------------------------------
     @patch('parcels_convert_logic.execute_sql')
     @patch('parcels_convert_logic.psql_copy')
     @patch('parcels_convert_logic.run_sql_file')
@@ -2196,9 +2175,6 @@ class TestParcelProcessingRefactor(unittest.TestCase):
 
         mock_connection.close.assert_called_once()
 
-    # ------------------------------------------------------------------
-    # MARTIN COUNTY
-    # ------------------------------------------------------------------
     @patch('parcels_convert_logic.execute_sql')
     @patch('parcels_convert_logic.psql_copy')
     @patch('parcels_convert_logic.run_sql_file')
@@ -2243,9 +2219,6 @@ class TestParcelProcessingRefactor(unittest.TestCase):
 
         mock_connection.close.assert_called_once()
 
-    # ------------------------------------------------------------------
-    # MIAMI-DADE COUNTY
-    # ------------------------------------------------------------------
     @patch('parcels_convert_logic.execute_sql')
     @patch('parcels_convert_logic.psql_copy')
     @patch('parcels_convert_logic.run_sql_file')
@@ -2290,9 +2263,6 @@ class TestParcelProcessingRefactor(unittest.TestCase):
 
         mock_connection.close.assert_called_once()
 
-    # ------------------------------------------------------------------
-    # MONROE COUNTY
-    # ------------------------------------------------------------------
     @patch('parcels_convert_logic.execute_sql')
     @patch('parcels_convert_logic.psql_copy')
     @patch('parcels_convert_logic.run_sql_file')
@@ -2317,9 +2287,6 @@ class TestParcelProcessingRefactor(unittest.TestCase):
         mock_psql_copy.assert_called_once_with(table_name='parcels_template2_monroe',file_name='parcels_new.txt',psql_path=pg_psql,header=False)
         mock_execute_sql.assert_not_called()
 
-    # ------------------------------------------------------------------
-    # NASSAU COUNTY
-    # ------------------------------------------------------------------
     @patch('parcels_convert_logic.execute_sql')
     @patch('parcels_convert_logic.psql_copy')
     @patch('parcels_convert_logic.run_sql_file')
@@ -2341,9 +2308,6 @@ class TestParcelProcessingRefactor(unittest.TestCase):
         mock_psql_copy.assert_called_once_with(table_name='raw_nassau_sales',file_name='parcels_sales.txt',psql_path=pg_psql,header=False)
         self.assertEqual(mock_execute_sql.call_count,2)
 
-    # ------------------------------------------------------------------
-    # OKALOOSA COUNTY
-    # ------------------------------------------------------------------
     @patch('parcels_convert_logic.execute_sql')
     @patch('parcels_convert_logic.psql_copy')
     @patch('parcels_convert_logic.run_sql_file')
@@ -2365,9 +2329,6 @@ class TestParcelProcessingRefactor(unittest.TestCase):
         self.assertEqual(mock_psql_copy.call_count,2)
         self.assertEqual(mock_execute_sql.call_count,1)
 
-    # ------------------------------------------------------------------
-    # OKEECHOBEE COUNTY
-    # ------------------------------------------------------------------
     @patch('parcels_convert_logic.execute_sql')
     @patch('parcels_convert_logic.psql_copy')
     @patch('parcels_convert_logic.run_sql_file')
@@ -2399,9 +2360,6 @@ class TestParcelProcessingRefactor(unittest.TestCase):
         # Six SQL updates bundled from legacy logic
         self.assertEqual(mock_execute_sql.call_count, 6)
 
-    # ------------------------------------------------------------------
-    # ORANGE COUNTY
-    # ------------------------------------------------------------------
     @patch('parcels_convert_logic.execute_sql')
     @patch('parcels_convert_logic.psql_copy')
     @patch('parcels_convert_logic.run_sql_file')
@@ -2433,9 +2391,6 @@ class TestParcelProcessingRefactor(unittest.TestCase):
 
         self.assertEqual(mock_execute_sql.call_count, 4)
 
-    # ------------------------------------------------------------------
-    # OSCEOLA COUNTY
-    # ------------------------------------------------------------------
     @patch('parcels_convert_logic.execute_sql')
     @patch('parcels_convert_logic.psql_copy')
     @patch('parcels_convert_logic.run_sql_file')
@@ -2466,9 +2421,6 @@ class TestParcelProcessingRefactor(unittest.TestCase):
         # No SQL updates in simplified config
         mock_execute_sql.assert_not_called()
 
-    # ------------------------------------------------------------------
-    # PALM BEACH COUNTY
-    # ------------------------------------------------------------------
     @patch('parcels_convert_logic.execute_sql')
     @patch('parcels_convert_logic.psql_copy')
     @patch('parcels_convert_logic.run_sql_file')
@@ -2498,9 +2450,6 @@ class TestParcelProcessingRefactor(unittest.TestCase):
 
         self.assertEqual(mock_execute_sql.call_count, 2)
 
-    # ------------------------------------------------------------------
-    # PASCO COUNTY
-    # ------------------------------------------------------------------
     @patch('parcels_convert_logic.execute_sql')
     @patch('parcels_convert_logic.psql_copy')
     @patch('parcels_convert_logic.run_sql_file')
@@ -2531,9 +2480,6 @@ class TestParcelProcessingRefactor(unittest.TestCase):
         # No ad-hoc SQL updates in simplified config
         mock_execute_sql.assert_not_called()
 
-    # ------------------------------------------------------------------
-    # PINELLAS COUNTY
-    # ------------------------------------------------------------------
     @patch('parcels_convert_logic.execute_sql')
     @patch('parcels_convert_logic.psql_copy')
     @patch('parcels_convert_logic.run_sql_file')
@@ -2563,9 +2509,6 @@ class TestParcelProcessingRefactor(unittest.TestCase):
 
         self.assertEqual(mock_execute_sql.call_count, 2)
 
-    # ------------------------------------------------------------------
-    # POLK COUNTY
-    # ------------------------------------------------------------------
     @patch('parcels_convert_logic.execute_sql')
     @patch('parcels_convert_logic.psql_copy')
     @patch('parcels_convert_logic.run_sql_file')
@@ -2597,9 +2540,6 @@ class TestParcelProcessingRefactor(unittest.TestCase):
         # 4 SQL updates
         self.assertEqual(mock_execute_sql.call_count, 4)
 
-    # ------------------------------------------------------------------
-    # PUTNAM COUNTY
-    # ------------------------------------------------------------------
     @patch('parcels_convert_logic.execute_sql')
     @patch('parcels_convert_logic.psql_copy')
     @patch('parcels_convert_logic.run_sql_file')
@@ -2631,9 +2571,6 @@ class TestParcelProcessingRefactor(unittest.TestCase):
         # Single SQL update
         self.assertEqual(mock_execute_sql.call_count, 1)
 
-    # ------------------------------------------------------------------
-    # SANTA ROSA COUNTY
-    # ------------------------------------------------------------------
     @patch('parcels_convert_logic.execute_sql')
     @patch('parcels_convert_logic.psql_copy')
     @patch('parcels_convert_logic.run_sql_file')
@@ -2665,9 +2602,6 @@ class TestParcelProcessingRefactor(unittest.TestCase):
         # 6 SQL updates
         self.assertEqual(mock_execute_sql.call_count, 6)
 
-    # ------------------------------------------------------------------
-    # SARASOTA COUNTY
-    # ------------------------------------------------------------------
     @patch('parcels_convert_logic.execute_sql')
     @patch('parcels_convert_logic.psql_copy')
     @patch('parcels_convert_logic.run_sql_file')
@@ -2699,9 +2633,6 @@ class TestParcelProcessingRefactor(unittest.TestCase):
         # 3 SQL updates
         self.assertEqual(mock_execute_sql.call_count, 3)
 
-    # ------------------------------------------------------------------
-    # SEMINOLE COUNTY
-    # ------------------------------------------------------------------
     @patch('parcels_convert_logic.execute_sql')
     @patch('parcels_convert_logic.psql_copy')
     @patch('parcels_convert_logic.run_sql_file')
@@ -2733,9 +2664,6 @@ class TestParcelProcessingRefactor(unittest.TestCase):
         # 3 SQL updates
         self.assertEqual(mock_execute_sql.call_count, 3)
 
-    # ------------------------------------------------------------------
-    # ST JOHNS COUNTY
-    # ------------------------------------------------------------------
     @patch('parcels_convert_logic.execute_sql')
     @patch('parcels_convert_logic.psql_copy')
     @patch('parcels_convert_logic.run_sql_file')
@@ -2767,9 +2695,6 @@ class TestParcelProcessingRefactor(unittest.TestCase):
         # 3 SQL updates
         self.assertEqual(mock_execute_sql.call_count, 3)
 
-    # ------------------------------------------------------------------
-    # ST LUCIE COUNTY
-    # ------------------------------------------------------------------
     @patch('parcels_convert_logic.execute_sql')
     @patch('parcels_convert_logic.psql_copy')
     @patch('parcels_convert_logic.run_sql_file')
@@ -2793,9 +2718,7 @@ class TestParcelProcessingRefactor(unittest.TestCase):
         self.assertEqual(mock_psql_copy.call_count, 9)
         self.assertEqual(mock_execute_sql.call_count, 4)
 
-    # ------------------------------------------------------------------
-    # SUMTER COUNTY
-    # ------------------------------------------------------------------
+
     @patch('parcels_convert_logic.execute_sql')
     @patch('parcels_convert_logic.psql_copy')
     @patch('parcels_convert_logic.run_sql_file')
@@ -2819,9 +2742,7 @@ class TestParcelProcessingRefactor(unittest.TestCase):
         self.assertEqual(mock_psql_copy.call_count, 3)
         self.assertEqual(mock_execute_sql.call_count, 4)
 
-    # ------------------------------------------------------------------
-    # SUWANNEE COUNTY
-    # ------------------------------------------------------------------
+
     @patch('parcels_convert_logic.execute_sql')
     @patch('parcels_convert_logic.psql_copy')
     @patch('parcels_convert_logic.run_sql_file')
@@ -2845,9 +2766,7 @@ class TestParcelProcessingRefactor(unittest.TestCase):
         self.assertEqual(mock_psql_copy.call_count, 2)
         self.assertEqual(mock_execute_sql.call_count, 1)
 
-    # ------------------------------------------------------------------
-    # TAYLOR COUNTY
-    # ------------------------------------------------------------------
+
     @patch('parcels_convert_logic.execute_sql')
     @patch('parcels_convert_logic.psql_copy')
     @patch('parcels_convert_logic.run_sql_file')
@@ -2872,9 +2791,7 @@ class TestParcelProcessingRefactor(unittest.TestCase):
         self.assertEqual(mock_psql_copy.call_count, 1)
         self.assertEqual(mock_execute_sql.call_count, 1)
 
-    # ------------------------------------------------------------------
-    # UNION COUNTY
-    # ------------------------------------------------------------------
+
     @patch('parcels_convert_logic.execute_sql')
     @patch('parcels_convert_logic.psql_copy')
     @patch('parcels_convert_logic.run_sql_file')
@@ -2899,9 +2816,6 @@ class TestParcelProcessingRefactor(unittest.TestCase):
         self.assertEqual(mock_psql_copy.call_count, 2)
         self.assertEqual(mock_execute_sql.call_count, 5)
 
-    # ------------------------------------------------------------------
-    # VOLUSIA COUNTY
-    # ------------------------------------------------------------------
     @patch('parcels_convert_logic.execute_sql')
     @patch('parcels_convert_logic.psql_copy')
     @patch('parcels_convert_logic.run_sql_file')
@@ -2926,9 +2840,6 @@ class TestParcelProcessingRefactor(unittest.TestCase):
         self.assertEqual(mock_psql_copy.call_count, 8)
         self.assertEqual(mock_execute_sql.call_count, 2)
 
-    # ------------------------------------------------------------------
-    # WAKULLA COUNTY
-    # ------------------------------------------------------------------
     @patch('parcels_convert_logic.execute_sql')
     @patch('parcels_convert_logic.psql_copy')
     @patch('parcels_convert_logic.run_sql_file')
@@ -2952,9 +2863,6 @@ class TestParcelProcessingRefactor(unittest.TestCase):
         self.assertEqual(mock_psql_copy.call_count, 1)
         self.assertEqual(mock_execute_sql.call_count, 2)
 
-    # ------------------------------------------------------------------
-    # WALTON COUNTY
-    # ------------------------------------------------------------------
     @patch('parcels_convert_logic.execute_sql')
     @patch('parcels_convert_logic.psql_copy')
     @patch('parcels_convert_logic.run_sql_file')
@@ -2979,9 +2887,6 @@ class TestParcelProcessingRefactor(unittest.TestCase):
         self.assertEqual(mock_psql_copy.call_count, 3)
         self.assertEqual(mock_execute_sql.call_count, 4)
 
-    # ------------------------------------------------------------------
-    # WASHINGTON COUNTY
-    # ------------------------------------------------------------------
     @patch('parcels_convert_logic.execute_sql')
     @patch('parcels_convert_logic.psql_copy')
     @patch('parcels_convert_logic.run_sql_file')
@@ -3005,9 +2910,6 @@ class TestParcelProcessingRefactor(unittest.TestCase):
         self.assertEqual(mock_psql_copy.call_count, 1)
         self.assertEqual(mock_execute_sql.call_count, 2)
 
-    # ------------------------------------------------------------------
-    # HARDEE COUNTY
-    # ------------------------------------------------------------------
     @patch('parcels_convert_logic.execute_sql')
     @patch('parcels_convert_logic.psql_copy')
     @patch('parcels_convert_logic.run_sql_file')
@@ -3032,9 +2934,6 @@ class TestParcelProcessingRefactor(unittest.TestCase):
         self.assertEqual(mock_psql_copy.call_count, 1)
         self.assertEqual(mock_execute_sql.call_count, 2)
 
-    # ------------------------------------------------------------------
-    # SUSSEX COUNTY (DE)
-    # ------------------------------------------------------------------
     @patch('parcels_convert_logic.execute_sql')
     @patch('parcels_convert_logic.psql_copy')
     @patch('parcels_convert_logic.run_sql_file')
