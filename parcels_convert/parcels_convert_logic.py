@@ -1635,6 +1635,100 @@ def get_glades_config(path_processing, pg_connection, pg_psql):
     }
     return config
 
+def get_gulf_config(path_processing, pg_connection, pg_psql):
+    """Returns the processing configuration for Gulf County."""
+    
+    config = {
+        'county_name': 'Gulf',
+        'path_processing': path_processing,
+        'pg_connection': pg_connection,
+        'pg_psql': pg_psql,
+        
+        'create_raw_tables_sql': "/srv/mapwise_dev/county/gulf/processing/database/sql_files/create_raw_tables.sql",
+
+        'preprocess_commands': [],
+        
+        'processing_scripts': [
+            {'script': '/srv/tools/python/parcel_processing/gulf/gulf-convert-sales-csv.py', 'description': 'RUN gulf-convert-sales-csv.py'}
+        ],
+
+        'copy_commands': [
+            {'table': 'raw_gulf_sales_dwnld', 'file': 'parcels_sales.txt', 'header': False}
+        ],
+
+        'sql_updates': [
+            {
+                'description': 'Call FDOR processing for Gulf County',
+                'sql': "SELECT process_raw_fdor('gulf');"
+            },
+            {
+                'description': 'Update owner info from raw sales file.',
+                'sql': """
+                    UPDATE parcels_template_gulf as p SET
+                        o_name1 = 'Owner Name Missing - ' || o.pin,
+                        o_name2 = null,
+                        o_address1 = null,
+                        o_address2 = null,
+                        o_address3 = null,
+                        o_city = null,
+                        o_state = null,
+                        o_zipcode = null,
+                        o_zipcode4 = null
+                        FROM raw_gulf_sales_dwnld as o
+                        WHERE p.pin = o.pin
+                ;"""
+            }
+        ]
+    }
+    return config
+
+def get_hamilton_config(path_processing, pg_connection, pg_psql):
+    """Returns the processing configuration for Hamilton County."""
+    
+    config = {
+        'county_name': 'Hamilton',
+        'path_processing': path_processing,
+        'pg_connection': pg_connection,
+        'pg_psql': pg_psql,
+        
+        'create_raw_tables_sql': "/srv/mapwise_dev/county/hamilton/processing/database/sql_files/create_raw_tables.sql",
+
+        'preprocess_commands': [],
+        
+        'processing_scripts': [
+            {'script': '/srv/tools/python/parcel_processing/hamilton/hamilton-convert-sales-csv.py', 'description': 'RUN hamilton-convert-sales-csv.py'}
+        ],
+
+        'copy_commands': [
+            {'table': 'raw_hamilton_sales_dwnld', 'file': 'parcels_sales.txt', 'header': False}
+        ],
+
+        'sql_updates': [
+            {
+                'description': 'Call FDOR processing for Hamilton County',
+                'sql': "SELECT process_raw_fdor('hamilton');"
+            },
+            {
+                'description': 'Update owner info from raw sales file.',
+                'sql': """
+                    UPDATE parcels_template_hamilton as p SET
+                        o_name1 = 'Owner Name Missing - ' || o.pin,
+                        o_name2 = null,
+                        o_address1 = null,
+                        o_address2 = null,
+                        o_address3 = null,
+                        o_city = null,
+                        o_state = null,
+                        o_zipcode = null,
+                        o_zipcode4 = null
+                        FROM raw_hamilton_sales_dwnld as o
+                        WHERE p.pin = o.pin
+                ;"""
+            }
+        ]
+    }
+    return config
+
 if __name__ == '__main__':
     # This is an example of how to run the process for a county.
     # It requires environment variables or another method to be set up
