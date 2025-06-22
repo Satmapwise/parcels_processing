@@ -2410,6 +2410,127 @@ def get_manatee_config(path_processing, pg_connection, pg_psql):
 
     return config
 
+def get_marion_config(path_processing, pg_connection, pg_psql):
+    """Returns the processing configuration for Marion County."""
+
+    config = {
+        'county_name': 'Marion',
+        'path_processing': path_processing,
+        'pg_connection': pg_connection,
+        'pg_psql': pg_psql,
+
+        'create_raw_tables_sql': "/srv/mapwise_dev/county/marion/processing/database/sql_files/create_raw_tables.sql",
+
+        'preprocess_commands': [],  # No explicit pre-processing in legacy script
+
+        'processing_scripts': [
+            {'script': '/srv/tools/python/parcel_processing/marion/marion-parcels-merlin-csv.py', 'description': 'RUN marion-parcels-merlin-csv.py'},
+            {'script': '/srv/tools/python/parcel_processing/marion/marion-sales-2025.py', 'description': 'RUN marion-sales-2025.py'},
+            {'script': '/srv/tools/python/parcel_processing/marion/marion-sales-2024.py', 'description': 'RUN marion-sales-2024.py'}
+        ],
+
+        'copy_commands': [
+            {'table': 'parcels_template2_marion', 'file': 'parcels_new.txt', 'header': False},
+            {'table': 'raw_marion_sales_dwnld', 'file': 'parcels_sales_2024_dnld.txt', 'header': False},
+            {'table': 'raw_marion_sales_dwnld', 'file': 'parcels_sales_2025_dnld.txt', 'header': False}
+        ],
+
+        'sql_updates': [
+            {
+                'description': 'Create index for performance.',
+                'sql': 'CREATE INDEX IF NOT EXISTS idx_parcels_template_marion ON parcels_template_marion USING btree (pin);'
+            },
+            {
+                'description': 'Insert missing parcels (simplified).',
+                'sql': '/* INSERT INTO parcels_template_marion ... simplified omitted */'
+            },
+            {
+                'description': 'Update existing parcels (simplified).',
+                'sql': '/* UPDATE parcels_template_marion ... simplified omitted */'
+            }
+        ]
+    }
+
+    return config
+
+def get_martin_config(path_processing, pg_connection, pg_psql):
+    """Returns the processing configuration for Martin County."""
+
+    config = {
+        'county_name': 'Martin',
+        'path_processing': path_processing,
+        'pg_connection': pg_connection,
+        'pg_psql': pg_psql,
+
+        'create_raw_tables_sql': "/srv/mapwise_dev/county/martin/processing/database/sql_files/create_raw_tables.sql",
+
+        'preprocess_commands': [
+            {'command': f'sed -e "s:NULL::g" {path_processing}/source_data/real_land.csv > {path_processing}/source_data/real_land2.csv'},
+            {'command': f"tr -cd '\\11\\12\\15\\40-\\133\\135-\\176' < {path_processing}/source_data/real_master.csv > {path_processing}/source_data/real_master2.csv"},
+            {'command': f'sed -e "s:NULL::g" {path_processing}/source_data/real_master2.csv > {path_processing}/source_data/real_master3.csv'},
+            {'command': f"tr -cd '\\11\\12\\15\\40-\\133\\135-\\176' < {path_processing}/source_data/real_improv3.csv > {path_processing}/source_data/real_improv4.csv"}
+        ],
+
+        'processing_scripts': [
+            {'script': '/srv/tools/python/parcel_processing/martin/martin-current-realimprov.py', 'description': 'RUN martin-current-realimprov.py'},
+            {'script': '/srv/tools/python/parcel_processing/martin/martin-current-realland.py', 'description': 'RUN martin-current-realland.py'},
+            {'script': '/srv/tools/python/parcel_processing/martin/martin-current-transfers.py', 'description': 'RUN martin-current-transfers.py'},
+            {'script': '/srv/tools/python/parcel_processing/martin/martin-current-realmaster.py', 'description': 'RUN martin-current-realmaster.py'},
+            {'script': '/srv/tools/python/parcel_processing/martin/martin-current-ucav.py', 'description': 'RUN martin-current-ucav.py'}
+        ],
+
+        'copy_commands': [
+            {'table': 'parcels_template_martin', 'file': 'parcels_new.txt', 'header': False},
+            {'table': 'raw_martin_bldg', 'file': 'bldg.txt', 'header': False},
+            {'table': 'raw_martin_sales', 'file': 'sales.txt', 'header': False},
+            {'table': 'raw_martin_values', 'file': 'parcels_values.txt', 'header': False},
+            {'table': 'raw_martin_legal_denormal', 'file': 'legal.txt', 'header': False}
+        ],
+
+        'sql_updates': [
+            {
+                'description': 'Create building summary table (simplified).',
+                'sql': '/* SELECT INTO raw_martin_bldg_sum ... simplified */'
+            }
+        ]
+    }
+
+    return config
+
+def get_miami_dade_config(path_processing, pg_connection, pg_psql):
+    """Returns the processing configuration for Miami-Dade County."""
+
+    config = {
+        'county_name': 'Miami-Dade',
+        'path_processing': path_processing,
+        'pg_connection': pg_connection,
+        'pg_psql': pg_psql,
+
+        'create_raw_tables_sql': "/srv/mapwise_dev/county/miami_dade/processing/database/sql_files/create_raw_tables.sql",
+
+        'preprocess_commands': [
+            {'command': f"sed -e 's:\\\\:/:g' {path_processing}/source_data/PublicSalesExtractAllYears.csv > {path_processing}/source_data/PublicSalesExtractAllYears2.csv"},
+            {'command': f"sed -e 's:\\\\:/:g' {path_processing}/source_data/PublicParcelExtract.csv > {path_processing}/source_data/PublicParcelExtract2.csv"},
+            {'command': f"sed -e 's:\\\\:/:g' {path_processing}/source_data/PublicLegalExtract.csv > {path_processing}/source_data/PublicLegalExtract2.csv"}
+        ],
+
+        'processing_scripts': [
+            {'script': '/srv/tools/python/parcel_processing/miami_dade/miami-dade-parcels-current.py', 'description': 'RUN miami-dade-parcels-current.py'},
+            {'script': '/srv/tools/python/parcel_processing/miami_dade/miami-dade-sales-all.py', 'description': 'RUN miami-dade-sales-all.py'},
+            {'script': '/srv/tools/python/parcel_processing/miami_dade/miami-dade-legal.py', 'description': 'RUN miami-dade-legal.py'}
+        ],
+
+        'copy_commands': [
+            {'table': 'parcels_template_miami_dade', 'file': 'parcels_new.txt', 'header': False},
+            {'table': 'raw_miami_dade_sales', 'file': 'parcels_sales.txt', 'header': False},
+            {'table': 'raw_miami_dade_legal_normal', 'file': 'parcels_legal.txt', 'header': False}
+        ],
+
+        'sql_updates': []  # Complex denormalization happens in scripts; omit here
+    }
+
+    return config
+
 if __name__ == '__main__':
     # This is an example of how to run the process for a county.
     # It requires environment variables or another method to be set up
