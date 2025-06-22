@@ -3160,6 +3160,113 @@ def get_st_johns_config(path_processing, pg_connection, pg_psql):
 
     return config
 
+def get_st_lucie_config(path_processing, pg_connection, pg_psql):
+    """Returns the processing configuration for St Lucie County (simplified)."""
+
+    path_source_data = f"{path_processing}/source_data"
+
+    config = {
+        'county_name': 'St Lucie',
+        'path_processing': path_processing,
+        'pg_connection': pg_connection,
+        'pg_psql': pg_psql,
+
+        'create_raw_tables_sql': "/srv/mapwise_dev/county/st_lucie/processing/database/sql_files/create_raw_tables.sql",
+
+        'preprocess_commands': [
+            {'command': f"tr -cd '\\11\\12\\15\\40-\\133\\135-\\176' < {path_source_data}/PropertyOwnership.csv > {path_source_data}/PropertyOwnership_2.csv"},
+            {'command': f"tr -cd '\\11\\12\\15\\40-\\133\\135-\\176' < {path_source_data}/LegalDescription.csv > {path_source_data}/LegalDescription_2.csv"}
+        ],
+
+        'processing_scripts': [
+            {'script': '/srv/tools/python/parcel_processing/st_lucie/st_lucie-assessment.py', 'description': 'RUN assessment'},
+            {'script': '/srv/tools/python/parcel_processing/st_lucie/st_lucie-building-basic.py', 'description': 'RUN building-basic'},
+            {'script': '/srv/tools/python/parcel_processing/st_lucie/st_lucie-identification.py', 'description': 'RUN identification'},
+            {'script': '/srv/tools/python/parcel_processing/st_lucie/st_lucie-land.py', 'description': 'RUN land'},
+            {'script': '/srv/tools/python/parcel_processing/st_lucie/st_lucie-legal.py', 'description': 'RUN legal'},
+            {'script': '/srv/tools/python/parcel_processing/st_lucie/st_lucie-owners.py', 'description': 'RUN owners'},
+            {'script': '/srv/tools/python/parcel_processing/st_lucie/st_lucie-prop-idx.py', 'description': 'RUN prop-idx'},
+            {'script': '/srv/tools/python/parcel_processing/st_lucie/st_lucie-situs.py', 'description': 'RUN situs'},
+            {'script': '/srv/tools/python/parcel_processing/st_lucie/st_lucie-transactions.py', 'description': 'RUN transactions'}
+        ],
+
+        'copy_commands': [
+            {'table': 'raw_st_lucie_parcels_values', 'file': 'parcels_values.txt', 'header': False},
+            {'table': 'raw_st_lucie_parcels_bldg', 'file': 'parcels_building.txt', 'header': False},
+            {'table': 'parcels_template_st_lucie', 'file': 'parcels_new.txt', 'header': False},
+            {'table': 'raw_st_lucie_parcels_land', 'file': 'parcels_land.txt', 'header': False},
+            {'table': 'raw_st_lucie_parcels_legal', 'file': 'parcels_legal.txt', 'header': False},
+            {'table': 'raw_st_lucie_parcels_owner', 'file': 'parcels_owner.txt', 'header': False},
+            {'table': 'raw_st_lucie_parcels_index', 'file': 'parcels_index.txt', 'header': False},
+            {'table': 'raw_st_lucie_parcels_situs', 'file': 'parcels_situs.txt', 'header': False},
+            {'table': 'raw_st_lucie_parcels_sales', 'file': 'parcels_sales.txt', 'header': False}
+        ],
+
+        'sql_updates': [
+            {'description': 'Building stats summary & parcel update', 'sql': '/* bldg stats */'},
+            {'description': 'Owner join', 'sql': '/* owner join */'},
+            {'description': 'Situs join', 'sql': '/* situs join */'},
+            {'description': 'Sales denormalization placeholder', 'sql': '/* sales denorm */'}
+        ]
+    }
+
+    return config
+
+def get_sumter_config(path_processing, pg_connection, pg_psql):
+    """Returns the processing configuration for Sumter County (simplified)."""
+
+    config = {
+        'county_name': 'Sumter',
+        'path_processing': path_processing,
+        'pg_connection': pg_connection,
+        'pg_psql': pg_psql,
+
+        'create_raw_tables_sql': "/srv/mapwise_dev/county/sumter/processing/database/sql_files/create_raw_tables.sql",
+
+        'processing_scripts': [
+            {'script': '/srv/tools/python/parcel_processing/sumter/sumter-convert-sales-csv.py', 'description': 'RUN convert-sales'},
+            {'script': '/srv/tools/python/parcel_processing/sumter/sumter-convert-building-area.py', 'description': 'RUN convert-building-area'}
+        ],
+
+        'copy_commands': [
+            {'table': 'raw_sumter_sales_dwnld', 'file': 'parcels_sales.txt', 'header': False},
+            {'table': 'raw_sumter_bldg', 'file': 'buildings_area.txt', 'header': False},
+            {'table': 'parcels_template2_sumter', 'file': 'parcels_new.txt', 'header': False}
+        ],
+
+        'sql_updates': [
+            {'description': 'Owner placeholder updates', 'sql': '/* owner updates */'},
+            {'description': 'Parcel attribute overrides', 'sql': '/* parcel overrides */'},
+            {'description': 'Sales owner updates', 'sql': '/* sales owner update */'},
+            {'description': 'Misc cleanup', 'sql': '/* cleanup */'}
+        ]
+    }
+
+    return config
+
+def get_suwannee_config(path_processing, pg_connection, pg_psql):
+    """Returns the processing configuration for Suwannee County (simplified)."""
+
+    config = {
+        'county_name': 'Suwannee',
+        'path_processing': path_processing,
+        'pg_connection': pg_connection,
+        'pg_psql': pg_psql,
+
+        'create_raw_tables_sql': "/srv/mapwise_dev/county/suwannee/processing/database/sql_files/create_raw_tables.sql",
+
+        'copy_commands': [
+            {'table': 'raw_suwannee_sales_export', 'file': 'source_data/sales_dnld_2014-01-01_current.txt', 'header': False},
+            {'table': 'raw_suwannee_sales_owner_export', 'file': 'source_data/sales_owner_mailing_dnld_2014-01-01_current.txt', 'header': False}
+        ],
+
+        'sql_updates': [
+            {'description': 'Normalize sale date (yyyy-mm-dd)', 'sql': '/* sale date format */'}
+        ]
+    }
+
+    return config
+
 if __name__ == '__main__':
     # This is an example of how to run the process for a county.
     # It requires environment variables or another method to be set up
