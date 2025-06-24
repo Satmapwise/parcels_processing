@@ -195,7 +195,7 @@ def main():
             # API calls now use the original county_name. The path needs a formatted version.
             path_county_name = county_name.lower().replace(" ", "_")
             
-            most_recent_data = get_api_data(path_county_name, params={'limit': 1})
+            most_recent_data = get_api_data(county_name, params={'limit': 1})
             if not most_recent_data or 'features' not in most_recent_data or not most_recent_data['features']:
                 error_description = 'Could not retrieve data from API.'
                 print(f"  -> FAILED: {error_description}\n")
@@ -246,7 +246,7 @@ def main():
 
             # 3. Empty columns check
             print("  - Checking for empty columns...", end="")
-            success, msg = check_empty_columns(path_county_name, config['columns_to_check'])
+            success, msg = check_empty_columns(county_name, config['columns_to_check'])
             if not success:
                 error_messages.append(msg)
                 print(f" FAILED: {msg}")
