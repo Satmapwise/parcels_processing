@@ -31,7 +31,7 @@ def get_api_data(county_name, params={}):
     url = "https://maps.mapwise.com/api_v1/parcels_v2/"
     
     query_params = params.copy()
-    query_params['searchCounty'] = county_name.upper()
+    query_params['searchCounty'] = county_name
     query_params['format'] = 'json'
 
     user = os.environ.get('MAPWISE_API_USER')
@@ -193,7 +193,7 @@ def main():
             # API calls now use the original county_name. The path needs a formatted version.
             path_county_name = county_name.lower().replace(" ", "_")
             
-            most_recent_data = get_api_data(county_name, params={'limit': 1})
+            most_recent_data = get_api_data(path_county_name, params={'limit': 1})
             if not most_recent_data or 'features' not in most_recent_data or not most_recent_data['features']:
                 writer.writerow({'county': county_name, 'status': 'Failure', 'error_description': 'Could not retrieve data from API.'})
                 continue
