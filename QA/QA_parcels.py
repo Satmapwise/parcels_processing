@@ -1,9 +1,9 @@
 import json
 import os
 import requests
-from datetime import datetime, timedelta
+from datetime import datetime
 import csv
-import argparse
+
 
 def get_config():
     """Reads the configuration from the JSON file."""
