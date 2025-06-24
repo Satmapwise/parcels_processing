@@ -28,8 +28,18 @@ def get_config():
 def get_api_data(county_name, params={}):
     """Queries the API for a given county."""
     url = f"https://wms1.mapwise.com/api/v1/parcels/{county_name.lower()}"
+    api_key = os.environ.get('MAPWISE_API_KEY')
+    headers = {}
+
+    if not api_key:
+        print("Warning: MAPWISE_API_KEY environment variable not set. API requests will likely fail.")
+    else:
+        # Assuming the API uses a Bearer token for authentication.
+        # If it uses a different scheme (e.g., 'ApiKey'), this line would need to be adjusted.
+        headers['Authorization'] = f'Bearer {api_key}'
+
     try:
-        response = requests.get(url, params=params)
+        response = requests.get(url, params=params, headers=headers)
         response.raise_for_status()
         return response.json()
     except requests.exceptions.RequestException as e:
