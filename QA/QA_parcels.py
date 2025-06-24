@@ -24,12 +24,30 @@ def get_api_data(county_name, params={}):
 
 def check_record_number(county_config, api_record_count, raw_data_path):
     """Checks if the record number from the API is within the allowed margin of error."""
+    raw_file_name = county_config.get('raw_file_name')
+    if raw_file_name in ["FDOR", "UNAVAILABLE"]:
+        return True, f"SKIPPED: Raw file source is {raw_file_name}."
+
     try:
-        with open(raw_data_path, 'r', newline='') as f:
-            reader = csv.reader(f)
-            raw_record_count = sum(1 for row in reader) - 1
-            if raw_record_count < 0:
-                raw_record_count = 0
+        parcel_ids = set()
+        delimiter = county_config.get('delimiter', ',')
+        has_header = county_config.get('has_header', False)
+        id_column = county_config.get('parcel_id_column_index', 0)
+
+        with open(raw_data_path, 'r', newline='', errors='ignore') as f:
+            reader = csv.reader(f, delimiter=delimiter)
+            
+            if has_header:
+                next(reader, None)  # Skip header row
+            
+            for row in reader:
+                if row and len(row) > id_column:
+                    parcel_id = row[id_column].strip()
+                    if parcel_id:
+                        parcel_ids.add(parcel_id)
+        
+        raw_record_count = len(parcel_ids)
+
     except FileNotFoundError:
         return False, f"Raw data file not found at {raw_data_path}"
     except Exception as e:
