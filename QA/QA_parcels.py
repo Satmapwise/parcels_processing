@@ -28,8 +28,12 @@ def get_config():
 
 def get_api_data(county_name, params={}):
     """Queries the API for a given county."""
-    url = f"https://wms1.mapwise.com/api/v1/parcels/{county_name.lower()}"
+    url = "https://maps.mapwise.com/api_v1/parcels_v2/"
     
+    query_params = params.copy()
+    query_params['searchCounty'] = county_name.upper()
+    query_params['format'] = 'json'
+
     user = os.environ.get('MAPWISE_API_USER')
     password = os.environ.get('MAPWISE_API_PASS')
     
@@ -39,7 +43,7 @@ def get_api_data(county_name, params={}):
         print("Warning: MAPWISE_API_USER or MAPWISE_API_PASS not set. API requests will likely fail.")
 
     try:
-        response = requests.get(url, params=params, auth=auth)
+        response = requests.get(url, params=query_params, auth=auth)
         response.raise_for_status()
         return response.json()
     except requests.exceptions.RequestException as e:
@@ -140,7 +144,7 @@ def check_most_recent_sale_date(county_config, most_recent_sale_date_str, data_d
 
 def check_empty_columns(county_name, columns_to_check):
     """Checks for empty values in specified columns for the 10 most recent records."""
-    data = get_api_data(county_name, params={'sort': '-saledate', 'limit': 10})
+    data = get_api_data(county_name, params={'limit': 10})
     if not data or 'features' not in data or not data['features']:
         return False, "Could not retrieve sample data for empty column check."
 
@@ -176,6 +180,7 @@ def main():
     results_path = os.path.join(os.path.dirname(__file__), 'QA_results.csv')
     raw_data_dir_template = "/srv/mapwise_dev/county/{county_name}/processing/database/current"
 
+
     with open(results_path, 'w', newline='') as csvfile:
         fieldnames = ['county', 'status', 'error_description']
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
@@ -184,8 +189,11 @@ def main():
         for county_config in config['counties']:
             county_name = county_config['name']
             print(f"Processing {county_name}...")
+
+            # Format county name for API
+            county_name = county_name.lower().replace(" ", "_")
             
-            most_recent_data = get_api_data(county_name, params={'sort': '-saledate', 'limit': 1})
+            most_recent_data = get_api_data(county_name, params={'limit': 1})
             if not most_recent_data or 'features' not in most_recent_data or not most_recent_data['features']:
                 writer.writerow({'county': county_name, 'status': 'Failure', 'error_description': 'Could not retrieve data from API.'})
                 continue
