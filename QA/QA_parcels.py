@@ -65,6 +65,7 @@ def get_api_data(county_name, params={}):
         print(f"API request via curl failed for {county_name}.")
         print(f"  Exit code: {e.returncode}")
         print(f"  Stderr: {e.stderr}")
+        print(f"  Stdout: {e.stdout}")
         return None
     except json.JSONDecodeError:
         print(f"Failed to decode JSON from curl response for {county_name}.")
