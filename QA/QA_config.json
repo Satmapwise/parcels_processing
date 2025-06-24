@@ -1,0 +1,18 @@
+{
+    "counties": [
+        {
+            "name": "Hardee",
+            "record_number_error_margin_percent": 5,
+            "sale_date_days_difference": 90
+        }
+    ],
+    "columns_to_check": [
+        "owner1",
+        "own_addr_1",
+        "own_addr_2",
+        "own_city",
+        "own_state",
+        "own_zip"
+    ],
+    "raw_data_dir_template": "/mnt/Parcels/{county_name}/{date_str}"
+} 
