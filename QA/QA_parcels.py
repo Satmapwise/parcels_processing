@@ -39,7 +39,8 @@ def get_api_data(county_name, params={}):
 def check_record_number(county_config, api_record_count, raw_data_path, db_connection=None):
     """Checks if the record number from the API is within the allowed margin of error."""
     raw_file_name = county_config.get('raw_file_name')
-    
+    file_format = county_config.get('file_format', 'delimited') # Default to delimited
+
     if raw_file_name == "FDOR":
         if not db_connection:
             return True, "SKIPPED: DB connection not available for FDOR check."
@@ -60,7 +61,28 @@ def check_record_number(county_config, api_record_count, raw_data_path, db_conne
 
     elif raw_file_name == "UNAVAILABLE":
         return True, "SKIPPED: Raw file source is UNAVAILABLE."
-    else:
+    
+    elif file_format == 'fixed-width':
+        try:
+            parcel_ids = set()
+            start = county_config.get('parcel_id_start')
+            length = county_config.get('parcel_id_length')
+            if start is None or length is None:
+                return False, "Fixed-width config missing start or length."
+            
+            with open(raw_data_path, 'r', newline='', errors='ignore') as f:
+                for line in f:
+                    if len(line) >= start + length:
+                        parcel_id = line[start:start+length].strip()
+                        if parcel_id:
+                            parcel_ids.add(parcel_id)
+            raw_record_count = len(parcel_ids)
+        except FileNotFoundError:
+            return False, f"Raw data file not found at {raw_data_path}"
+        except Exception as e:
+            return False, f"Error reading raw data file: {e}"
+
+    else: # Default to delimited
         try:
             parcel_ids = set()
             delimiter = county_config.get('delimiter', ',')

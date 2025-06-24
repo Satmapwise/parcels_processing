@@ -47,9 +47,12 @@
         },
         {
             "name": "Duval",
-            "raw_file_name": "UNAVAILABLE",
+            "raw_file_name": "parcel.txt",
             "record_number_error_margin_percent": 5,
-            "sale_date_days_difference": 15
+            "sale_date_days_difference": 15,
+            "file_format": "fixed-width",
+            "parcel_id_start": 0,
+            "parcel_id_length": 10
         },
         {
             "name": "Pinellas",
@@ -74,9 +77,9 @@
             "raw_file_name": "source_data/ftp_parcel.txt",
             "record_number_error_margin_percent": 5,
             "sale_date_days_difference": 15,
-            "delimiter": "\t",
-            "has_header": true,
-            "parcel_id_column_index": 0
+            "file_format": "fixed-width",
+            "parcel_id_start": 0,
+            "parcel_id_length": 12
         },
         {
             "name": "Brevard",
@@ -122,9 +125,12 @@
         },
         {
             "name": "Manatee",
-            "raw_file_name": "UNAVAILABLE",
+            "raw_file_name": "PARCELS.txt",
             "record_number_error_margin_percent": 5,
-            "sale_date_days_difference": 15
+            "sale_date_days_difference": 15,
+            "file_format": "fixed-width",
+            "parcel_id_start": 0,
+            "parcel_id_length": 12
         },
         {
             "name": "Osceola",
@@ -237,10 +243,12 @@
         },
         {
             "name": "Santa Rosa",
-            "raw_file_name": "UNAVAILABLE",
+            "raw_file_name": "CAMPA.txt",
             "record_number_error_margin_percent": 5,
             "sale_date_days_difference": 30,
-            "parcel_id_column_index": 0
+            "file_format": "fixed-width",
+            "parcel_id_start": 0,
+            "parcel_id_length": 12
         },
         {
             "name": "Charlotte",
