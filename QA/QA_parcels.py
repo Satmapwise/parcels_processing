@@ -190,8 +190,8 @@ def main():
             county_name = county_config['name']
             print(f"Processing {county_name}...")
 
-            # Format county name for API
-            county_name = county_name.lower().replace(" ", "_")
+            # API calls now use the original county_name. The path needs a formatted version.
+            path_county_name = county_name.lower().replace(" ", "_")
             
             most_recent_data = get_api_data(county_name, params={'limit': 1})
             if not most_recent_data or 'features' not in most_recent_data or not most_recent_data['features']:
@@ -207,7 +207,7 @@ def main():
             
             data_date = datetime.strptime(prodate_str, '%Y-%m-%d').date()
 
-            raw_data_dir = raw_data_dir_template.format(county_name=county_name.lower())
+            raw_data_dir = raw_data_dir_template.format(county_name=path_county_name)
             raw_data_path = os.path.join(raw_data_dir, county_config['raw_file_name'])
 
             api_record_count = most_recent_data['totalfeatures']
