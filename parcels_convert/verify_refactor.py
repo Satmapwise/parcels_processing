@@ -14,6 +14,21 @@ sys.modules['psycopg2.extras'] = MagicMock()
 
 # Import directly from the logic file to avoid syntax errors in the old parcels_convert.py
 import parcels_convert_logic
+import parcels_convert
+
+# Mock os.system to prevent any real shell commands from executing during tests
+import os as _os_module
+
+def _mock_system(cmd):
+    """Mock replacement for os.system that logs the command without executing it."""
+    print(f"[mock os.system] {cmd}")
+    return 0  # emulate successful execution
+
+_os_module.system = _mock_system
+
+# Ensure any attempt to send email is also mocked out
+import smtplib as _smtplib_module
+_smtplib_module.SMTP = MagicMock()
 
 class TestParcelProcessingRefactor(unittest.TestCase):
     """
@@ -36,6 +51,7 @@ class TestParcelProcessingRefactor(unittest.TestCase):
     @patch('parcels_convert_logic.os.chdir')
     @patch('parcels_convert_logic.os.path.exists')
     @patch('parcels_convert_logic.psycopg2.connect')
+            
     def test_alachua_processing_orchestration(
         self,
         mock_connect,
@@ -2957,6 +2973,160 @@ class TestParcelProcessingRefactor(unittest.TestCase):
         mock_run_sql_file.assert_called_once_with(config['create_raw_tables_sql'], pg_psql)
         self.assertEqual(mock_psql_copy.call_count, 2)
         self.assertEqual(mock_execute_sql.call_count, 2)
+
+class TestRefactorComparison(unittest.TestCase):
+    """
+    Tests that compare the refactored logic with the original parcels_convert.py logic
+    to ensure they produce identical results.
+    """
+    
+    def setUp(self):
+        """Set up test environment for both original and refactored logic."""
+        self.path_processing = "/fake/path/processing"
+        self.pg_connection = "fake_connection_string"
+        self.pg_psql = "/usr/bin/psql"
+        
+    def compare_county_processing(self, county_name, original_func, refactored_config_func):
+        """
+        Compare original vs refactored processing for a given county.
+        
+        Args:
+            county_name: Name of the county being tested
+            original_func: Function from original parcels_convert.py
+            refactored_config_func: Function that returns config for refactored logic
+        """
+        
+        # Mock all the same dependencies for both executions
+        with patch('parcels_convert_logic.execute_sql') as mock_execute_sql_refactored, \
+             patch('parcels_convert_logic.psql_copy') as mock_psql_copy_refactored, \
+             patch('parcels_convert_logic.run_sql_file') as mock_run_sql_file_refactored, \
+             patch('parcels_convert_logic.run_external_command') as mock_run_external_command_refactored, \
+             patch('parcels_convert_logic.os.chdir') as mock_chdir_refactored, \
+             patch('parcels_convert_logic.os.path.exists') as mock_path_exists_refactored, \
+             patch('parcels_convert_logic.psycopg2.connect') as mock_connect_refactored, \
+             patch('parcels_convert.execute_sql') as mock_execute_sql_original, \
+             patch('parcels_convert.psql_copy') as mock_psql_copy_original, \
+             patch('parcels_convert.run_sql_file') as mock_run_sql_file_original, \
+             patch('parcels_convert.run_external_command') as mock_run_external_command_original, \
+             patch('parcels_convert.os.chdir') as mock_chdir_original, \
+             patch('parcels_convert.os.path.exists') as mock_path_exists_original, \
+             patch('parcels_convert.psycopg2.connect') as mock_connect_original:
+            
+            # Setup mocks
+            mock_connection = MagicMock()
+            mock_connect_refactored.return_value = mock_connection
+            mock_connect_original.return_value = mock_connection
+            mock_path_exists_refactored.return_value = True
+            mock_path_exists_original.return_value = True
+            
+            # Execute ORIGINAL logic
+            # Ensure the legacy script has access to the same configuration that the refactored
+            # helper receives. The legacy functions rely on global variables rather than
+            # parameters, so we patch them onto the module before invocation.
+            import parcels_convert as _legacy_mod
+            _legacy_mod.pathProcessing = self.path_processing
+            _legacy_mod.pg_connection = self.pg_connection
+            _legacy_mod.pg_psql = self.pg_psql
+
+            # Some legacy helper variables are occasionally read with different names
+            # (e.g. pg_psql_path or pg_connection_string).  To be safe we mirror the
+            # same value under common aliases when they are not already present.
+            if not hasattr(_legacy_mod, 'pg_psql_path'):
+                _legacy_mod.pg_psql_path = self.pg_psql
+            if not hasattr(_legacy_mod, 'pg_connection_string'):
+                _legacy_mod.pg_connection_string = self.pg_connection
+
+            # Finally, execute the legacy county-specific function. These functions do
+            # not accept parameters – they rely on the globals we just injected.
+            original_func()
+            
+            # Capture original results
+            original_external_calls = mock_run_external_command_original.call_args_list.copy()
+            original_sql_calls = mock_execute_sql_original.call_args_list.copy()
+            original_copy_calls = mock_psql_copy_original.call_args_list.copy()
+            original_sql_file_calls = mock_run_sql_file_original.call_args_list.copy()
+            
+            # Reset mocks for refactored execution
+            mock_run_external_command_refactored.reset_mock()
+            mock_execute_sql_refactored.reset_mock()
+            mock_psql_copy_refactored.reset_mock()
+            mock_run_sql_file_refactored.reset_mock()
+            mock_chdir_refactored.reset_mock()
+            mock_connect_refactored.reset_mock()
+            
+            # Execute REFACTORED logic
+            config = refactored_config_func(self.path_processing, self.pg_connection, self.pg_psql)
+            parcels_convert_logic.process_raw_data(config)
+            
+            # Capture refactored results
+            refactored_external_calls = mock_run_external_command_refactored.call_args_list
+            refactored_sql_calls = mock_execute_sql_refactored.call_args_list
+            refactored_copy_calls = mock_psql_copy_refactored.call_args_list
+            refactored_sql_file_calls = mock_run_sql_file_refactored.call_args_list
+            
+            # COMPARE RESULTS
+            self.assertEqual(
+                len(original_external_calls), 
+                len(refactored_external_calls),
+                f"{county_name}: Different number of external command calls"
+            )
+            
+            self.assertEqual(
+                len(original_sql_calls), 
+                len(refactored_sql_calls),
+                f"{county_name}: Different number of SQL calls"
+            )
+            
+            self.assertEqual(
+                len(original_copy_calls), 
+                len(refactored_copy_calls),
+                f"{county_name}: Different number of copy calls"
+            )
+            
+            # Compare specific calls (you might need to normalize them)
+            self.assertEqual(
+                original_external_calls, 
+                refactored_external_calls,
+                f"{county_name}: External command calls don't match"
+            )
+            
+            self.assertEqual(
+                original_sql_calls, 
+                refactored_sql_calls,
+                f"{county_name}: SQL calls don't match"
+            )
+            
+            self.assertEqual(
+                original_copy_calls, 
+                refactored_copy_calls,
+                f"{county_name}: Copy calls don't match"
+            )
+
+            self.assertEqual(
+                original_sql_file_calls, 
+                refactored_sql_file_calls,
+                f"{county_name}: SQL file calls don't match"
+            )
+            
+            print(f"✅ {county_name}: Original and refactored logic produce identical results")
+
+    def test_alachua_comparison(self):
+        """Compare original vs refactored Alachua processing."""
+        self.compare_county_processing(
+            "Alachua",
+            parcels_convert.process_raw_alachua,
+            parcels_convert_logic.get_alachua_config
+        )
+    
+    def test_baker_comparison(self):
+        """Compare original vs refactored Baker processing."""
+        self.compare_county_processing(
+            "Baker", 
+            parcels_convert.process_raw_baker,
+            parcels_convert_logic.get_baker_config
+        )
+    
+    
 
 if __name__ == '__main__':
     # This allows running the tests directly
