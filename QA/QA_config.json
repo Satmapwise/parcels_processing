@@ -566,24 +566,39 @@
         }
     ],
     "columns_to_check": [
-        "yrblt",
+        {
+            "name": "yrblt",
+            "fields": [
+                "yrblt_act",
+                "yrblt_eff"
+            ],
+            "rule": "any"
+        },
         {
             "name": "square_footage",
             "fields": [
-                "sqft_l",
-                "sqft_t",
+                "sqft_htd",
+                "sqft_tot",
                 "sqft_adj"
             ],
             "rule": "any"
         },
-        "owner1",
-        "own_addr_1",
-        "site_addr",
-        "county",
-        "justval",
-        "assdval",
-        "landuse",
-        "fdor_landu",
-        "legaldesc"
+        "o_name1",
+        "o_address1",
+        "o_city",
+        "o_zipcode",
+        "s_number",
+        "s_address", 
+        "s_city",
+        "s_zipcode",
+        "d_county",
+        "mrkt_tot",
+        "assd_tot",
+        "luse",
+        "lusedor",
+        "lusedor_d",
+        "legal_full",
+        "sale1_amt",
+        "sale1_date"
     ]
 } 
