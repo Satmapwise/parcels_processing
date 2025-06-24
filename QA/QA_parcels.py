@@ -43,7 +43,14 @@ def get_api_data(county_name, params={}):
         print("Warning: MAPWISE_API_USER or MAPWISE_API_PASS not set. API requests will likely fail.")
 
     try:
-        response = requests.get(url, params=query_params, auth=auth)
+        # Prepare the request to inspect the final URL
+        req = requests.Request('GET', url, params=query_params, auth=auth)
+        prepared = req.prepare()
+        print(f"DEBUG: Full request URL: {prepared.url}")
+
+        with requests.Session() as s:
+            response = s.send(prepared)
+        
         response.raise_for_status()
         return response.json()
     except requests.exceptions.RequestException as e:
