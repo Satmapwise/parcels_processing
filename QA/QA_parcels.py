@@ -180,6 +180,8 @@ def main():
     results_path = os.path.join(os.path.dirname(__file__), 'QA_results.csv')
     raw_data_dir_template = "/srv/mapwise_dev/county/{county_name}/processing/database/current"
 
+    success_count = 0
+    failure_count = 0
 
     with open(results_path, 'w', newline='') as csvfile:
         fieldnames = ['county', 'status', 'error_description']
@@ -195,14 +197,20 @@ def main():
             
             most_recent_data = get_api_data(path_county_name, params={'limit': 1})
             if not most_recent_data or 'features' not in most_recent_data or not most_recent_data['features']:
-                writer.writerow({'county': county_name, 'status': 'Failure', 'error_description': 'Could not retrieve data from API.'})
+                error_description = 'Could not retrieve data from API.'
+                print(f"  -> FAILED: {error_description}\n")
+                writer.writerow({'county': county_name, 'status': 'Failure', 'error_description': error_description})
+                failure_count += 1
                 continue
             
             properties = most_recent_data['features'][0]['properties']
             prodate_str = properties.get('prodate')
             
             if not prodate_str:
-                writer.writerow({'county': county_name, 'status': 'Failure', 'error_description': 'Could not retrieve prodate from API.'})
+                error_description = 'Could not retrieve prodate from API.'
+                print(f"  -> FAILED: {error_description}\n")
+                writer.writerow({'county': county_name, 'status': 'Failure', 'error_description': error_description})
+                failure_count += 1
                 continue
             
             data_date = datetime.strptime(prodate_str, '%Y-%m-%d').date()
@@ -215,30 +223,57 @@ def main():
             error_messages = []
 
             # 1. Record number check
+            print("  - Checking record count...", end="")
             success, msg = check_record_number(county_config, api_record_count, raw_data_path, db_connection)
             if not success:
                 error_messages.append(msg)
+                print(f" FAILED: {msg}")
+            elif "SKIPPED" in msg:
+                print(f" {msg}")
+            else:
+                print(" OK")
+
 
             # 2. Most recent sale date check
+            print("  - Checking most recent sale date...", end="")
             most_recent_sale_date_str = properties.get('saledate')
             success, msg = check_most_recent_sale_date(county_config, most_recent_sale_date_str, data_date)
             if not success:
                 error_messages.append(msg)
+                print(f" FAILED: {msg}")
+            else:
+                print(" OK")
 
             # 3. Empty columns check
-            success, msg = check_empty_columns(county_name, config['columns_to_check'])
+            print("  - Checking for empty columns...", end="")
+            success, msg = check_empty_columns(path_county_name, config['columns_to_check'])
             if not success:
                 error_messages.append(msg)
+                print(f" FAILED: {msg}")
+            else:
+                print(" OK")
 
             if error_messages:
                 writer.writerow({'county': county_name, 'status': 'Failure', 'error_description': ". ".join(error_messages)})
+                print(f"  -> RESULT: Failure\n")
+                failure_count += 1
             else:
                 writer.writerow({'county': county_name, 'status': 'Success', 'error_description': ''})
-
-            print(f"Finished processing {county_name}.")
+                print(f"  -> RESULT: Success\n")
+                success_count += 1
 
     if db_connection:
         db_connection.close()
+
+    print("\n" + "="*40)
+    print("QA Run Summary")
+    print("="*40)
+    print(f"Total Counties Processed: {success_count + failure_count}")
+    print(f"  Success: {success_count}")
+    print(f"  Failure: {failure_count}")
+    print("="*40)
+    print(f"\nFull results saved to: {results_path}")
+
 
 if __name__ == "__main__":
     main()
