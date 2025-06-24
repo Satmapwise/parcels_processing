@@ -31,7 +31,7 @@ def get_api_data(county_name, params={}):
     url = "https://maps.mapwise.com/api_v1/parcels_v2/"
     
     query_params = params.copy()
-    query_params['searchCounty'] = county_name
+    query_params['searchCounty'] = county_name.upper()
     query_params['format'] = 'json'
 
     user = os.environ.get('MAPWISE_API_USER')
