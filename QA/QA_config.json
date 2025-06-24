@@ -166,7 +166,9 @@
             "name": "Escambia",
             "raw_file_name": "FDOR",
             "record_number_error_margin_percent": 5,
-            "sale_date_days_difference": 30
+            "sale_date_days_difference": 30,
+            "fdor_identifier_type": "co_no",
+            "fdor_identifier_value": 17
         },
         {
             "name": "Leon",
@@ -190,7 +192,8 @@
             "name": "St. Johns",
             "raw_file_name": "UNAVAILABLE",
             "record_number_error_margin_percent": 5,
-            "sale_date_days_difference": 30
+            "sale_date_days_difference": 30,
+            "parcel_id_column_index": 0
         },
         {
             "name": "Clay",
@@ -220,13 +223,16 @@
             "name": "Bay",
             "raw_file_name": "FDOR",
             "record_number_error_margin_percent": 5,
-            "sale_date_days_difference": 30
+            "sale_date_days_difference": 30,
+            "fdor_identifier_type": "co_no",
+            "fdor_identifier_value": 3
         },
         {
             "name": "Santa Rosa",
             "raw_file_name": "UNAVAILABLE",
             "record_number_error_margin_percent": 5,
-            "sale_date_days_difference": 30
+            "sale_date_days_difference": 30,
+            "parcel_id_column_index": 0
         },
         {
             "name": "Charlotte",
@@ -274,19 +280,25 @@
             "name": "Flagler",
             "raw_file_name": "FDOR",
             "record_number_error_margin_percent": 5,
-            "sale_date_days_difference": 30
+            "sale_date_days_difference": 30,
+            "fdor_identifier_type": "co_no",
+            "fdor_identifier_value": 18
         },
         {
             "name": "Highlands",
             "raw_file_name": "FDOR",
             "record_number_error_margin_percent": 5,
-            "sale_date_days_difference": 30
+            "sale_date_days_difference": 30,
+            "fdor_identifier_type": "d_county",
+            "fdor_identifier_value": "HIGHLANDS"
         },
         {
             "name": "Nassau",
             "raw_file_name": "FDOR",
             "record_number_error_margin_percent": 5,
-            "sale_date_days_difference": 30
+            "sale_date_days_difference": 30,
+            "fdor_identifier_type": "co_no",
+            "fdor_identifier_value": 45
         },
         {
             "name": "Monroe",
@@ -301,7 +313,9 @@
             "name": "Walton",
             "raw_file_name": "FDOR",
             "record_number_error_margin_percent": 5,
-            "sale_date_days_difference": 30
+            "sale_date_days_difference": 30,
+            "fdor_identifier_type": "co_no",
+            "fdor_identifier_value": 66
         },
         {
             "name": "Putnam",
@@ -313,163 +327,217 @@
             "name": "Columbia",
             "raw_file_name": "FDOR",
             "record_number_error_margin_percent": 5,
-            "sale_date_days_difference": 30
+            "sale_date_days_difference": 30,
+            "fdor_identifier_type": "co_no",
+            "fdor_identifier_value": 12
         },
         {
             "name": "Jackson",
             "raw_file_name": "FDOR",
             "record_number_error_margin_percent": 5,
-            "sale_date_days_difference": 30
+            "sale_date_days_difference": 30,
+            "fdor_identifier_type": "co_no",
+            "fdor_identifier_value": 30
         },
         {
             "name": "Gadsden",
             "raw_file_name": "FDOR",
             "record_number_error_margin_percent": 5,
-            "sale_date_days_difference": 30
+            "sale_date_days_difference": 30,
+            "fdor_identifier_type": "co_no",
+            "fdor_identifier_value": 20
         },
         {
             "name": "Suwannee",
             "raw_file_name": "FDOR",
             "record_number_error_margin_percent": 5,
-            "sale_date_days_difference": 30
+            "sale_date_days_difference": 30,
+            "fdor_identifier_type": "co_no",
+            "fdor_identifier_value": 60
         },
         {
             "name": "Levy",
             "raw_file_name": "FDOR",
             "record_number_error_margin_percent": 5,
-            "sale_date_days_difference": 30
+            "sale_date_days_difference": 30,
+            "fdor_identifier_type": "co_no",
+            "fdor_identifier_value": 38
         },
         {
             "name": "Okeechobee",
             "raw_file_name": "FDOR",
             "record_number_error_margin_percent": 5,
-            "sale_date_days_difference": 30
+            "sale_date_days_difference": 30,
+            "fdor_identifier_type": "co_no",
+            "fdor_identifier_value": 47
         },
         {
             "name": "Hendry",
             "raw_file_name": "FDOR",
             "record_number_error_margin_percent": 5,
-            "sale_date_days_difference": 30
+            "sale_date_days_difference": 30,
+            "fdor_identifier_type": "co_no",
+            "fdor_identifier_value": 26
         },
         {
             "name": "DeSoto",
             "raw_file_name": "FDOR",
             "record_number_error_margin_percent": 5,
-            "sale_date_days_difference": 30
+            "sale_date_days_difference": 30,
+            "fdor_identifier_type": "co_no",
+            "fdor_identifier_value": 14
         },
         {
             "name": "Wakulla",
             "raw_file_name": "FDOR",
             "record_number_error_margin_percent": 5,
-            "sale_date_days_difference": 30
+            "sale_date_days_difference": 30,
+            "fdor_identifier_type": "co_no",
+            "fdor_identifier_value": 64
         },
         {
             "name": "Bradford",
             "raw_file_name": "FDOR",
             "record_number_error_margin_percent": 5,
-            "sale_date_days_difference": 30
+            "sale_date_days_difference": 30,
+            "fdor_identifier_type": "co_no",
+            "fdor_identifier_value": 4
         },
         {
             "name": "Baker",
             "raw_file_name": "FDOR",
             "record_number_error_margin_percent": 5,
-            "sale_date_days_difference": 30
+            "sale_date_days_difference": 30,
+            "fdor_identifier_type": "co_no",
+            "fdor_identifier_value": 2
         },
         {
             "name": "Hardee",
             "raw_file_name": "FDOR",
             "record_number_error_margin_percent": 5,
-            "sale_date_days_difference": 30
+            "sale_date_days_difference": 30,
+            "fdor_identifier_type": "co_no",
+            "fdor_identifier_value": 25
         },
         {
             "name": "Washington",
             "raw_file_name": "FDOR",
             "record_number_error_margin_percent": 5,
-            "sale_date_days_difference": 30
+            "sale_date_days_difference": 30,
+            "fdor_identifier_type": "co_no",
+            "fdor_identifier_value": 67
         },
         {
             "name": "Taylor",
             "raw_file_name": "FDOR",
             "record_number_error_margin_percent": 5,
-            "sale_date_days_difference": 30
+            "sale_date_days_difference": 30,
+            "fdor_identifier_type": "co_no",
+            "fdor_identifier_value": 61
         },
         {
             "name": "Holmes",
             "raw_file_name": "FDOR",
             "record_number_error_margin_percent": 5,
-            "sale_date_days_difference": 30
+            "sale_date_days_difference": 30,
+            "fdor_identifier_type": "co_no",
+            "fdor_identifier_value": 28
         },
         {
             "name": "Madison",
             "raw_file_name": "FDOR",
             "record_number_error_margin_percent": 5,
-            "sale_date_days_difference": 30
+            "sale_date_days_difference": 30,
+            "fdor_identifier_type": "co_no",
+            "fdor_identifier_value": 40
         },
         {
             "name": "Gilchrist",
             "raw_file_name": "FDOR",
             "record_number_error_margin_percent": 5,
-            "sale_date_days_difference": 30
+            "sale_date_days_difference": 30,
+            "fdor_identifier_type": "co_no",
+            "fdor_identifier_value": 21
         },
         {
             "name": "Dixie",
             "raw_file_name": "FDOR",
             "record_number_error_margin_percent": 5,
-            "sale_date_days_difference": 30
+            "sale_date_days_difference": 30,
+            "fdor_identifier_type": "co_no",
+            "fdor_identifier_value": 15
         },
         {
             "name": "Union",
             "raw_file_name": "FDOR",
             "record_number_error_margin_percent": 5,
-            "sale_date_days_difference": 30
+            "sale_date_days_difference": 30,
+            "fdor_identifier_type": "co_no",
+            "fdor_identifier_value": 62
         },
         {
             "name": "Jefferson",
             "raw_file_name": "FDOR",
             "record_number_error_margin_percent": 5,
-            "sale_date_days_difference": 30
+            "sale_date_days_difference": 30,
+            "fdor_identifier_type": "co_no",
+            "fdor_identifier_value": 32
         },
         {
             "name": "Gulf",
             "raw_file_name": "FDOR",
             "record_number_error_margin_percent": 5,
-            "sale_date_days_difference": 30
+            "sale_date_days_difference": 30,
+            "fdor_identifier_type": "co_no",
+            "fdor_identifier_value": 23
         },
         {
             "name": "Hamilton",
             "raw_file_name": "FDOR",
             "record_number_error_margin_percent": 5,
-            "sale_date_days_difference": 30
+            "sale_date_days_difference": 30,
+            "fdor_identifier_type": "co_no",
+            "fdor_identifier_value": 24
         },
         {
             "name": "Calhoun",
             "raw_file_name": "FDOR",
             "record_number_error_margin_percent": 5,
-            "sale_date_days_difference": 30
+            "sale_date_days_difference": 30,
+            "fdor_identifier_type": "co_no",
+            "fdor_identifier_value": 7
         },
         {
             "name": "Franklin",
             "raw_file_name": "FDOR",
             "record_number_error_margin_percent": 5,
-            "sale_date_days_difference": 30
+            "sale_date_days_difference": 30,
+            "fdor_identifier_type": "co_no",
+            "fdor_identifier_value": 19
         },
         {
             "name": "Glades",
             "raw_file_name": "FDOR",
             "record_number_error_margin_percent": 5,
-            "sale_date_days_difference": 30
+            "sale_date_days_difference": 30,
+            "fdor_identifier_type": "co_no",
+            "fdor_identifier_value": 22
         },
         {
             "name": "Lafayette",
             "raw_file_name": "FDOR",
             "record_number_error_margin_percent": 5,
-            "sale_date_days_difference": 30
+            "sale_date_days_difference": 30,
+            "fdor_identifier_type": "co_no",
+            "fdor_identifier_value": 33
         },
         {
             "name": "Liberty",
             "raw_file_name": "FDOR",
             "record_number_error_margin_percent": 5,
-            "sale_date_days_difference": 30
+            "sale_date_days_difference": 30,
+            "fdor_identifier_type": "co_no",
+            "fdor_identifier_value": 39
         }
     ],
     "columns_to_check": [
