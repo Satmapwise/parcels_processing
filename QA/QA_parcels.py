@@ -64,12 +64,25 @@ def check_empty_columns(county_name, columns_to_check):
     errors = []
     for record in data['features']:
         props = record['properties']
-        for col in columns_to_check:
-            if props.get(col) is None or props.get(col) == '':
-                errors.append(f"Empty value in column '{col}' for parcel {props.get('parcelid')}")
-    
+        for item in columns_to_check:
+            if isinstance(item, str):
+                # Simple check for a single column
+                if props.get(item) is None or props.get(item) == '':
+                    errors.append(f"Empty value in column '{item}' for parcel {props.get('parcelid')}")
+            elif isinstance(item, dict):
+                # Complex check for a rule-based item
+                if item.get('rule') == 'any':
+                    # Check if any of the fields have a value
+                    found = False
+                    for field in item.get('fields', []):
+                        if props.get(field) is not None and props.get(field) != '':
+                            found = True
+                            break
+                    if not found:
+                        errors.append(f"No value in any of the specified square footage fields for parcel {props.get('parcelid')}")
+
     if errors:
-        return False, ". ".join(errors)
+        return False, ". ".join(list(set(errors)))
     return True, ""
 
 def main():

@@ -7,12 +7,21 @@
         }
     ],
     "columns_to_check": [
+        "yrblt",
+        {
+            "name": "square_footage",
+            "fields": ["sqft_l", "sqft_t", "sqft_adj"],
+            "rule": "any"
+        },
         "owner1",
         "own_addr_1",
-        "own_addr_2",
-        "own_city",
-        "own_state",
-        "own_zip"
+        "site_addr",
+        "county",
+        "justval",
+        "assdval",
+        "landuse",
+        "fdor_landu",
+        "legaldesc"
     ],
     "raw_data_dir_template": "/mnt/Parcels/{county_name}/{date_str}"
 } 
