@@ -89,6 +89,7 @@ def main():
     """Main function to run the QA checks."""
     config = get_config()
     results_path = os.path.join(os.path.dirname(__file__), 'QA_results.csv')
+    raw_data_dir_template = "/srv/mapwise_dev/county/{county_name}/processing/database/current"
 
     with open(results_path, 'w', newline='') as csvfile:
         fieldnames = ['county', 'status', 'error_description']
@@ -112,10 +113,9 @@ def main():
                 continue
             
             data_date = datetime.strptime(prodate_str, '%Y-%m-%d').date()
-            date_str = data_date.strftime('%Y%m%d')
 
-            raw_data_dir = config['raw_data_dir_template'].format(county_name=county_name, date_str=date_str)
-            raw_data_path = os.path.join(raw_data_dir, 'parcels.csv')
+            raw_data_dir = raw_data_dir_template.format(county_name=county_name.lower())
+            raw_data_path = os.path.join(raw_data_dir, county_config['raw_file_name'])
 
             api_record_count = most_recent_data['totalfeatures']
 

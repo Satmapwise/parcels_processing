@@ -2,6 +2,7 @@
     "counties": [
         {
             "name": "Hardee",
+            "raw_file_name": "hardee_parcels.csv",
             "record_number_error_margin_percent": 5,
             "sale_date_days_difference": 90
         }
@@ -22,6 +23,5 @@
         "landuse",
         "fdor_landu",
         "legaldesc"
-    ],
-    "raw_data_dir_template": "/mnt/Parcels/{county_name}/{date_str}"
+    ]
 } 
