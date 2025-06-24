@@ -143,15 +143,21 @@
         },
         {
             "name": "Marion",
-            "raw_file_name": "UNAVAILABLE",
+            "raw_file_name": "source_data/parcels_merlin.csv",
             "record_number_error_margin_percent": 5,
-            "sale_date_days_difference": 30
+            "sale_date_days_difference": 30,
+            "delimiter": ",",
+            "has_header": true,
+            "parcel_id_column_index": 0
         },
         {
             "name": "Collier",
-            "raw_file_name": "UNAVAILABLE",
+            "raw_file_name": "source_data/INT_PARCEL.csv",
             "record_number_error_margin_percent": 5,
-            "sale_date_days_difference": 30
+            "sale_date_days_difference": 30,
+            "delimiter": ",",
+            "has_header": true,
+            "parcel_id_column_index": 0
         },
         {
             "name": "St. Lucie",
@@ -190,9 +196,11 @@
         },
         {
             "name": "St. Johns",
-            "raw_file_name": "UNAVAILABLE",
+            "raw_file_name": "source_data/ParcelView.csv",
             "record_number_error_margin_percent": 5,
             "sale_date_days_difference": 30,
+            "delimiter": ",",
+            "has_header": true,
             "parcel_id_column_index": 0
         },
         {
@@ -272,9 +280,12 @@
         },
         {
             "name": "Sumter",
-            "raw_file_name": "UNAVAILABLE",
+            "raw_file_name": "source_data/sales_current.csv",
             "record_number_error_margin_percent": 5,
-            "sale_date_days_difference": 30
+            "sale_date_days_difference": 30,
+            "delimiter": ",",
+            "has_header": true,
+            "parcel_id_column_index": 0
         },
         {
             "name": "Flagler",
@@ -282,7 +293,7 @@
             "record_number_error_margin_percent": 5,
             "sale_date_days_difference": 30,
             "fdor_identifier_type": "co_no",
-            "fdor_identifier_value": 18
+            "fdor_identifier_value": 66
         },
         {
             "name": "Highlands",
@@ -319,9 +330,12 @@
         },
         {
             "name": "Putnam",
-            "raw_file_name": "UNAVAILABLE",
+            "raw_file_name": "source_data/owner_current.csv",
             "record_number_error_margin_percent": 5,
-            "sale_date_days_difference": 30
+            "sale_date_days_difference": 30,
+            "delimiter": ",",
+            "has_header": true,
+            "parcel_id_column_index": 0
         },
         {
             "name": "Columbia",
@@ -329,7 +343,7 @@
             "record_number_error_margin_percent": 5,
             "sale_date_days_difference": 30,
             "fdor_identifier_type": "co_no",
-            "fdor_identifier_value": 12
+            "fdor_identifier_value": 39
         },
         {
             "name": "Jackson",
