@@ -1,8 +1,404 @@
 {
     "counties": [
         {
+            "name": "Miami-Dade",
+            "raw_file_name": "miami-dade_parcels.csv",
+            "record_number_error_margin_percent": 5,
+            "sale_date_days_difference": 90
+        },
+        {
+            "name": "Broward",
+            "raw_file_name": "broward_parcels.csv",
+            "record_number_error_margin_percent": 5,
+            "sale_date_days_difference": 90
+        },
+        {
+            "name": "Palm Beach",
+            "raw_file_name": "palm_beach_parcels.csv",
+            "record_number_error_margin_percent": 5,
+            "sale_date_days_difference": 90
+        },
+        {
+            "name": "Hillsborough",
+            "raw_file_name": "hillsborough_parcels.csv",
+            "record_number_error_margin_percent": 5,
+            "sale_date_days_difference": 90
+        },
+        {
+            "name": "Orange",
+            "raw_file_name": "orange_parcels.csv",
+            "record_number_error_margin_percent": 5,
+            "sale_date_days_difference": 90
+        },
+        {
+            "name": "Duval",
+            "raw_file_name": "duval_parcels.csv",
+            "record_number_error_margin_percent": 5,
+            "sale_date_days_difference": 90
+        },
+        {
+            "name": "Pinellas",
+            "raw_file_name": "pinellas_parcels.csv",
+            "record_number_error_margin_percent": 5,
+            "sale_date_days_difference": 90
+        },
+        {
+            "name": "Lee",
+            "raw_file_name": "lee_parcels.csv",
+            "record_number_error_margin_percent": 5,
+            "sale_date_days_difference": 90
+        },
+        {
+            "name": "Polk",
+            "raw_file_name": "polk_parcels.csv",
+            "record_number_error_margin_percent": 5,
+            "sale_date_days_difference": 90
+        },
+        {
+            "name": "Brevard",
+            "raw_file_name": "brevard_parcels.csv",
+            "record_number_error_margin_percent": 5,
+            "sale_date_days_difference": 90
+        },
+        {
+            "name": "Pasco",
+            "raw_file_name": "pasco_parcels.csv",
+            "record_number_error_margin_percent": 5,
+            "sale_date_days_difference": 90
+        },
+        {
+            "name": "Volusia",
+            "raw_file_name": "volusia_parcels.csv",
+            "record_number_error_margin_percent": 5,
+            "sale_date_days_difference": 90
+        },
+        {
+            "name": "Seminole",
+            "raw_file_name": "seminole_parcels.csv",
+            "record_number_error_margin_percent": 5,
+            "sale_date_days_difference": 90
+        },
+        {
+            "name": "Sarasota",
+            "raw_file_name": "sarasota_parcels.csv",
+            "record_number_error_margin_percent": 5,
+            "sale_date_days_difference": 90
+        },
+        {
+            "name": "Manatee",
+            "raw_file_name": "manatee_parcels.csv",
+            "record_number_error_margin_percent": 5,
+            "sale_date_days_difference": 90
+        },
+        {
+            "name": "Osceola",
+            "raw_file_name": "osceola_parcels.csv",
+            "record_number_error_margin_percent": 5,
+            "sale_date_days_difference": 90
+        },
+        {
+            "name": "Lake",
+            "raw_file_name": "lake_parcels.csv",
+            "record_number_error_margin_percent": 5,
+            "sale_date_days_difference": 90
+        },
+        {
+            "name": "Marion",
+            "raw_file_name": "marion_parcels.csv",
+            "record_number_error_margin_percent": 5,
+            "sale_date_days_difference": 90
+        },
+        {
+            "name": "Collier",
+            "raw_file_name": "collier_parcels.csv",
+            "record_number_error_margin_percent": 5,
+            "sale_date_days_difference": 90
+        },
+        {
+            "name": "St. Lucie",
+            "raw_file_name": "st._lucie_parcels.csv",
+            "record_number_error_margin_percent": 5,
+            "sale_date_days_difference": 90
+        },
+        {
+            "name": "Escambia",
+            "raw_file_name": "escambia_parcels.csv",
+            "record_number_error_margin_percent": 5,
+            "sale_date_days_difference": 90
+        },
+        {
+            "name": "Leon",
+            "raw_file_name": "leon_parcels.csv",
+            "record_number_error_margin_percent": 5,
+            "sale_date_days_difference": 90
+        },
+        {
+            "name": "Alachua",
+            "raw_file_name": "alachua_parcels.csv",
+            "record_number_error_margin_percent": 5,
+            "sale_date_days_difference": 90
+        },
+        {
+            "name": "St. Johns",
+            "raw_file_name": "st._johns_parcels.csv",
+            "record_number_error_margin_percent": 5,
+            "sale_date_days_difference": 90
+        },
+        {
+            "name": "Clay",
+            "raw_file_name": "clay_parcels.csv",
+            "record_number_error_margin_percent": 5,
+            "sale_date_days_difference": 90
+        },
+        {
+            "name": "Okaloosa",
+            "raw_file_name": "okaloosa_parcels.csv",
+            "record_number_error_margin_percent": 5,
+            "sale_date_days_difference": 90
+        },
+        {
+            "name": "Hernando",
+            "raw_file_name": "hernando_parcels.csv",
+            "record_number_error_margin_percent": 5,
+            "sale_date_days_difference": 90
+        },
+        {
+            "name": "Bay",
+            "raw_file_name": "bay_parcels.csv",
+            "record_number_error_margin_percent": 5,
+            "sale_date_days_difference": 90
+        },
+        {
+            "name": "Santa Rosa",
+            "raw_file_name": "santa_rosa_parcels.csv",
+            "record_number_error_margin_percent": 5,
+            "sale_date_days_difference": 90
+        },
+        {
+            "name": "Charlotte",
+            "raw_file_name": "charlotte_parcels.csv",
+            "record_number_error_margin_percent": 5,
+            "sale_date_days_difference": 90
+        },
+        {
+            "name": "Martin",
+            "raw_file_name": "martin_parcels.csv",
+            "record_number_error_margin_percent": 5,
+            "sale_date_days_difference": 90
+        },
+        {
+            "name": "Indian River",
+            "raw_file_name": "indian_river_parcels.csv",
+            "record_number_error_margin_percent": 5,
+            "sale_date_days_difference": 90
+        },
+        {
+            "name": "Citrus",
+            "raw_file_name": "citrus_parcels.csv",
+            "record_number_error_margin_percent": 5,
+            "sale_date_days_difference": 90
+        },
+        {
+            "name": "Sumter",
+            "raw_file_name": "sumter_parcels.csv",
+            "record_number_error_margin_percent": 5,
+            "sale_date_days_difference": 90
+        },
+        {
+            "name": "Flagler",
+            "raw_file_name": "flagler_parcels.csv",
+            "record_number_error_margin_percent": 5,
+            "sale_date_days_difference": 90
+        },
+        {
+            "name": "Highlands",
+            "raw_file_name": "highlands_parcels.csv",
+            "record_number_error_margin_percent": 5,
+            "sale_date_days_difference": 90
+        },
+        {
+            "name": "Nassau",
+            "raw_file_name": "nassau_parcels.csv",
+            "record_number_error_margin_percent": 5,
+            "sale_date_days_difference": 90
+        },
+        {
+            "name": "Monroe",
+            "raw_file_name": "monroe_parcels.csv",
+            "record_number_error_margin_percent": 5,
+            "sale_date_days_difference": 90
+        },
+        {
+            "name": "Walton",
+            "raw_file_name": "walton_parcels.csv",
+            "record_number_error_margin_percent": 5,
+            "sale_date_days_difference": 90
+        },
+        {
+            "name": "Putnam",
+            "raw_file_name": "putnam_parcels.csv",
+            "record_number_error_margin_percent": 5,
+            "sale_date_days_difference": 90
+        },
+        {
+            "name": "Columbia",
+            "raw_file_name": "columbia_parcels.csv",
+            "record_number_error_margin_percent": 5,
+            "sale_date_days_difference": 90
+        },
+        {
+            "name": "Jackson",
+            "raw_file_name": "jackson_parcels.csv",
+            "record_number_error_margin_percent": 5,
+            "sale_date_days_difference": 90
+        },
+        {
+            "name": "Gadsden",
+            "raw_file_name": "gadsden_parcels.csv",
+            "record_number_error_margin_percent": 5,
+            "sale_date_days_difference": 90
+        },
+        {
+            "name": "Suwannee",
+            "raw_file_name": "suwannee_parcels.csv",
+            "record_number_error_margin_percent": 5,
+            "sale_date_days_difference": 90
+        },
+        {
+            "name": "Levy",
+            "raw_file_name": "levy_parcels.csv",
+            "record_number_error_margin_percent": 5,
+            "sale_date_days_difference": 90
+        },
+        {
+            "name": "Okeechobee",
+            "raw_file_name": "okeechobee_parcels.csv",
+            "record_number_error_margin_percent": 5,
+            "sale_date_days_difference": 90
+        },
+        {
+            "name": "Hendry",
+            "raw_file_name": "hendry_parcels.csv",
+            "record_number_error_margin_percent": 5,
+            "sale_date_days_difference": 90
+        },
+        {
+            "name": "DeSoto",
+            "raw_file_name": "desoto_parcels.csv",
+            "record_number_error_margin_percent": 5,
+            "sale_date_days_difference": 90
+        },
+        {
+            "name": "Wakulla",
+            "raw_file_name": "wakulla_parcels.csv",
+            "record_number_error_margin_percent": 5,
+            "sale_date_days_difference": 90
+        },
+        {
+            "name": "Bradford",
+            "raw_file_name": "bradford_parcels.csv",
+            "record_number_error_margin_percent": 5,
+            "sale_date_days_difference": 90
+        },
+        {
+            "name": "Baker",
+            "raw_file_name": "baker_parcels.csv",
+            "record_number_error_margin_percent": 5,
+            "sale_date_days_difference": 90
+        },
+        {
             "name": "Hardee",
             "raw_file_name": "hardee_parcels.csv",
+            "record_number_error_margin_percent": 5,
+            "sale_date_days_difference": 90
+        },
+        {
+            "name": "Washington",
+            "raw_file_name": "washington_parcels.csv",
+            "record_number_error_margin_percent": 5,
+            "sale_date_days_difference": 90
+        },
+        {
+            "name": "Taylor",
+            "raw_file_name": "taylor_parcels.csv",
+            "record_number_error_margin_percent": 5,
+            "sale_date_days_difference": 90
+        },
+        {
+            "name": "Holmes",
+            "raw_file_name": "holmes_parcels.csv",
+            "record_number_error_margin_percent": 5,
+            "sale_date_days_difference": 90
+        },
+        {
+            "name": "Madison",
+            "raw_file_name": "madison_parcels.csv",
+            "record_number_error_margin_percent": 5,
+            "sale_date_days_difference": 90
+        },
+        {
+            "name": "Gilchrist",
+            "raw_file_name": "gilchrist_parcels.csv",
+            "record_number_error_margin_percent": 5,
+            "sale_date_days_difference": 90
+        },
+        {
+            "name": "Dixie",
+            "raw_file_name": "dixie_parcels.csv",
+            "record_number_error_margin_percent": 5,
+            "sale_date_days_difference": 90
+        },
+        {
+            "name": "Union",
+            "raw_file_name": "union_parcels.csv",
+            "record_number_error_margin_percent": 5,
+            "sale_date_days_difference": 90
+        },
+        {
+            "name": "Jefferson",
+            "raw_file_name": "jefferson_parcels.csv",
+            "record_number_error_margin_percent": 5,
+            "sale_date_days_difference": 90
+        },
+        {
+            "name": "Gulf",
+            "raw_file_name": "gulf_parcels.csv",
+            "record_number_error_margin_percent": 5,
+            "sale_date_days_difference": 90
+        },
+        {
+            "name": "Hamilton",
+            "raw_file_name": "hamilton_parcels.csv",
+            "record_number_error_margin_percent": 5,
+            "sale_date_days_difference": 90
+        },
+        {
+            "name": "Calhoun",
+            "raw_file_name": "calhoun_parcels.csv",
+            "record_number_error_margin_percent": 5,
+            "sale_date_days_difference": 90
+        },
+        {
+            "name": "Franklin",
+            "raw_file_name": "franklin_parcels.csv",
+            "record_number_error_margin_percent": 5,
+            "sale_date_days_difference": 90
+        },
+        {
+            "name": "Glades",
+            "raw_file_name": "glades_parcels.csv",
+            "record_number_error_margin_percent": 5,
+            "sale_date_days_difference": 90
+        },
+        {
+            "name": "Lafayette",
+            "raw_file_name": "lafayette_parcels.csv",
+            "record_number_error_margin_percent": 5,
+            "sale_date_days_difference": 90
+        },
+        {
+            "name": "Liberty",
+            "raw_file_name": "liberty_parcels.csv",
             "record_number_error_margin_percent": 5,
             "sale_date_days_difference": 90
         }
@@ -11,7 +407,11 @@
         "yrblt",
         {
             "name": "square_footage",
-            "fields": ["sqft_l", "sqft_t", "sqft_adj"],
+            "fields": [
+                "sqft_l",
+                "sqft_t",
+                "sqft_adj"
+            ],
             "rule": "any"
         },
         "owner1",
