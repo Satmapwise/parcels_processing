@@ -16,7 +16,7 @@ global empty_columns_check
 global API_version
 
 test_mode = True
-record_check = True
+record_check = False
 recent_sale_check = True
 empty_columns_check = True
 API_version = 2
@@ -67,7 +67,7 @@ def get_api_data(county_name, params={}):
     # Build parameters for the GET request
     all_params = params.copy()
     all_params['searchCounty'] = county_name.upper().replace('.', '')
-    all_params['format'] = 'json'
+    all_params['format'] = 'JSON'
     if API_version == 2:
         all_params['legacy'] = True
 
@@ -372,7 +372,8 @@ def main():
         if empty_columns_check:
             summary_fieldnames.append('empty_columns_check')
             summary_fieldnames.append('missing_columns_count')
-        
+            summary_fieldnames.append('column_percentage')
+
         summary_writer = csv.DictWriter(summary_csv_file, fieldnames=summary_fieldnames)
         summary_writer.writeheader()
 
@@ -483,6 +484,13 @@ def main():
                 if empty_columns_check:
                     print("  - Checking for empty columns...", end="", flush=True)
                     empty_col_success, empty_col_errors, empty_col_details = check_empty_columns(county_name, config['columns_to_check'])
+
+                    # Calculate the percentage of empty columns
+                    if empty_col_details:
+                        empty_col_percentage = 100 - (100 * sum(details['count'] for details in empty_col_details.values()) / (100 * len(empty_col_details)))
+                    else:
+                        empty_col_percentage = 100
+                    summary_row['column_percentage'] = f"{empty_col_percentage:.2f}%"
                     
                     missing_cols_count = sum(1 for details in empty_col_details.values() if details['count'] > 0)
                     summary_row['missing_columns_count'] = missing_cols_count
