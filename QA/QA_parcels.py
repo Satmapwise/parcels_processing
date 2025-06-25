@@ -69,7 +69,8 @@ def get_api_data(county_name, params={}):
             headers=headers,
             timeout=30  # Add a timeout to prevent indefinite hanging
         )
-        print(f"\n  DEBUG: Querying {response.url}...")
+        if test_mode:
+            print(f"\n  TEST MODE: Querying {response.url}...")
         response.raise_for_status()  # Raise an exception for bad status codes (4xx or 5xx)
         return response.json()
     except requests.exceptions.HTTPError as e:
@@ -120,9 +121,10 @@ def get_api_most_recent_record(county_name, days_tolerance, initial_records):
     
     # Parse the d_date and calculate threshold date
     data_date = datetime.strptime(prodate_str, '%Y%m%d').date()
-    print(f"  DEBUG: Data date: {data_date}")
     threshold_date = (data_date - timedelta(days=days_tolerance)).strftime('%m/%d/%Y')
-    print(f"  DEBUG: Threshold date: {threshold_date}")
+    if test_mode:
+        print(f"  TEST MODE: Data date: {data_date}")
+        print(f"  TEST MODE: Threshold date: {threshold_date}")
     
     # Get records with sale date from threshold_date onwards and minimum sale amount of 100
     data = get_api_data(county_name, params={'limit': 100, 'searchSaleAmt1': 100, 'searchDate1': threshold_date})
@@ -341,8 +343,9 @@ def main():
             prodate_str = attributes.get('d_date')
             
             # Debug: Print available fields
-            # print(f"  DEBUG: Available fields: {list(attributes.keys())}")
-            print(f"  DEBUG: Parcel ID field value: {attributes.get('ogc_fid')}\n")
+            if test_mode:
+                # print(f"  TEST MODE: Available fields: {list(attributes.keys())}")
+                print(f"  TEST MODE: Parcel ID field value: {attributes.get('ogc_fid')}\n")
             
             if not prodate_str:
                 error_description = 'Could not retrieve d_date from API.'
