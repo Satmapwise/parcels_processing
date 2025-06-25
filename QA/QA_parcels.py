@@ -15,7 +15,7 @@ global recent_sale_check
 global empty_columns_check
 global API_version
 
-test_mode = False
+test_mode = True
 record_check = True
 recent_sale_check = False
 empty_columns_check = False
@@ -66,9 +66,9 @@ def get_api_data(county_name, params={}):
 
     # Build parameters for the GET request
     all_params = params.copy()
-    all_params['searchCounty'] = county_name.upper().replace('.', '')
+    all_params['searchCounty'] = county_name.upper().replace('.', '').replace(' ', '_')
     all_params['format'] = 'JSON'
-    if API_version == 2:
+    if API_version == 2 and not all_params.get('legacy') == False:
         all_params['legacy'] = True
 
     # Set headers for the request
@@ -118,9 +118,11 @@ def get_api_data(county_name, params={}):
 def get_api_record_count(county_name):
     """Gets the total record count for a county from the API."""
     # Get total count without limiting results
-    data = get_api_data(county_name, params={})
+    data = get_api_data(county_name, params={'legacy': False})
     if not data or 'meta' not in data:
         return None
+    if test_mode:
+        print(f"  TEST MODE: API record count: {data['meta'].get('total_count', 0)}")
     return data['meta'].get('total_count', 0)
 
 def get_api_most_recent_record(county_name, days_tolerance, initial_records):
@@ -379,7 +381,7 @@ def main():
 
         # Get counties to process
         if test_mode:
-            QA_counties = ['Miami-Dade', 'Seminole', 'Okaloosa', 'Nassau']
+            QA_counties = ['Miami-Dade', 'Bay', 'Nassau']
         else:
             QA_counties = []
             for county_config_item in config['counties']:
