@@ -43,14 +43,18 @@ def get_api_data(county_name, params={}):
     all_params['format'] = 'json'
 
     # Set headers for the request
-    headers = {'Accept': 'application/json'}
+    headers = {
+        'Accept': 'application/json',
+        'User-Agent': 'curl/7.68.0'  # Mimic curl to avoid potential server-side blocking
+    }
 
     try:
         response = requests.get(
             base_url,
             params=all_params,
             auth=(user, password),
-            headers=headers
+            headers=headers,
+            timeout=30  # Add a timeout to prevent indefinite hanging
         )
         response.raise_for_status()  # Raise an exception for bad status codes (4xx or 5xx)
         return response.json()
