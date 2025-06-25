@@ -86,6 +86,22 @@ def get_api_data(county_name, params={}):
         print(f"An unexpected error occurred during API request for {county_name}: {e}")
         return None
 
+def get_api_record_count(county_name):
+    """Gets the total record count for a county from the API."""
+    # Get total count without limiting results
+    data = get_api_data(county_name, params={})
+    if not data or 'meta' not in data:
+        return None
+    return data['meta'].get('record_count', 0)
+
+def get_api_most_recent_record(county_name):
+    """Gets the most recent record for a county from the API."""
+    # Get the most recent record by sorting by d_date descending
+    data = get_api_data(county_name, params={'limit': 1, 'sort': 'd_date desc'})
+    if not data or 'data' not in data or not data['data']:
+        return None
+    return data['data'][0]
+
 def check_record_number(county_config, api_record_count, raw_data_path, db_connection=None):
     """Checks if the record number from the API is within the allowed margin of error."""
     raw_file_name = county_config.get('raw_file_name')
@@ -231,15 +247,25 @@ def main():
             # API calls now use the original county_name. The path needs a formatted version.
             path_county_name = county_name.lower().replace(" ", "_")
             
-            most_recent_data = get_api_data(county_name, params={'limit': 1})
-            if not most_recent_data or 'data' not in most_recent_data or not most_recent_data['data']:
-                error_description = 'Could not retrieve data from API.'
+            # Get total record count
+            # api_record_count = get_api_record_count(county_name)
+            # if api_record_count is None:
+            #     error_description = 'Could not retrieve record count from API.'
+            #     print(f"  -> FAILED: {error_description}\n")
+            #     writer.writerow({'county': county_name, 'status': 'Failure', 'error_description': error_description})
+            #     failure_count += 1
+            #     continue
+            
+            # Get most recent record for date checking
+            most_recent_record = get_api_most_recent_record(county_name)
+            if not most_recent_record:
+                error_description = 'Could not retrieve most recent record from API.'
                 print(f"  -> FAILED: {error_description}\n")
                 writer.writerow({'county': county_name, 'status': 'Failure', 'error_description': error_description})
                 failure_count += 1
                 continue
             
-            attributes = most_recent_data['data'][0]['attributes']
+            attributes = most_recent_record['attributes']
             prodate_str = attributes.get('d_date')
             
             if not prodate_str:
@@ -254,25 +280,22 @@ def main():
             raw_data_dir = raw_data_dir_template.format(county_name=path_county_name)
             raw_data_path = os.path.join(raw_data_dir, county_config['raw_file_name'])
 
-            api_record_count = most_recent_data['meta']['record_count']
-
             error_messages = []
 
-            # 1. Record number check
-            print("  - Checking record count...", end="")
-            success, msg = check_record_number(county_config, api_record_count, raw_data_path, db_connection)
-            if not success:
-                error_messages.append(msg)
-                print(f" FAILED: {msg}")
-            elif "SKIPPED" in msg:
-                print(f" {msg}")
-            else:
-                print(" OK")
-
+            # 1. Record number check - DISABLED until API provides total record counts
+            # print("  - Checking record count...", end="")
+            # success, msg = check_record_number(county_config, api_record_count, raw_data_path, db_connection)
+            # if not success:
+            #     error_messages.append(msg)
+            #     print(f" FAILED: {msg}")
+            # elif "SKIPPED" in msg:
+            #     print(f" {msg}")
+            # else:
+            #     print(" OK")
 
             # 2. Most recent sale date check
             print("  - Checking most recent sale date...", end="")
-            most_recent_sale_date_str = attributes.get('sale1_date')
+            most_recent_sale_date_str = attributes.get('sale_date1')  # Fixed field name according to API docs
             success, msg = check_most_recent_sale_date(county_config, most_recent_sale_date_str, data_date)
             if not success:
                 error_messages.append(msg)
