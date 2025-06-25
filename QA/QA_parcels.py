@@ -1,6 +1,6 @@
 import json
 import os
-from datetime import datetime
+from datetime import datetime, timedelta
 import csv
 import psycopg2
 from dotenv import load_dotenv
@@ -95,10 +95,13 @@ def get_api_record_count(county_name):
         return None
     return data['meta'].get('record_count', 0)
 
-def get_api_most_recent_record(county_name):
-    """Gets the most recent record for a county from the API."""
-    # Get the first record with minimum sale amount of 100
-    data = get_api_data(county_name, params={'limit': 1, 'saleamountmin': 100})
+def get_api_most_recent_record(county_name, days_tolerance):
+    """Gets a record with recent sale date for a county from the API."""
+    # Calculate the date threshold (today minus tolerance days)
+    threshold_date = (datetime.now() - timedelta(days=days_tolerance)).strftime('%Y-%m-%d')
+    
+    # Get records with sale date from threshold_date onwards and minimum sale amount of 100
+    data = get_api_data(county_name, params={'limit': 1, 'saleamountmin': 100, 'searchSaleDateFrom': threshold_date})
     if not data or 'data' not in data or not data['data']:
         return None
     return data['data'][0]
@@ -203,11 +206,15 @@ def check_empty_columns(county_name, columns_to_check):
     errors = []
     for record in data['data']:
         attributes = record['attributes']
+        ogc_fid = attributes.get('ogc_fid', 'Unknown')
+        pin = attributes.get('pin', 'Unknown')
+        parcel_id_display = f"ogc_fid:{ogc_fid}, pin:{pin}"
+        
         for item in columns_to_check:
             if isinstance(item, str):
                 # Simple check for a single column
                 if attributes.get(item) is None or attributes.get(item) == '':
-                    errors.append(f"Empty value in column '{item}' for parcel {attributes.get('ogc_fid')}")
+                    errors.append(f"Empty value in column '{item}' for parcel {parcel_id_display}")
             elif isinstance(item, dict):
                 # Complex check for a rule-based item
                 if item.get('rule') == 'any':
@@ -218,7 +225,7 @@ def check_empty_columns(county_name, columns_to_check):
                             found = True
                             break
                     if not found:
-                        errors.append(f"No value in any of the specified square footage fields for parcel {attributes.get('ogc_fid')}")
+                        errors.append(f"No value in any of the specified square footage fields for parcel {parcel_id_display}")
 
     if errors:
         return False, ". ".join(list(set(errors)))
@@ -257,7 +264,7 @@ def main():
             #     continue
             
             # Get most recent record for date checking
-            most_recent_record = get_api_most_recent_record(county_name)
+            most_recent_record = get_api_most_recent_record(county_name, county_config['sale_date_days_difference'])
             if not most_recent_record:
                 error_description = 'Could not retrieve most recent record from API.'
                 print(f"  -> FAILED: {error_description}\n")
@@ -269,7 +276,7 @@ def main():
             prodate_str = attributes.get('d_date')
             
             # Debug: Print available fields
-            print(f"  DEBUG: Available fields: {list(attributes.keys())}")
+            # print(f"  DEBUG: Available fields: {list(attributes.keys())}")
             print(f"  DEBUG: Parcel ID field value: {attributes.get('ogc_fid')}")
             
             if not prodate_str:
@@ -299,13 +306,11 @@ def main():
 
             # 2. Most recent sale date check
             print("  - Checking most recent sale date...", end="")
-            most_recent_sale_date_str = attributes.get('sale1_date')  # Fixed field name according to API response
-            success, msg = check_most_recent_sale_date(county_config, most_recent_sale_date_str, data_date)
-            if not success:
-                error_messages.append(msg)
-                print(f" FAILED: {msg}")
+            if most_recent_record:
+                print(f"SUCCESS: {most_recent_record['attributes']['sale1_date']}")
             else:
-                print(" OK")
+                error_messages.append("No recent sales found within tolerance period")
+                print(" FAILED: No recent sales found within tolerance period")
 
             # 3. Empty columns check
             print("  - Checking for empty columns...", end="")
