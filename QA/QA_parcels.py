@@ -199,16 +199,17 @@ def check_record_number(county_config, api_record_count, raw_data_path, db_conne
     raw_file_name = county_config.get('raw_file_name')
     file_format = county_config.get('file_format', 'delimited') # Default to delimited
     raw_record_count = None
+    api_percent = None
 
     if raw_file_name == "FDOR":
         if not db_connection:
-            return True, "SKIPPED: DB connection not available for FDOR check.", None, None
+            return True, "SKIPPED: DB connection not available for FDOR check.", None, api_percent
         
         id_type = county_config.get('fdor_identifier_type')
         id_value = county_config.get('fdor_identifier_value')
 
         if not id_type or id_value is None:
-            return False, "FDOR county is missing identifier type or value in config.", None, None
+            return False, "FDOR county is missing identifier type or value in config.", None, api_percent
 
         try:
             with db_connection.cursor() as cursor:
@@ -216,10 +217,10 @@ def check_record_number(county_config, api_record_count, raw_data_path, db_conne
                 cursor.execute(query, (id_value,))
                 raw_record_count = cursor.fetchone()[0]
         except psycopg2.Error as e:
-            return False, f"Database error during FDOR count: {e}", None, None
+            return False, f"Database error during FDOR count: {e}", None, api_percent
 
     elif raw_file_name == "UNAVAILABLE":
-        return True, "SKIPPED: Raw file source is UNAVAILABLE.", None, None
+        return True, "SKIPPED: Raw file source is UNAVAILABLE.", None, api_percent
     
     elif file_format == 'fixed-width':
         try:
@@ -227,7 +228,7 @@ def check_record_number(county_config, api_record_count, raw_data_path, db_conne
             start = county_config.get('parcel_id_start')
             length = county_config.get('parcel_id_length')
             if start is None or length is None:
-                return False, "Fixed-width config missing start or length.", None, None
+                return False, "Fixed-width config missing start or length.", None, api_percent
             
             with open(raw_data_path, 'r', newline='', errors='ignore') as f:
                 for line in f:
@@ -237,9 +238,9 @@ def check_record_number(county_config, api_record_count, raw_data_path, db_conne
                             parcel_ids.add(parcel_id)
             raw_record_count = len(parcel_ids)
         except FileNotFoundError:
-            return False, f"Raw data file not found at {raw_data_path}", None, None
+            return False, f"Raw data file not found at {raw_data_path}", None, api_percent
         except Exception as e:
-            return False, f"Error reading raw data file: {e}", None, None
+            return False, f"Error reading raw data file: {e}", None, api_percent
 
     else: # Default to delimited
         try:
@@ -263,17 +264,16 @@ def check_record_number(county_config, api_record_count, raw_data_path, db_conne
             raw_record_count = len(parcel_ids)
 
         except FileNotFoundError:
-            return False, f"Raw data file not found at {raw_data_path}", None, None
+            print(f"Raw data file not found at {raw_data_path}")
+            return False, f"Raw data file not found at {raw_data_path}", None, api_percent
         except Exception as e:
-            return False, f"Error reading raw data file: {e}", None, None
+            return False, f"Error reading raw data file: {e}", None, api_percent
 
     margin = county_config['record_number_error_margin_percent'] / 100
     lower_bound = raw_record_count * (1 - margin)
     upper_bound = raw_record_count * (1 + margin)
     if raw_record_count > 0 and api_record_count > 0:
         api_percent = api_record_count / raw_record_count * 100
-    else:
-        api_percent = None
 
     if not (lower_bound <= api_record_count <= upper_bound):
         return False, f"Record count mismatch. Raw: {raw_record_count}, API: {api_record_count}", raw_record_count, api_percent
@@ -450,11 +450,14 @@ def main():
                     rec_num_success, rec_num_msg, raw_record_count, api_percent = check_record_number(county_config, api_record_count, raw_data_path, db_connection)
                     county_writer.writerow(['raw_file_parcel_count', raw_record_count, 'Distinct parcel IDs found in the raw source file.'])
                     if api_percent:
-                        county_writer.writerow(['record_count_check', 'SUCCESS ' + str(api_percent) + '%' if rec_num_success else 'FAILURE ' + str(api_percent) + '%', rec_num_msg])
+                        county_writer.writerow(['record_count_check', 'SUCCESS ' + str(round(api_percent, 0)) + '%' if rec_num_success else 'FAILURE ' + str(round(api_percent, 0)) + '%', rec_num_msg])
                     else:
                         county_writer.writerow(['record_count_check', 'SUCCESS' if rec_num_success else 'FAILURE', rec_num_msg])
                     
-                    summary_row['record_count_check'] = 'SUCCESS' if rec_num_success else 'FAILURE'
+                    if api_percent:
+                        summary_row['record_count_check'] = 'SUCCESS ' + str(round(api_percent, 0)) + '%' if rec_num_success else 'FAILURE ' + str(round(api_percent, 0)) + '%'
+                    else:
+                        summary_row['record_count_check'] = 'SUCCESS' if rec_num_success else 'FAILURE'
                     summary_row['raw_file_count'] = raw_record_count
                     summary_row['API_count'] = api_record_count
                     if not rec_num_success:
@@ -504,7 +507,7 @@ def main():
                         empty_col_percentage = 100 - (100 * sum(details['count'] for details in empty_col_details.values()) / (100 * len(empty_col_details)))
                     else:
                         empty_col_percentage = 100
-                    summary_row['column_percentage'] = f"{empty_col_percentage:.2f}%"
+                    summary_row['column_percentage'] = f"{empty_col_percentage:.0f}%"
                     
                     missing_cols_count = sum(1 for details in empty_col_details.values() if details['count'] > 0)
                     summary_row['missing_columns_count'] = missing_cols_count
