@@ -111,11 +111,11 @@ def get_api_most_recent_record(county_name, days_tolerance, initial_records):
     # Parse the d_date and calculate threshold date
     data_date = datetime.strptime(prodate_str, '%Y%m%d').date()
     print(f"  DEBUG: Data date: {data_date}")
-    threshold_date = (data_date - timedelta(days=days_tolerance)).strftime('%Y-%m-%d')
+    threshold_date = (data_date - timedelta(days=days_tolerance)).strftime('%m/%d/%Y')
     print(f"  DEBUG: Threshold date: {threshold_date}")
     
     # Get records with sale date from threshold_date onwards and minimum sale amount of 100
-    data = get_api_data(county_name, params={'limit': 1, 'saleamountmin': 100, 'searchSaleDateFrom': threshold_date})
+    data = get_api_data(county_name, params={'limit': 1, 'searchSaleAmt1': 100, 'searchDate1': threshold_date})
     if not data or 'data' not in data or not data['data']:
         return None
     return data['data'][0]
@@ -213,7 +213,9 @@ def check_most_recent_sale_date(county_config, most_recent_sale_date_str, data_d
 
 def check_empty_columns(county_name, columns_to_check):
     """Checks for empty values in specified columns for the 10 most recent records."""
-    data = get_api_data(county_name, params={'limit': 10})
+    # Get searchDate1 from current date minus 3 months
+    search_date = (datetime.now() - timedelta(days=90)).strftime('%m/%d/%Y')
+    data = get_api_data(county_name, params={'limit': 10, 'searchSaleAmt1': 100, 'searchDate1': search_date})
     if not data or 'data' not in data or not data['data']:
         return False, ["Could not retrieve sample data for empty column check."]
 
@@ -228,6 +230,9 @@ def check_empty_columns(county_name, columns_to_check):
             if isinstance(item, str):
                 # Simple check for a single column
                 if attributes.get(item) is None or attributes.get(item) == '':
+                    # It's acceptable for s_address to be empty on vacant properties
+                    # if item == 's_address' and 'VACANT' in attributes.get('luse_d', '').upper():
+                    #     continue
                     errors.append(f"Empty value in column '{item}' for parcel {parcel_id_display}")
             elif isinstance(item, dict):
                 # Complex check for a rule-based item
@@ -270,7 +275,7 @@ def main():
 
             # Get initial batch of records
             print("  - Getting initial batch of records...", end="", flush=True)
-            initial_records = get_api_data(county_name, params={'limit': 100, 'saleamountmin': 100})
+            initial_records = get_api_data(county_name, params={'limit': 100, 'searchSaleAmt1': 100})
             if not initial_records:
                 error_description = 'Could not retrieve initial batch of records.'
                 print(f"  -> FAILED: {error_description}\n")
