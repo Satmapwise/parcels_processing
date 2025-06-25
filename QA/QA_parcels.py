@@ -10,7 +10,7 @@ import requests
 # requests.packages.urllib3.disable_warnings(requests.packages.urllib3.exceptions.InsecureRequestWarning)
 
 global test_mode
-test_mode = True
+test_mode = False
 
 
 def get_db_connection():

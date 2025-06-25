@@ -1,4 +1,5 @@
 *.pyc
 __pycache__/
-QA_results.csv 
+QA_results/
+QA_results/county_reports/
 .env
