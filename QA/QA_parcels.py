@@ -49,7 +49,7 @@ def get_api_data(county_name, params={}):
 
     # Build parameters for the GET request
     all_params = params.copy()
-    all_params['searchCounty'] = county_name.upper()
+    all_params['searchCounty'] = county_name.upper().replace('.', '')
     all_params['format'] = 'json'
 
     # Set headers for the request
@@ -263,8 +263,7 @@ def main():
     config = get_config()
     db_connection = get_db_connection()
     results_path = os.path.join(os.path.dirname(__file__), 'QA_results.csv')
-    raw_data_dir_template = "/srv/mapwise_dev/county/{county_name}/processing/database/current"
-
+    
     success_count = 0
     failure_count = 0
 
@@ -272,11 +271,13 @@ def main():
         fieldnames = ['county', 'status', 'error_description']
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
         writer.writeheader()
-        QA_counties = ['Duval', 'Seminole', 'St. Lucie', 'St. Johns']
+        QA_counties = ['Palm Beach', 'Duval', 'St. Lucie', 'St. Johns']
 
         for county_name in QA_counties:
 
             county_config = get_county_config(config, county_name)
+            raw_data_dir_template = f"/srv/mapwise_dev/county/{county_name.lower().replace(' ', '_').replace('.', '')}/processing/database/current"
+
             if not county_config:
                 error_description = f'County configuration not found for {county_name}.'
                 print(f"  -> FAILED: {error_description}\n")
