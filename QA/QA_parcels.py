@@ -59,6 +59,7 @@ def get_api_data(county_name, params={}):
             headers=headers,
             timeout=30  # Add a timeout to prevent indefinite hanging
         )
+        print(f"\n  Querying {response.url}...")
         response.raise_for_status()  # Raise an exception for bad status codes (4xx or 5xx)
         return response.json()
     except requests.exceptions.HTTPError as e:
@@ -95,10 +96,23 @@ def get_api_record_count(county_name):
         return None
     return data['meta'].get('record_count', 0)
 
-def get_api_most_recent_record(county_name, days_tolerance):
+def get_api_most_recent_record(county_name, days_tolerance, initial_records):
     """Gets a record with recent sale date for a county from the API."""
-    # Calculate the date threshold (today minus tolerance days)
-    threshold_date = (datetime.now() - timedelta(days=days_tolerance)).strftime('%Y-%m-%d')
+    # Extract data date from any record in the initial batch
+    if not initial_records or 'data' not in initial_records or not initial_records['data']:
+        return None
+    
+    # Get d_date from the first record in initial_records
+    first_record = initial_records['data'][0]
+    prodate_str = first_record['attributes'].get('d_date')
+    if not prodate_str:
+        return None
+    
+    # Parse the d_date and calculate threshold date
+    data_date = datetime.strptime(prodate_str, '%Y%m%d').date()
+    print(f"  DEBUG: Data date: {data_date}")
+    threshold_date = (data_date - timedelta(days=days_tolerance)).strftime('%Y-%m-%d')
+    print(f"  DEBUG: Threshold date: {threshold_date}")
     
     # Get records with sale date from threshold_date onwards and minimum sale amount of 100
     data = get_api_data(county_name, params={'limit': 1, 'saleamountmin': 100, 'searchSaleDateFrom': threshold_date})
@@ -201,7 +215,7 @@ def check_empty_columns(county_name, columns_to_check):
     """Checks for empty values in specified columns for the 10 most recent records."""
     data = get_api_data(county_name, params={'limit': 10})
     if not data or 'data' not in data or not data['data']:
-        return False, "Could not retrieve sample data for empty column check."
+        return False, ["Could not retrieve sample data for empty column check."]
 
     errors = []
     for record in data['data']:
@@ -228,8 +242,8 @@ def check_empty_columns(county_name, columns_to_check):
                         errors.append(f"No value in any of the specified square footage fields for parcel {parcel_id_display}")
 
     if errors:
-        return False, ". ".join(list(set(errors)))
-    return True, ""
+        return False, list(set(errors))
+    return True, []
 
 def main():
     """Main function to run the QA checks."""
@@ -253,6 +267,15 @@ def main():
 
             # API calls now use the original county_name. The path needs a formatted version.
             path_county_name = county_name.lower().replace(" ", "_")
+
+            # Get initial batch of records
+            print("  - Getting initial batch of records...", end="", flush=True)
+            initial_records = get_api_data(county_name, params={'limit': 100, 'saleamountmin': 100})
+            if not initial_records:
+                error_description = 'Could not retrieve initial batch of records.'
+                print(f"  -> FAILED: {error_description}\n")
+                writer.writerow({'county': county_name, 'status': 'Failure', 'error_description': error_description})
+                failure_count += 1
             
             # Get total record count
             # api_record_count = get_api_record_count(county_name)
@@ -264,7 +287,7 @@ def main():
             #     continue
             
             # Get most recent record for date checking
-            most_recent_record = get_api_most_recent_record(county_name, county_config['sale_date_days_difference'])
+            most_recent_record = get_api_most_recent_record(county_name, county_config['sale_date_days_difference'], initial_records)
             if not most_recent_record:
                 error_description = 'Could not retrieve most recent record from API.'
                 print(f"  -> FAILED: {error_description}\n")
@@ -305,7 +328,7 @@ def main():
             #     print(" OK")
 
             # 2. Most recent sale date check
-            print("  - Checking most recent sale date...", end="")
+            print("  - Checking most recent sale date...", end="", flush=True)
             if most_recent_record:
                 print(f"SUCCESS: {most_recent_record['attributes']['sale1_date']}")
             else:
@@ -313,11 +336,20 @@ def main():
                 print(" FAILED: No recent sales found within tolerance period")
 
             # 3. Empty columns check
-            print("  - Checking for empty columns...", end="")
-            success, msg = check_empty_columns(county_name, config['columns_to_check'])
+            print("  - Checking for empty columns...", end="", flush=True)
+            success, empty_column_errors = check_empty_columns(county_name, config['columns_to_check'])
             if not success:
-                error_messages.append(msg)
-                print(f" FAILED: {msg}")
+                error_messages.append(". ".join(empty_column_errors))
+                print(f" FAILED")
+                print(f"    Error details:")
+                # Limit the number of errors reported to avoid excessive output
+                if len(empty_column_errors) > 5:
+                    for error in empty_column_errors[:5]:
+                        print(f"      - {error}")
+                    print(f"      ... and {len(empty_column_errors) - 5} more errors.")
+                else:
+                    for error in empty_column_errors:
+                        print(f"      - {error}")
             else:
                 print(" OK")
 
