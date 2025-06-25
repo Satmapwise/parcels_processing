@@ -10,7 +10,7 @@ import requests
 # requests.packages.urllib3.disable_warnings(requests.packages.urllib3.exceptions.InsecureRequestWarning)
 
 global test_mode
-test_mode = True
+test_mode = False
 
 
 def get_db_connection():
@@ -284,10 +284,13 @@ def main():
     success_count = 0
     failure_count = 0
 
+    # Write results to CSV
     with open(results_path, 'w', newline='') as csvfile:
         fieldnames = ['county', 'status', 'error_description']
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
         writer.writeheader()
+
+        # Get counties to process
         QA_counties = ['Miami-Dade']
         if not test_mode:
             for county_name in config['counties']:
@@ -296,10 +299,12 @@ def main():
                 else:
                     QA_counties.append(county_name['name'])
         
+        # Process each county
         for county_name in QA_counties:
             county_config = get_county_config(config, county_name)
             raw_data_dir_template = f"/srv/mapwise_dev/county/{county_name.lower().replace(' ', '_').replace('.', '')}/processing/database/current"
 
+            # Check if county configuration exists
             if not county_config:
                 error_description = f'County configuration not found for {county_name}.'
                 print(f"  -> FAILED: {error_description}\n")
@@ -314,6 +319,8 @@ def main():
 
             # Get initial batch of records
             print("  - Getting initial batch of records...", end="", flush=True)
+            if test_mode:
+                print()
             initial_records = get_api_data(county_name, params={'limit': 100, 'searchSaleAmt1': 100})
             if not initial_records:
                 error_description = 'Could not retrieve initial batch of records.'
@@ -345,7 +352,7 @@ def main():
             # Debug: Print available fields
             if test_mode:
                 # print(f"  TEST MODE: Available fields: {list(attributes.keys())}")
-                print(f"  TEST MODE: Parcel ID field value: {attributes.get('ogc_fid')}\n")
+                print(f"  TEST MODE: Most recent record: {attributes.get('ogc_fid')}\n")
             
             if not prodate_str:
                 error_description = 'Could not retrieve d_date from API.'
@@ -382,6 +389,8 @@ def main():
 
             # 3. Empty columns check
             print("  - Checking for empty columns...", end="", flush=True)
+            if test_mode:
+                print()
             success, empty_column_errors = check_empty_columns(county_name, config['columns_to_check'])
             if not success:
                 error_messages.append(". ".join(empty_column_errors))
@@ -395,8 +404,6 @@ def main():
                 else:
                     for error in empty_column_errors:
                         print(f"      - {error}")
-            else:
-                print(" OK")
 
             if error_messages:
                 writer.writerow({'county': county_name, 'status': 'Failure', 'error_description': ". ".join(error_messages)})
