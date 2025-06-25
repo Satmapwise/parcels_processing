@@ -13,12 +13,13 @@ global test_mode
 global record_check
 global recent_sale_check
 global empty_columns_check
+global API_version
 
 test_mode = True
 record_check = False
 recent_sale_check = True
-empty_columns_check = False
-
+empty_columns_check = True
+API_version = 2
 
 def get_db_connection():
     """Establishes a database connection using an environment variable."""
@@ -48,7 +49,13 @@ def get_county_config(config, county_name):
 
 def get_api_data(county_name, params={}):
     """Queries the API for a given county using the requests library."""
-    base_url = "https://wms1.mapwise.com/api_v1/parcels_v2/"
+    if API_version == 1:
+        base_url = "https://wms1.mapwise.com/api_v1/parcels_v2/"
+    elif API_version == 2:
+        base_url = "https://wms1.mapwise.com/api_v2/parcels/"
+    else:
+        print(f"Invalid API version: {API_version}")
+        return None
 
     user = os.environ.get('MAPWISE_API_USER')
     password = os.environ.get('MAPWISE_API_PASS')
@@ -61,6 +68,8 @@ def get_api_data(county_name, params={}):
     all_params = params.copy()
     all_params['searchCounty'] = county_name.upper().replace('.', '')
     all_params['format'] = 'json'
+    if API_version == 2:
+        all_params['legacy'] = True
 
     # Set headers for the request
     headers = {
@@ -132,25 +141,39 @@ def get_api_most_recent_record(county_name, days_tolerance, initial_records):
     
     # Parse the d_date and calculate threshold date
     data_date = datetime.strptime(prodate_str, '%Y%m%d').date()
-    threshold_date = (data_date - timedelta(days=days_tolerance)).strftime('%m/%d/%Y')
+    if API_version == 1:
+        threshold_date = (data_date - timedelta(days=days_tolerance)).strftime('%m/%d/%Y')
+    elif API_version == 2:
+        threshold_date = (data_date - timedelta(days=days_tolerance)).strftime('%Y-%m-%d')
     if test_mode:
         print(f"  TEST MODE: Data date: {data_date}")
         print(f"  TEST MODE: Threshold date: {threshold_date}")
     
     # Get records with sale date from threshold_date onwards and minimum sale amount of 100
-    data = get_api_data(county_name, params={'limit': 100, 'searchSaleAmt1': 100, 'searchDate1': threshold_date})
+    if API_version == 1:
+        data = get_api_data(county_name, params={'limit': 100, 'searchSaleAmt1': 100, 'searchDate1': threshold_date})
+    elif API_version == 2:
+        data = get_api_data(county_name, params={'limit': 100, 'saleAmountMin': 100, 'saleDateMin': threshold_date})
     if not data or 'data' not in data or not data['data']:
         # Run another query 30 days earlier
         if test_mode:
             print(f"  TEST MODE: No recent sale date found. Running query 30 days earlier.")
-        retry_date = (data_date - timedelta(days=days_tolerance+30)).strftime('%m/%d/%Y')
-        data = get_api_data(county_name, params={'limit': 100, 'searchSaleAmt1': 100, 'searchDate1': retry_date})
+        if API_version == 1:
+            retry_date = (data_date - timedelta(days=days_tolerance+30)).strftime('%m/%d/%Y')
+            data = get_api_data(county_name, params={'limit': 100, 'searchSaleAmt1': 100, 'searchDate1': retry_date})
+        elif API_version == 2:
+            retry_date = (data_date - timedelta(days=days_tolerance+30)).strftime('%Y-%m-%d')
+            data = get_api_data(county_name, params={'limit': 100, 'saleAmountMin': 100, 'saleDateMin': retry_date})
         if not data or 'data' not in data or not data['data']:
             # Run a final query from September 1st of the previous year
-            retry_date = datetime(data_date.year - 1, 9, 1).strftime('%m/%d/%Y')
+            if API_version == 1:
+                retry_date = datetime(data_date.year - 1, 9, 1).strftime('%m/%d/%Y')
+                data = get_api_data(county_name, params={'limit': 100, 'searchSaleAmt1': 100, 'searchDate1': retry_date})
+            elif API_version == 2:
+                retry_date = datetime(data_date.year - 1, 9, 1).strftime('%Y-%m-%d')
+                data = get_api_data(county_name, params={'limit': 100, 'saleAmountMin': 100, 'saleDateMin': retry_date})
             if test_mode:
                 print(f"  TEST MODE: No recent sale date found after retry. Running final query from {retry_date}.")
-            data = get_api_data(county_name, params={'limit': 100, 'searchSaleAmt1': 100, 'searchDate1': retry_date})
             if not data or 'data' not in data or not data['data']:
                 if test_mode:
                     print(f"  TEST MODE: No recent sale date found after final query. Returning None.")
@@ -270,8 +293,12 @@ def check_empty_columns(county_name, columns_to_check):
     - A dictionary with details about empty columns, including counts and parcel IDs.
     """
     # Get searchDate1 from current date minus 3 months
-    search_date = (datetime.now() - timedelta(days=90)).strftime('%m/%d/%Y')
-    data = get_api_data(county_name, params={'limit': 10, 'searchSaleAmt1': 100, 'searchDate1': search_date})
+    if API_version == 1:
+        search_date = (datetime.now() - timedelta(days=90)).strftime('%m/%d/%Y')
+        data = get_api_data(county_name, params={'limit': 10, 'searchSaleAmt1': 100, 'searchDate1': search_date})
+    elif API_version == 2:
+        search_date = (datetime.now() - timedelta(days=90)).strftime('%Y-%m-%d')
+        data = get_api_data(county_name, params={'limit': 10, 'saleAmountMin': 100, 'saleDateMin': search_date})
     
     if not data or 'data' not in data or not data['data']:
         return False, ["Could not retrieve sample data for empty column check."], {}
@@ -388,7 +415,10 @@ def main():
                 error_messages = []
 
                 # Get initial batch for data_date
-                initial_records = get_api_data(county_name, params={'limit': 1})
+                if API_version == 1:
+                    initial_records = get_api_data(county_name, params={'limit': 1})
+                elif API_version == 2:
+                    initial_records = get_api_data(county_name, params={'limit': 1})
                 if not initial_records or not initial_records.get('data'):
                     error_messages.append('Could not retrieve initial records to determine data date.')
                 
