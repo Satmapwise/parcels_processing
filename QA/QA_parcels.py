@@ -10,7 +10,7 @@ import requests
 # requests.packages.urllib3.disable_warnings(requests.packages.urllib3.exceptions.InsecureRequestWarning)
 
 global test_mode
-test_mode = False
+test_mode = True
 
 
 def get_db_connection():
@@ -148,16 +148,17 @@ def check_record_number(county_config, api_record_count, raw_data_path, db_conne
     """Checks if the record number from the API is within the allowed margin of error."""
     raw_file_name = county_config.get('raw_file_name')
     file_format = county_config.get('file_format', 'delimited') # Default to delimited
+    raw_record_count = None
 
     if raw_file_name == "FDOR":
         if not db_connection:
-            return True, "SKIPPED: DB connection not available for FDOR check."
+            return True, "SKIPPED: DB connection not available for FDOR check.", None
         
         id_type = county_config.get('fdor_identifier_type')
         id_value = county_config.get('fdor_identifier_value')
 
         if not id_type or id_value is None:
-            return False, "FDOR county is missing identifier type or value in config."
+            return False, "FDOR county is missing identifier type or value in config.", None
 
         try:
             with db_connection.cursor() as cursor:
@@ -165,10 +166,10 @@ def check_record_number(county_config, api_record_count, raw_data_path, db_conne
                 cursor.execute(query, (id_value,))
                 raw_record_count = cursor.fetchone()[0]
         except psycopg2.Error as e:
-            return False, f"Database error during FDOR count: {e}"
+            return False, f"Database error during FDOR count: {e}", None
 
     elif raw_file_name == "UNAVAILABLE":
-        return True, "SKIPPED: Raw file source is UNAVAILABLE."
+        return True, "SKIPPED: Raw file source is UNAVAILABLE.", None
     
     elif file_format == 'fixed-width':
         try:
@@ -176,7 +177,7 @@ def check_record_number(county_config, api_record_count, raw_data_path, db_conne
             start = county_config.get('parcel_id_start')
             length = county_config.get('parcel_id_length')
             if start is None or length is None:
-                return False, "Fixed-width config missing start or length."
+                return False, "Fixed-width config missing start or length.", None
             
             with open(raw_data_path, 'r', newline='', errors='ignore') as f:
                 for line in f:
@@ -186,9 +187,9 @@ def check_record_number(county_config, api_record_count, raw_data_path, db_conne
                             parcel_ids.add(parcel_id)
             raw_record_count = len(parcel_ids)
         except FileNotFoundError:
-            return False, f"Raw data file not found at {raw_data_path}"
+            return False, f"Raw data file not found at {raw_data_path}", None
         except Exception as e:
-            return False, f"Error reading raw data file: {e}"
+            return False, f"Error reading raw data file: {e}", None
 
     else: # Default to delimited
         try:
@@ -212,17 +213,17 @@ def check_record_number(county_config, api_record_count, raw_data_path, db_conne
             raw_record_count = len(parcel_ids)
 
         except FileNotFoundError:
-            return False, f"Raw data file not found at {raw_data_path}"
+            return False, f"Raw data file not found at {raw_data_path}", None
         except Exception as e:
-            return False, f"Error reading raw data file: {e}"
+            return False, f"Error reading raw data file: {e}", None
 
     margin = county_config['record_number_error_margin_percent'] / 100
     lower_bound = raw_record_count * (1 - margin)
     upper_bound = raw_record_count * (1 + margin)
 
     if not (lower_bound <= api_record_count <= upper_bound):
-        return False, f"Record count mismatch. Raw: {raw_record_count}, API: {api_record_count}"
-    return True, ""
+        return False, f"Record count mismatch. Raw: {raw_record_count}, API: {api_record_count}", raw_record_count
+    return True, "", raw_record_count
 
 def check_most_recent_sale_date(county_config, most_recent_sale_date_str, data_date):
     """Checks if the most recent sale date is not too old."""
@@ -236,184 +237,179 @@ def check_most_recent_sale_date(county_config, most_recent_sale_date_str, data_d
     return True, ""
 
 def check_empty_columns(county_name, columns_to_check):
-    """Checks for empty values in specified columns for the 10 most recent records."""
+    """Checks for empty values in specified columns for a sample of recent records."""
     # Get searchDate1 from current date minus 3 months
     search_date = (datetime.now() - timedelta(days=90)).strftime('%m/%d/%Y')
     data = get_api_data(county_name, params={'limit': 10, 'searchSaleAmt1': 100, 'searchDate1': search_date})
+    
     if not data or 'data' not in data or not data['data']:
-        return False, ["Could not retrieve sample data for empty column check."]
+        return False, ["Could not retrieve sample data for empty column check."], {}
 
-    errors = []
+    sample_size = len(data['data'])
+    empty_column_counts = {}
+
+    # Initialize counts for all columns to check
+    for item in columns_to_check:
+        if isinstance(item, str):
+            empty_column_counts[item] = 0
+        elif isinstance(item, dict) and item.get('rule') == 'any':
+            key = f"any_of_{'_'.join(item.get('fields', []))}"
+            empty_column_counts[key] = 0
+
     for record in data['data']:
         attributes = record['attributes']
-        ogc_fid = attributes.get('ogc_fid', 'Unknown')
-        pin = attributes.get('pin', 'Unknown')
-        parcel_id_display = f"ogc_fid:{ogc_fid}, pin:{pin}"
         
         for item in columns_to_check:
             if isinstance(item, str):
-                # Simple check for a single column
                 if attributes.get(item) is None or attributes.get(item) == '':
-                    # It's acceptable for s_address to be empty on vacant properties
-                    # if item == 's_address' and 'VACANT' in attributes.get('luse_d', '').upper():
-                    #     continue
-                    errors.append(f"Empty value in column '{item}' for parcel {parcel_id_display}")
-            elif isinstance(item, dict):
-                # Complex check for a rule-based item
-                if item.get('rule') == 'any':
-                    # Check if any of the fields have a value
-                    found = False
-                    for field in item.get('fields', []):
-                        if attributes.get(field) is not None and attributes.get(field) != '':
-                            found = True
-                            break
-                    if not found:
-                        errors.append(f"No value in any of the specified square footage fields for parcel {parcel_id_display}")
+                    empty_column_counts[item] += 1
+            elif isinstance(item, dict) and item.get('rule') == 'any':
+                found = any(attributes.get(field) is not None and attributes.get(field) != '' for field in item.get('fields', []))
+                if not found:
+                    key = f"any_of_{'_'.join(item.get('fields', []))}"
+                    empty_column_counts[key] += 1
 
-    if errors:
-        return False, list(set(errors))
-    return True, []
+    has_empty_columns = any(count > 0 for count in empty_column_counts.values())
+    errors = []
+    if has_empty_columns:
+        for col, count in empty_column_counts.items():
+            if count > 0:
+                errors.append(f"Column '{col}' is empty in {count}/{sample_size} sample records.")
+
+    return not has_empty_columns, errors, empty_column_counts
 
 def main():
     """Main function to run the QA checks."""
     load_dotenv() # Load environment variables from .env file
     config = get_config()
     db_connection = get_db_connection()
-    results_path = os.path.join(os.path.dirname(__file__), 'QA_results.csv')
+
+    # Setup paths for results
+    qa_results_dir = os.path.join(os.path.dirname(__file__), 'QA_results')
+    county_reports_dir = os.path.join(qa_results_dir, 'county_reports')
+    os.makedirs(county_reports_dir, exist_ok=True)
+    summary_path = os.path.join(qa_results_dir, 'summary.csv')
     
     success_count = 0
     failure_count = 0
 
     # Write results to CSV
-    with open(results_path, 'w', newline='') as csvfile:
-        fieldnames = ['county', 'status', 'error_description']
-        writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
-        writer.writeheader()
+    with open(summary_path, 'w', newline='') as summary_csv_file:
+        summary_fieldnames = [
+            'county', 'data_date', 'record_count_check', 'most_recent_sale_check', 
+            'empty_columns_check', 'missing_columns_count'
+        ]
+        summary_writer = csv.DictWriter(summary_csv_file, fieldnames=summary_fieldnames)
+        summary_writer.writeheader()
 
         # Get counties to process
         QA_counties = ['Miami-Dade']
         if not test_mode:
-            for county_name in config['counties']:
-                if county_name['name'] in QA_counties:
-                    continue
-                else:
-                    QA_counties.append(county_name['name'])
+            for county_config_item in config['counties']:
+                if county_config_item['name'] not in QA_counties:
+                    QA_counties.append(county_config_item['name'])
         
         # Process each county
         for county_name in QA_counties:
             county_config = get_county_config(config, county_name)
-            raw_data_dir_template = f"/srv/mapwise_dev/county/{county_name.lower().replace(' ', '_').replace('.', '')}/processing/database/current"
-
+            
             # Check if county configuration exists
             if not county_config:
-                error_description = f'County configuration not found for {county_name}.'
-                print(f"  -> FAILED: {error_description}\n")
-                writer.writerow({'county': county_name, 'status': 'Failure', 'error_description': error_description})
+                print(f"  -> FAILED: County configuration not found for {county_name}.\n")
+                summary_writer.writerow({
+                    'county': county_name, 'status': 'Failure', 
+                    'error_description': 'County configuration not found.'
+                })
                 failure_count += 1
                 continue
 
             print(f"Processing {county_name}...")
 
             # API calls now use the original county_name. The path needs a formatted version.
-            path_county_name = county_name.lower().replace(" ", "_")
+            path_county_name = county_name.lower().replace(" ", "_").replace(".", "")
+            raw_data_dir = f"/srv/mapwise_dev/county/{path_county_name}/processing/database/current"
+            raw_data_path = os.path.join(raw_data_dir, county_config.get('raw_file_name', ''))
 
-            # Get initial batch of records
-            print("  - Getting initial batch of records...", end="", flush=True)
-            if test_mode:
-                print()
-            initial_records = get_api_data(county_name, params={'limit': 100, 'searchSaleAmt1': 100})
-            if not initial_records:
-                error_description = 'Could not retrieve initial batch of records.'
-                print(f"  -> FAILED: {error_description}\n")
-                writer.writerow({'county': county_name, 'status': 'Failure', 'error_description': error_description})
-                failure_count += 1
-            
-            # Get total record count
-            # api_record_count = get_api_record_count(county_name)
-            # if api_record_count is None:
-            #     error_description = 'Could not retrieve record count from API.'
-            #     print(f"  -> FAILED: {error_description}\n")
-            #     writer.writerow({'county': county_name, 'status': 'Failure', 'error_description': error_description})
-            #     failure_count += 1
-            #     continue
-            
-            # Get most recent record for date checking
-            most_recent_record = get_api_most_recent_record(county_name, county_config['sale_date_days_difference'], initial_records)
-            if not most_recent_record:
-                error_description = 'Could not retrieve most recent record from API.'
-                print(f"  -> FAILED: {error_description}\n")
-                writer.writerow({'county': county_name, 'status': 'Failure', 'error_description': error_description})
-                failure_count += 1
-                continue
-            
-            attributes = most_recent_record['attributes']
-            prodate_str = attributes.get('d_date')
-            
-            # Debug: Print available fields
-            if test_mode:
-                # print(f"  TEST MODE: Available fields: {list(attributes.keys())}")
-                print(f"  TEST MODE: Most recent record: {attributes.get('ogc_fid')}\n")
-            
-            if not prodate_str:
-                error_description = 'Could not retrieve d_date from API.'
-                print(f"  -> FAILED: {error_description}\n")
-                writer.writerow({'county': county_name, 'status': 'Failure', 'error_description': error_description})
-                failure_count += 1
-                continue
-            
-            data_date = datetime.strptime(prodate_str, '%Y%m%d').date()
+            # Setup county-specific report
+            county_report_path = os.path.join(county_reports_dir, f"{path_county_name}.csv")
+            with open(county_report_path, 'w', newline='') as county_csv_file:
+                county_writer = csv.writer(county_csv_file)
+                county_writer.writerow(['check_name', 'value', 'details'])
 
-            raw_data_dir = raw_data_dir_template.format(county_name=path_county_name)
-            raw_data_path = os.path.join(raw_data_dir, county_config['raw_file_name'])
+                summary_row = {'county': county_name}
+                error_messages = []
 
-            error_messages = []
+                # Get initial batch for data_date
+                initial_records = get_api_data(county_name, params={'limit': 1})
+                if not initial_records or not initial_records.get('data'):
+                    error_messages.append('Could not retrieve initial records to determine data date.')
+                
+                prodate_str = initial_records['data'][0]['attributes'].get('d_date') if initial_records and initial_records.get('data') else None
+                data_date = datetime.strptime(prodate_str, '%Y%m%d').date() if prodate_str else None
+                summary_row['data_date'] = data_date
+                county_writer.writerow(['data_date', data_date, ''])
 
-            # 1. Record number check - DISABLED until API provides total record counts
-            # print("  - Checking record count...", end="")
-            # success, msg = check_record_number(county_config, api_record_count, raw_data_path, db_connection)
-            # if not success:
-            #     error_messages.append(msg)
-            #     print(f" FAILED: {msg}")
-            # elif "SKIPPED" in msg:
-            #     print(f" {msg}")
-            # else:
-            #     print(" OK")
-
-            # 2. Most recent sale date check
-            print("  - Checking most recent sale date...", end="", flush=True)
-            if most_recent_record:
-                print(f"SUCCESS: {most_recent_record['attributes']['sale1_date']}")
-            else:
-                error_messages.append("No recent sales found within tolerance period")
-                print(" FAILED: No recent sales found within tolerance period")
-
-            # 3. Empty columns check
-            print("  - Checking for empty columns...", end="", flush=True)
-            if test_mode:
-                print()
-            success, empty_column_errors = check_empty_columns(county_name, config['columns_to_check'])
-            if not success:
-                error_messages.append(". ".join(empty_column_errors))
-                print(f" FAILED")
-                print(f"    Error details:")
-                # Limit the number of errors reported to avoid excessive output
-                if len(empty_column_errors) > 5:
-                    for error in empty_column_errors[:5]:
-                        print(f"      - {error}")
-                    print(f"      ... and {len(empty_column_errors) - 5} more errors.")
+                # 1. Record number check
+                print("  - Checking record count...", end="", flush=True)
+                api_record_count = get_api_record_count(county_name)
+                county_writer.writerow(['api_record_count', api_record_count, ''])
+                
+                rec_num_success, rec_num_msg, raw_record_count = check_record_number(county_config, api_record_count, raw_data_path, db_connection)
+                county_writer.writerow(['raw_file_parcel_count', raw_record_count, ''])
+                
+                summary_row['record_count_check'] = 'SUCCESS' if rec_num_success else 'FAILURE'
+                if not rec_num_success:
+                    error_messages.append(f"Record count: {rec_num_msg}")
+                    print(f" FAILED: {rec_num_msg}")
+                elif "SKIPPED" in rec_num_msg:
+                    print(f" {rec_num_msg}")
+                    summary_row['record_count_check'] = 'SKIPPED'
                 else:
-                    for error in empty_column_errors:
-                        print(f"      - {error}")
+                    print(" OK")
 
-            if error_messages:
-                writer.writerow({'county': county_name, 'status': 'Failure', 'error_description': ". ".join(error_messages)})
-                print(f"  -> RESULT: Failure\n")
-                failure_count += 1
-            else:
-                writer.writerow({'county': county_name, 'status': 'Success', 'error_description': ''})
-                print(f"  -> RESULT: Success\n")
-                success_count += 1
+                # 2. Most recent sale date check
+                print("  - Checking most recent sale date...", end="", flush=True)
+                most_recent_record = get_api_most_recent_record(county_name, county_config['sale_date_days_difference'], initial_records)
+                most_recent_sale_date = most_recent_record['attributes'].get('sale1_date') if most_recent_record else None
+                county_writer.writerow(['most_recent_sale', most_recent_sale_date, ''])
+                
+                sale_date_success, sale_date_msg = check_most_recent_sale_date(county_config, most_recent_sale_date, data_date) if data_date and most_recent_sale_date else (False, "Could not check sale date.")
+                summary_row['most_recent_sale_check'] = 'SUCCESS' if sale_date_success else 'FAILURE'
+                if not sale_date_success:
+                    error_messages.append(f"Sale date: {sale_date_msg}")
+                    print(f" FAILED: {sale_date_msg}")
+                elif "SKIPPED" in sale_date_msg:
+                    print(f" {sale_date_msg}")
+                    summary_row['most_recent_sale_check'] = 'SKIPPED'
+                else:
+                    print(" OK")
 
+                # 3. Empty columns check
+                print("  - Checking for empty columns...", end="", flush=True)
+                empty_col_success, empty_col_errors, empty_col_details = check_empty_columns(county_name, config['columns_to_check'])
+                
+                missing_cols_count = sum(1 for count in empty_col_details.values() if count > 0)
+                summary_row['missing_columns_count'] = missing_cols_count
+                summary_row['empty_columns_check'] = 'SUCCESS' if empty_col_success else 'FAILURE'
+
+                for col, count in empty_col_details.items():
+                    county_writer.writerow([f'empty_column: {col}', f"{count}/10", ""])
+
+                if not empty_col_success:
+                    error_messages.extend(empty_col_errors)
+                    print(" FAILED")
+                else:
+                    print(" OK")
+
+                # Finalize and write summary
+                if error_messages:
+                    print(f"  -> RESULT: Failure\n")
+                    failure_count += 1
+                else:
+                    print(f"  -> RESULT: Success\n")
+                    success_count += 1
+                
+                summary_writer.writerow(summary_row)
 
     if db_connection:
         db_connection.close()
@@ -425,7 +421,8 @@ def main():
     print(f"  Success: {success_count}")
     print(f"  Failure: {failure_count}")
     print("="*40)
-    print(f"\nFull results saved to: {results_path}")
+    print(f"\nFull results saved to: {summary_path}")
+    print(f"County-specific reports saved in: {county_reports_dir}")
 
 
 if __name__ == "__main__":

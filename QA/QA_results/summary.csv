@@ -1,0 +1,2 @@
+county,data_date,record_count_check,most_recent_sale_check,empty_columns_check,missing_columns_count
+Miami-Dade,2025-06-16,FAILURE,SUCCESS,SUCCESS,0
