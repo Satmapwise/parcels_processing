@@ -10,7 +10,14 @@ import requests
 # requests.packages.urllib3.disable_warnings(requests.packages.urllib3.exceptions.InsecureRequestWarning)
 
 global test_mode
+global record_check
+global recent_sale_check
+global empty_columns_check
+
 test_mode = False
+record_check = False
+recent_sale_check = False
+empty_columns_check = False
 
 
 def get_db_connection():
@@ -237,7 +244,13 @@ def check_most_recent_sale_date(county_config, most_recent_sale_date_str, data_d
     return True, ""
 
 def check_empty_columns(county_name, columns_to_check):
-    """Checks for empty values in specified columns for a sample of recent records."""
+    """
+    Checks for empty values in specified columns for a sample of recent records.
+    Returns a tuple containing:
+    - A boolean indicating if the check passed (True if no empty columns found).
+    - A list of error messages.
+    - A dictionary with details about empty columns, including counts and parcel IDs.
+    """
     # Get searchDate1 from current date minus 3 months
     search_date = (datetime.now() - timedelta(days=90)).strftime('%m/%d/%Y')
     data = get_api_data(county_name, params={'limit': 10, 'searchSaleAmt1': 100, 'searchDate1': search_date})
@@ -246,37 +259,48 @@ def check_empty_columns(county_name, columns_to_check):
         return False, ["Could not retrieve sample data for empty column check."], {}
 
     sample_size = len(data['data'])
-    empty_column_counts = {}
+    empty_column_details = {}
 
-    # Initialize counts for all columns to check
+    # Initialize details for all columns to check
     for item in columns_to_check:
         if isinstance(item, str):
-            empty_column_counts[item] = 0
+            empty_column_details[item] = {'count': 0, 'parcels': []}
         elif isinstance(item, dict) and item.get('rule') == 'any':
             key = f"any_of_{'_'.join(item.get('fields', []))}"
-            empty_column_counts[key] = 0
+            empty_column_details[key] = {'count': 0, 'parcels': []}
 
     for record in data['data']:
         attributes = record['attributes']
+        pin = attributes.get('pin')
+        ogc_fid = attributes.get('ogc_fid')
+        # Use PIN if available, otherwise OGC_FID. Add prefix for clarity.
+        if pin:
+            parcel_id_display = f"pin:{pin}"
+        elif ogc_fid:
+            parcel_id_display = f"ogc_fid:{ogc_fid}"
+        else:
+            parcel_id_display = "Unknown"
         
         for item in columns_to_check:
             if isinstance(item, str):
                 if attributes.get(item) is None or attributes.get(item) == '':
-                    empty_column_counts[item] += 1
+                    empty_column_details[item]['count'] += 1
+                    empty_column_details[item]['parcels'].append(parcel_id_display)
             elif isinstance(item, dict) and item.get('rule') == 'any':
+                key = f"any_of_{'_'.join(item.get('fields', []))}"
                 found = any(attributes.get(field) is not None and attributes.get(field) != '' for field in item.get('fields', []))
                 if not found:
-                    key = f"any_of_{'_'.join(item.get('fields', []))}"
-                    empty_column_counts[key] += 1
+                    empty_column_details[key]['count'] += 1
+                    empty_column_details[key]['parcels'].append(parcel_id_display)
 
-    has_empty_columns = any(count > 0 for count in empty_column_counts.values())
+    has_empty_columns = any(details['count'] > 0 for details in empty_column_details.values())
     errors = []
     if has_empty_columns:
-        for col, count in empty_column_counts.items():
-            if count > 0:
-                errors.append(f"Column '{col}' is empty in {count}/{sample_size} sample records.")
+        for col, details in empty_column_details.items():
+            if details['count'] > 0:
+                errors.append(f"Column '{col}' is empty in {details['count']}/{sample_size} sample records.")
 
-    return not has_empty_columns, errors, empty_column_counts
+    return not has_empty_columns, errors, empty_column_details
 
 def main():
     """Main function to run the QA checks."""
@@ -347,59 +371,67 @@ def main():
                 prodate_str = initial_records['data'][0]['attributes'].get('d_date') if initial_records and initial_records.get('data') else None
                 data_date = datetime.strptime(prodate_str, '%Y%m%d').date() if prodate_str else None
                 summary_row['data_date'] = data_date
-                county_writer.writerow(['data_date', data_date, ''])
+                county_writer.writerow(['data_date', data_date, 'The most recent data date from the server.'])
 
                 # 1. Record number check
-                print("  - Checking record count...", end="", flush=True)
-                api_record_count = get_api_record_count(county_name)
-                county_writer.writerow(['api_record_count', api_record_count, ''])
-                
-                rec_num_success, rec_num_msg, raw_record_count = check_record_number(county_config, api_record_count, raw_data_path, db_connection)
-                county_writer.writerow(['raw_file_parcel_count', raw_record_count, ''])
-                
-                summary_row['record_count_check'] = 'SUCCESS' if rec_num_success else 'FAILURE'
-                if not rec_num_success:
-                    error_messages.append(f"Record count: {rec_num_msg}")
-                    print(f" FAILED: {rec_num_msg}")
-                elif "SKIPPED" in rec_num_msg:
-                    print(f" {rec_num_msg}")
-                    summary_row['record_count_check'] = 'SKIPPED'
-                else:
-                    print(" OK")
+                if record_check:
+                    print("  - Checking record count...", end="", flush=True)
+                    api_record_count = get_api_record_count(county_name)
+                    county_writer.writerow(['api_record_count', api_record_count, 'Total records available from the server.'])
+                    
+                    rec_num_success, rec_num_msg, raw_record_count = check_record_number(county_config, api_record_count, raw_data_path, db_connection)
+                    county_writer.writerow(['raw_file_parcel_count', raw_record_count, 'Distinct parcel IDs found in the raw source file.'])
+                    county_writer.writerow(['record_count_check', 'SUCCESS' if rec_num_success else 'FAILURE', rec_num_msg])
+                    
+                    summary_row['record_count_check'] = 'SUCCESS' if rec_num_success else 'FAILURE'
+                    if not rec_num_success:
+                        error_messages.append(f"Record count: {rec_num_msg}")
+                        print(f" FAILED: {rec_num_msg}")
+                    elif "SKIPPED" in rec_num_msg:
+                        print(f" {rec_num_msg}")
+                        summary_row['record_count_check'] = 'SKIPPED'
+                    else:
+                        print(" OK")
 
                 # 2. Most recent sale date check
-                print("  - Checking most recent sale date...", end="", flush=True)
-                most_recent_record = get_api_most_recent_record(county_name, county_config['sale_date_days_difference'], initial_records)
-                most_recent_sale_date = most_recent_record['attributes'].get('sale1_date') if most_recent_record else None
-                county_writer.writerow(['most_recent_sale', most_recent_sale_date, ''])
-                
-                sale_date_success, sale_date_msg = check_most_recent_sale_date(county_config, most_recent_sale_date, data_date) if data_date and most_recent_sale_date else (False, "Could not check sale date.")
-                summary_row['most_recent_sale_check'] = 'SUCCESS' if sale_date_success else 'FAILURE'
-                if not sale_date_success:
-                    error_messages.append(f"Sale date: {sale_date_msg}")
-                    print(f" FAILED: {sale_date_msg}")
-                elif "SKIPPED" in sale_date_msg:
-                    print(f" {sale_date_msg}")
-                    summary_row['most_recent_sale_check'] = 'SKIPPED'
-                else:
-                    print(" OK")
+                if recent_sale_check:
+                    print("  - Checking most recent sale date...", end="", flush=True)
+                    most_recent_record = get_api_most_recent_record(county_name, county_config['sale_date_days_difference'], initial_records)
+                    most_recent_sale_date = most_recent_record['attributes'].get('sale1_date') if most_recent_record else None
+                    
+                    sale_date_success, sale_date_msg = check_most_recent_sale_date(county_config, most_recent_sale_date, data_date) if data_date and most_recent_sale_date else (False, "Could not check sale date.")
+                    county_writer.writerow(['most_recent_sale', most_recent_sale_date, sale_date_msg])
+
+                    summary_row['most_recent_sale_check'] = 'SUCCESS' if sale_date_success else 'FAILURE'
+                    if not sale_date_success:
+                        error_messages.append(f"Sale date: {sale_date_msg}")
+                        print(f" FAILED: {sale_date_msg}")
+                    elif "SKIPPED" in sale_date_msg:
+                        print(f" {sale_date_msg}")
+                        summary_row['most_recent_sale_check'] = 'SKIPPED'
+                    else:
+                        print(" OK")
 
                 # 3. Empty columns check
-                print("  - Checking for empty columns...", end="", flush=True)
-                empty_col_success, empty_col_errors, empty_col_details = check_empty_columns(county_name, config['columns_to_check'])
-                
-                missing_cols_count = sum(1 for count in empty_col_details.values() if count > 0)
-                summary_row['missing_columns_count'] = missing_cols_count
-                summary_row['empty_columns_check'] = 'SUCCESS' if empty_col_success else 'FAILURE'
+                if empty_columns_check:
+                    print("  - Checking for empty columns...", end="", flush=True)
+                    empty_col_success, empty_col_errors, empty_col_details = check_empty_columns(county_name, config['columns_to_check'])
+                    
+                    missing_cols_count = sum(1 for details in empty_col_details.values() if details['count'] > 0)
+                    summary_row['missing_columns_count'] = missing_cols_count
+                    summary_row['empty_columns_check'] = 'SUCCESS' if empty_col_success else 'FAILURE'
 
-                for col, count in empty_col_details.items():
-                    county_writer.writerow([f'empty_column: {col}', f"{count}/10", ""])
+                    for col, details in empty_col_details.items():
+                        count = details['count']
+                        parcels = details['parcels']
+                        details_msg = f"Missing in parcels: {', '.join(parcels)}" if parcels else "All sample records have a value."
+                        county_writer.writerow([f'empty_column: {col}', f"{count}/10", details_msg])
 
-                if not empty_col_success:
-                    error_messages.extend(empty_col_errors)
-                    print(" FAILED")
-                else:
-                    print(" OK")
+                    if not empty_col_success:
+                        error_messages.extend(empty_col_errors)
+                        print(" FAILED")
+                    else:
+                        print(" OK")
 
                 # Finalize and write summary
                 if error_messages:
