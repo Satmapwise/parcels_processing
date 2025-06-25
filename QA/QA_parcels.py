@@ -368,9 +368,9 @@ def main():
     with open(summary_path, 'w', newline='') as summary_csv_file:
         summary_fieldnames = ['county', 'data_date']
         if record_check:
-            summary_fieldnames.append('record_count_check')
             summary_fieldnames.append('raw_file_count')
             summary_fieldnames.append('API_count')
+            summary_fieldnames.append('record_count_check')
         if recent_sale_check:
             summary_fieldnames.append('most_recent_sale_check')
         if empty_columns_check:
