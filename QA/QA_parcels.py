@@ -7,10 +7,10 @@ from dotenv import load_dotenv
 import requests
 
 # Suppress only the single InsecureRequestWarning from urllib3 needed for this script
-requests.packages.urllib3.disable_warnings(requests.packages.urllib3.exceptions.InsecureRequestWarning)
+# requests.packages.urllib3.disable_warnings(requests.packages.urllib3.exceptions.InsecureRequestWarning)
 
 global test_mode
-test_mode = False
+test_mode = True
 
 
 def get_db_connection():
@@ -274,7 +274,7 @@ def main():
         fieldnames = ['county', 'status', 'error_description']
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
         writer.writeheader()
-        QA_counties = []
+        QA_counties = ['Miami-Dade']
         if not test_mode:
             for county_name in config['counties']:
                 if county_name['name'] in QA_counties:
