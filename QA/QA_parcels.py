@@ -59,7 +59,7 @@ def get_api_data(county_name, params={}):
             headers=headers,
             timeout=30  # Add a timeout to prevent indefinite hanging
         )
-        print(f"\n  Querying {response.url}...")
+        print(f"\n  DEBUG: Querying {response.url}...")
         response.raise_for_status()  # Raise an exception for bad status codes (4xx or 5xx)
         return response.json()
     except requests.exceptions.HTTPError as e:
@@ -300,7 +300,7 @@ def main():
             
             # Debug: Print available fields
             # print(f"  DEBUG: Available fields: {list(attributes.keys())}")
-            print(f"  DEBUG: Parcel ID field value: {attributes.get('ogc_fid')}")
+            print(f"  DEBUG: Parcel ID field value: {attributes.get('ogc_fid')}\n")
             
             if not prodate_str:
                 error_description = 'Could not retrieve d_date from API.'
