@@ -15,10 +15,10 @@ global recent_sale_check
 global empty_columns_check
 global API_version
 
-test_mode = True
+test_mode = False
 record_check = True
-recent_sale_check = False
-empty_columns_check = False
+recent_sale_check = True
+empty_columns_check = True
 API_version = 2
 
 def get_db_connection():
@@ -369,6 +369,8 @@ def main():
         summary_fieldnames = ['county', 'data_date']
         if record_check:
             summary_fieldnames.append('record_count_check')
+            summary_fieldnames.append('raw_file_count')
+            summary_fieldnames.append('API_count')
         if recent_sale_check:
             summary_fieldnames.append('most_recent_sale_check')
         if empty_columns_check:
@@ -446,6 +448,8 @@ def main():
                     county_writer.writerow(['record_count_check', 'SUCCESS' if rec_num_success else 'FAILURE', rec_num_msg])
                     
                     summary_row['record_count_check'] = 'SUCCESS' if rec_num_success else 'FAILURE'
+                    summary_row['raw_file_count'] = raw_record_count
+                    summary_row['API_count'] = api_record_count
                     if not rec_num_success:
                         error_messages.append(f"Record count: {rec_num_msg}")
                         print(f" FAILED: {rec_num_msg}")
