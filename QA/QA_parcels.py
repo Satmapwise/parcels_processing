@@ -29,6 +29,13 @@ def get_config():
     with open(config_path, 'r') as f:
         return json.load(f)
 
+def get_county_config(config, county_name):
+    """Finds the county configuration by name from the counties array."""
+    for county in config['counties']:
+        if county['name'] == county_name:
+            return county
+    return None
+
 def get_api_data(county_name, params={}):
     """Queries the API for a given county using the requests library."""
     base_url = "https://wms1.mapwise.com/api_v1/parcels_v2/"
@@ -265,9 +272,18 @@ def main():
         fieldnames = ['county', 'status', 'error_description']
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
         writer.writeheader()
+        QA_counties = ['Palm Beach', 'Hillsborough']
 
-        for county_config in config['counties']:
-            county_name = county_config['name']
+        for county_name in QA_counties:
+
+            county_config = get_county_config(config, county_name)
+            if not county_config:
+                error_description = f'County configuration not found for {county_name}.'
+                print(f"  -> FAILED: {error_description}\n")
+                writer.writerow({'county': county_name, 'status': 'Failure', 'error_description': error_description})
+                failure_count += 1
+                continue
+
             print(f"Processing {county_name}...")
 
             # API calls now use the original county_name. The path needs a formatted version.
