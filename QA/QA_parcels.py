@@ -366,7 +366,7 @@ def main():
                 writer.writerow({'county': county_name, 'status': 'Success', 'error_description': ''})
                 print(f"  -> RESULT: Success\n")
                 success_count += 1
-            break
+
 
     if db_connection:
         db_connection.close()

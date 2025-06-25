@@ -480,7 +480,7 @@
             "name": "Gilchrist",
             "raw_file_name": "FDOR",
             "record_number_error_margin_percent": 5,
-            "sale_date_days_difference": 30,
+            "sale_date_days_difference": 100,
             "fdor_identifier_type": "co_no",
             "fdor_identifier_value": 21
         },
