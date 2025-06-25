@@ -272,7 +272,7 @@ def main():
         fieldnames = ['county', 'status', 'error_description']
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
         writer.writeheader()
-        QA_counties = ['Palm Beach', 'Hillsborough']
+        QA_counties = ['Duval', 'Seminole', 'St. Lucie', 'St. Johns']
 
         for county_name in QA_counties:
 
