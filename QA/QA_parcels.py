@@ -4,7 +4,7 @@ from datetime import datetime
 import csv
 import psycopg2
 from dotenv import load_dotenv
-import subprocess
+import requests
 
 
 def get_db_connection():
@@ -27,7 +27,7 @@ def get_config():
         return json.load(f)
 
 def get_api_data(county_name, params={}):
-    """Queries the API for a given county using curl via subprocess."""
+    """Queries the API for a given county using the requests library."""
     base_url = "https://maps.mapwise.com/api_v1/parcels_v2/"
 
     user = os.environ.get('MAPWISE_API_USER')
@@ -37,41 +37,34 @@ def get_api_data(county_name, params={}):
         print("Warning: MAPWISE_API_USER or MAPWISE_API_PASS not set. API requests will likely fail.")
         return None
 
-    # Build the command list to replicate the working curl command
-    command = [
-        'curl',
-        '-s',  # Silent mode
-        '-u', f'{user}:{password}',
-        '-X', 'GET',
-        base_url,
-        '-G'  # Ensures parameters are appended to the URL for a GET request
-    ]
-
-    # Add all parameters using --data-urlencode
+    # Build parameters for the GET request
     all_params = params.copy()
     all_params['searchCounty'] = county_name.upper()
     all_params['format'] = 'json'
 
-    for key, value in all_params.items():
-        command.extend(['--data-urlencode', f'{key}={value}'])
-
-    # Add the required header
-    command.extend(['-H', 'Accept: application/json'])
+    # Set headers for the request
+    headers = {'Accept': 'application/json'}
 
     try:
-        result = subprocess.run(command, capture_output=True, text=True, check=True)
-        return json.loads(result.stdout)
-    except subprocess.CalledProcessError as e:
-        print(f"API request via curl failed for {county_name}.")
-        print(f"  Exit code: {e.returncode}")
-        print(f"  Stderr: {e.stderr}")
-        print(f"  Stdout: {e.stdout}")
+        response = requests.get(
+            base_url,
+            params=all_params,
+            auth=(user, password),
+            headers=headers
+        )
+        response.raise_for_status()  # Raise an exception for bad status codes (4xx or 5xx)
+        return response.json()
+    except requests.exceptions.HTTPError as e:
+        print(f"API request failed for {county_name}.")
+        print(f"  Status Code: {e.response.status_code}")
+        print(f"  Response: {e.response.text}")
+        return None
+    except requests.exceptions.RequestException as e:
+        # This catches other request-related errors like timeouts, connection errors, etc.
+        print(f"An unexpected error occurred during API request for {county_name}: {e}")
         return None
     except json.JSONDecodeError:
-        print(f"Failed to decode JSON from curl response for {county_name}.")
-        return None
-    except Exception as e:
-        print(f"An unexpected error occurred during curl execution for {county_name}: {e}")
+        print(f"Failed to decode JSON from API response for {county_name}.")
         return None
 
 def check_record_number(county_config, api_record_count, raw_data_path, db_connection=None):
