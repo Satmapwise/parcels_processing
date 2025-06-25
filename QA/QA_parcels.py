@@ -16,7 +16,7 @@ global empty_columns_check
 global API_version
 
 test_mode = True
-record_check = False
+record_check = True
 recent_sale_check = True
 empty_columns_check = True
 API_version = 2
@@ -121,7 +121,7 @@ def get_api_record_count(county_name):
     data = get_api_data(county_name, params={})
     if not data or 'meta' not in data:
         return None
-    return data['meta'].get('record_count', 0)
+    return data['meta'].get('total_count', 0)
 
 def get_api_most_recent_record(county_name, days_tolerance, initial_records):
     """Gets a record with recent sale date for a county from the API."""
@@ -432,7 +432,7 @@ def main():
                     county_writer.writerow(['data_date', data_date, 'The date of the most recent update to the server.'])
 
                 # 1. Record number check
-                if record_check:
+                if record_check and API_version == 2:
                     print("  - Checking record count...", end="", flush=True)
                     api_record_count = get_api_record_count(county_name)
                     county_writer.writerow(['api_record_count', api_record_count, 'Total records available from the server.'])
@@ -450,6 +450,11 @@ def main():
                         summary_row['record_count_check'] = 'SKIPPED'
                     else:
                         print(" OK")
+                        
+                elif record_check and API_version == 1:
+                    print("  - SKIPPED: Record number check is not available for API version 1.")
+                    county_writer.writerow(['record_count_check', 'SKIPPED', 'Record number check is not available for API version 1.'])
+                    summary_row['record_count_check'] = 'SKIPPED'
 
                 # 2. Most recent sale date check
                 if recent_sale_check:
