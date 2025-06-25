@@ -295,10 +295,10 @@ def check_empty_columns(county_name, columns_to_check):
     # Get searchDate1 from current date minus 3 months
     if API_version == 1:
         search_date = (datetime.now() - timedelta(days=90)).strftime('%m/%d/%Y')
-        data = get_api_data(county_name, params={'limit': 10, 'searchSaleAmt1': 100, 'searchDate1': search_date})
+        data = get_api_data(county_name, params={'limit': 100, 'searchSaleAmt1': 100, 'searchDate1': search_date})
     elif API_version == 2:
         search_date = (datetime.now() - timedelta(days=90)).strftime('%Y-%m-%d')
-        data = get_api_data(county_name, params={'limit': 10, 'saleAmountMin': 100, 'saleDateMin': search_date})
+        data = get_api_data(county_name, params={'limit': 100, 'saleAmountMin': 100, 'saleDateMin': search_date})
     
     if not data or 'data' not in data or not data['data']:
         return False, ["Could not retrieve sample data for empty column check."], {}
@@ -378,7 +378,7 @@ def main():
 
         # Get counties to process
         if test_mode:
-            QA_counties = ['Nassau', 'Okaloosa', 'Seminole', 'Miami-Dade']
+            QA_counties = ['Miami-Dade', 'Seminole', 'Okaloosa', 'Nassau']
         else:
             for county_config_item in config['counties']:
                 if county_config_item['name'] not in QA_counties:
@@ -450,7 +450,7 @@ def main():
                         summary_row['record_count_check'] = 'SKIPPED'
                     else:
                         print(" OK")
-                        
+
                 elif record_check and API_version == 1:
                     print("  - SKIPPED: Record number check is not available for API version 1.")
                     county_writer.writerow(['record_count_check', 'SKIPPED', 'Record number check is not available for API version 1.'])
@@ -492,7 +492,7 @@ def main():
                         count = details['count']
                         parcels = details['parcels']
                         details_msg = f"Missing in parcels: {', '.join(parcels)}" if parcels else "All sample records have a value."
-                        county_writer.writerow([f'empty_column: {col}', f"{count}/10", details_msg])
+                        county_writer.writerow([f'empty_column: {col}', f"{count}/100", details_msg])
 
                     if not empty_col_success:
                         error_messages.extend(empty_col_errors)
