@@ -15,7 +15,7 @@ global recent_sale_check
 global empty_columns_check
 global API_version
 
-test_mode = False
+test_mode = True
 record_check = True
 recent_sale_check = True
 empty_columns_check = True
@@ -202,13 +202,13 @@ def check_record_number(county_config, api_record_count, raw_data_path, db_conne
 
     if raw_file_name == "FDOR":
         if not db_connection:
-            return True, "SKIPPED: DB connection not available for FDOR check.", None
+            return True, "SKIPPED: DB connection not available for FDOR check.", None, None
         
         id_type = county_config.get('fdor_identifier_type')
         id_value = county_config.get('fdor_identifier_value')
 
         if not id_type or id_value is None:
-            return False, "FDOR county is missing identifier type or value in config.", None
+            return False, "FDOR county is missing identifier type or value in config.", None, None
 
         try:
             with db_connection.cursor() as cursor:
@@ -216,10 +216,10 @@ def check_record_number(county_config, api_record_count, raw_data_path, db_conne
                 cursor.execute(query, (id_value,))
                 raw_record_count = cursor.fetchone()[0]
         except psycopg2.Error as e:
-            return False, f"Database error during FDOR count: {e}", None
+            return False, f"Database error during FDOR count: {e}", None, None
 
     elif raw_file_name == "UNAVAILABLE":
-        return True, "SKIPPED: Raw file source is UNAVAILABLE.", None
+        return True, "SKIPPED: Raw file source is UNAVAILABLE.", None, None
     
     elif file_format == 'fixed-width':
         try:
@@ -227,7 +227,7 @@ def check_record_number(county_config, api_record_count, raw_data_path, db_conne
             start = county_config.get('parcel_id_start')
             length = county_config.get('parcel_id_length')
             if start is None or length is None:
-                return False, "Fixed-width config missing start or length.", None
+                return False, "Fixed-width config missing start or length.", None, None
             
             with open(raw_data_path, 'r', newline='', errors='ignore') as f:
                 for line in f:
@@ -237,9 +237,9 @@ def check_record_number(county_config, api_record_count, raw_data_path, db_conne
                             parcel_ids.add(parcel_id)
             raw_record_count = len(parcel_ids)
         except FileNotFoundError:
-            return False, f"Raw data file not found at {raw_data_path}", None
+            return False, f"Raw data file not found at {raw_data_path}", None, None
         except Exception as e:
-            return False, f"Error reading raw data file: {e}", None
+            return False, f"Error reading raw data file: {e}", None, None
 
     else: # Default to delimited
         try:
@@ -263,17 +263,18 @@ def check_record_number(county_config, api_record_count, raw_data_path, db_conne
             raw_record_count = len(parcel_ids)
 
         except FileNotFoundError:
-            return False, f"Raw data file not found at {raw_data_path}", None
+            return False, f"Raw data file not found at {raw_data_path}", None, None
         except Exception as e:
-            return False, f"Error reading raw data file: {e}", None
+            return False, f"Error reading raw data file: {e}", None, None
 
     margin = county_config['record_number_error_margin_percent'] / 100
     lower_bound = raw_record_count * (1 - margin)
     upper_bound = raw_record_count * (1 + margin)
+    api_percent = api_record_count / raw_record_count * 100
 
     if not (lower_bound <= api_record_count <= upper_bound):
-        return False, f"Record count mismatch. Raw: {raw_record_count}, API: {api_record_count}", raw_record_count
-    return True, "", raw_record_count
+        return False, f"Record count mismatch. Raw: {raw_record_count}, API: {api_record_count}", raw_record_count, api_percent
+    return True, "", raw_record_count, api_percent
 
 def check_most_recent_sale_date(county_config, most_recent_sale_date_str, data_date):
     """Checks if the most recent sale date is not too old."""
@@ -443,9 +444,12 @@ def main():
                     api_record_count = get_api_record_count(county_name)
                     county_writer.writerow(['api_record_count', api_record_count, 'Total records available from the server.'])
                     
-                    rec_num_success, rec_num_msg, raw_record_count = check_record_number(county_config, api_record_count, raw_data_path, db_connection)
+                    rec_num_success, rec_num_msg, raw_record_count, api_percent = check_record_number(county_config, api_record_count, raw_data_path, db_connection)
                     county_writer.writerow(['raw_file_parcel_count', raw_record_count, 'Distinct parcel IDs found in the raw source file.'])
-                    county_writer.writerow(['record_count_check', 'SUCCESS' if rec_num_success else 'FAILURE', rec_num_msg])
+                    if api_percent:
+                        county_writer.writerow(['record_count_check', 'SUCCESS ' + str(api_percent) + '%' if rec_num_success else 'FAILURE ' + str(api_percent) + '%', rec_num_msg])
+                    else:
+                        county_writer.writerow(['record_count_check', 'SUCCESS' if rec_num_success else 'FAILURE', rec_num_msg])
                     
                     summary_row['record_count_check'] = 'SUCCESS' if rec_num_success else 'FAILURE'
                     summary_row['raw_file_count'] = raw_record_count
