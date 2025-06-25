@@ -270,7 +270,10 @@ def check_record_number(county_config, api_record_count, raw_data_path, db_conne
     margin = county_config['record_number_error_margin_percent'] / 100
     lower_bound = raw_record_count * (1 - margin)
     upper_bound = raw_record_count * (1 + margin)
-    api_percent = api_record_count / raw_record_count * 100
+    if raw_record_count > 0 and api_record_count > 0:
+        api_percent = api_record_count / raw_record_count * 100
+    else:
+        api_percent = None
 
     if not (lower_bound <= api_record_count <= upper_bound):
         return False, f"Record count mismatch. Raw: {raw_record_count}, API: {api_record_count}", raw_record_count, api_percent
