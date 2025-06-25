@@ -207,7 +207,7 @@ def check_empty_columns(county_name, columns_to_check):
             if isinstance(item, str):
                 # Simple check for a single column
                 if attributes.get(item) is None or attributes.get(item) == '':
-                    errors.append(f"Empty value in column '{item}' for parcel {attributes.get('parcelid')}")
+                    errors.append(f"Empty value in column '{item}' for parcel {attributes.get('ogc_fid')}")
             elif isinstance(item, dict):
                 # Complex check for a rule-based item
                 if item.get('rule') == 'any':
@@ -218,7 +218,7 @@ def check_empty_columns(county_name, columns_to_check):
                             found = True
                             break
                     if not found:
-                        errors.append(f"No value in any of the specified square footage fields for parcel {attributes.get('parcelid')}")
+                        errors.append(f"No value in any of the specified square footage fields for parcel {attributes.get('ogc_fid')}")
 
     if errors:
         return False, ". ".join(list(set(errors)))
@@ -268,6 +268,10 @@ def main():
             attributes = most_recent_record['attributes']
             prodate_str = attributes.get('d_date')
             
+            # Debug: Print available fields
+            print(f"  DEBUG: Available fields: {list(attributes.keys())}")
+            print(f"  DEBUG: Parcel ID field value: {attributes.get('ogc_fid')}")
+            
             if not prodate_str:
                 error_description = 'Could not retrieve d_date from API.'
                 print(f"  -> FAILED: {error_description}\n")
@@ -295,7 +299,7 @@ def main():
 
             # 2. Most recent sale date check
             print("  - Checking most recent sale date...", end="")
-            most_recent_sale_date_str = attributes.get('sale_date1')  # Fixed field name according to API docs
+            most_recent_sale_date_str = attributes.get('sale1_date')  # Fixed field name according to API response
             success, msg = check_most_recent_sale_date(county_config, most_recent_sale_date_str, data_date)
             if not success:
                 error_messages.append(msg)
