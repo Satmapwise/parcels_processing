@@ -15,10 +15,10 @@ global recent_sale_check
 global empty_columns_check
 global API_version
 
-test_mode = True
-record_check = False
-recent_sale_check = True
-empty_columns_check = True
+test_mode = False
+record_check = True
+recent_sale_check = False
+empty_columns_check = False
 API_version = 2
 
 def get_db_connection():
@@ -381,6 +381,7 @@ def main():
         if test_mode:
             QA_counties = ['Miami-Dade', 'Seminole', 'Okaloosa', 'Nassau']
         else:
+            QA_counties = []
             for county_config_item in config['counties']:
                 if county_config_item['name'] not in QA_counties:
                     QA_counties.append(county_config_item['name'])
