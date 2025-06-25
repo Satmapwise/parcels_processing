@@ -502,12 +502,15 @@ def main():
                     print("  - Checking for empty columns...", end="", flush=True)
                     empty_col_success, empty_col_errors, empty_col_details = check_empty_columns(county_name, config['columns_to_check'])
 
-                    # Calculate the percentage of empty columns
+                    # Calculate the percentage of complete data cells
                     if empty_col_details:
-                        empty_col_percentage = 100 - (100 * sum(details['count'] for details in empty_col_details.values()) / (100 * len(empty_col_details)))
+                        total_cells = 100 * len(config['columns_to_check'])  # 100 records * number of columns
+                        empty_cells = sum(details['count'] for details in empty_col_details.values())
+                        complete_cells = total_cells - empty_cells
+                        data_completeness_percentage = (complete_cells / total_cells) * 100
                     else:
-                        empty_col_percentage = 100
-                    summary_row['column_percentage'] = f"{empty_col_percentage:.0f}%"
+                        data_completeness_percentage = 100
+                    summary_row['column_percentage'] = f"{data_completeness_percentage:.2f}%"
                     
                     missing_cols_count = sum(1 for details in empty_col_details.values() if details['count'] > 0)
                     summary_row['missing_columns_count'] = missing_cols_count
