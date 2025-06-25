@@ -16,7 +16,7 @@ global empty_columns_check
 
 test_mode = False
 record_check = False
-recent_sale_check = False
+recent_sale_check = True
 empty_columns_check = False
 
 
@@ -241,7 +241,7 @@ def check_most_recent_sale_date(county_config, most_recent_sale_date_str, data_d
     days_difference = county_config['sale_date_days_difference']
     if (data_date - most_recent_sale_date).days > days_difference:
         return False, f"Most recent sale date {most_recent_sale_date} is too old."
-    return True, ""
+    return True, "The most recent sale date is within the allowed margin of error."
 
 def check_empty_columns(county_name, columns_to_check):
     """
@@ -376,7 +376,7 @@ def main():
                 prodate_str = initial_records['data'][0]['attributes'].get('d_date') if initial_records and initial_records.get('data') else None
                 data_date = datetime.strptime(prodate_str, '%Y%m%d').date() if prodate_str else None
                 summary_row['data_date'] = data_date
-                county_writer.writerow(['data_date', data_date, 'The most recent data date from the server.'])
+                county_writer.writerow(['data_date', data_date, 'The date of the most recent update to the server.'])
 
                 # 1. Record number check
                 if record_check:
