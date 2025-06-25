@@ -319,10 +319,15 @@ def main():
 
     # Write results to CSV
     with open(summary_path, 'w', newline='') as summary_csv_file:
-        summary_fieldnames = [
-            'county', 'data_date', 'record_count_check', 'most_recent_sale_check', 
-            'empty_columns_check', 'missing_columns_count'
-        ]
+        summary_fieldnames = ['county', 'data_date']
+        if record_check:
+            summary_fieldnames.append('record_count_check')
+        if recent_sale_check:
+            summary_fieldnames.append('most_recent_sale_check')
+        if empty_columns_check:
+            summary_fieldnames.append('empty_columns_check')
+            summary_fieldnames.append('missing_columns_count')
+        
         summary_writer = csv.DictWriter(summary_csv_file, fieldnames=summary_fieldnames)
         summary_writer.writeheader()
 
