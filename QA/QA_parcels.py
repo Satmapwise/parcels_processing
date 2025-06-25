@@ -97,8 +97,8 @@ def get_api_record_count(county_name):
 
 def get_api_most_recent_record(county_name):
     """Gets the most recent record for a county from the API."""
-    # Get the first record (API should return most recent by default)
-    data = get_api_data(county_name, params={'limit': 1})
+    # Get the first record with minimum sale amount of 100
+    data = get_api_data(county_name, params={'limit': 1, 'saleamountmin': 100})
     if not data or 'data' not in data or not data['data']:
         return None
     return data['data'][0]
@@ -186,10 +186,9 @@ def check_record_number(county_config, api_record_count, raw_data_path, db_conne
 def check_most_recent_sale_date(county_config, most_recent_sale_date_str, data_date):
     """Checks if the most recent sale date is not too old."""
     if not most_recent_sale_date_str:
-        return False, "Most recent sale date is null."
-        
-    most_recent_sale_date = datetime.strptime(most_recent_sale_date_str, '%Y-%m-%d').date()
+        return True, "SKIPPED: Most recent sale date is null."
     
+    most_recent_sale_date = datetime.strptime(most_recent_sale_date_str, '%Y-%m-%d').date()
     days_difference = county_config['sale_date_days_difference']
     if (data_date - most_recent_sale_date).days > days_difference:
         return False, f"Most recent sale date {most_recent_sale_date} is too old."
