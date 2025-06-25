@@ -9,6 +9,9 @@ import requests
 # Suppress only the single InsecureRequestWarning from urllib3 needed for this script
 requests.packages.urllib3.disable_warnings(requests.packages.urllib3.exceptions.InsecureRequestWarning)
 
+global test_mode
+test_mode = False
+
 
 def get_db_connection():
     """Establishes a database connection using an environment variable."""
@@ -271,10 +274,15 @@ def main():
         fieldnames = ['county', 'status', 'error_description']
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
         writer.writeheader()
-        QA_counties = ['Palm Beach', 'Duval', 'St. Lucie', 'St. Johns']
-
+        QA_counties = []
+        if not test_mode:
+            for county_name in config['counties']:
+                if county_name['name'] in QA_counties:
+                    continue
+                else:
+                    QA_counties.append(county_name['name'])
+        
         for county_name in QA_counties:
-
             county_config = get_county_config(config, county_name)
             raw_data_dir_template = f"/srv/mapwise_dev/county/{county_name.lower().replace(' ', '_').replace('.', '')}/processing/database/current"
 
