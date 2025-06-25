@@ -125,10 +125,22 @@ def get_api_most_recent_record(county_name, days_tolerance, initial_records):
     print(f"  DEBUG: Threshold date: {threshold_date}")
     
     # Get records with sale date from threshold_date onwards and minimum sale amount of 100
-    data = get_api_data(county_name, params={'limit': 1, 'searchSaleAmt1': 100, 'searchDate1': threshold_date})
+    data = get_api_data(county_name, params={'limit': 100, 'searchSaleAmt1': 100, 'searchDate1': threshold_date})
     if not data or 'data' not in data or not data['data']:
         return None
-    return data['data'][0]
+    
+    most_recent_record = None
+    most_recent_sale_date = None
+
+    for record in data['data']:
+        sale_date_str = record['attributes'].get('sale1_date')
+        if sale_date_str:
+            # Assuming YYYY-MM-DD format, string comparison is sufficient
+            if most_recent_sale_date is None or sale_date_str > most_recent_sale_date:
+                most_recent_sale_date = sale_date_str
+                most_recent_record = record
+    
+    return most_recent_record
 
 def check_record_number(county_config, api_record_count, raw_data_path, db_connection=None):
     """Checks if the record number from the API is within the allowed margin of error."""
