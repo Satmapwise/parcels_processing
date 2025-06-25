@@ -81,6 +81,7 @@ def get_api_data(county_name, params={}):
         return None
     except json.JSONDecodeError:
         print(f"Failed to decode JSON from API response for {county_name}.")
+        print(f"  Response content: {response.text[:200]}")
         return None
     except Exception as e:
         print(f"An unexpected error occurred during API request for {county_name}: {e}")
@@ -96,8 +97,8 @@ def get_api_record_count(county_name):
 
 def get_api_most_recent_record(county_name):
     """Gets the most recent record for a county from the API."""
-    # Get the most recent record by sorting by d_date descending
-    data = get_api_data(county_name, params={'limit': 1, 'sort': 'd_date desc'})
+    # Get the first record (API should return most recent by default)
+    data = get_api_data(county_name, params={'limit': 1})
     if not data or 'data' not in data or not data['data']:
         return None
     return data['data'][0]
@@ -320,6 +321,7 @@ def main():
                 writer.writerow({'county': county_name, 'status': 'Success', 'error_description': ''})
                 print(f"  -> RESULT: Success\n")
                 success_count += 1
+            break
 
     if db_connection:
         db_connection.close()
