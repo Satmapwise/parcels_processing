@@ -6,6 +6,9 @@ import psycopg2
 from dotenv import load_dotenv
 import requests
 
+# Suppress only the single InsecureRequestWarning from urllib3 needed for this script
+requests.packages.urllib3.disable_warnings(requests.packages.urllib3.exceptions.InsecureRequestWarning)
+
 
 def get_db_connection():
     """Establishes a database connection using an environment variable."""
