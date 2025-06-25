@@ -288,7 +288,7 @@ def main():
     qa_results_dir = os.path.join(os.path.dirname(__file__), 'QA_results')
     county_reports_dir = os.path.join(qa_results_dir, 'county_reports')
     os.makedirs(county_reports_dir, exist_ok=True)
-    summary_path = os.path.join(qa_results_dir, 'summary.csv')
+    summary_path = os.path.join(qa_results_dir, 'QA_summary.csv')
     
     success_count = 0
     failure_count = 0
@@ -331,7 +331,7 @@ def main():
             raw_data_path = os.path.join(raw_data_dir, county_config.get('raw_file_name', ''))
 
             # Setup county-specific report
-            county_report_path = os.path.join(county_reports_dir, f"{path_county_name}.csv")
+            county_report_path = os.path.join(county_reports_dir, f"{path_county_name}_QA.csv")
             with open(county_report_path, 'w', newline='') as county_csv_file:
                 county_writer = csv.writer(county_csv_file)
                 county_writer.writerow(['check_name', 'value', 'details'])
