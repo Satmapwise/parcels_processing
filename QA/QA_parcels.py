@@ -450,12 +450,12 @@ def main():
                     rec_num_success, rec_num_msg, raw_record_count, api_percent = check_record_number(county_config, api_record_count, raw_data_path, db_connection)
                     county_writer.writerow(['raw_file_parcel_count', raw_record_count, 'Distinct parcel IDs found in the raw source file.'])
                     if api_percent:
-                        county_writer.writerow(['record_count_check', 'SUCCESS ' + str(round(api_percent, 0)) + '%' if rec_num_success else 'FAILURE ' + str(round(api_percent, 0)) + '%', rec_num_msg])
+                        county_writer.writerow(['record_count_check', 'SUCCESS ' + str(round(api_percent, 1)) + '%' if rec_num_success else 'FAILURE ' + str(round(api_percent, 1)) + '%', rec_num_msg])
                     else:
                         county_writer.writerow(['record_count_check', 'SUCCESS' if rec_num_success else 'FAILURE', rec_num_msg])
                     
                     if api_percent:
-                        summary_row['record_count_check'] = 'SUCCESS ' + str(round(api_percent, 0)) + '%' if rec_num_success else 'FAILURE ' + str(round(api_percent, 0)) + '%'
+                        summary_row['record_count_check'] = 'SUCCESS ' + str(round(api_percent, 1)) + '%' if rec_num_success else 'FAILURE ' + str(round(api_percent, 1)) + '%'
                     else:
                         summary_row['record_count_check'] = 'SUCCESS' if rec_num_success else 'FAILURE'
                     summary_row['raw_file_count'] = raw_record_count
