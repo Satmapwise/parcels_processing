@@ -14,7 +14,7 @@ global record_check
 global recent_sale_check
 global empty_columns_check
 
-test_mode = False
+test_mode = True
 record_check = False
 recent_sale_check = True
 empty_columns_check = False
@@ -118,13 +118,17 @@ def get_api_most_recent_record(county_name, days_tolerance, initial_records):
     """Gets a record with recent sale date for a county from the API."""
     # Extract data date from any record in the initial batch
     if not initial_records or 'data' not in initial_records or not initial_records['data']:
-        return None
+        if test_mode:
+            print(f"  TEST MODE: No initial records found. Returning None.")
+        return False, "No initial records found"
     
     # Get d_date from the first record in initial_records
     first_record = initial_records['data'][0]
     prodate_str = first_record['attributes'].get('d_date')
     if not prodate_str:
-        return None
+        if test_mode:
+            print(f"  TEST MODE: No data date found. Returning None.")
+        return False, "No data date found"
     
     # Parse the d_date and calculate threshold date
     data_date = datetime.strptime(prodate_str, '%Y%m%d').date()
@@ -136,7 +140,21 @@ def get_api_most_recent_record(county_name, days_tolerance, initial_records):
     # Get records with sale date from threshold_date onwards and minimum sale amount of 100
     data = get_api_data(county_name, params={'limit': 100, 'searchSaleAmt1': 100, 'searchDate1': threshold_date})
     if not data or 'data' not in data or not data['data']:
-        return None
+        # Run another query 30 days earlier
+        if test_mode:
+            print(f"  TEST MODE: No recent sale date found. Running query 30 days earlier.")
+        retry_date = (data_date - timedelta(days=days_tolerance+30)).strftime('%m/%d/%Y')
+        data = get_api_data(county_name, params={'limit': 100, 'searchSaleAmt1': 100, 'searchDate1': retry_date})
+        if not data or 'data' not in data or not data['data']:
+            # Run a final query from September 1st of the previous year
+            retry_date = datetime(data_date.year - 1, 9, 1).strftime('%m/%d/%Y')
+            if test_mode:
+                print(f"  TEST MODE: No recent sale date found after retry. Running final query from {retry_date}.")
+            data = get_api_data(county_name, params={'limit': 100, 'searchSaleAmt1': 100, 'searchDate1': retry_date})
+            if not data or 'data' not in data or not data['data']:
+                if test_mode:
+                    print(f"  TEST MODE: No recent sale date found after final query. Returning None.")
+            return False, "No recent sale date found after all retries."
     
     most_recent_record = None
     most_recent_sale_date = None
@@ -149,7 +167,7 @@ def get_api_most_recent_record(county_name, days_tolerance, initial_records):
                 most_recent_sale_date = sale_date_str
                 most_recent_record = record
     
-    return most_recent_record
+    return most_recent_record, None
 
 def check_record_number(county_config, api_record_count, raw_data_path, db_connection=None):
     """Checks if the record number from the API is within the allowed margin of error."""
@@ -332,8 +350,9 @@ def main():
         summary_writer.writeheader()
 
         # Get counties to process
-        QA_counties = ['Miami-Dade']
-        if not test_mode:
+        if test_mode:
+            QA_counties = ['Nassau', 'Okaloosa', 'Seminole', 'Miami-Dade']
+        else:
             for county_config_item in config['counties']:
                 if county_config_item['name'] not in QA_counties:
                     QA_counties.append(county_config_item['name'])
@@ -376,7 +395,11 @@ def main():
                 prodate_str = initial_records['data'][0]['attributes'].get('d_date') if initial_records and initial_records.get('data') else None
                 data_date = datetime.strptime(prodate_str, '%Y%m%d').date() if prodate_str else None
                 summary_row['data_date'] = data_date
-                county_writer.writerow(['data_date', data_date, 'The date of the most recent update to the server.'])
+                if not data_date:
+                    error_messages.append('Could not determine data date.')
+                    county_writer.writerow(['data_date', 'ERROR', 'Could not determine data date.'])
+                else:
+                    county_writer.writerow(['data_date', data_date, 'The date of the most recent update to the server.'])
 
                 # 1. Record number check
                 if record_check:
@@ -401,11 +424,15 @@ def main():
                 # 2. Most recent sale date check
                 if recent_sale_check:
                     print("  - Checking most recent sale date...", end="", flush=True)
-                    most_recent_record = get_api_most_recent_record(county_name, county_config['sale_date_days_difference'], initial_records)
-                    most_recent_sale_date = most_recent_record['attributes'].get('sale1_date') if most_recent_record else None
-                    
-                    sale_date_success, sale_date_msg = check_most_recent_sale_date(county_config, most_recent_sale_date, data_date) if data_date and most_recent_sale_date else (False, "Could not check sale date.")
-                    county_writer.writerow(['most_recent_sale', most_recent_sale_date, sale_date_msg])
+                    most_recent_record, sale_date_msg = get_api_most_recent_record(county_name, county_config['sale_date_days_difference'], initial_records)
+                    if most_recent_record:
+                        most_recent_sale_date = most_recent_record['attributes'].get('sale1_date')
+                        sale_date_success, sale_date_msg = check_most_recent_sale_date(county_config, most_recent_sale_date, data_date) if data_date and most_recent_sale_date else (False, "Unexpected error.")
+                        county_writer.writerow(['most_recent_sale', most_recent_sale_date, sale_date_msg])
+                    else:
+                        sale_date_success = False
+                        sale_date_msg = sale_date_msg
+                        county_writer.writerow(['most_recent_sale', 'ERROR', sale_date_msg])
 
                     summary_row['most_recent_sale_check'] = 'SUCCESS' if sale_date_success else 'FAILURE'
                     if not sale_date_success:
