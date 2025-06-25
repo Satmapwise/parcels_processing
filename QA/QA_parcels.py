@@ -31,7 +31,7 @@ def get_config():
 
 def get_api_data(county_name, params={}):
     """Queries the API for a given county using the requests library."""
-    base_url = "https://maps.mapwise.com/api_v1/parcels_v2/"
+    base_url = "https://wms1.mapwise.com/api_v1/parcels_v2/"
 
     user = os.environ.get('MAPWISE_API_USER')
     password = os.environ.get('MAPWISE_API_PASS')
@@ -66,12 +66,24 @@ def get_api_data(county_name, params={}):
         print(f"  Status Code: {e.response.status_code}")
         print(f"  Response: {e.response.text}")
         return None
+    except requests.exceptions.ConnectionError as e:
+        print(f"Connection error for {county_name}: {e}")
+        return None
+    except requests.exceptions.Timeout as e:
+        print(f"Timeout error for {county_name}: {e}")
+        return None
+    except requests.exceptions.SSLError as e:
+        print(f"SSL error for {county_name}: {e}")
+        return None
     except requests.exceptions.RequestException as e:
         # This catches other request-related errors like timeouts, connection errors, etc.
         print(f"An unexpected error occurred during API request for {county_name}: {e}")
         return None
     except json.JSONDecodeError:
         print(f"Failed to decode JSON from API response for {county_name}.")
+        return None
+    except Exception as e:
+        print(f"An unexpected error occurred during API request for {county_name}: {e}")
         return None
 
 def check_record_number(county_config, api_record_count, raw_data_path, db_connection=None):
@@ -169,28 +181,28 @@ def check_most_recent_sale_date(county_config, most_recent_sale_date_str, data_d
 def check_empty_columns(county_name, columns_to_check):
     """Checks for empty values in specified columns for the 10 most recent records."""
     data = get_api_data(county_name, params={'limit': 10})
-    if not data or 'features' not in data or not data['features']:
+    if not data or 'data' not in data or not data['data']:
         return False, "Could not retrieve sample data for empty column check."
 
     errors = []
-    for record in data['features']:
-        props = record['properties']
+    for record in data['data']:
+        attributes = record['attributes']
         for item in columns_to_check:
             if isinstance(item, str):
                 # Simple check for a single column
-                if props.get(item) is None or props.get(item) == '':
-                    errors.append(f"Empty value in column '{item}' for parcel {props.get('parcelid')}")
+                if attributes.get(item) is None or attributes.get(item) == '':
+                    errors.append(f"Empty value in column '{item}' for parcel {attributes.get('parcelid')}")
             elif isinstance(item, dict):
                 # Complex check for a rule-based item
                 if item.get('rule') == 'any':
                     # Check if any of the fields have a value
                     found = False
                     for field in item.get('fields', []):
-                        if props.get(field) is not None and props.get(field) != '':
+                        if attributes.get(field) is not None and attributes.get(field) != '':
                             found = True
                             break
                     if not found:
-                        errors.append(f"No value in any of the specified square footage fields for parcel {props.get('parcelid')}")
+                        errors.append(f"No value in any of the specified square footage fields for parcel {attributes.get('parcelid')}")
 
     if errors:
         return False, ". ".join(list(set(errors)))
@@ -220,29 +232,29 @@ def main():
             path_county_name = county_name.lower().replace(" ", "_")
             
             most_recent_data = get_api_data(county_name, params={'limit': 1})
-            if not most_recent_data or 'features' not in most_recent_data or not most_recent_data['features']:
+            if not most_recent_data or 'data' not in most_recent_data or not most_recent_data['data']:
                 error_description = 'Could not retrieve data from API.'
                 print(f"  -> FAILED: {error_description}\n")
                 writer.writerow({'county': county_name, 'status': 'Failure', 'error_description': error_description})
                 failure_count += 1
                 continue
             
-            properties = most_recent_data['features'][0]['properties']
-            prodate_str = properties.get('prodate')
+            attributes = most_recent_data['data'][0]['attributes']
+            prodate_str = attributes.get('d_date')
             
             if not prodate_str:
-                error_description = 'Could not retrieve prodate from API.'
+                error_description = 'Could not retrieve d_date from API.'
                 print(f"  -> FAILED: {error_description}\n")
                 writer.writerow({'county': county_name, 'status': 'Failure', 'error_description': error_description})
                 failure_count += 1
                 continue
             
-            data_date = datetime.strptime(prodate_str, '%Y-%m-%d').date()
+            data_date = datetime.strptime(prodate_str, '%Y%m%d').date()
 
             raw_data_dir = raw_data_dir_template.format(county_name=path_county_name)
             raw_data_path = os.path.join(raw_data_dir, county_config['raw_file_name'])
 
-            api_record_count = most_recent_data['totalfeatures']
+            api_record_count = most_recent_data['meta']['record_count']
 
             error_messages = []
 
@@ -260,7 +272,7 @@ def main():
 
             # 2. Most recent sale date check
             print("  - Checking most recent sale date...", end="")
-            most_recent_sale_date_str = properties.get('saledate')
+            most_recent_sale_date_str = attributes.get('sale1_date')
             success, msg = check_most_recent_sale_date(county_config, most_recent_sale_date_str, data_date)
             if not success:
                 error_messages.append(msg)
