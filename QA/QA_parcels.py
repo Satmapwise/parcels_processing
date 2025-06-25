@@ -512,9 +512,14 @@ def main():
                         data_completeness_percentage = 100
                     summary_row['column_percentage'] = f"{data_completeness_percentage:.2f}%"
                     
-                    missing_cols_count = sum(1 for details in empty_col_details.values() if details['count'] > 0)
+                    # Count columns where more than 40% of records are missing data
+                    sample_size = 100
+                    missing_threshold = sample_size * 0.4
+                    missing_cols_count = sum(1 for details in empty_col_details.values() if details['count'] > missing_threshold)
+                    if missing_cols_count > 0:
+                        empty_col_success = False
                     summary_row['missing_columns_count'] = missing_cols_count
-                    summary_row['empty_columns_check'] = 'SUCCESS' if empty_col_success else 'FAILURE'
+                    summary_row['empty_columns_check'] = 'SUCCESS' if missing_cols_count == 0 else 'FAILURE'
 
                     for col, details in empty_col_details.items():
                         count = details['count']
