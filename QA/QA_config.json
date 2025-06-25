@@ -587,7 +587,6 @@
         "o_address1",
         "o_city",
         "o_zipcode",
-        "s_number",
         "s_address", 
         "s_city",
         "s_zipcode",
