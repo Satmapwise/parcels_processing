@@ -172,7 +172,7 @@ entities = {
 
 class Config:
     def __init__(self, 
-                 test_mode=False, debug=False, isolate_logs=True,
+                 test_mode=True, debug=False, isolate_logs=True,
                  run_download=False, run_metadata=True, run_processing=False, run_upload=False,
                  ):
         """
@@ -646,7 +646,7 @@ def extract_shp_metadata(shp_path, logger):
 def main():
     """Main script execution."""
     parser = argparse.ArgumentParser(description="Download, process, and upload geospatial data layers.")
-    parser.add_argument("layer", help="The layer to process.", choices=list(layers))
+    parser.add_argument("layer", help="The layer to process.")
     parser.add_argument("entity", nargs='?', help="The specific entity (e.g., miami-dade_unincorporated) to process. If omitted, all entities for the layer are processed.")
     parser.add_argument("--test-mode", action="store_true", help="Run in test mode, skipping actual execution of external tools and uploads.")
     parser.add_argument("--debug", action="store_true", help="Enable debug logging on the console.")
