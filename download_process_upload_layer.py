@@ -172,7 +172,7 @@ entities = {
 
 class Config:
     def __init__(self, 
-                 test_mode=True, debug=True, isolate_logs=True,
+                 test_mode=True, debug=True, isolate_logs=False,
                  run_download=False, run_metadata=True, run_processing=False, run_upload=False,
                  ):
         """
@@ -577,12 +577,6 @@ def extract_shp_metadata(shp_path, logger):
     """
 
     metadata = {}
-
-    # In test mode we skip running external utilities but still return an
-    # indicative dict so the calling code doesn't break.
-    if CONFIG.test_mode:
-        logger.info("[TEST MODE] Skipping ogrinfo metadata extraction.")
-        return metadata
 
     if not os.path.exists(shp_path):
         logger.warning(f"Shapefile not found for metadata extraction: {shp_path}")
