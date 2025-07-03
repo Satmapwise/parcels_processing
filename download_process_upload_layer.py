@@ -545,13 +545,28 @@ def extract_shp_metadata(shp_path, logger):
     projcs_match = re.search(r'^(?:\s*)(PROJCS|GEOGCS)\["([^\"]+)"', result.stdout, re.MULTILINE)
     if projcs_match:
         srs_type, srs_name = projcs_match.groups()
-        canonical_name = srs_name.lower().replace(" ", "_")
+        # Canonicalize: lower-case and replace non-alphanum with underscore
+        canonical_name = re.sub(r'[^a-z0-9]+', '_', srs_name.lower()).strip('_')
 
         # Lookup table – extend as needed
         name_to_epsg = {
-            "nad_1983_stateplane_florida_west_fips_0902_feet": "2237",
+            # Geographic WGS84
+            "gcs_wgs_1984": "4326",
+
+            # Web Mercator / Pseudo-Mercator
+            "wgs_84_pseudo_mercator": "3857",
+
+            # Florida State Plane (NAD83 1983)
             "nad_1983_stateplane_florida_east_fips_0901_feet": "2236",
+            "nad_1983_stateplane_florida_west_fips_0902_feet": "2237",
             "nad_1983_stateplane_florida_north_fips_0903_feet": "2238",
+
+            # Florida State Plane (NAD83 HARN)
+            "nad83_harn_florida_east_ftus": "2881",
+            "nad83_harn_florida_west_ftus": "2882",
+
+            # Florida State Plane (NAD83 2011)
+            "nad_1983_2011_stateplane_florida_west_fips_0902_ft_us": "6443",
         }
 
         if canonical_name in name_to_epsg:
