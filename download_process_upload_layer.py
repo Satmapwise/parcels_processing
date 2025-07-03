@@ -655,24 +655,31 @@ def main():
     parser.add_argument("--test-mode", action="store_true", help="Run in test mode, skipping actual execution of external tools and uploads.")
     parser.add_argument("--debug", action="store_true", help="Enable debug logging on the console.")
     parser.add_argument("--no-log-isolation", dest='isolate_logs', action='store_false', help="Show all logs in the console instead of isolating them to files.")
-    parser.add_argument("--no-download", action="store_false", dest="run_download", default=True, help="Skip the download phase.")
-    parser.add_argument("--no-metadata", action="store_false", dest="run_metadata", default=True, help="Skip the metadata extraction phase.")
-    parser.add_argument("--no-processing", action="store_false", dest="run_processing", default=True, help="Skip the processing phase.")
-    parser.add_argument("--no-upload", action="store_false", dest="run_upload", default=True, help="Skip the upload phase.")
+    parser.add_argument("--no-download", action="store_true", help="Skip the download phase.")
+    parser.add_argument("--no-metadata", action="store_true", help="Skip the metadata extraction phase.")
+    parser.add_argument("--no-processing", action="store_true", help="Skip the processing phase.")
+    parser.add_argument("--no-upload", action="store_true", help="Skip the upload phase.")
     
     args = parser.parse_args()
 
     # Initialize config and logging
     global CONFIG
-    CONFIG = Config(
-        test_mode=args.test_mode,
-        debug=args.debug,
-        isolate_logs=args.isolate_logs,
-        run_download=args.run_download,
-        run_metadata=args.run_metadata,
-        run_processing=args.run_processing,
-        run_upload=args.run_upload,
-    )
+    CONFIG = Config()
+    if args.test_mode:
+        CONFIG.test_mode = True
+    if args.debug:
+        CONFIG.debug = True
+    if args.isolate_logs is False:
+        CONFIG.isolate_logs = False
+    if args.no_download:
+        CONFIG.run_download = False
+    if args.no_metadata:
+        CONFIG.run_metadata = False
+    if args.no_processing:
+        CONFIG.run_processing = False
+    if args.no_upload:
+        CONFIG.run_upload = False
+        
     initialize_logging(CONFIG.debug)
 
     logging.info(f"Script started at {CONFIG.start_time.strftime('%Y-%m-%d %H:%M:%S')}")

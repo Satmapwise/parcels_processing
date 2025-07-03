@@ -1,7 +1,4 @@
-2025-07-03 16:34:57,427 - INFO - --- Processing entity: hillsborough_plant_city ---
-2025-07-03 16:34:57,427 - INFO - Running download phase for hillsborough_plant_city
-2025-07-03 16:34:57,427 - DEBUG - Running command: python3 ../../download_tools/ags_extract_data2.py zoning_hillsborough_plant_city delete 15 in data/zoning/hillsborough/plant_city
-2025-07-03 16:34:57,449 - ERROR - Error executing command: python3 ../../download_tools/ags_extract_data2.py zoning_hillsborough_plant_city delete 15
-2025-07-03 16:34:57,449 - ERROR - STDOUT: 
-2025-07-03 16:34:57,449 - ERROR - STDERR: /Library/Frameworks/Python.framework/Versions/3.11/Resources/Python.app/Contents/MacOS/Python: can't open file '/Users/seanmay/Documents/GitHub/layers_scraping/data/zoning/hillsborough/plant_city/../../download_tools/ags_extract_data2.py': [Errno 2] No such file or directory
-
+2025-07-03 16:44:18,454 - INFO - --- Processing entity: hillsborough_plant_city ---
+2025-07-03 16:44:18,454 - INFO - Running metadata extraction phase for hillsborough_plant_city
+2025-07-03 16:44:18,454 - WARNING - No shapefile found in work_dir after download phase; skipping metadata extraction.
+2025-07-03 16:44:18,454 - INFO - --- Successfully processed entity: hillsborough_plant_city ---
