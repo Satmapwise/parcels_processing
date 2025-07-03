@@ -318,11 +318,12 @@ def download_process_layer(layer, queue):
     for entity in queue:
         try:
             # Setup working directory first as logger needs it
-            parts = entity.split('_')
-            county = parts[0]
-            city = '_'.join(parts[1:])
-            work_dir = os.path.join('data', layer, county, city)
-            os.makedirs(work_dir, exist_ok=True)
+            try:
+                work_dir, county, city = resolve_work_dir(layer, entity)
+            except ValueError as e:
+                logging.error(str(e))
+                results.append({'layer': layer, 'entity': entity, 'status': 'failure', 'error': str(e), 'data_date': None})
+                continue
             logging.debug(f"Working directory: {work_dir}")
             
             # Setup logger for this specific entity
@@ -401,6 +402,9 @@ def download_process_layer(layer, queue):
             results.append({'layer': layer, 'entity': entity, 'status': 'failure', 'error': str(e), 'data_date': None})
 
     return results
+
+
+
 
 
 # ---------------------------------------------------------------------------
@@ -645,6 +649,105 @@ def extract_shp_metadata(shp_path, logger):
         logger.debug("No PROJCS/GEOGCS definition found in ogrinfo output.")
 
     return metadata
+
+
+# ---------------------------------------------------------------------------
+# Helper: derive county and city components from an entity string.
+# Handles multi-word counties such as "st_lucie" or "santa_rosa" by matching
+# the longest county prefix present in the predefined `counties` set.
+# ---------------------------------------------------------------------------
+
+def split_entity(entity: str):
+    """Return (county, city) parts for an *entity* identifier.
+
+    The *entity* parameter is expected to be the manifest key such as
+    ``hillsborough_plant_city`` or ``st_lucie_unincorporated``.
+
+    The logic attempts to find the *longest* county name from the global
+    ``counties`` set that is a prefix of *entity*.  This allows us to handle
+    both single-word and multi-word county names.
+
+    Examples
+    --------
+    >>> split_entity('hillsborough_plant_city')
+    ('hillsborough', 'plant_city')
+    >>> split_entity('st_lucie_unincorporated')
+    ('st_lucie', 'unincorporated')
+    >>> split_entity('santa_rosa_unincorporated')
+    ('santa_rosa', 'unincorporated')
+    """
+    # Sort counties by length descending so we match the longest prefix first
+    for county in sorted(counties, key=len, reverse=True):
+        if entity == county:
+            return county, ''  # County-only entity (rare)
+        prefix = f"{county}_"
+        if entity.startswith(prefix):
+            city = entity[len(prefix):]
+            return county, city
+    # If we get here, no county matched – raise for calling code to handle.
+    raise ValueError(f"Unable to parse county/city from entity '{entity}'.")
+
+
+# ---------------------------------------------------------------------------
+# Work-directory patterns per layer.  Keys are layer names; values are
+# ``str.format`` templates that can reference {layer}, {county} and {city}.
+# If a layer is not listed, a generic 3-part template is used.
+# ---------------------------------------------------------------------------
+
+# Base directory on the scraper host – adjust if your environment differs.
+DATA_ROOT = '/srv/datascrub'
+
+WORK_DIR_PATTERNS = {
+    # ------------------------------------------------------------------
+    # Layer-specific layouts – use str.format with {{layer}}, {{county}}, {{city}}
+    # ------------------------------------------------------------------
+
+    # Zoning –  …/08_Land_Use_and_Zoning/zoning/florida/county/<county>/current/source_data/<city>
+    'zoning': os.path.join(
+        DATA_ROOT,
+        '08_Land_Use_and_Zoning',
+        'zoning',
+        'florida',
+        'county',
+        '{county}',
+        'current',
+        'source_data',
+        '{city}'
+    ),
+
+    # FLU – stored under *future_land_use* folder
+    # …/08_Land_Use_and_Zoning/future_land_use/florida/county/<county>/current/source_data/<city>
+    'flu': os.path.join(
+        DATA_ROOT,
+        '08_Land_Use_and_Zoning',
+        'future_land_use',
+        'florida',
+        'county',
+        '{county}',
+        'current',
+        'source_data',
+        '{city}'
+    ),
+}
+
+
+def resolve_work_dir(layer: str, entity: str):
+    """Return (work_dir, county, city) for *layer* / *entity*.
+
+    The logic consults ``WORK_DIR_PATTERNS`` to decide whether the template
+    requires a *city* component.  If so we call :func:`split_entity`.  If not,
+    we treat the entire entity string as the county id.
+    """
+    template = WORK_DIR_PATTERNS.get(layer, os.path.join('data', '{layer}', '{county}', '{city}'))
+    needs_city = '{city}' in template
+
+    if needs_city:
+        county, city = split_entity(entity)
+    else:
+        county, city = entity, ''
+
+    work_dir = template.format(layer=layer, county=county, city=city)
+    return work_dir, county, city
 
 
 # Main function
