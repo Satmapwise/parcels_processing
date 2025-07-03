@@ -302,14 +302,6 @@ def download_process_layer(layer, queue):
     """
     logging.info(f"Starting download and process for layer '{layer}'")
     
-    # Per-layer overrides; fall back to the generic manifest-driven processor
-    dispatcher_overrides = {
-        'zoning': _download_process_zoning,
-        'flu': _download_process_flu,
-    }
-
-    process_func = dispatcher_overrides.get(layer, _download_process_generic)
-
     results = []
     for entity in queue:
         try:
@@ -325,8 +317,19 @@ def download_process_layer(layer, queue):
 
             entity_logger.info(f"--- Processing entity: {entity} ---")
 
-            result = process_func(layer, entity, county, city, work_dir, entity_logger)
-            results.append(result)
+            # ------------------------------------------------------------------
+            # Manifest-driven command execution (generic for all layers).
+            # ------------------------------------------------------------------
+            try:
+                commands = LAYER_CFG[layer]['entities'][entity]['commands']
+            except KeyError as _e:
+                raise ProcessingError(f"Manifest is missing commands for {layer}/{entity}: {_e}", layer, entity)
+
+            for cmd in commands:
+                cmd_list = cmd.split() if isinstance(cmd, str) else cmd
+                _run_command(cmd_list, work_dir, entity_logger)
+
+            results.append({'layer': layer, 'entity': entity, 'status': 'success', 'data_date': datetime.now().date()})
             entity_logger.info(f"--- Successfully processed entity: {entity} ---")
 
         except LayerProcessingError as e:
