@@ -174,6 +174,7 @@ class Config:
     def __init__(self, 
                  test_mode=True, debug=True, isolate_logs=False,
                  run_download=False, run_metadata=True, run_processing=False, run_upload=False,
+                 generate_summary=False
                  ):
         """
         Configuration class to hold script settings.
@@ -186,6 +187,7 @@ class Config:
         self.run_metadata = run_metadata # Run the metadata extraction phase
         self.run_processing = run_processing # Run the processing phase
         self.run_upload = run_upload # Run the upload phase
+        self.generate_summary = generate_summary # Generate a summary file
         # More configuration can be added here
         # e.g. database credentials, server details
         # For now, keeping it simple
@@ -321,6 +323,7 @@ def download_process_layer(layer, queue):
             city = '_'.join(parts[1:])
             work_dir = os.path.join('data', layer, county, city)
             os.makedirs(work_dir, exist_ok=True)
+            logging.debug(f"Working directory: {work_dir}")
             
             # Setup logger for this specific entity
             entity_logger = setup_entity_logger(layer, entity, work_dir)
@@ -512,6 +515,10 @@ def generate_summary(results):
     if not results:
         logging.warning("No results to generate a summary for.")
         return
+    
+    if CONFIG.generate_summary == False:
+        logging.info("Skipping summary generation.")
+        return
 
     summary_filename = f"summary_{CONFIG.start_time.strftime('%Y%m%d_%H%M%S')}.csv"
     logging.info(f"Generating summary file: {summary_filename}")
@@ -653,6 +660,7 @@ def main():
     parser.add_argument("--no-metadata", action="store_true", help="Skip the metadata extraction phase.")
     parser.add_argument("--no-processing", action="store_true", help="Skip the processing phase.")
     parser.add_argument("--no-upload", action="store_true", help="Skip the upload phase.")
+    parser.add_argument("--no-summary", action="store_true", help="Skip the summary generation.")
     
     args = parser.parse_args()
 
@@ -673,7 +681,8 @@ def main():
         CONFIG.run_processing = False
     if args.no_upload:
         CONFIG.run_upload = False
-        
+    if args.no_summary:
+        CONFIG.generate_summary = False
     initialize_logging(CONFIG.debug)
 
     logging.info(f"Script started at {CONFIG.start_time.strftime('%Y-%m-%d %H:%M:%S')}")
