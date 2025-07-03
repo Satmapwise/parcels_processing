@@ -321,16 +321,56 @@ def download_process_layer(layer, queue):
             # ------------------------------------------------------------------
             # Manifest-driven command execution (generic for all layers).
             # ------------------------------------------------------------------
-            try:
-                commands = LAYER_CFG[layer]['entities'][entity]['commands']
-            except KeyError as _e:
-                raise ProcessingError(f"Manifest is missing commands for {layer}/{entity}: {_e}", layer, entity)
+            
+            manifest_entry = LAYER_CFG[layer]['entities'].get(entity)
+            if manifest_entry is None:
+                raise ProcessingError(
+                    f"Manifest is missing entry for {layer}/{entity}", layer, entity
+                )
 
-            for cmd in commands:
+            # -------------------------
+            # 1. Download phase
+            # -------------------------
+            download_cmds = manifest_entry.get("download") or manifest_entry.get("commands", [])
+            for cmd in download_cmds:
                 cmd_list = cmd.split() if isinstance(cmd, str) else cmd
                 _run_command(cmd_list, work_dir, entity_logger)
 
-            results.append({'layer': layer, 'entity': entity, 'status': 'success', 'data_date': datetime.now().date()})
+            # -------------------------
+            # 2. Metadata extraction (first .shp found)
+            # -------------------------
+            shp_files = [f for f in os.listdir(work_dir) if f.lower().endswith('.shp')]
+            metadata = {}
+            if shp_files:
+                shp_path = os.path.join(work_dir, shp_files[0])
+                metadata = extract_shp_metadata(shp_path, entity_logger)
+            else:
+                entity_logger.warning("No shapefile found in work_dir after download phase; skipping metadata extraction.")
+
+            # -------------------------
+            # 3. Processing phase (allow simple {epsg} placeholder substitution)
+            # -------------------------
+            processing_cmds = manifest_entry.get("processing", [])
+            for cmd in processing_cmds:
+                if isinstance(cmd, str):
+                    cmd_formatted = cmd.format(**metadata)
+                    cmd_list = cmd_formatted.split()
+                else:
+                    # If it's a list we attempt placeholder replacement on each token
+                    cmd_list = [token.format(**metadata) if isinstance(token, str) else token for token in cmd]
+                _run_command(cmd_list, work_dir, entity_logger)
+
+            # Record successful result with EPSG if we found it
+            result_entry = {
+                'layer': layer,
+                'entity': entity,
+                'status': 'success',
+                'data_date': datetime.now().date(),
+            }
+            if metadata.get('epsg'):
+                result_entry['epsg'] = metadata['epsg']
+
+            results.append(result_entry)
             entity_logger.info(f"--- Successfully processed entity: {entity} ---")
 
         except LayerProcessingError as e:
@@ -340,6 +380,9 @@ def download_process_layer(layer, queue):
     return results
 
 
+# ---------------------------------------------------------------------------
+# Legacy: zoning download and process workflow
+# ---------------------------------------------------------------------------
 def _download_process_zoning(layer, entity, county, city, work_dir, logger):
     """Implementation of the zoning download and process workflow."""
     logger.info(f"Running ZONING workflow for {entity}")
@@ -378,6 +421,9 @@ def _download_process_zoning(layer, entity, county, city, work_dir, logger):
     return {'layer': layer, 'entity': entity, 'status': 'success', 'data_date': datetime.now().date()}
 
 
+# ---------------------------------------------------------------------------
+# Legacy: flu download and process workflow
+# ---------------------------------------------------------------------------
 def _download_process_flu(layer, entity, county, city, work_dir, logger):
     """Implementation of the flu download and process workflow."""
     logger.info(f"Running FLU workflow for {entity}")
@@ -466,11 +512,9 @@ def generate_summary(results):
 
 
 # ---------------------------------------------------------------------------
-# Generic manifest-driven workflow (applies to every layer/entity without a
+# Legacy: generic manifest-driven workflow (applies to every layer/entity without a
 # bespoke Python implementation).
 # ---------------------------------------------------------------------------
-
-
 def _download_process_generic(layer, entity, county, city, work_dir, logger):
     """Generic download & process workflow sourced entirely from the JSON manifest."""
     logger.info(f"Running GENERIC workflow for {layer}/{entity}")
@@ -496,8 +540,6 @@ def _download_process_generic(layer, entity, county, city, work_dir, logger):
 # Utility: extract basic metadata from the first shapefile in the working
 # directory (or a specified path).  Currently returns EPSG code only.
 # ---------------------------------------------------------------------------
-
-
 def extract_shp_metadata(shp_path, logger):
     """Return simple metadata (currently just EPSG code) for a shapefile.
 
