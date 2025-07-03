@@ -11,19 +11,27 @@ import subprocess
 from datetime import datetime
 import os
 import csv
+import json
 
-# Define layers, counties, and entities
-layers = {
-    "flu",
-    "zoning",
-    "parcel_geometry",
-    "streets",
-    "address_points",
-    "subdivisions",
-    "building_footprints",
-    "elevation",
-    "soils",
-    }
+# ---------------------------------------------------------------------------
+# Load the layer/entity manifest so the script is entirely data-driven.
+# ---------------------------------------------------------------------------
+
+MANIFEST_FILE = os.path.join(os.path.dirname(__file__), 'layer_manifest.json')
+try:
+    with open(MANIFEST_FILE, 'r') as _mf:
+        LAYER_CFG = json.load(_mf)
+except FileNotFoundError as _e:
+    raise RuntimeError(f"Manifest file not found: {MANIFEST_FILE}. "
+                       "Please create the JSON manifest before running.") from _e
+
+# Initial supported layers come straight from the manifest.  We may re-assign
+# later in the file after legacy blocks have executed to ensure the manifest
+# always wins.
+layers = set(LAYER_CFG.keys())
+
+# Override legacy hard-coded layer list with the values loaded from the manifest
+layers = set(LAYER_CFG.keys())
 
 counties = {
     "miami-dade",
@@ -207,19 +215,20 @@ def set_queue(layer, entity):
     if layer not in layers:
         raise ValueError(f"Invalid layer specified: '{layer}'. Must be one of {layers}")
 
+    try:
+        layer_entities = set(LAYER_CFG[layer]['entities'].keys())
+    except KeyError:
+        raise ValueError(f"Layer '{layer}' not found in manifest.")
+
     queue = []
     if entity:
-        if entity not in entities and entity not in counties:
-             raise ValueError(f"Invalid entity specified: '{entity}'.")
+        # Allow direct entity name or county-wide alias if listed separately.
+        if entity not in layer_entities and entity not in counties:
+            raise ValueError(f"Invalid entity specified: '{entity}'.")
         queue.append(entity)
     else:
-        # If no entity is specified, create a queue of all entities for the layer.
-        # This logic will need to be more sophisticated based on which layers use
-        # counties vs. entities. For now, we assume 'entity' level for flu/zoning.
-        logging.info(f"No entity specified, queuing all entities for layer '{layer}'")
-        for e in entities:
-            # A more robust implementation might check a mapping of layer to valid entities
-            queue.append(e)
+        logging.info(f"No entity specified, queuing all {len(layer_entities)} entities for layer '{layer}'")
+        queue.extend(sorted(layer_entities))
 
     logging.info(f"Queue set with {len(queue)} items.")
     return queue
@@ -293,15 +302,13 @@ def download_process_layer(layer, queue):
     """
     logging.info(f"Starting download and process for layer '{layer}'")
     
-    # Function dispatcher mapping layers to their processing functions
-    dispatcher = {
+    # Per-layer overrides; fall back to the generic manifest-driven processor
+    dispatcher_overrides = {
         'zoning': _download_process_zoning,
         'flu': _download_process_flu,
     }
 
-    process_func = dispatcher.get(layer)
-    if not process_func:
-        raise NotImplementedError(f"No processing function implemented for layer '{layer}'")
+    process_func = dispatcher_overrides.get(layer, _download_process_generic)
 
     results = []
     for entity in queue:
@@ -410,7 +417,7 @@ def _download_process_flu(layer, entity, county, city, work_dir, logger):
     logger.info("FLU workflow completed successfully.")
     return {'layer': layer, 'entity': entity, 'status': 'success', 'data_date': datetime.now().date()}
 
-# Function to upload the data
+# Function to upload the data (push to prod)
 def upload_layer(results):
     """
     Uploads processed data. Connects to servers, transfers files, runs psql.
@@ -452,6 +459,33 @@ def generate_summary(results):
         logging.info("Summary file generated successfully.")
     except IOError as e:
         logging.error(f"Could not write summary file: {e}")
+
+
+# ---------------------------------------------------------------------------
+# Generic manifest-driven workflow (applies to every layer/entity without a
+# bespoke Python implementation).
+# ---------------------------------------------------------------------------
+
+
+def _download_process_generic(layer, entity, county, city, work_dir, logger):
+    """Generic download & process workflow sourced entirely from the JSON manifest."""
+    logger.info(f"Running GENERIC workflow for {layer}/{entity}")
+
+    try:
+        commands = LAYER_CFG[layer]['entities'][entity]['commands']
+    except KeyError as _e:
+        raise ProcessingError(f"Manifest is missing commands for {layer}/{entity}: {_e}", layer, entity)
+
+    for cmd in commands:
+        # Accept either list or single string commands
+        if isinstance(cmd, str):
+            cmd_list = cmd.split()
+        else:
+            cmd_list = cmd
+        _run_command(cmd_list, work_dir, logger)
+
+    logger.info("Generic workflow completed successfully.")
+    return {'layer': layer, 'entity': entity, 'status': 'success', 'data_date': datetime.now().date()}
 
 
 # Main function
