@@ -281,19 +281,22 @@ def setup_entity_logger(layer, entity, work_dir):
     if logger.hasHandlers():
         logger.handlers.clear()
 
-    # File handler - always logs DEBUG and above to the entity's log file
-    file_handler = logging.FileHandler(log_file_path, mode='w') # Overwrite log each run
-    file_formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
-    file_handler.setFormatter(file_formatter)
-    file_handler.setLevel(logging.DEBUG)
-    logger.addHandler(file_handler)
+    if CONFIG.isolate_logs:
+        # Ensure directory exists so the log file can be created
+        #os.makedirs(work_dir, exist_ok=True)
 
-    # Console handler - only adds if log isolation is off
+        file_handler = logging.FileHandler(log_file_path, mode='w')  # Overwrite log each run
+        file_formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+        file_handler.setFormatter(file_formatter)
+        file_handler.setLevel(logging.DEBUG)
+        logger.addHandler(file_handler)
+
+    # Console handler – always present when logs are NOT isolated
     if not CONFIG.isolate_logs:
         console_handler = logging.StreamHandler(sys.stdout)
         console_level = logging.DEBUG if CONFIG.debug else logging.INFO
         console_handler.setLevel(console_level)
-        console_formatter = logging.Formatter('%(message)s') # Keep console output clean
+        console_formatter = logging.Formatter('%(message)s')  # Keep console output clean
         console_handler.setFormatter(console_formatter)
         logger.addHandler(console_handler)
         
