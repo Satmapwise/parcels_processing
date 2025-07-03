@@ -171,12 +171,21 @@ entities = {
     }
 
 class Config:
-    """Configuration class to hold script settings."""
-    def __init__(self, test_mode=False, debug=False, isolate_logs=True):
+    def __init__(self, 
+                 test_mode=False, debug=False, isolate_logs=True,
+                 run_download=True, run_metadata=True, run_processing=True, run_upload=True,
+                 ):
+        """
+        Configuration class to hold script settings.
+        """
         self.test_mode = test_mode
         self.debug = debug
         self.isolate_logs = isolate_logs
         self.start_time = datetime.now()
+        self.run_download = run_download
+        self.run_metadata = run_metadata
+        self.run_processing = run_processing
+        self.run_upload = run_upload
         # More configuration can be added here
         # e.g. database credentials, server details
         # For now, keeping it simple
@@ -331,34 +340,41 @@ def download_process_layer(layer, queue):
             # -------------------------
             # 1. Download phase
             # -------------------------
-            download_cmds = manifest_entry.get("download") or manifest_entry.get("commands", [])
-            for cmd in download_cmds:
-                cmd_list = cmd.split() if isinstance(cmd, str) else cmd
-                _run_command(cmd_list, work_dir, entity_logger)
+            if CONFIG.run_download:
+                download_cmds = manifest_entry.get("download") or manifest_entry.get("commands", [])
+                for cmd in download_cmds:
+                    cmd_list = cmd.split() if isinstance(cmd, str) else cmd
+                    _run_command(cmd_list, work_dir, entity_logger)
 
             # -------------------------
             # 2. Metadata extraction (first .shp found)
             # -------------------------
-            shp_files = [f for f in os.listdir(work_dir) if f.lower().endswith('.shp')]
             metadata = {}
-            if shp_files:
-                shp_path = os.path.join(work_dir, shp_files[0])
-                metadata = extract_shp_metadata(shp_path, entity_logger)
-            else:
-                entity_logger.warning("No shapefile found in work_dir after download phase; skipping metadata extraction.")
+            if CONFIG.run_metadata:
+                shp_files = [f for f in os.listdir(work_dir) if f.lower().endswith('.shp')]
+                if shp_files:
+                    shp_path = os.path.join(work_dir, shp_files[0])
+                    metadata = extract_shp_metadata(shp_path, entity_logger)
+                else:
+                    entity_logger.warning("No shapefile found in work_dir after download phase; skipping metadata extraction.")
 
             # -------------------------
             # 3. Processing phase (allow simple {epsg} placeholder substitution)
             # -------------------------
-            processing_cmds = manifest_entry.get("processing", [])
-            for cmd in processing_cmds:
-                if isinstance(cmd, str):
-                    cmd_formatted = cmd.format(**metadata)
-                    cmd_list = cmd_formatted.split()
-                else:
-                    # If it's a list we attempt placeholder replacement on each token
-                    cmd_list = [token.format(**metadata) if isinstance(token, str) else token for token in cmd]
-                _run_command(cmd_list, work_dir, entity_logger)
+            if CONFIG.run_processing:
+                processing_cmds = manifest_entry.get("processing", [])
+                for cmd in processing_cmds:
+                    if isinstance(cmd, str):
+                        try:
+                            cmd_formatted = cmd.format(**metadata)
+                        except KeyError as ke:
+                            entity_logger.error(f"Missing metadata key {ke} for command '{cmd}'. Skipping this command.")
+                            continue
+                        cmd_list = cmd_formatted.split()
+                    else:
+                        # If it's a list we attempt placeholder replacement on each token
+                        cmd_list = [token.format(**metadata) if isinstance(token, str) else token for token in cmd]
+                    _run_command(cmd_list, work_dir, entity_logger)
 
             # Record successful result with EPSG if we found it
             result_entry = {
@@ -635,12 +651,24 @@ def main():
     parser.add_argument("--test-mode", action="store_true", help="Run in test mode, skipping actual execution of external tools and uploads.")
     parser.add_argument("--debug", action="store_true", help="Enable debug logging on the console.")
     parser.add_argument("--no-log-isolation", dest='isolate_logs', action='store_false', help="Show all logs in the console instead of isolating them to files.")
+    parser.add_argument("--no-download", action="store_false", dest="run_download", default=True, help="Skip the download phase.")
+    parser.add_argument("--no-metadata", action="store_false", dest="run_metadata", default=True, help="Skip the metadata extraction phase.")
+    parser.add_argument("--no-processing", action="store_false", dest="run_processing", default=True, help="Skip the processing phase.")
+    parser.add_argument("--no-upload", action="store_false", dest="run_upload", default=True, help="Skip the upload phase.")
     
     args = parser.parse_args()
 
     # Initialize config and logging
     global CONFIG
-    CONFIG = Config(test_mode=args.test_mode, debug=args.debug, isolate_logs=args.isolate_logs)
+    CONFIG = Config(
+        test_mode=args.test_mode,
+        debug=args.debug,
+        isolate_logs=args.isolate_logs,
+        run_download=args.run_download,
+        run_metadata=args.run_metadata,
+        run_processing=args.run_processing,
+        run_upload=args.run_upload,
+    )
     initialize_logging(CONFIG.debug)
 
     logging.info(f"Script started at {CONFIG.start_time.strftime('%Y-%m-%d %H:%M:%S')}")
@@ -656,7 +684,8 @@ def main():
         results = download_process_layer(args.layer, queue)
 
         # 3. Upload the processed data
-        upload_layer(results)
+        if CONFIG.run_upload:
+            upload_layer(results)
 
     except (ValueError, NotImplementedError) as e:
         logging.critical(f"A critical error occurred: {e}")
