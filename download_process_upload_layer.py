@@ -173,19 +173,19 @@ entities = {
 class Config:
     def __init__(self, 
                  test_mode=False, debug=False, isolate_logs=True,
-                 run_download=True, run_metadata=True, run_processing=True, run_upload=True,
+                 run_download=False, run_metadata=True, run_processing=False, run_upload=False,
                  ):
         """
         Configuration class to hold script settings.
         """
-        self.test_mode = test_mode
-        self.debug = debug
-        self.isolate_logs = isolate_logs
+        self.test_mode = test_mode # Dry fire external commands
+        self.debug = debug # Show debug logs in console
+        self.isolate_logs = isolate_logs # Isolate logs to files
         self.start_time = datetime.now()
-        self.run_download = run_download
-        self.run_metadata = run_metadata
-        self.run_processing = run_processing
-        self.run_upload = run_upload
+        self.run_download = run_download # Run the download phase
+        self.run_metadata = run_metadata # Run the metadata extraction phase
+        self.run_processing = run_processing # Run the processing phase
+        self.run_upload = run_upload # Run the upload phase
         # More configuration can be added here
         # e.g. database credentials, server details
         # For now, keeping it simple
