@@ -12,6 +12,7 @@ from datetime import datetime
 import os
 import csv
 import json
+import re
 
 # ---------------------------------------------------------------------------
 # Load the layer/entity manifest so the script is entirely data-driven.
@@ -489,6 +490,83 @@ def _download_process_generic(layer, entity, county, city, work_dir, logger):
 
     logger.info("Generic workflow completed successfully.")
     return {'layer': layer, 'entity': entity, 'status': 'success', 'data_date': datetime.now().date()}
+
+
+# ---------------------------------------------------------------------------
+# Utility: extract basic metadata from the first shapefile in the working
+# directory (or a specified path).  Currently returns EPSG code only.
+# ---------------------------------------------------------------------------
+
+
+def extract_shp_metadata(shp_path, logger):
+    """Return simple metadata (currently just EPSG code) for a shapefile.
+
+    Parameters
+    ----------
+    shp_path : str
+        Absolute or relative path to the .shp file.
+    logger : logging.Logger
+        Logger for diagnostic output.
+
+    Returns
+    -------
+    dict
+        e.g. {"epsg": "3857"} or {} if not found / errored.
+    """
+
+    metadata = {}
+
+    # In test mode we skip running external utilities but still return an
+    # indicative dict so the calling code doesn't break.
+    if CONFIG.test_mode:
+        logger.info("[TEST MODE] Skipping ogrinfo metadata extraction.")
+        return metadata
+
+    if not os.path.exists(shp_path):
+        logger.warning(f"Shapefile not found for metadata extraction: {shp_path}")
+        return metadata
+
+    try:
+        result = subprocess.run(
+            ["ogrinfo", "-ro", "-al", "-so", shp_path],
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+    except (subprocess.CalledProcessError, FileNotFoundError) as e:
+        logger.warning(f"ogrinfo failed while reading {shp_path}: {e}")
+        return metadata
+
+    # ------------------------------------------------------------------
+    # Parse the first PROJCS/GEOGCS line from the WKT and map it to an EPSG
+    # code via a lookup table (to be expanded).
+    # ------------------------------------------------------------------
+
+    projcs_match = re.search(r'^(?:\s*)(PROJCS|GEOGCS)\["([^\"]+)"', result.stdout, re.MULTILINE)
+    if projcs_match:
+        srs_type, srs_name = projcs_match.groups()
+        canonical_name = srs_name.lower().replace(" ", "_")
+
+        # Lookup table – extend as needed
+        name_to_epsg = {
+            "nad_1983_stateplane_florida_west_fips_0902_feet": "2237",
+            "nad_1983_stateplane_florida_east_fips_0901_feet": "2236",
+            "nad_1983_stateplane_florida_north_fips_0903_feet": "2238",
+        }
+
+        if canonical_name in name_to_epsg:
+            metadata["epsg"] = name_to_epsg[canonical_name]
+            logger.debug(
+                f"Mapped {srs_type} name '{srs_name}' to EPSG:{metadata['epsg']}"
+            )
+        else:
+            logger.debug(
+                f"SRS name '{srs_name}' not in lookup table; unable to map to EPSG."
+            )
+    else:
+        logger.debug("No PROJCS/GEOGCS definition found in ogrinfo output.")
+
+    return metadata
 
 
 # Main function
