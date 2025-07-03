@@ -1,0 +1,23 @@
+{
+  "zoning": {
+    "entities": {
+      "hillsborough_plant_city": {
+        "download": [
+          ["python", "../../download_tools/ags_extract_data2.py", "zoning_hillsborough_plant_city", "delete", "15"]
+        ],
+        "processing": [
+          ["python", "../../processing_tools/update_zoning2.py", "hillsborough", "plant_city"],
+          ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.zoning_transform SET shp_name = '{shp}', data_date = '{data_date}', update_date = '{today}' WHERE county = 'HILLSBOROUGH' and city_name = 'PLANT_CITY'"]
+        ]
+      }
+    }
+  },
+  "flu": { "entities": {} },
+  "parcel_geometry": { "entities": {} },
+  "streets": { "entities": {} },
+  "address_points": { "entities": {} },
+  "subdivisions": { "entities": {} },
+  "building_footprints": { "entities": {} },
+  "elevation": { "entities": {} },
+  "soils": { "entities": {} }
+} 
