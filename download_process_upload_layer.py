@@ -172,14 +172,14 @@ entities = {
 
 class Config:
     def __init__(self, 
-                 test_mode=True, debug=False, isolate_logs=True,
+                 test_mode=True, debug=True, isolate_logs=True,
                  run_download=False, run_metadata=True, run_processing=False, run_upload=False,
                  ):
         """
         Configuration class to hold script settings.
         """
         self.test_mode = test_mode # Dry fire external commands
-        self.debug = debug # Show debug logs in console
+        self.debug = debug # Set logging level to DEBUG
         self.isolate_logs = isolate_logs # Isolate logs to files
         self.start_time = datetime.now()
         self.run_download = run_download # Run the download phase
@@ -340,7 +340,8 @@ def download_process_layer(layer, queue):
             # -------------------------
             # 1. Download phase
             # -------------------------
-            if CONFIG.run_download:
+            if CONFIG.run_download == True:
+                entity_logger.info(f"Running download phase for {entity}")
                 download_cmds = manifest_entry.get("download") or manifest_entry.get("commands", [])
                 for cmd in download_cmds:
                     cmd_list = cmd.split() if isinstance(cmd, str) else cmd
@@ -350,18 +351,21 @@ def download_process_layer(layer, queue):
             # 2. Metadata extraction (first .shp found)
             # -------------------------
             metadata = {}
-            if CONFIG.run_metadata:
+            if CONFIG.run_metadata == True:
+                entity_logger.info(f"Running metadata extraction phase for {entity}")
                 shp_files = [f for f in os.listdir(work_dir) if f.lower().endswith('.shp')]
                 if shp_files:
                     shp_path = os.path.join(work_dir, shp_files[0])
                     metadata = extract_shp_metadata(shp_path, entity_logger)
+                    entity_logger.debug(f"Metadata: {metadata}")
                 else:
                     entity_logger.warning("No shapefile found in work_dir after download phase; skipping metadata extraction.")
 
             # -------------------------
             # 3. Processing phase (allow simple {epsg} placeholder substitution)
             # -------------------------
-            if CONFIG.run_processing:
+            if CONFIG.run_processing == True:
+                entity_logger.info(f"Running processing phase for {entity}")
                 processing_cmds = manifest_entry.get("processing", [])
                 for cmd in processing_cmds:
                     if isinstance(cmd, str):
@@ -684,7 +688,7 @@ def main():
         results = download_process_layer(args.layer, queue)
 
         # 3. Upload the processed data
-        if CONFIG.run_upload:
+        if CONFIG.run_upload == True:
             upload_layer(results)
 
     except (ValueError, NotImplementedError) as e:
