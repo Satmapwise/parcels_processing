@@ -258,17 +258,17 @@ def _run_command(command, work_dir, logger):
     else:
         logger.debug(f"Running command in {work_dir}: \n\n{' '.join(command)}\n")
     
-    # # Using shell=False and passing command as a list is more secure
-    # process = subprocess.run(command, cwd=work_dir, capture_output=True, text=True)
+    # Using shell=False and passing command as a list is more secure
+    process = subprocess.run(command, cwd=work_dir, capture_output=True, text=True)
 
-    # if process.returncode != 0:
-    #     logger.error(f"Error executing command: {' '.join(command)}")
-    #     logger.error(f"STDOUT: {process.stdout}")
-    #     logger.error(f"STDERR: {process.stderr}")
-    #     raise ProcessingError(f"Command failed with exit code {process.returncode}")
+    if process.returncode != 0:
+        logger.error(f"Error executing command: {' '.join(command)}")
+        logger.error(f"STDOUT: {process.stdout}")
+        logger.error(f"STDERR: {process.stderr}")
+        raise ProcessingError(f"Command failed with exit code {process.returncode}")
     
-    # logger.debug(f"Command output: {process.stdout}")
-    # return process.stdout
+    logger.debug(f"Command output: {process.stdout}")
+    return process.stdout
 
 
 def setup_entity_logger(layer, entity, work_dir):
