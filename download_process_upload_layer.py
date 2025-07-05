@@ -316,7 +316,19 @@ def download_process_layer(layer, queue):
     """
     Dispatcher function to download and process a layer for entities in the queue.
     """
-    logging.info(f"Starting download and process for layer '{layer}'")
+    if CONFIG.run_download == True and CONFIG.run_metadata == False and CONFIG.run_processing == False:
+        logging.info(f"Starting download for layer '{layer}'")
+    elif CONFIG.run_download == True and CONFIG.run_metadata == True and CONFIG.run_processing == False:
+        logging.info(f"Starting download and metadata extraction for layer '{layer}'")
+    elif CONFIG.run_download == True and CONFIG.run_metadata == True and CONFIG.run_processing == True:
+        logging.info(f"Starting download, metadata extraction, and processing for layer '{layer}'")
+    elif CONFIG.run_download == False and CONFIG.run_metadata == False and CONFIG.run_processing == True:
+        logging.info(f"Starting processing for layer '{layer}'")
+    elif CONFIG.run_download == False and CONFIG.run_metadata == True and CONFIG.run_processing == False:
+        logging.info(f"Starting metadata extraction for layer '{layer}'")
+    else:
+        logging.info(f"Skipping layer '{layer}': no processes active.")
+        return [] # No need to run anything
     
     results = []
     for entity in queue:
