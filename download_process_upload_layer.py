@@ -680,6 +680,7 @@ def extract_shp_metadata(shp_path, logger):
         name_to_epsg = {
             # Geographic WGS84
             "gcs_wgs_1984": "4326",
+            "wgs_84": "4326",  # Alias used in WKT2 GEOGCRS headers
 
             # Web Mercator / Pseudo-Mercator
             "wgs_84_pseudo_mercator": "3857",
