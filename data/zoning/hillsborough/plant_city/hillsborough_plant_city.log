@@ -1,4 +1,0 @@
-2025-07-03 16:49:06,298 - INFO - --- Processing entity: hillsborough_plant_city ---
-2025-07-03 16:49:06,298 - INFO - Running metadata extraction phase for hillsborough_plant_city
-2025-07-03 16:49:06,298 - WARNING - No shapefile found in work_dir after download phase; skipping metadata extraction.
-2025-07-03 16:49:06,298 - INFO - --- Successfully processed entity: hillsborough_plant_city ---
