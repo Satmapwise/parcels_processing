@@ -655,6 +655,11 @@ def extract_shp_metadata(shp_path, logger):
 
             # Florida State Plane (NAD83 2011)
             "nad_1983_2011_stateplane_florida_west_fips_0902_ft_us": "6443",
+
+            # Florida State Plane (NAD83, WKT2 naming – no 'stateplane' / 'fips')
+            "nad83_florida_east_ftus": "2236",
+            "nad83_florida_west_ftus": "2237",
+            "nad83_florida_north_ftus": "2238",
         }
 
         if canonical_name in name_to_epsg:
