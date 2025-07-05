@@ -781,8 +781,8 @@ def extract_shp_metadata(shp_path, logger):
                 accepted = _accept(dd, "high")
                 _note("sidecar_xml", dd, "high", accepted)
                 # Keep note only; final selection happens after all sources evaluated
-                if accepted:
-                    logger.debug(f"Accepted sidecar date {dd} from {cand}")
+                # if accepted:
+                #     logger.debug(f"Accepted sidecar date {dd} from {cand}")
         except Exception as e:
             logger.debug(f"Failed reading sidecar metadata {cand}: {e}")
 
@@ -806,8 +806,8 @@ def extract_shp_metadata(shp_path, logger):
                     accepted = _accept(dd, "high")
                     _note(f"attribute_col:{col}", dd, "high", accepted)
                     # Keep note only; final selection happens after all sources evaluated
-                    if accepted:
-                        logger.debug(f"Accepted attribute date {dd} from {f'attribute_col:{col}'}")
+                    # if accepted:
+                    #     logger.debug(f"Accepted attribute date {dd} from {f'attribute_col:{col}'}")
                     break
     except ImportError:
         logger.debug("pyshp not available; skipping attribute-date check.")
@@ -821,8 +821,8 @@ def extract_shp_metadata(shp_path, logger):
         accepted = _accept(dd, "medium")
         _note("dbf_last_update", dd, "medium", accepted)
         # Keep note only; final selection happens after all sources evaluated
-        if accepted:
-            logger.debug(f"Accepted DBF_DATE_LAST_UPDATE date {dd}")
+        # if accepted:
+        #     logger.debug(f"Accepted DBF_DATE_LAST_UPDATE date {dd}")
 
     # (4) DBF header date bytes (medium trust)
     dbf_path = os.path.splitext(resolved_path)[0] + ".dbf"
@@ -838,8 +838,8 @@ def extract_shp_metadata(shp_path, logger):
                 accepted = _accept(dd, "medium")
                 _note("dbf_header", dd, "medium", accepted)
                 # Keep note only; final selection happens after all sources evaluated
-                if accepted:
-                    logger.debug(f"Accepted DBF header date {dd}")
+                # if accepted:
+                #     logger.debug(f"Accepted DBF header date {dd}")
         except Exception as e:
             logger.debug(f"Failed reading DBF header date: {e}")
 
@@ -855,7 +855,7 @@ def extract_shp_metadata(shp_path, logger):
                     _note("zip_filename", dd, "low", accepted)
                     # Keep note only; final selection happens after all sources evaluated
                     if accepted:
-                        logger.debug(f"Accepted zip filename date {dd} from {fname}")
+                        # logger.debug(f"Accepted zip filename date {dd} from {fname}")
                         break
     except Exception as e:
         logger.debug(f"Zip filename date check failed: {e}")
@@ -865,8 +865,8 @@ def extract_shp_metadata(shp_path, logger):
     accepted = _accept(dd, "low")
     _note("file_mtime", dd, "low", accepted)
     # Keep note only; final selection happens after all sources evaluated
-    if accepted:
-        logger.debug(f"Accepted file mtime date {dd}")
+    # if accepted:
+    #     logger.debug(f"Accepted file mtime date {dd}")
 
     # Choose the most recent accepted date across all sources.
     if accepted_candidates:
