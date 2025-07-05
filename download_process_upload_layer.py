@@ -650,6 +650,7 @@ def extract_shp_metadata(shp_path, logger):
             text=True,
             check=True,
         )
+        logger.debug(f"OGRINFO output: {result.stdout}")
     except (subprocess.CalledProcessError, FileNotFoundError) as e:
         logger.warning(f"ogrinfo failed while reading {resolved_path}: {e}")
         return metadata
@@ -709,8 +710,122 @@ def extract_shp_metadata(shp_path, logger):
         logger.debug(f"OGRINFO output: {result.stdout}")
     
     # ------------------------------------------------------------------
-    # Get update_date from current date
+    # Attempt to derive the *data* date of the shapefile.  Fallback ladder:
+    #   1. Sidecar metadata XML (FGDC/ISO) next to the shapefile
+    #   2. Attribute-table fields (UPDATE_DT, LAST_EDIT, etc.)
+    #   3. DBF_DATE_LAST_UPDATE line in ogrinfo output
+    #   4. .dbf header date (YY MM DD)
+    #   5. Date encoded in a sibling .zip filename (YYYYMMDD)
+    #   6. Shapefile modification time
     # ------------------------------------------------------------------
+
+    data_date = None
+
+    def _parse_datestr(s):
+        """Return a date from 'YYYY-MM-DD' or 'YYYYMMDD' string."""
+        try:
+            s = s.strip()
+            if re.fullmatch(r"\d{8}", s):
+                return datetime.strptime(s, "%Y%m%d").date()
+            return datetime.strptime(s[:10], "%Y-%m-%d").date()
+        except Exception:
+            return None
+
+    # (1) Sidecar XML / metadata file
+    for cand in [
+        resolved_path + ".xml",
+        os.path.splitext(resolved_path)[0] + ".xml",
+        os.path.splitext(resolved_path)[0] + "_metadata.xml",
+    ]:
+        if data_date or not os.path.exists(cand):
+            continue
+        try:
+            with open(cand, "r", encoding="utf-8", errors="ignore") as f:
+                text = f.read()
+            m = re.search(r"(\d{4}-\d{2}-\d{2})", text) or re.search(r"(\d{8})", text)
+            if m:
+                dd = _parse_datestr(m.group(1))
+                if dd:
+                    data_date = dd
+                    logger.debug(f"Derived data_date from sidecar metadata {cand}: {data_date}")
+        except Exception as e:
+            logger.debug(f"Failed reading sidecar metadata {cand}: {e}")
+
+    # (2) Attribute-table date fields
+    if data_date is None:
+        try:
+            import shapefile  # pyshp
+            sf = shapefile.Reader(resolved_path)
+            field_names = [f[0].lower() for f in sf.fields[1:]]
+            candidate_cols = [
+                "update_dt","updated","last_edit","lastupdate",
+                "edit_date","date_upd","datadate","effective",
+                "rev_date","eff_date","effdate","date_eff"
+            ]
+            for col in candidate_cols:
+                if col in field_names:
+                    idx = field_names.index(col)
+                    values = [rec[idx] for rec in sf.records() if rec[idx]]
+                    parsed = [_parse_datestr(str(v)) for v in values]
+                    parsed = [p for p in parsed if p]
+                    if parsed:
+                        data_date = max(parsed)
+                        logger.debug(f"Derived data_date from attribute column '{col}': {data_date}")
+                        break
+        except ImportError:
+            logger.debug("pyshp not available; skipping attribute-date check.")
+        except Exception as e:
+            logger.debug(f"Error scanning attribute table for date: {e}")
+
+    # (3) DBF_DATE_LAST_UPDATE in ogrinfo output
+    if data_date is None:
+        m = re.search(r"DBF_DATE_LAST_UPDATE=([0-9]{4}-[0-9]{2}-[0-9]{2})", result.stdout)
+        if m:
+            dd = _parse_datestr(m.group(1))
+            if dd:
+                data_date = dd
+                logger.debug(f"Derived data_date from DBF_DATE_LAST_UPDATE: {data_date}")
+
+    # (4) DBF header date bytes
+    if data_date is None:
+        dbf_path = os.path.splitext(resolved_path)[0] + ".dbf"
+        if os.path.exists(dbf_path):
+            try:
+                with open(dbf_path, "rb") as fh:
+                    fh.seek(1)
+                    y, mth, d = fh.read(3)
+                    year = 1900 + y
+                    if year < 1990:
+                        year += 100
+                    data_date = datetime(year, mth, d).date()
+                    logger.debug(f"Derived data_date from DBF header: {data_date}")
+            except Exception as e:
+                logger.debug(f"Failed reading DBF header date: {e}")
+
+    # (5) Zip filename pattern (YYYYMMDD)
+    if data_date is None:
+        parent = os.path.dirname(resolved_path) or "."
+        try:
+            for fname in os.listdir(parent):
+                if fname.lower().endswith(".zip"):
+                    m = re.search(r"(\d{8})", fname)
+                    if m:
+                        dd = _parse_datestr(m.group(1))
+                        if dd:
+                            data_date = dd
+                            logger.debug(f"Derived data_date from zip filename {fname}: {data_date}")
+                            break
+        except Exception as e:
+            logger.debug(f"Zip filename date check failed: {e}")
+
+    # (6) Shapefile modification time
+    if data_date is None:
+        data_date = datetime.fromtimestamp(os.path.getmtime(resolved_path)).date()
+        logger.debug(f"Derived data_date from file mtime: {data_date}")
+
+    metadata["data_date"] = data_date.strftime("%Y-%m-%d") if data_date else ""
+
+    # Always stamp update_date as today for provenance
     metadata["update_date"] = datetime.now().date().strftime("%Y-%m-%d")
 
     return metadata
