@@ -625,7 +625,12 @@ def extract_shp_metadata(shp_path, logger):
     # code via a lookup table (to be expanded).
     # ------------------------------------------------------------------
 
-    projcs_match = re.search(r'^(?:\s*)(PROJCS|GEOGCS)\["([^\"]+)"', result.stdout, re.MULTILINE)
+    # Accept both WKT1 (PROJCS/GEOGCS) and WKT2 (PROJCRS/GEOGCRS) keywords
+    projcs_match = re.search(
+        r'^(?:\s*)(PROJCS|GEOGCS|PROJCRS|GEOGCRS)\["([^\"]+)"',
+        result.stdout,
+        re.MULTILINE,
+    )
     if projcs_match:
         srs_type, srs_name = projcs_match.groups()
         # Canonicalize: lower-case and replace non-alphanum with underscore
@@ -663,6 +668,7 @@ def extract_shp_metadata(shp_path, logger):
             )
     else:
         logger.debug("No PROJCS/GEOGCS definition found in ogrinfo output.")
+        logger.debug(f"OGRINFO output: {result.stdout}")
 
     return metadata
 
