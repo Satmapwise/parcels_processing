@@ -611,19 +611,47 @@ def extract_shp_metadata(shp_path, logger):
 
     metadata = {}
 
-    if not os.path.exists(shp_path):
+    # ------------------------------------------------------------------
+    # Resolve the actual shapefile path.  Caller may provide either:
+    #   • direct path to a .shp
+    #   • a directory containing exactly one .shp
+    #   • a ***missing*** path because unzip step hasn't been written – we
+    #     try to locate any *.shp in the same directory.
+    # ------------------------------------------------------------------
+
+    resolved_path = None
+    if os.path.isdir(shp_path):
+        # Caller passed a directory → search inside
+        candidates = [f for f in os.listdir(shp_path) if f.lower().endswith(".shp")]
+        if candidates:
+            resolved_path = os.path.join(shp_path, candidates[0])
+    elif os.path.isfile(shp_path):
+        resolved_path = shp_path
+    else:
+        # Path not found; maybe the caller passed <dir>/<name>.shp that no
+        # longer exists – fall back to directory scan.
+        parent = os.path.dirname(shp_path) or "."
+        if os.path.isdir(parent):
+            candidates = [f for f in os.listdir(parent) if f.lower().endswith(".shp")]
+            if candidates:
+                resolved_path = os.path.join(parent, candidates[0])
+
+    if resolved_path is None or not os.path.exists(resolved_path):
         logger.warning(f"Shapefile not found for metadata extraction: {shp_path}")
         return metadata
 
+    # Record shapefile base name for downstream placeholder substitution
+    metadata["shp"] = os.path.basename(resolved_path)
+
     try:
         result = subprocess.run(
-            ["ogrinfo", "-ro", "-al", "-so", shp_path],
+            ["ogrinfo", "-ro", "-al", "-so", resolved_path],
             capture_output=True,
             text=True,
             check=True,
         )
     except (subprocess.CalledProcessError, FileNotFoundError) as e:
-        logger.warning(f"ogrinfo failed while reading {shp_path}: {e}")
+        logger.warning(f"ogrinfo failed while reading {resolved_path}: {e}")
         return metadata
 
     # ------------------------------------------------------------------
