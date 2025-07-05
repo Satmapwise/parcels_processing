@@ -173,7 +173,7 @@ entities = {
 class Config:
     def __init__(self, 
                  test_mode=True, debug=True, isolate_logs=False,
-                 run_download=False, run_metadata=True, run_processing=False, run_upload=False,
+                 run_download=True, run_metadata=True, run_processing=True, run_upload=False,
                  generate_summary=False
                  ):
         """
@@ -251,22 +251,22 @@ def _run_command(command, work_dir, logger):
     """
     Runs a shell command in a specified directory and handles execution.
     """
-    logger.debug(f"Running command: {' '.join(command)} in {work_dir}")
+    logger.debug(f"Running command in {work_dir}: \n\n{' '.join(command)}\n")
     if CONFIG.test_mode:
-        logger.info(f"[TEST MODE] Would run: {' '.join(command)}")
+        logger.info(f"[TEST MODE] COMMAND SKIPPED")
         return
     
-    # Using shell=False and passing command as a list is more secure
-    process = subprocess.run(command, cwd=work_dir, capture_output=True, text=True)
+    # # Using shell=False and passing command as a list is more secure
+    # process = subprocess.run(command, cwd=work_dir, capture_output=True, text=True)
 
-    if process.returncode != 0:
-        logger.error(f"Error executing command: {' '.join(command)}")
-        logger.error(f"STDOUT: {process.stdout}")
-        logger.error(f"STDERR: {process.stderr}")
-        raise ProcessingError(f"Command failed with exit code {process.returncode}")
+    # if process.returncode != 0:
+    #     logger.error(f"Error executing command: {' '.join(command)}")
+    #     logger.error(f"STDOUT: {process.stdout}")
+    #     logger.error(f"STDERR: {process.stderr}")
+    #     raise ProcessingError(f"Command failed with exit code {process.returncode}")
     
-    logger.debug(f"Command output: {process.stdout}")
-    return process.stdout
+    # logger.debug(f"Command output: {process.stdout}")
+    # return process.stdout
 
 
 def setup_entity_logger(layer, entity, work_dir):
@@ -397,7 +397,13 @@ def download_process_layer(layer, queue):
                         cmd_list = cmd_formatted.split()
                     else:
                         # If it's a list we attempt placeholder replacement on each token
-                        cmd_list = [token.format(**metadata) if isinstance(token, str) else token for token in cmd]
+                        try:
+                            cmd_list = [token.format(**metadata) if isinstance(token, str) else token for token in cmd]
+                        except KeyError as ke:
+                            entity_logger.error(
+                                f"Missing metadata key {ke} for command '{cmd}'. Skipping this command."
+                            )
+                            continue
                     _run_command(cmd_list, work_dir, entity_logger)
 
             # Record successful result with EPSG if we found it
