@@ -34,6 +34,47 @@
           ["python3", "../../processing_tools/update_zoning2.py", "hillsborough", "unincorporated"],
           ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.zoning_transform SET shp_name = '{shp}', epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'HILLSBOROUGH' and city_name = 'UNINCORPORATED'"]
         ]
+      },
+      "orange_apopka": {
+        "download": [
+          ["python3", "../../download_tools/ags_extract_data2.py", "zoning_apopka", "delete", "15"]
+        ],
+        "processing": [
+          ["python3", "../../processing_tools/update_zoning2.py", "orange", "apopka"],
+          ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.zoning_transform SET shp_name = '{shp}', epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'ORANGE' and city_name = 'APOPKA'"]
+        ]
+      },
+      "orange_eatonville": {
+        "download": [],
+        "processing": [
+          ["python3", "../../processing_tools/update_zoning2.py", "orange", "eatonville"],
+          ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.zoning_transform SET shp_name = '{shp}', epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'ORANGE' and city_name = 'EATONVILLE'"]
+        ]
+      },
+      "orange_ocoee": {
+        "download": [
+          ["python3", "../../download_tools/ags_extract_data2.py", "zoning_ocoee", "delete", "15"]
+        ],
+        "processing": [
+          ["python3", "../../processing_tools/update_zoning2.py", "orange", "ocoee"],
+          ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.zoning_transform SET shp_name = '{shp}', epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'ORANGE' and city_name = 'OCOEE'"]
+        ]
+      },
+      "orange_orlando": {
+        "download": [],
+        "processing": [
+          ["python3", "../../processing_tools/update_zoning2.py", "orange", "orlando"],
+          ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.zoning_transform SET shp_name = '{shp}', epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'ORANGE' and city_name = 'ORLANDO'"]
+        ]
+      },
+      "orange_unincorporated": {
+        "download": [
+          ["python3", "../../download_tools/download_data.py", "/data/zoning/orange/unincorporated"]
+        ],
+        "processing": [
+          ["python3", "../../processing_tools/update_zoning2.py", "orange", "unincorporated"],
+          ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.zoning_transform SET shp_name = '{shp}', epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'ORANGE' and city_name = 'UNINCORPORATED'"]
+        ]
       }
     }
   },
