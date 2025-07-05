@@ -762,6 +762,7 @@ def resolve_work_dir(layer: str, entity: str):
             work_dir = os.path.join('data', layer, county, 'unincorporated_orange')
         else:
             work_dir = os.path.join('data', layer, county, city)
+        return work_dir, county, city
     else:
         template = WORK_DIR_PATTERNS.get(layer, os.path.join('data', '{layer}', '{county}', '{city}'))
         needs_city = '{city}' in template
