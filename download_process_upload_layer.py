@@ -252,10 +252,11 @@ def _run_command(command, work_dir, logger):
     """
     Runs a shell command in a specified directory and handles execution.
     """
-    logger.debug(f"Running command in {work_dir}: \n\n{' '.join(command)}\n")
     if CONFIG.test_mode:
-        logger.info(f"[TEST MODE] COMMAND SKIPPED")
+        logger.info(f"[TEST MODE] COMMAND SKIPPED IN {work_dir}: \n\n{' '.join(command)}\n")
         return
+    else:
+        logger.debug(f"Running command in {work_dir}: \n\n{' '.join(command)}\n")
     
     # # Using shell=False and passing command as a list is more secure
     # process = subprocess.run(command, cwd=work_dir, capture_output=True, text=True)
