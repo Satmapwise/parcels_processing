@@ -194,6 +194,7 @@ class Config:
 
 # Global config object
 CONFIG = Config()
+TEST_DATA = True
 
 class LayerProcessingError(Exception):
     """Base exception for all processing errors in this script."""
@@ -741,13 +742,21 @@ def resolve_work_dir(layer: str, entity: str):
     requires a *city* component.  If so we call :func:`split_entity`.  If not,
     we treat the entire entity string as the county id.
     """
-    template = WORK_DIR_PATTERNS.get(layer, os.path.join('data', '{layer}', '{county}', '{city}'))
-    needs_city = '{city}' in template
-
-    if needs_city:
+    if TEST_DATA:
         county, city = split_entity(entity)
+        if city == 'unincorporated' and county == 'hillsborough':
+            work_dir = os.path.join('data', layer, county, 'unincorporated_hillsborough')
+        elif city == 'unincorporated' and county == 'orange':
+            work_dir = os.path.join('data', layer, county, 'unincorporated_orange')
+        else:
+            work_dir = os.path.join('data', layer, county, city)
     else:
-        county, city = entity, ''
+        template = WORK_DIR_PATTERNS.get(layer, os.path.join('data', '{layer}', '{county}', '{city}'))
+        needs_city = '{city}' in template
+        if needs_city:
+            county, city = split_entity(entity)
+        else:
+            county, city = entity, ''
 
     work_dir = template.format(layer=layer, county=county, city=city)
     return work_dir, county, city
@@ -772,6 +781,7 @@ def main():
 
     # Initialize config and logging
     global CONFIG
+    global TEST_DATA
     CONFIG = Config()
     if args.test_mode:
         CONFIG.test_mode = True
