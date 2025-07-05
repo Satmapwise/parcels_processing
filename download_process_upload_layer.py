@@ -412,10 +412,14 @@ def download_process_layer(layer, queue):
                 'layer': layer,
                 'entity': entity,
                 'status': 'success',
-                'data_date': datetime.now().date(),
+                'data_date': metadata.get('data_date') or datetime.now().date(),
             }
             if metadata.get('epsg'):
                 result_entry['epsg'] = metadata['epsg']
+            if metadata.get('_defaulted_today'):
+                warning_msg = 'data_date defaulted to current day'
+                entity_logger.warning(warning_msg)
+                result_entry['warning'] = warning_msg
 
             results.append(result_entry)
             entity_logger.info(f"--- Successfully processed entity: {entity} ---")
@@ -550,7 +554,7 @@ def generate_summary(results):
     summary_filename = f"summary_{CONFIG.start_time.strftime('%Y%m%d_%H%M%S')}.csv"
     logging.info(f"Generating summary file: {summary_filename}")
 
-    headers = ['layer', 'entity', 'status', 'data_date', 'error']
+    headers = ['layer', 'entity', 'status', 'data_date', 'error', 'warning']
     
     try:
         with open(summary_filename, 'w', newline='') as csvfile:
@@ -722,6 +726,24 @@ def extract_shp_metadata(shp_path, logger):
 
     data_date = None
 
+    today = datetime.now().date()
+    MIN_DATE = datetime(2015, 1, 1).date()
+
+    def _accept(candidate, trust):
+        """Return True if *candidate* date should be accepted based on trust.
+
+        High-trust sources are always accepted.  Medium/low trust dates that
+        equal *today* (likely auto-generated) are rejected so lower rungs can
+        attempt a better value.
+        """
+        if candidate is None:
+            return False
+        if trust in ("medium", "low") and candidate == today:
+            return False
+        if candidate < MIN_DATE:
+            return False
+        return True
+
     def _parse_datestr(s):
         """Return a date from 'YYYY-MM-DD' or 'YYYYMMDD' string."""
         try:
@@ -746,7 +768,7 @@ def extract_shp_metadata(shp_path, logger):
             m = re.search(r"(\d{4}-\d{2}-\d{2})", text) or re.search(r"(\d{8})", text)
             if m:
                 dd = _parse_datestr(m.group(1))
-                if dd:
+                if _accept(dd, "high"):
                     data_date = dd
                     logger.debug(f"Derived data_date from sidecar metadata {cand}: {data_date}")
         except Exception as e:
@@ -769,8 +791,10 @@ def extract_shp_metadata(shp_path, logger):
                     parsed = [_parse_datestr(str(v)) for v in values]
                     parsed = [p for p in parsed if p]
                     if parsed:
-                        data_date = max(parsed)
-                        logger.debug(f"Derived data_date from attribute column '{col}': {data_date}")
+                        dd = max(parsed)
+                        if _accept(dd, "high"):
+                            data_date = dd
+                            logger.debug(f"Derived data_date from attribute column '{col}': {data_date}")
                         break
         except ImportError:
             logger.debug("pyshp not available; skipping attribute-date check.")
@@ -782,7 +806,7 @@ def extract_shp_metadata(shp_path, logger):
         m = re.search(r"DBF_DATE_LAST_UPDATE=([0-9]{4}-[0-9]{2}-[0-9]{2})", result.stdout)
         if m:
             dd = _parse_datestr(m.group(1))
-            if dd:
+            if _accept(dd, "medium"):
                 data_date = dd
                 logger.debug(f"Derived data_date from DBF_DATE_LAST_UPDATE: {data_date}")
 
@@ -797,8 +821,10 @@ def extract_shp_metadata(shp_path, logger):
                     year = 1900 + y
                     if year < 1990:
                         year += 100
-                    data_date = datetime(year, mth, d).date()
-                    logger.debug(f"Derived data_date from DBF header: {data_date}")
+                    dd = datetime(year, mth, d).date()
+                    if _accept(dd, "medium"):
+                        data_date = dd
+                        logger.debug(f"Derived data_date from DBF header: {data_date}")
             except Exception as e:
                 logger.debug(f"Failed reading DBF header date: {e}")
 
@@ -811,7 +837,7 @@ def extract_shp_metadata(shp_path, logger):
                     m = re.search(r"(\d{8})", fname)
                     if m:
                         dd = _parse_datestr(m.group(1))
-                        if dd:
+                        if _accept(dd, "low"):
                             data_date = dd
                             logger.debug(f"Derived data_date from zip filename {fname}: {data_date}")
                             break
@@ -820,8 +846,15 @@ def extract_shp_metadata(shp_path, logger):
 
     # (6) Shapefile modification time
     if data_date is None:
-        data_date = datetime.fromtimestamp(os.path.getmtime(resolved_path)).date()
-        logger.debug(f"Derived data_date from file mtime: {data_date}")
+        dd = datetime.fromtimestamp(os.path.getmtime(resolved_path)).date()
+        if _accept(dd, "low"):
+            data_date = dd
+            logger.debug(f"Derived data_date from file mtime: {data_date}")
+
+    # Final fallback – if everything was rejected, use today.
+    if data_date is None:
+        data_date = today
+        metadata["_defaulted_today"] = True
 
     metadata["data_date"] = data_date.strftime("%Y-%m-%d") if data_date else ""
 
