@@ -726,6 +726,7 @@ def extract_shp_metadata(shp_path, logger):
     # ------------------------------------------------------------------
 
     data_date = None
+    accepted_candidates = []  # list of (date, source, trust)
 
     today = datetime.now().date()
     MIN_DATE = datetime(2015, 1, 1).date()
@@ -755,13 +756,21 @@ def extract_shp_metadata(shp_path, logger):
         except Exception:
             return None
 
-    # (1) Sidecar XML / metadata file
+    def _note(source, dd, trust, accepted):
+        """Debug log every candidate date considered."""
+        logger.debug(
+            f"[data_date] source={source} candidate={dd} trust={trust} accepted={accepted}"
+        )
+        if accepted and dd is not None:
+            accepted_candidates.append((dd, source, trust))
+
+    # (1) Sidecar XML / metadata file (high trust)
     for cand in [
         resolved_path + ".xml",
         os.path.splitext(resolved_path)[0] + ".xml",
         os.path.splitext(resolved_path)[0] + "_metadata.xml",
     ]:
-        if data_date or not os.path.exists(cand):
+        if not os.path.exists(cand):
             continue
         try:
             with open(cand, "r", encoding="utf-8", errors="ignore") as f:
@@ -769,91 +778,103 @@ def extract_shp_metadata(shp_path, logger):
             m = re.search(r"(\d{4}-\d{2}-\d{2})", text) or re.search(r"(\d{8})", text)
             if m:
                 dd = _parse_datestr(m.group(1))
-                if _accept(dd, "high"):
-                    data_date = dd
-                    logger.debug(f"Derived data_date from sidecar metadata {cand}: {data_date}")
+                accepted = _accept(dd, "high")
+                _note("sidecar_xml", dd, "high", accepted)
+                # Keep note only; final selection happens after all sources evaluated
+                if accepted:
+                    logger.debug(f"Accepted sidecar date {dd} from {cand}")
         except Exception as e:
             logger.debug(f"Failed reading sidecar metadata {cand}: {e}")
 
-    # (2) Attribute-table date fields
-    if data_date is None:
+    # (2) Attribute-table date fields (high trust)
+    try:
+        sf = shapefile.Reader(resolved_path)
+        field_names = [f[0].lower() for f in sf.fields[1:]]
+        candidate_cols = [
+            "update_dt","updated","last_edit","lastupdate",
+            "edit_date","date_upd","datadate","effective",
+            "rev_date","eff_date","effdate","date_eff"
+        ]
+        for col in candidate_cols:
+            if col in field_names:
+                idx = field_names.index(col)
+                values = [rec[idx] for rec in sf.records() if rec[idx]]
+                parsed = [_parse_datestr(str(v)) for v in values]
+                parsed = [p for p in parsed if p]
+                if parsed:
+                    dd = max(parsed)
+                    accepted = _accept(dd, "high")
+                    _note(f"attribute_col:{col}", dd, "high", accepted)
+                    # Keep note only; final selection happens after all sources evaluated
+                    if accepted:
+                        logger.debug(f"Accepted attribute date {dd} from {f'attribute_col:{col}'}")
+                    break
+    except ImportError:
+        logger.debug("pyshp not available; skipping attribute-date check.")
+    except Exception as e:
+        logger.debug(f"Error scanning attribute table for date: {e}")
+
+    # (3) DBF_DATE_LAST_UPDATE in ogrinfo output (medium trust)
+    m = re.search(r"DBF_DATE_LAST_UPDATE=([0-9]{4}-[0-9]{2}-[0-9]{2})", result.stdout)
+    if m:
+        dd = _parse_datestr(m.group(1))
+        accepted = _accept(dd, "medium")
+        _note("dbf_last_update", dd, "medium", accepted)
+        # Keep note only; final selection happens after all sources evaluated
+        if accepted:
+            logger.debug(f"Accepted DBF_DATE_LAST_UPDATE date {dd}")
+
+    # (4) DBF header date bytes (medium trust)
+    dbf_path = os.path.splitext(resolved_path)[0] + ".dbf"
+    if os.path.exists(dbf_path):
         try:
-            sf = shapefile.Reader(resolved_path)
-            field_names = [f[0].lower() for f in sf.fields[1:]]
-            candidate_cols = [
-                "update_dt","updated","last_edit","lastupdate",
-                "edit_date","date_upd","datadate","effective",
-                "rev_date","eff_date","effdate","date_eff"
-            ]
-            for col in candidate_cols:
-                if col in field_names:
-                    idx = field_names.index(col)
-                    values = [rec[idx] for rec in sf.records() if rec[idx]]
-                    parsed = [_parse_datestr(str(v)) for v in values]
-                    parsed = [p for p in parsed if p]
-                    if parsed:
-                        dd = max(parsed)
-                        if _accept(dd, "high"):
-                            data_date = dd
-                            logger.debug(f"Derived data_date from attribute column '{col}': {data_date}")
+            with open(dbf_path, "rb") as fh:
+                fh.seek(1)
+                y, mth, d = fh.read(3)
+                year = 1900 + y
+                if year < 1990:
+                    year += 100
+                dd = datetime(year, mth, d).date()
+                accepted = _accept(dd, "medium")
+                _note("dbf_header", dd, "medium", accepted)
+                # Keep note only; final selection happens after all sources evaluated
+                if accepted:
+                    logger.debug(f"Accepted DBF header date {dd}")
+        except Exception as e:
+            logger.debug(f"Failed reading DBF header date: {e}")
+
+    # (5) Zip filename pattern (YYYYMMDD) (low trust)
+    parent = os.path.dirname(resolved_path) or "."
+    try:
+        for fname in os.listdir(parent):
+            if fname.lower().endswith(".zip"):
+                m = re.search(r"(\d{8})", fname)
+                if m:
+                    dd = _parse_datestr(m.group(1))
+                    accepted = _accept(dd, "low")
+                    _note("zip_filename", dd, "low", accepted)
+                    # Keep note only; final selection happens after all sources evaluated
+                    if accepted:
+                        logger.debug(f"Accepted zip filename date {dd} from {fname}")
                         break
-        except ImportError:
-            logger.debug("pyshp not available; skipping attribute-date check.")
-        except Exception as e:
-            logger.debug(f"Error scanning attribute table for date: {e}")
+    except Exception as e:
+        logger.debug(f"Zip filename date check failed: {e}")
 
-    # (3) DBF_DATE_LAST_UPDATE in ogrinfo output
-    if data_date is None:
-        m = re.search(r"DBF_DATE_LAST_UPDATE=([0-9]{4}-[0-9]{2}-[0-9]{2})", result.stdout)
-        if m:
-            dd = _parse_datestr(m.group(1))
-            if _accept(dd, "medium"):
-                data_date = dd
-                logger.debug(f"Derived data_date from DBF_DATE_LAST_UPDATE: {data_date}")
+    # (6) Shapefile modification time (low trust)
+    dd = datetime.fromtimestamp(os.path.getmtime(resolved_path)).date()
+    accepted = _accept(dd, "low")
+    _note("file_mtime", dd, "low", accepted)
+    # Keep note only; final selection happens after all sources evaluated
+    if accepted:
+        logger.debug(f"Accepted file mtime date {dd}")
 
-    # (4) DBF header date bytes
-    if data_date is None:
-        dbf_path = os.path.splitext(resolved_path)[0] + ".dbf"
-        if os.path.exists(dbf_path):
-            try:
-                with open(dbf_path, "rb") as fh:
-                    fh.seek(1)
-                    y, mth, d = fh.read(3)
-                    year = 1900 + y
-                    if year < 1990:
-                        year += 100
-                    dd = datetime(year, mth, d).date()
-                    if _accept(dd, "medium"):
-                        data_date = dd
-                        logger.debug(f"Derived data_date from DBF header: {data_date}")
-            except Exception as e:
-                logger.debug(f"Failed reading DBF header date: {e}")
-
-    # (5) Zip filename pattern (YYYYMMDD)
-    if data_date is None:
-        parent = os.path.dirname(resolved_path) or "."
-        try:
-            for fname in os.listdir(parent):
-                if fname.lower().endswith(".zip"):
-                    m = re.search(r"(\d{8})", fname)
-                    if m:
-                        dd = _parse_datestr(m.group(1))
-                        if _accept(dd, "low"):
-                            data_date = dd
-                            logger.debug(f"Derived data_date from zip filename {fname}: {data_date}")
-                            break
-        except Exception as e:
-            logger.debug(f"Zip filename date check failed: {e}")
-
-    # (6) Shapefile modification time
-    if data_date is None:
-        dd = datetime.fromtimestamp(os.path.getmtime(resolved_path)).date()
-        if _accept(dd, "low"):
-            data_date = dd
-            logger.debug(f"Derived data_date from file mtime: {data_date}")
-
-    # Final fallback – if everything was rejected, use today.
-    if data_date is None:
+    # Choose the most recent accepted date across all sources.
+    if accepted_candidates:
+        # Sort by date asc, take last (latest).
+        data_date = sorted(accepted_candidates, key=lambda t: t[0])[-1][0]
+        logger.debug(f"Chosen data_date (latest accepted): {data_date}")
+    else:
+        # Final fallback – if everything was rejected, use today.
         data_date = today
         metadata["_defaulted_today"] = True
 
