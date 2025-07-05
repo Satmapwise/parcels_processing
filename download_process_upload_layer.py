@@ -8,6 +8,7 @@ import sys
 import logging
 import argparse
 import subprocess
+import shapefile  # pyshp
 from datetime import datetime
 import os
 import csv
@@ -754,7 +755,6 @@ def extract_shp_metadata(shp_path, logger):
     # (2) Attribute-table date fields
     if data_date is None:
         try:
-            import shapefile  # pyshp
             sf = shapefile.Reader(resolved_path)
             field_names = [f[0].lower() for f in sf.fields[1:]]
             candidate_cols = [
