@@ -627,8 +627,7 @@ def extract_shp_metadata(shp_path, logger):
         return metadata
 
     # ------------------------------------------------------------------
-    # Parse the first PROJCS/GEOGCS line from the WKT and map it to an EPSG
-    # code via a lookup table (to be expanded).
+    # Get the EPSG code from the WKT.
     # ------------------------------------------------------------------
 
     # Accept both WKT1 (PROJCS/GEOGCS) and WKT2 (PROJCRS/GEOGCRS) keywords
@@ -680,6 +679,11 @@ def extract_shp_metadata(shp_path, logger):
     else:
         logger.debug("No PROJCS/GEOGCS definition found in ogrinfo output.")
         logger.debug(f"OGRINFO output: {result.stdout}")
+    
+    # ------------------------------------------------------------------
+    # Get update_date from current date
+    # ------------------------------------------------------------------
+    metadata["update_date"] = datetime.now().date().strftime("%Y-%m-%d")
 
     return metadata
 

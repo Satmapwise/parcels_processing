@@ -7,7 +7,7 @@
         ],
         "processing": [
           ["python3", "../../processing_tools/update_zoning2.py", "hillsborough", "plant_city"],
-          ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.zoning_transform SET shp_name = '{shp}', data_date = '{data_date}', update_date = '{today}' WHERE county = 'HILLSBOROUGH' and city_name = 'PLANT_CITY'"]
+          ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.zoning_transform SET shp_name = '{shp}', epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'HILLSBOROUGH' and city_name = 'PLANT_CITY'"]
         ]
       }
     }
