@@ -178,7 +178,7 @@ entities = {
 class Config:
     def __init__(self, 
                  test_mode=True, debug=False, isolate_logs=False,
-                 run_download=True, run_metadata=False, run_processing=False, run_upload=True,
+                 run_download=True, run_metadata=True, run_processing=True, run_upload=True,
                  generate_summary=True, remote_enabled=False, remote_execute=False
                  ):
         """
@@ -433,63 +433,49 @@ def download_process_layer(layer, queue):
                 )
 
             # -------------------------
-            # 1. Download phase
+            # 1. Unified command loop (download / pre-proc / proc)
             # -------------------------
-            if CONFIG.run_download == True:
-                entity_logger.info(f"Running download phase for {entity}")
-                download_cmds = manifest_entry.get("download") or manifest_entry.get("commands", [])
-                for cmd in download_cmds:
-                    cmd_list = cmd.split() if isinstance(cmd, str) else cmd
-                    _run_command(cmd_list, work_dir, entity_logger)
 
-            # -------------------------
-            # 2. Metadata extraction (first .shp found)
-            # -------------------------
             metadata = {}
-            if CONFIG.run_metadata == True:
-                entity_logger.info(f"Running metadata extraction phase for {entity}")
-                shp_files = [f for f in os.listdir(work_dir) if f.lower().endswith('.shp')]
-                if shp_files:
-                    shp_path = os.path.join(work_dir, shp_files[0])
-                    metadata = extract_shp_metadata(shp_path, entity_logger)
-                    entity_logger.debug(f"Metadata: {metadata}")
-                else:
-                    entity_logger.warning("No shapefile found in work_dir after download phase; skipping metadata extraction.")
-
-            # after metadata block
-            if not CONFIG.run_metadata:
-                metadata["_defaulted_today"] = True
-
-            # -------------------------
-            # 3. Processing phase (allow simple {epsg} placeholder substitution)
-            # -------------------------
-            upload_plan = None  # will be set if an update script prints the upload block
-            if CONFIG.run_processing == True:
-                entity_logger.info(f"Running processing phase for {entity}")
-                processing_cmds = manifest_entry.get("processing", [])
-                for cmd in processing_cmds:
-                    if isinstance(cmd, str):
-                        try:
-                            cmd_formatted = cmd.format(**metadata)
-                        except KeyError as ke:
-                            entity_logger.error(f"Missing metadata key {ke} for command '{cmd}'. Skipping this command.")
-                            continue
-                        cmd_list = cmd_formatted.split()
+            for cmd in manifest_entry:
+                # Placeholder 'ogrinfo' → run metadata extraction helper
+                if isinstance(cmd, str) and cmd.strip().lower() == "ogrinfo":
+                    if CONFIG.run_metadata == False:
+                        entity_logger.info(f"Skipping metadata extraction for {layer}/{entity} (disabled in config)")
+                        continue
                     else:
-                        # If it's a list we attempt placeholder replacement on each token
-                        try:
-                            cmd_list = [token.format(**metadata) if isinstance(token, str) else token for token in cmd]
-                        except KeyError as ke:
-                            entity_logger.error(
-                                f"Missing metadata key {ke} for command '{cmd}'. Skipping this command."
-                            )
-                            continue
-                    stdout = _run_command(cmd_list, work_dir, entity_logger)
-                    # Attempt to parse an upload block in the output
-                    if stdout:
-                        parsed = parse_upload_block(stdout)
-                        if parsed:
-                            upload_plan = parsed
+                        entity_logger.debug(f"Running metadata extraction for {layer}/{entity}")
+                    shp_files = [f for f in os.listdir(work_dir) if f.lower().endswith(".shp")]
+                    if shp_files:
+                        shp_path = os.path.join(work_dir, shp_files[0])
+                        metadata = extract_shp_metadata(shp_path, entity_logger)
+                        entity_logger.debug(f"Metadata extracted: {metadata}")
+                    else:
+                        entity_logger.warning("ogrinfo placeholder encountered but no .shp file found.")
+                    continue  # skip _run_command
+
+                cmd_list = cmd.split() if isinstance(cmd, str) else cmd
+
+                # Run the command
+                if _looks_like_download(cmd_list): # Detects download commands
+                    if CONFIG.run_download == True:
+                        entity_logger.debug(f"Running download for {layer}/{entity}")
+                        _run_command(cmd_list, work_dir, entity_logger)
+                        if CONFIG.test_mode == False: # Only validate in non-test mode
+                            try:
+                                _validate_download(work_dir, entity_logger)
+                            except DownloadError as de:
+                                raise DownloadError(str(de), layer, entity) from de
+                        else:
+                            entity_logger.info(f"[TEST MODE] Skipping download validation for {layer}/{entity}")
+                    else:
+                        entity_logger.info(f"Skipping download for {layer}/{entity} (disabled in config)")
+                else:
+                    if CONFIG.run_processing == True:
+                        entity_logger.debug(f"Running processing for {layer}/{entity}")
+                        stdout = _run_command(cmd_list, work_dir, entity_logger) # Runs all other commands
+                    else:
+                        entity_logger.info(f"Skipping processing for {layer}/{entity} (disabled in config)")
 
             # Record successful result with EPSG if we found it
             result_entry = {
@@ -505,8 +491,21 @@ def download_process_layer(layer, queue):
                 entity_logger.warning(warning_msg)
                 result_entry['warning'] = warning_msg
 
-            if upload_plan:
-                result_entry['upload_plan'] = upload_plan
+            # (processing of commands now handled in unified loop above)
+            upload_plan = None  # will be filled when parse_upload_block triggers
+
+            # After executing all commands, try to parse any upload plan printed
+            # from the log of the last command.
+            # stdout from last executed command is still in 'stdout' variable if set
+            try:
+                if 'stdout' in locals() and stdout:
+                    parsed = parse_upload_block(stdout)
+                    if parsed:
+                        upload_plan = parsed
+            except Exception:
+                pass
+
+            result_entry['upload_plan'] = upload_plan
 
             results.append(result_entry)
             entity_logger.info(f"--- Successfully processed entity: {entity} ---")
@@ -1145,3 +1144,20 @@ def _ssh_connect(host):
         kwargs["password"] = CONFIG.ssh_password
     client.connect(**kwargs)
     return client
+
+
+def _looks_like_download(cmd_list):
+    """Return True if *cmd_list* is one of our known download scripts."""
+    if not cmd_list:
+        return False
+    first = os.path.basename(cmd_list[0])
+    return first in {"ags_extract_data2.py", "download_data.py"}
+
+
+def _validate_download(work_dir, logger):
+    """Ensure at least one *.shp* exists in *work_dir*; else raise DownloadError."""
+    shp_files = [f for f in os.listdir(work_dir) if f.lower().endswith(".shp")]
+    if not shp_files:
+        raise DownloadError("No shapefile present after download commands", layer=None, entity=None)
+    logger.debug(f"Download validation passed – found {len(shp_files)} .shp file(s).")
+    return shp_files[0]

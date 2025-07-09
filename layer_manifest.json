@@ -110,15 +110,11 @@
           ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.zoning_transform SET shp_name = 'Zoning_single.shp', epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'BAY' and city_name = 'UNINCORPORATED'"]
         ]
       },
-      "hillsborough_plant_city": {
-        "download": [
-          ["python3", "../../download_tools/ags_extract_data2.py", "zoning_hillsborough_plant_city", "delete", "15"]
-        ],
-        "processing": [
-          ["python3", "../../processing_tools/update_zoning2.py", "hillsborough", "plant_city"],
-          ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.zoning_transform SET shp_name = '{shp}', epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'HILLSBOROUGH' and city_name = 'PLANT_CITY'"]
-        ]
-      },
+      "hillsborough_plant_city": [
+        ["python3", "../../download_tools/ags_extract_data2.py", "zoning_hillsborough_plant_city", "delete", "15"],
+        ["python3", "../../processing_tools/update_zoning2.py", "hillsborough", "plant_city"],
+        ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.zoning_transform SET shp_name = '{shp}', epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'HILLSBOROUGH' and city_name = 'PLANT_CITY'"]
+      ],
       "hillsborough_tampa": {
         "download": [],
         "processing": [
