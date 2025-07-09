@@ -1,6 +1,96 @@
 {
   "zoning": {
     "entities": {
+      "alachua_alachua": {
+        "download": [
+          ["python3", "../../download_tools/ags_extract_data2.py", "zoning_alachua_city", "delete", "15"]
+        ],
+        "processing": [
+          ["python3", "../../processing_tools/update_zoning2.py", "alachua", "alachua"],
+          ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.zoning_transform SET shp_name = '{shp}', epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'ALACHUA' and city_name = 'ALACHUA'"]
+        ]
+      },
+      "alachua_archer": {
+        "download": [
+          ["python3", "../../download_tools/ags_extract_data2.py", "zoning_archer", "delete", "15"]
+        ],
+        "processing": [
+          ["python3", "../../processing_tools/update_zoning2.py", "alachua", "archer"],
+          ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.zoning_transform SET shp_name = '{shp}', epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'ALACHUA' and city_name = 'ARCHER'"]
+        ]
+      },
+      "alachua_gainesville": {
+        "download": [
+          ["python3", "../../download_tools/ags_extract_data2.py", "zoning_gainesville", "delete", "15"]
+        ],
+        "processing": [
+          ["python3", "../../processing_tools/update_zoning2.py", "alachua", "gainesville"],
+          ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.zoning_transform SET shp_name = '{shp}', epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'ALACHUA' and city_name = 'GAINESVILLE'"]
+        ]
+      },
+      "alachua_hawthorne": {
+        "download": [
+          ["python3", "../../download_tools/ags_extract_data2.py", "zoning_hawthorne", "delete", "15"]
+        ],
+        "processing": [
+          ["python3", "../../processing_tools/update_zoning2.py", "alachua", "hawthorne"],
+          ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.zoning_transform SET shp_name = '{shp}', epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'ALACHUA' and city_name = 'HAWTHORNE'"]
+        ]
+      },
+      "alachua_high_springs": {
+        "download": [
+          ["python3", "../../download_tools/ags_extract_data2.py", "zoning_high_springs", "delete", "15"]
+        ],
+        "processing": [
+          ["python3", "../../processing_tools/update_zoning2.py", "alachua", "high_springs"],
+          ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.zoning_transform SET shp_name = '{shp}', epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'ALACHUA' and city_name = 'HIGH_SPRINGS'"]
+        ]
+      },
+      "alachua_lacrosse": {
+        "download": [
+          ["python3", "../../download_tools/ags_extract_data2.py", "zoning_lacrosse", "delete", "15"]
+        ],
+        "processing": [
+          ["python3", "../../processing_tools/update_zoning2.py", "alachua", "lacrosse"],
+          ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.zoning_transform SET shp_name = '{shp}', epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'ALACHUA' and city_name = 'LACROSSE'"]
+        ]
+      },
+      "alachua_micanopy": {
+        "download": [
+          ["python3", "../../download_tools/ags_extract_data2.py", "zoning_micanopy", "delete", "15"]
+        ],
+        "processing": [
+          ["python3", "../../processing_tools/update_zoning2.py", "alachua", "micanopy"],
+          ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.zoning_transform SET shp_name = '{shp}', epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'ALACHUA' and city_name = 'MICANOPY'"]
+        ]
+      },
+      "alachua_newberry": {
+        "download": [
+          ["python3", "../../download_tools/ags_extract_data2.py", "zoning_newberry", "delete", "15"]
+        ],
+        "processing": [
+          ["python3", "../../processing_tools/update_zoning2.py", "alachua", "newberry"],
+          ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.zoning_transform SET shp_name = '{shp}', epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'ALACHUA' and city_name = 'NEWBERRY'"]
+        ]
+      },
+      "alachua_unincorporated": {
+        "download": [
+          ["python3", "../../download_tools/ags_extract_data2.py", "zoning_alachua_unincorporated", "delete", "15"]
+        ],
+        "processing": [
+          ["python3", "../../processing_tools/update_zoning2.py", "alachua", "unincorporated"],
+          ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.zoning_transform SET shp_name = '{shp}', epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'ALACHUA' and city_name = 'UNINCORPORATED'"]
+        ]
+      },
+      "alachua_waldo": {
+        "download": [
+          ["python3", "../../download_tools/ags_extract_data2.py", "zoning_waldo", "delete", "15"]
+        ],
+        "processing": [
+          ["python3", "../../processing_tools/update_zoning2.py", "alachua", "waldo"],
+          ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.zoning_transform SET shp_name = '{shp}', epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'ALACHUA' and city_name = 'WALDO'"]
+        ]
+      },
       "hillsborough_plant_city": {
         "download": [
           ["python3", "../../download_tools/ags_extract_data2.py", "zoning_hillsborough_plant_city", "delete", "15"]

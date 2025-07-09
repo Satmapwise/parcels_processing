@@ -17,6 +17,7 @@ import re
 import paramiko
 import os
 import re
+import fnmatch  # at top with other imports
 
 # ---------------------------------------------------------------------------
 # Load the layer/entity manifest so the script is entirely data-driven.
@@ -176,8 +177,8 @@ entities = {
 
 class Config:
     def __init__(self, 
-                 test_mode=True, debug=False, isolate_logs=True,
-                 run_download=True, run_metadata=True, run_processing=True, run_upload=True,
+                 test_mode=True, debug=False, isolate_logs=False,
+                 run_download=True, run_metadata=False, run_processing=False, run_upload=True,
                  generate_summary=True, remote_enabled=False, remote_execute=False
                  ):
         """
@@ -290,11 +291,34 @@ def set_queue(layer, entities):
     if isinstance(entities, str):
         entities = [entities]
 
-    invalid = [e for e in entities if e not in layer_entities and e not in counties]
+    invalid = [e for e in entities if '*' not in e and '?' not in e and e not in layer_entities and e not in counties]
     if invalid:
         raise ValueError(f"Invalid entity/ies specified: {invalid}")
 
-    return entities
+    # -------------------------------------------------
+    # Expand wildcard patterns (alachua_* etc.)
+    # -------------------------------------------------
+    expanded = []
+    for pattern in entities:
+        if '*' in pattern or '?' in pattern:
+            matches = fnmatch.filter(layer_entities, pattern)
+            if not matches:
+                logging.warning(f"Pattern '{pattern}' matched no entities in manifest; skipping.")
+            else:
+                logging.info(f"Pattern '{pattern}' expanded to {len(matches)} entities.")
+                expanded.extend(matches)
+        else:
+            expanded.append(pattern)
+
+    # Deduplicate while preserving order
+    seen = set()
+    queue = []
+    for e in expanded:
+        if e not in seen:
+            queue.append(e)
+            seen.add(e)
+
+    return queue
 
 
 def _run_command(command, work_dir, logger):
@@ -335,7 +359,7 @@ def setup_entity_logger(layer, entity, work_dir):
 
     if CONFIG.isolate_logs:
         # Ensure directory exists so the log file can be created
-        #os.makedirs(work_dir, exist_ok=True)
+        os.makedirs(work_dir, exist_ok=True)
 
         file_handler = logging.FileHandler(log_file_path, mode='w')  # Overwrite log each run
         file_formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
