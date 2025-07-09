@@ -456,6 +456,10 @@ def download_process_layer(layer, queue):
                 else:
                     entity_logger.warning("No shapefile found in work_dir after download phase; skipping metadata extraction.")
 
+            # after metadata block
+            if not CONFIG.run_metadata:
+                metadata["_defaulted_today"] = True
+
             # -------------------------
             # 3. Processing phase (allow simple {epsg} placeholder substitution)
             # -------------------------
