@@ -177,8 +177,8 @@ entities = {
 class Config:
     def __init__(self, 
                  test_mode=True, debug=True, isolate_logs=False,
-                 run_download=True, run_metadata=True, run_processing=True, run_upload=False,
-                 generate_summary=False
+                 run_download=True, run_metadata=True, run_processing=True, run_upload=True,
+                 generate_summary=False, remote_enabled=True, remote_execute=False
                  ):
         """
         Configuration class to hold script settings.
@@ -192,6 +192,11 @@ class Config:
         self.run_processing = run_processing # Run the processing phase
         self.run_upload = run_upload # Run the upload phase
         self.generate_summary = generate_summary # Generate a summary file
+        self.remote_enabled = remote_enabled # Run the upload phase
+        if self.test_mode == True:
+            self.remote_execute = False
+        else:
+            self.remote_execute = remote_execute # Run the upload phase (if remote_enabled is True)
         # More configuration can be added here
         # e.g. database credentials, server details
         # For now, keeping it simple
@@ -225,11 +230,8 @@ class Config:
         # Feature toggles
         #   remote_enabled – attempt to connect to remote hosts
         #   remote_execute – actually transfer and run commands
-        self.remote_enabled = False
         # REMOTE_EXECUTE defaults to true, but we force it off when test_mode=True
-        self.remote_execute = False
-        if self.test_mode:
-            self.remote_execute = False
+        
 
 # Global config object
 CONFIG = Config()
@@ -477,97 +479,6 @@ def download_process_layer(layer, queue):
             results.append({'layer': layer, 'entity': entity, 'status': 'failure', 'error': str(e), 'data_date': None})
 
     return results
-
-
-
-
-
-# ---------------------------------------------------------------------------
-# Legacy: zoning download and process workflow
-# ---------------------------------------------------------------------------
-def _download_process_zoning(layer, entity, county, city, work_dir, logger):
-    """Implementation of the zoning download and process workflow."""
-    logger.info(f"Running ZONING workflow for {entity}")
-    
-    shp_name_raw = f"zoning_{entity}.shp"
-    
-    # --- Download Step ---
-    try:
-        logger.info("Step 1: Downloading data...")
-        # e.g., ags_extract_data2.py zoning_alachua_city delete 15
-        download_script = os.path.join('..', '..', '..', '..', 'download_tools', 'ags_extract_data2.py')
-        download_arg = f"zoning_{entity}"
-        _run_command([sys.executable, download_script, download_arg, "delete", "15"], work_dir, logger)
-        # Simple check if the shapefile was created
-        if not os.path.exists(os.path.join(work_dir, shp_name_raw)) and not CONFIG.test_mode:
-            raise DownloadError("Shapefile not found after download script execution.", layer, entity)
-    except Exception as e:
-        raise DownloadError(f"Data download failed: {e}", layer, entity) from e
-
-    # --- Processing Step ---
-    try:
-        logger.info("Step 2: Processing data...")
-        # Note: The psql command from docs is layer-specific and complex.
-        # For now, we'll just call the python processing script.
-        # A full implementation would require a template for the psql command.
-        logger.info("Skipping psql update for support.zoning_transform (requires credentials).")
-
-        processing_script = os.path.join('..', '..', '..', '..', 'processing_tools', 'update_zoning_v3.py')
-        _run_command([sys.executable, processing_script, county, city], work_dir, logger)
-
-    except Exception as e:
-        raise ProcessingError(f"Data processing failed: {e}", layer, entity) from e
-    
-    logger.info("Zoning workflow completed successfully.")
-    # In a real run, we'd extract the data_date from a file or the download process
-    return {'layer': layer, 'entity': entity, 'status': 'success', 'data_date': datetime.now().date()}
-
-
-# ---------------------------------------------------------------------------
-# Legacy: flu download and process workflow
-# ---------------------------------------------------------------------------
-def _download_process_flu(layer, entity, county, city, work_dir, logger):
-    """Implementation of the flu download and process workflow."""
-    logger.info(f"Running FLU workflow for {entity}")
-    
-    shp_name_raw = f"flu_{entity}.shp"
-    shp_name_single = f"flu_{county}_{city}_single.shp"
-
-    # --- Download Step ---
-    try:
-        logger.info("Step 1: Downloading data...")
-        # e.g., ags_extract_data2.py flu_alachua_city delete 15
-        download_script = os.path.join('..', '..', '..', '..', 'download_tools', 'ags_extract_data2.py')
-        download_arg = f"flu_{entity}"
-        _run_command([sys.executable, download_script, download_arg, "delete", "15"], work_dir, logger)
-        if not os.path.exists(os.path.join(work_dir, shp_name_raw)) and not CONFIG.test_mode:
-            raise DownloadError("Shapefile not found after download script execution.", layer, entity)
-    except Exception as e:
-        raise DownloadError(f"Data download failed: {e}", layer, entity) from e
-
-    # --- Processing Step ---
-    try:
-        logger.info("Step 2: Processing data (ogr2ogr)...")
-        # e.g., ogr2ogr -explodecollections -select "FLU, FLU_NAME" flu_alachua_alachua_single.shp flu_alachua_city.shp
-        _run_command([
-            "ogr2ogr", "-explodecollections",
-            "-select", "FLU,FLU_NAME",
-            shp_name_single,
-            shp_name_raw
-        ], work_dir, logger)
-
-        logger.info("Step 3: Processing data (update script)...")
-        # Note: Skipping psql update for support.flu_transform (requires credentials).
-        # We assume `update_zoning_v3.py` is the generic update script for now.
-        # The docs mentioned `update_flu.py` which is not present.
-        processing_script = os.path.join('..', '..', '..', '..', 'processing_tools', 'update_zoning_v3.py')
-        _run_command([sys.executable, processing_script, county, city], work_dir, logger)
-
-    except Exception as e:
-        raise ProcessingError(f"Data processing failed: {e}", layer, entity) from e
-
-    logger.info("FLU workflow completed successfully.")
-    return {'layer': layer, 'entity': entity, 'status': 'success', 'data_date': datetime.now().date()}
 
 # Function to upload the data (push to prod)
 def upload_layer(results):
