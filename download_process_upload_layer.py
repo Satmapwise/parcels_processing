@@ -14,6 +14,9 @@ import os
 import csv
 import json
 import re
+import paramiko
+import os
+import re
 
 # ---------------------------------------------------------------------------
 # Load the layer/entity manifest so the script is entirely data-driven.
@@ -192,6 +195,41 @@ class Config:
         # More configuration can be added here
         # e.g. database credentials, server details
         # For now, keeping it simple
+
+        # -----------------------------
+        # Upload-phase configuration (all env-driven)
+        # -----------------------------
+        # Path where legacy update scripts deposit .backup / .bat files
+        self.local_backup_dir = os.environ.get(
+            'LOCAL_BACKUP_DIR',
+            '/var/www/apps/mapwise/htdocs/x342/'
+        )
+
+        # Remote incoming directory on map servers
+        self.remote_incoming_dir = os.environ.get(
+            'REMOTE_INCOMING_DIR',
+            '/home/bmay/incoming/'
+        )
+
+        # Remote hosts (comma-separated list)
+        self.ssh_hosts = [h.strip() for h in os.environ.get(
+            'REMOTE_SSH_HOSTS',
+            'mapserver-m2,mapserver-prod'
+        ).split(',') if h.strip()]
+
+        # SSH credentials – user plus either key or password
+        self.ssh_user = os.environ.get('REMOTE_SSH_USER', os.getenv('USER', ''))
+        self.ssh_keyfile = os.environ.get('REMOTE_SSH_KEYFILE')  # optional
+        self.ssh_password = os.environ.get('REMOTE_SSH_PASSWORD')  # optional (discouraged)
+
+        # Feature toggles
+        #   remote_enabled – attempt to connect to remote hosts
+        #   remote_execute – actually transfer and run commands
+        self.remote_enabled = False
+        # REMOTE_EXECUTE defaults to true, but we force it off when test_mode=True
+        self.remote_execute = False
+        if self.test_mode:
+            self.remote_execute = False
 
 # Global config object
 CONFIG = Config()
@@ -386,6 +424,7 @@ def download_process_layer(layer, queue):
             # -------------------------
             # 3. Processing phase (allow simple {epsg} placeholder substitution)
             # -------------------------
+            upload_plan = None  # will be set if an update script prints the upload block
             if CONFIG.run_processing == True:
                 entity_logger.info(f"Running processing phase for {entity}")
                 processing_cmds = manifest_entry.get("processing", [])
@@ -406,7 +445,12 @@ def download_process_layer(layer, queue):
                                 f"Missing metadata key {ke} for command '{cmd}'. Skipping this command."
                             )
                             continue
-                    _run_command(cmd_list, work_dir, entity_logger)
+                    stdout = _run_command(cmd_list, work_dir, entity_logger)
+                    # Attempt to parse an upload block in the output
+                    if stdout:
+                        parsed = parse_upload_block(stdout)
+                        if parsed:
+                            upload_plan = parsed
 
             # Record successful result with EPSG if we found it
             result_entry = {
@@ -421,6 +465,9 @@ def download_process_layer(layer, queue):
                 warning_msg = 'data_date defaulted to current day'
                 entity_logger.warning(warning_msg)
                 result_entry['warning'] = warning_msg
+
+            if upload_plan:
+                result_entry['upload_plan'] = upload_plan
 
             results.append(result_entry)
             entity_logger.info(f"--- Successfully processed entity: {entity} ---")
@@ -524,22 +571,71 @@ def _download_process_flu(layer, entity, county, city, work_dir, logger):
 
 # Function to upload the data (push to prod)
 def upload_layer(results):
-    """
-    Uploads processed data. Connects to servers, transfers files, runs psql.
-    """
-    logging.info("Starting upload process...")
-    successful_items = [r for r in results if 'success' in r['status']]
-    
-    if not successful_items:
-        logging.info("No successful items to upload.")
+    """Transfer files and execute SQL on remote map servers."""
+
+    logging.info("Starting upload process …")
+
+    if not CONFIG.remote_enabled:
+        logging.info("Remote upload disabled via configuration; skipping.")
         return
 
-    if CONFIG.test_mode:
-        logging.info(f"[TEST MODE] Would upload data for {len(successful_items)} items.")
+    # Filter results that contain an upload plan
+    items = [r for r in results if r.get('status') == 'success' and r.get('upload_plan')]
+
+    if not items:
+        logging.info("No upload plans found in results; nothing to do.")
         return
 
-    # This is where SSH/SCP logic would go (e.g., using paramiko or subprocess)
-    raise NotImplementedError("Upload logic is not yet implemented.")
+    for host in CONFIG.ssh_hosts:
+        logging.info(f"Connecting to remote host {host} …")
+        try:
+            ssh = _ssh_connect(host)
+        except Exception as e:
+            logging.error(f"Failed to connect to {host}: {e}")
+            raise UploadError(f"SSH connection failed to {host}: {e}") from e
+
+        # If we only want to test connection, close immediately when remote_execute is False
+        if not CONFIG.remote_execute:
+            logging.info(f"Connection to {host} established (remote_execute disabled).")
+            ssh.close()
+            continue
+
+        sftp = ssh.open_sftp()
+
+        for row in items:
+            plan = row['upload_plan']
+
+            local_backup = os.path.join(CONFIG.local_backup_dir, f"{plan['basename']}.backup")
+            local_bat = os.path.join(CONFIG.local_backup_dir, f"{plan['basename']}.bat")
+
+            # Transfer files – overwrite existing ones
+            try:
+                logging.info(f"[{host}] uploading {os.path.basename(local_backup)} …")
+                sftp.put(local_backup, plan['remote_backup'])
+                sftp.put(local_bat, plan['remote_bat'])
+            except FileNotFoundError as fe:
+                logging.error(f"Local file missing: {fe}")
+                raise UploadError(f"Local file missing: {fe}") from fe
+            except Exception as te:
+                logging.error(f"SFTP error: {te}")
+                raise UploadError(f"SFTP failure to {host}: {te}") from te
+
+            # Execute remote commands
+            for cmd in plan['commands']:
+                logging.info(f"[{host}] executing: {cmd}")
+                stdin, stdout, stderr = ssh.exec_command(cmd)
+                exit_status = stdout.channel.recv_exit_status()
+                if exit_status != 0:
+                    err = stderr.read().decode()
+                    logging.error(f"Command failed (status {exit_status}): {err}")
+                    raise UploadError(f"Remote command failed on {host}: {cmd}\n{err}")
+
+        sftp.close()
+        ssh.close()
+        logging.info(f"Upload to {host} completed successfully.")
+
+    logging.info("All uploads completed.")
+
 
 # Function to generate a summary
 def generate_summary(results):
@@ -1065,3 +1161,63 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+# ---------------------------------------------------------------------------
+# Utility: parse upload instructions printed by legacy update scripts.
+# ---------------------------------------------------------------------------
+
+def parse_upload_block(text):
+    """Return an upload plan dict parsed from *text* (stdout).
+
+    Expected markers are printed by legacy update scripts.  If no block is
+    found, returns ``None``.
+    """
+    lines = text.splitlines()
+    in_block = False
+    remote_backup = None
+    commands = []
+    for line in lines:
+        if '----- SCRIPT to update on server' in line:
+            in_block = True
+            continue
+        if '----- END SCRIPT to update on server' in line:
+            break
+        if not in_block:
+            continue
+        stripped = line.strip()
+        if not stripped:
+            continue
+        if stripped.startswith('pg_restore') and '.backup' in stripped:
+            m = re.search(r'"([^"]+\.backup)"', stripped)
+            if m:
+                remote_backup = m.group(1)
+            commands.append(stripped)
+        elif stripped.startswith('psql'):
+            commands.append(stripped)
+
+    if not remote_backup:
+        return None
+
+    basename = os.path.basename(remote_backup).rsplit('.', 1)[0]
+    remote_bat = remote_backup.rsplit('.', 1)[0] + '.bat'
+
+    return {
+        'basename': basename,
+        'remote_backup': remote_backup,
+        'remote_bat': remote_bat,
+        'commands': commands,
+    }
+
+def _ssh_connect(host):
+    """Return an open Paramiko SSHClient using CONFIG credentials."""
+    client = paramiko.SSHClient()
+    client.load_system_host_keys()
+    client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+
+    kwargs = {"hostname": host, "username": CONFIG.ssh_user}
+    if CONFIG.ssh_keyfile:
+        kwargs["key_filename"] = CONFIG.ssh_keyfile
+    elif CONFIG.ssh_password:
+        kwargs["password"] = CONFIG.ssh_password
+    client.connect(**kwargs)
+    return client
