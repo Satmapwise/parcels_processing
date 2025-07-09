@@ -514,20 +514,18 @@ def download_process_layer(layer, queue):
             metadata = {}
             processing_started = False
             for cmd in manifest_entry:
+                shp_path = None
+
                 # Placeholder 'ogrinfo' → run metadata extraction helper
                 if isinstance(cmd, str) and cmd.strip().lower() == "ogrinfo":
-                    if CONFIG.run_metadata == False:
+                    if CONFIG.run_metadata == True:
+                        if shp_path:
+                            metadata = extract_shp_metadata(shp_path, entity_logger)
+                            entity_logger.debug(f"Metadata extracted: {metadata}")
+                        else:
+                            entity_logger.warning("ogrinfo placeholder encountered but no .shp file found.")
+                    else:
                         entity_logger.info(f"Skipping metadata extraction for {layer}/{entity} (disabled in config)")
-                        continue
-                    else:
-                        entity_logger.debug(f"Running metadata extraction for {layer}/{entity}")
-                    shp_files = [f for f in os.listdir(work_dir) if f.lower().endswith(".shp")]
-                    if shp_files:
-                        shp_path = os.path.join(work_dir, shp_files[0])
-                        metadata = extract_shp_metadata(shp_path, entity_logger)
-                        entity_logger.debug(f"Metadata extracted: {metadata}")
-                    else:
-                        entity_logger.warning("ogrinfo placeholder encountered but no .shp file found.")
                     continue  # skip _run_command
 
                 cmd_list = cmd.split() if isinstance(cmd, str) else cmd
@@ -539,7 +537,7 @@ def download_process_layer(layer, queue):
                         _run_command(cmd_list, work_dir, entity_logger)
                         if CONFIG.test_mode == False: # Only validate in non-test mode
                             try:
-                                _validate_download(work_dir, entity_logger)
+                                shp_path = _validate_download(work_dir, entity_logger)
                             except DownloadError as de:
                                 raise DownloadError(str(de), layer, entity) from de
                         else:
