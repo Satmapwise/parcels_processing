@@ -386,6 +386,81 @@ def initialize_logging(debug=False):
     logging.basicConfig(level=level, format='%(asctime)s - %(levelname)s - %(message)s', stream=sys.stdout)
     logging.info("Logging initialized.")
 
+
+def parse_upload_block(text):
+    """Return an upload plan dict parsed from *text* (stdout).
+
+    Expected markers are printed by legacy update scripts.  If no block is
+    found, returns ``None``.
+    """
+    lines = text.splitlines()
+    in_block = False
+    remote_backup = None
+    commands = []
+    for line in lines:
+        if '----- SCRIPT to update on server' in line:
+            in_block = True
+            continue
+        if '----- END SCRIPT to update on server' in line:
+            break
+        if not in_block:
+            continue
+        stripped = line.strip()
+        if not stripped:
+            continue
+        if stripped.startswith('pg_restore') and '.backup' in stripped:
+            m = re.search(r'"([^"]+\.backup)"', stripped)
+            if m:
+                remote_backup = m.group(1)
+            commands.append(stripped)
+        elif stripped.startswith('psql'):
+            commands.append(stripped)
+
+    if not remote_backup:
+        return None
+
+    basename = os.path.basename(remote_backup).rsplit('.', 1)[0]
+    remote_bat = remote_backup.rsplit('.', 1)[0] + '.bat'
+
+    return {
+        'basename': basename,
+        'remote_backup': remote_backup,
+        'remote_bat': remote_bat,
+        'commands': commands,
+    }
+
+
+def _ssh_connect(host):
+    """Return an open Paramiko SSHClient using CONFIG credentials."""
+    client = paramiko.SSHClient()
+    client.load_system_host_keys()
+    client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+
+    kwargs = {"hostname": host, "username": CONFIG.ssh_user}
+    if CONFIG.ssh_keyfile:
+        kwargs["key_filename"] = CONFIG.ssh_keyfile
+    elif CONFIG.ssh_password:
+        kwargs["password"] = CONFIG.ssh_password
+    client.connect(**kwargs)
+    return client
+
+
+def _looks_like_download(cmd_list):
+    """Return True if *cmd_list* is one of our known download scripts."""
+    if not cmd_list:
+        return False
+    first = os.path.basename(cmd_list[0])
+    return first in {"ags_extract_data2.py", "download_data.py"}
+
+
+def _validate_download(work_dir, logger):
+    """Ensure at least one *.shp* exists in *work_dir*; else raise DownloadError."""
+    shp_files = [f for f in os.listdir(work_dir) if f.lower().endswith(".shp")]
+    if not shp_files:
+        raise DownloadError("No shapefile present after download commands", layer=None, entity=None)
+    logger.debug(f"Download validation passed – found {len(shp_files)} .shp file(s).")
+    return shp_files[0]
+
 # Function to download and process a layer
 def download_process_layer(layer, queue):
     """
@@ -1084,80 +1159,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-# ---------------------------------------------------------------------------
-# Utility: parse upload instructions printed by legacy update scripts.
-# ---------------------------------------------------------------------------
-
-def parse_upload_block(text):
-    """Return an upload plan dict parsed from *text* (stdout).
-
-    Expected markers are printed by legacy update scripts.  If no block is
-    found, returns ``None``.
-    """
-    lines = text.splitlines()
-    in_block = False
-    remote_backup = None
-    commands = []
-    for line in lines:
-        if '----- SCRIPT to update on server' in line:
-            in_block = True
-            continue
-        if '----- END SCRIPT to update on server' in line:
-            break
-        if not in_block:
-            continue
-        stripped = line.strip()
-        if not stripped:
-            continue
-        if stripped.startswith('pg_restore') and '.backup' in stripped:
-            m = re.search(r'"([^"]+\.backup)"', stripped)
-            if m:
-                remote_backup = m.group(1)
-            commands.append(stripped)
-        elif stripped.startswith('psql'):
-            commands.append(stripped)
-
-    if not remote_backup:
-        return None
-
-    basename = os.path.basename(remote_backup).rsplit('.', 1)[0]
-    remote_bat = remote_backup.rsplit('.', 1)[0] + '.bat'
-
-    return {
-        'basename': basename,
-        'remote_backup': remote_backup,
-        'remote_bat': remote_bat,
-        'commands': commands,
-    }
-
-def _ssh_connect(host):
-    """Return an open Paramiko SSHClient using CONFIG credentials."""
-    client = paramiko.SSHClient()
-    client.load_system_host_keys()
-    client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-
-    kwargs = {"hostname": host, "username": CONFIG.ssh_user}
-    if CONFIG.ssh_keyfile:
-        kwargs["key_filename"] = CONFIG.ssh_keyfile
-    elif CONFIG.ssh_password:
-        kwargs["password"] = CONFIG.ssh_password
-    client.connect(**kwargs)
-    return client
-
-
-def _looks_like_download(cmd_list):
-    """Return True if *cmd_list* is one of our known download scripts."""
-    if not cmd_list:
-        return False
-    first = os.path.basename(cmd_list[0])
-    return first in {"ags_extract_data2.py", "download_data.py"}
-
-
-def _validate_download(work_dir, logger):
-    """Ensure at least one *.shp* exists in *work_dir*; else raise DownloadError."""
-    shp_files = [f for f in os.listdir(work_dir) if f.lower().endswith(".shp")]
-    if not shp_files:
-        raise DownloadError("No shapefile present after download commands", layer=None, entity=None)
-    logger.debug(f"Download validation passed – found {len(shp_files)} .shp file(s).")
-    return shp_files[0]
