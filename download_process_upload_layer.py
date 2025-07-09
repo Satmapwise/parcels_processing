@@ -179,7 +179,7 @@ class Config:
     def __init__(self, 
                  test_mode=True, debug=True, isolate_logs=False,
                  run_download=False, run_metadata=True, run_processing=True, run_upload=True,
-                 generate_summary=True, remote_enabled=False, remote_execute=False
+                 generate_summary=False, remote_enabled=False, remote_execute=False
                  ):
         """
         Configuration class to hold script settings.
