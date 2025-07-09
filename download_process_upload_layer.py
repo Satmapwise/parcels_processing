@@ -178,7 +178,7 @@ entities = {
 class Config:
     def __init__(self, 
                  test_mode=True, debug=True, isolate_logs=False,
-                 run_download=True, run_metadata=True, run_processing=True, run_upload=True,
+                 run_download=False, run_metadata=True, run_processing=True, run_upload=True,
                  generate_summary=True, remote_enabled=False, remote_execute=False
                  ):
         """
@@ -466,6 +466,7 @@ def _validate_download(work_dir, logger):
     candidate_files = []
     for filename in os.listdir(work_dir):
         if filename.lower().endswith(".shp"):
+            logger.debug(f"Checking file: {filename}")
             file_path = os.path.join(work_dir, filename)
             try:
                 mtime = os.path.getmtime(file_path)
@@ -480,9 +481,18 @@ def _validate_download(work_dir, logger):
     if not candidate_files and CONFIG.run_download == True:
         raise DownloadError("No shapefile found modified within the last 24 hours.", layer=None, entity=None)
     elif not candidate_files and CONFIG.run_download == False:
-        candidate_files = [f for f in os.listdir(work_dir) if f.lower().endswith(".shp")]
-        if not candidate_files:
+        found_files = [f for f in os.listdir(work_dir) if f.lower().endswith(".shp")]
+        if not found_files:
             raise DownloadError("No shapefile found in directory.", layer=None, entity=None)
+        
+        for filename in found_files:
+            file_path = os.path.join(work_dir, filename)
+            try:
+                mtime = os.path.getmtime(file_path)
+                mod_time = datetime.fromtimestamp(mtime)
+                candidate_files.append((mod_time, file_path))
+            except OSError:
+                continue
 
     # Sort by modification time (most recent first) and get the path
     candidate_files.sort(key=lambda x: x[0], reverse=True)
@@ -574,6 +584,18 @@ def download_process_layer(layer, queue):
                     continue  # skip _run_command
 
                 cmd_list = cmd.split() if isinstance(cmd, str) else cmd
+
+                # Substitute placeholders like {shp}, {epsg} from metadata
+                if metadata:
+                    formatted_cmd_list = []
+                    for item in cmd_list:
+                        if isinstance(item, str):
+                            for key, value in metadata.items():
+                                placeholder = f"{{{key}}}"
+                                if placeholder in item:
+                                    item = item.replace(placeholder, str(value))
+                        formatted_cmd_list.append(item)
+                    cmd_list = formatted_cmd_list
 
                 # Run the command
                 if _looks_like_download(cmd_list): # Detects download commands
