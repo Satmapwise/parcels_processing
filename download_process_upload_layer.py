@@ -9,7 +9,7 @@ import logging
 import argparse
 import subprocess
 import shapefile  # pyshp
-from datetime import datetime
+from datetime import datetime, timedelta
 import os
 import csv
 import json
@@ -454,12 +454,46 @@ def _looks_like_download(cmd_list):
 
 
 def _validate_download(work_dir, logger):
-    """Ensure at least one *.shp* exists in *work_dir*; else raise DownloadError."""
-    shp_files = [f for f in os.listdir(work_dir) if f.lower().endswith(".shp")]
-    if not shp_files:
-        raise DownloadError("No shapefile present after download commands", layer=None, entity=None)
-    logger.debug(f"Download validation passed – found {len(shp_files)} .shp file(s).")
-    return shp_files[0]
+    """
+    Ensure at least one recently-created *.shp* exists in *work_dir*.
+    "Recent" means modified within the last 24 hours.
+    If multiple exist, returns the path to the newest one.
+    Raises DownloadError if no recent shapefile is found.
+    """
+    now = datetime.now()
+    day_ago = now - timedelta(days=1)
+
+    candidate_files = []
+    for filename in os.listdir(work_dir):
+        if filename.lower().endswith(".shp"):
+            file_path = os.path.join(work_dir, filename)
+            try:
+                mtime = os.path.getmtime(file_path)
+                mod_time = datetime.fromtimestamp(mtime)
+
+                if mod_time >= day_ago:
+                    candidate_files.append((mod_time, file_path))
+            except OSError:
+                # File might have been removed during processing; skip it.
+                continue
+
+    if not candidate_files and CONFIG.run_download == True:
+        raise DownloadError("No shapefile found modified within the last 24 hours.", layer=None, entity=None)
+    elif not candidate_files and CONFIG.run_download == False:
+        candidate_files = [f for f in os.listdir(work_dir) if f.lower().endswith(".shp")]
+        if not candidate_files:
+            raise DownloadError("No shapefile found in directory.", layer=None, entity=None)
+
+    # Sort by modification time (most recent first) and get the path
+    candidate_files.sort(key=lambda x: x[0], reverse=True)
+    newest_shp_path = candidate_files[0][1]
+
+    if CONFIG.run_download == True:
+        logger.debug(f"Download validation passed – found recent shapefile: {os.path.basename(newest_shp_path)}")
+    else:
+        logger.debug(f"Newest shapefile found: {os.path.basename(newest_shp_path)} from {mod_time.strftime('%Y-%m-%d %H:%M')}")
+    return newest_shp_path
+
 
 # Function to download and process a layer
 def download_process_layer(layer, queue):
@@ -513,17 +547,28 @@ def download_process_layer(layer, queue):
 
             metadata = {}
             processing_started = False
+            shp_path = None
             for cmd in manifest_entry:
-                shp_path = None
 
                 # Placeholder 'ogrinfo' → run metadata extraction helper
                 if isinstance(cmd, str) and cmd.strip().lower() == "ogrinfo":
                     if CONFIG.run_metadata == True:
+                        shp_to_process = None
                         if shp_path:
-                            metadata = extract_shp_metadata(shp_path, entity_logger)
-                            entity_logger.debug(f"Metadata extracted: {metadata}")
+                            shp_to_process = shp_path
                         else:
-                            entity_logger.warning("ogrinfo placeholder encountered but no .shp file found.")
+                            # If no shp_path was set by a download step, scan the directory
+                            # for a pre-existing file. This supports process-only runs.
+                            try:
+                                shp_to_process = _validate_download(work_dir, entity_logger)
+                            except DownloadError:
+                                pass # It's ok if no recent file is found here.
+
+                        if shp_to_process:
+                            metadata = extract_shp_metadata(shp_to_process, entity_logger)
+                            entity_logger.debug(f"Metadata extracted from: {os.path.basename(shp_to_process)}")
+                        else:
+                            entity_logger.warning("ogrinfo placeholder encountered but no recent .shp file found to process.")
                     else:
                         entity_logger.info(f"Skipping metadata extraction for {layer}/{entity} (disabled in config)")
                     continue  # skip _run_command
@@ -593,6 +638,7 @@ def download_process_layer(layer, queue):
             results.append({'layer': layer, 'entity': entity, 'status': 'failure', 'error': str(e), 'data_date': None})
 
     return results
+
 
 # Function to upload the data (push to prod)
 def upload_layer(results):
@@ -689,6 +735,7 @@ def generate_summary(results):
         logging.info("Summary file generated successfully.")
     except IOError as e:
         logging.error(f"Could not write summary file: {e}")
+
 
 # ---------------------------------------------------------------------------
 # Utility: extract basic metadata from the first shapefile in the working
