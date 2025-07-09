@@ -177,7 +177,7 @@ entities = {
 
 class Config:
     def __init__(self, 
-                 test_mode=True, debug=False, isolate_logs=False,
+                 test_mode=True, debug=True, isolate_logs=False,
                  run_download=True, run_metadata=True, run_processing=True, run_upload=True,
                  generate_summary=True, remote_enabled=False, remote_execute=False
                  ):
@@ -449,7 +449,7 @@ def _looks_like_download(cmd_list):
     """Return True if *cmd_list* is one of our known download scripts."""
     if not cmd_list:
         return False
-    first = os.path.basename(cmd_list[0])
+    first = os.path.basename(cmd_list[1])
     return first in {"ags_extract_data2.py", "download_data.py"}
 
 
@@ -512,6 +512,7 @@ def download_process_layer(layer, queue):
             # -------------------------
 
             metadata = {}
+            processing_started = False
             for cmd in manifest_entry:
                 # Placeholder 'ogrinfo' → run metadata extraction helper
                 if isinstance(cmd, str) and cmd.strip().lower() == "ogrinfo":
@@ -547,7 +548,9 @@ def download_process_layer(layer, queue):
                         entity_logger.info(f"Skipping download for {layer}/{entity} (disabled in config)")
                 else:
                     if CONFIG.run_processing == True:
-                        entity_logger.debug(f"Running processing for {layer}/{entity}")
+                        if processing_started == False:
+                            entity_logger.debug(f"Running processing for {layer}/{entity}")
+                            processing_started = True
                         stdout = _run_command(cmd_list, work_dir, entity_logger) # Runs all other commands
                     else:
                         entity_logger.info(f"Skipping processing for {layer}/{entity} (disabled in config)")
