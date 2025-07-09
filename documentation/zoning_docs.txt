@@ -297,7 +297,7 @@ update_zoning2.py baker unincorporated
 
 ```bash
 #------------------------
-# unincorporated / unified?
+# unincorporated
 #------------------------
 # go to working directory
 cd /srv/datascrub/08_Land_Use_and_Zoning/zoning/florida/county/bay/current/source_data/unincorporated

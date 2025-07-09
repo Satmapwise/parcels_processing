@@ -91,6 +91,25 @@
           ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.zoning_transform SET shp_name = '{shp}', epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'ALACHUA' and city_name = 'WALDO'"]
         ]
       },
+      "baker_unincorporated": {
+        "download": [],
+        "processing": [
+          ["python3", "../../processing_tools/update_zoning2.py", "baker", "unincorporated"],
+          ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.zoning_transform SET shp_name = '{shp}', epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'BAKER' and city_name = 'UNINCORPORATED'"]
+        ]
+      },
+      "bay_unincorporated": {
+        "download": [
+          ["python3", "../../download_tools/download_data.py", "/data/zoning/bay/unincorporated"],
+          ["unzip", "-oj", "Zoning.zip"],
+          ["zip_rename_date.sh", "Zoning.zip"]
+        ],
+        "processing": [
+          ["ogr2ogr", "-explodecollections", "Zoning_single.shp", "Zoning.shp"],
+          ["python3", "../../processing_tools/update_zoning2.py", "bay", "unincorporated"],
+          ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.zoning_transform SET shp_name = 'Zoning_single.shp', epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'BAY' and city_name = 'UNINCORPORATED'"]
+        ]
+      },
       "hillsborough_plant_city": {
         "download": [
           ["python3", "../../download_tools/ags_extract_data2.py", "zoning_hillsborough_plant_city", "delete", "15"]
