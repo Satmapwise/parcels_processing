@@ -476,9 +476,9 @@ def download_process_layer(layer, queue):
         logging.info(f"Starting processing for layer '{layer}'")
     elif CONFIG.run_download == False and CONFIG.run_metadata == True and CONFIG.run_processing == False:
         logging.info(f"Starting metadata extraction for layer '{layer}'")
-    else:
-        logging.info(f"Skipping layer '{layer}': no processes active.")
-        return [] # No need to run anything
+    # else:
+    #     logging.info(f"Skipping layer '{layer}': no processes active.")
+    #     return [] # No need to run anything
     
     results = []
     for entity in queue:
@@ -553,7 +553,9 @@ def download_process_layer(layer, queue):
                             processing_started = True
                         stdout = _run_command(cmd_list, work_dir, entity_logger) # Runs all other commands
                     else:
-                        entity_logger.info(f"Skipping processing for {layer}/{entity} (disabled in config)")
+                        if processing_started == False:
+                            entity_logger.info(f"Skipping processing for {layer}/{entity} (disabled in config)")
+                            processing_started = True
 
             # Record successful result with EPSG if we found it
             result_entry = {
@@ -1146,6 +1148,8 @@ def main():
         # 3. Upload the processed data
         if CONFIG.run_upload == True:
             upload_layer(results)
+        else:
+            logging.info(f"Skipping upload for layer '{args.layer}' (disabled in config)")
 
     except (ValueError, NotImplementedError) as e:
         logging.critical(f"A critical error occurred: {e}")
