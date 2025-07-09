@@ -205,16 +205,10 @@ class Config:
         # Upload-phase configuration (all env-driven)
         # -----------------------------
         # Path where legacy update scripts deposit .backup / .bat files
-        self.local_backup_dir = os.environ.get(
-            'LOCAL_BACKUP_DIR',
-            '/var/www/apps/mapwise/htdocs/x342/'
-        )
+        self.local_backup_dir = '/var/www/apps/mapwise/htdocs/x342/'
 
         # Remote incoming directory on map servers
-        self.remote_incoming_dir = os.environ.get(
-            'REMOTE_INCOMING_DIR',
-            '/home/bmay/incoming/'
-        )
+        self.remote_incoming_dir = '/home/bmay/incoming/'
 
         # Remote hosts (comma-separated list)
         self.ssh_hosts = [h.strip() for h in os.environ.get(
@@ -508,9 +502,9 @@ def upload_layer(results):
     # Filter results that contain an upload plan
     items = [r for r in results if r.get('status') == 'success' and r.get('upload_plan')]
 
-    if not items:
-        logging.info("No upload plans found in results; nothing to do.")
-        return
+    # if not items:
+    #     logging.info("No upload plans found in results; nothing to do.")
+    #     return
 
     for host in CONFIG.ssh_hosts:
         logging.info(f"Connecting to remote host {host} …")
