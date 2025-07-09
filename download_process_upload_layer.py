@@ -176,7 +176,7 @@ entities = {
 
 class Config:
     def __init__(self, 
-                 test_mode=True, debug=True, isolate_logs=False,
+                 test_mode=True, debug=False, isolate_logs=False,
                  run_download=True, run_metadata=True, run_processing=True, run_upload=True,
                  generate_summary=False, remote_enabled=True, remote_execute=False
                  ):
@@ -261,11 +261,21 @@ class UploadError(LayerProcessingError):
 
 
 # Function to parse the input and set the queue
-def set_queue(layer, entity):
+def set_queue(layer, entities):
     """
-    Validates layer and entity and returns a queue of entities to process.
+    Validates layer and entity list and returns a queue of entities to process.
+
+    Parameters
+    ----------
+    layer : str
+        Layer name (must exist in manifest).
+    entities : list[str]
+        Zero or more entity identifiers provided on CLI.
+        • []  → process ALL entities for the layer.
+        • ["orange_unincorporated", "orange_orlando"] → process only those.
     """
-    logging.info(f"Setting queue for layer '{layer}' and entity '{entity or 'all'}'")
+    logging.info(f"Setting queue for layer '{layer}' and entities '{entities or 'all'}'")
+
     if layer not in layers:
         raise ValueError(f"Invalid layer specified: '{layer}'. Must be one of {layers}")
 
@@ -274,18 +284,23 @@ def set_queue(layer, entity):
     except KeyError:
         raise ValueError(f"Layer '{layer}' not found in manifest.")
 
-    queue = []
-    if entity:
-        # Allow direct entity name or county-wide alias if listed separately.
-        if entity not in layer_entities and entity not in counties:
-            raise ValueError(f"Invalid entity specified: '{entity}'.")
-        queue.append(entity)
-    else:
-        logging.info(f"No entity specified, queuing all {len(layer_entities)} entities for layer '{layer}'")
-        queue.extend(sorted(layer_entities))
+    # -----------------------------------
+    # No entities supplied → process ALL
+    # -----------------------------------
+    if not entities:
+        logging.info(f"No entities specified, queuing all {len(layer_entities)} entities for layer '{layer}'")
+        return sorted(layer_entities)
 
-    logging.info(f"Queue set with {len(queue)} items.")
-    return queue
+    # Allow entities to be supplied as list (from argparse); also support old
+    # behaviour where a *single* entity string could be passed.
+    if isinstance(entities, str):
+        entities = [entities]
+
+    invalid = [e for e in entities if e not in layer_entities and e not in counties]
+    if invalid:
+        raise ValueError(f"Invalid entity/ies specified: {invalid}")
+
+    return entities
 
 
 def _run_command(command, work_dir, logger):
@@ -1007,7 +1022,9 @@ def main():
     """Main script execution."""
     parser = argparse.ArgumentParser(description="Download, process, and upload geospatial data layers.")
     parser.add_argument("layer", help="The layer to process.")
-    parser.add_argument("entity", nargs='?', help="The specific entity (e.g., miami-dade_unincorporated) to process. If omitted, all entities for the layer are processed.")
+    parser.add_argument("entities", nargs='*', help=(
+        "Optional space-separated list of entity IDs (e.g. 'hillsborough_tampa orange_orlando'). "
+        "If omitted, all entities defined for the layer will be processed.") )
     parser.add_argument("--test-mode", action="store_true", help="Run in test mode, skipping actual execution of external tools and uploads.")
     parser.add_argument("--debug", action="store_true", help="Enable debug logging on the console.")
     parser.add_argument("--no-log-isolation", dest='isolate_logs', action='store_false', help="Show all logs in the console instead of isolating them to files.")
@@ -1048,7 +1065,7 @@ def main():
     results = []
     try:
         # 1. Set the queue of entities to process
-        queue = set_queue(args.layer, args.entity)
+        queue = set_queue(args.layer, args.entities)
 
         # 2. Download and process the layer for each entity
         results = download_process_layer(args.layer, queue)
