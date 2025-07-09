@@ -178,7 +178,7 @@ class Config:
     def __init__(self, 
                  test_mode=True, debug=False, isolate_logs=False,
                  run_download=True, run_metadata=True, run_processing=True, run_upload=True,
-                 generate_summary=False, remote_enabled=True, remote_execute=False
+                 generate_summary=True, remote_enabled=False, remote_execute=False
                  ):
         """
         Configuration class to hold script settings.
@@ -584,32 +584,6 @@ def generate_summary(results):
         logging.info("Summary file generated successfully.")
     except IOError as e:
         logging.error(f"Could not write summary file: {e}")
-
-
-# ---------------------------------------------------------------------------
-# Legacy: generic manifest-driven workflow (applies to every layer/entity without a
-# bespoke Python implementation).
-# ---------------------------------------------------------------------------
-def _download_process_generic(layer, entity, county, city, work_dir, logger):
-    """Generic download & process workflow sourced entirely from the JSON manifest."""
-    logger.info(f"Running GENERIC workflow for {layer}/{entity}")
-
-    try:
-        commands = LAYER_CFG[layer]['entities'][entity]['commands']
-    except KeyError as _e:
-        raise ProcessingError(f"Manifest is missing commands for {layer}/{entity}: {_e}", layer, entity)
-
-    for cmd in commands:
-        # Accept either list or single string commands
-        if isinstance(cmd, str):
-            cmd_list = cmd.split()
-        else:
-            cmd_list = cmd
-        _run_command(cmd_list, work_dir, logger)
-
-    logger.info("Generic workflow completed successfully.")
-    return {'layer': layer, 'entity': entity, 'status': 'success', 'data_date': datetime.now().date()}
-
 
 # ---------------------------------------------------------------------------
 # Utility: extract basic metadata from the first shapefile in the working
