@@ -176,7 +176,7 @@ entities = {
 
 class Config:
     def __init__(self, 
-                 test_mode=True, debug=False, isolate_logs=False,
+                 test_mode=True, debug=False, isolate_logs=True,
                  run_download=True, run_metadata=True, run_processing=True, run_upload=True,
                  generate_summary=True, remote_enabled=False, remote_execute=False
                  ):
@@ -568,7 +568,7 @@ def generate_summary(results):
         logging.info("Skipping summary generation.")
         return
 
-    summary_filename = f"summary_{CONFIG.start_time.strftime('%Y%m%d_%H%M%S')}.csv"
+    summary_filename = f"summary_{CONFIG.start_time.strftime('%Y-%m-%d_%H-%M')}.csv"
     logging.info(f"Generating summary file: {summary_filename}")
 
     headers = ['layer', 'entity', 'status', 'data_date', 'error', 'warning']
