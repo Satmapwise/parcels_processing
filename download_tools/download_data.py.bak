@@ -22,7 +22,7 @@
 #   src_url
 
 
-import sys,os,fileinput,string,math,psycopg2,io,datetime
+import sys,os,fileinput,string,math,psycopg2,StringIO,datetime
 import psycopg2.extras, smtplib, textwrap
 
 
@@ -43,7 +43,7 @@ def download_data(resource) :
     sql = """ SELECT src_url_file, sys_raw_folder, sys_raw_file, category, sub_category, distrib_comments, src_url, title
         FROM fmo.m_gis_data_catalog_main
         WHERE resource = '""" + resource + """';"""
-    print(sql)
+    print sql
     cursor.execute(sql)
     connection.commit()
 
@@ -53,8 +53,8 @@ def download_data(resource) :
     rows = cursor.fetchall()
     
     if len(rows) == 0:
-        print("\nNo records selected.")
-        print("len(rows): ",len(rows))
+        print "\nNo records selected."
+        print "len(rows): ",len(rows)
     
     for row in rows:
         # colname = row['column_name'] # get TypeError: tuple indices must be integers, not str error
@@ -68,7 +68,7 @@ def download_data(resource) :
         title = row[7]
     
     
-    print("title: ",title)
+    print "title: ",title
     
     # if there is a src_url_file, download the file to sys_raw_folder
     if len(src_url_file) > 4 :
@@ -76,16 +76,16 @@ def download_data(resource) :
         if os.path.isdir(sys_raw_folder) :
             os.chdir(sys_raw_folder)
         else :
-            print("sys_raw_folder: '", sys_raw_folder,"' does not exist")
+            print "sys_raw_folder: '", sys_raw_folder,"' does not exist"
             return
 
         # use python utlib2?
         # or just use wget because we can use some of its features like checking to see if a newer version exists
         mycmd = """wget -N """ + src_url_file
-        print(mycmd)
+        print mycmd
         os.system(mycmd)
     else :
-        print("src_url_file: '", src_url_file,"' does not exist")
+        print "src_url_file: '", src_url_file,"' does not exist"
         return
         
 
@@ -111,8 +111,8 @@ try:
     #    pass
     
 except:
-    print(msgUsage)
-    print(msgInvalidResource)
+    print msgUsage
+    print msgInvalidResource
     sys.exit(0)
 
 

@@ -178,7 +178,7 @@ entities = {
 class Config:
     def __init__(self, 
                  test_mode=True, debug=False, isolate_logs=False,
-                 run_download=True, run_metadata=True, run_processing=True, run_upload=True,
+                 run_download=False, run_metadata=True, run_processing=True, run_upload=True,
                  generate_summary=False, remote_enabled=False, remote_execute=False
                  ):
         """
@@ -590,7 +590,7 @@ def download_process_layer(layer, queue):
                     formatted_cmd_list = []
                     for item in cmd_list:
                         if isinstance(item, str):
-                            for key, value in list(metadata.items()):
+                            for key, value in metadata.items():
                                 placeholder = f"{{{key}}}"
                                 if placeholder in item:
                                     item = item.replace(placeholder, str(value))

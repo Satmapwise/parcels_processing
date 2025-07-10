@@ -59,8 +59,8 @@ cnt = 1
 
 # iterate through all records in the input file
 file_name = '/srv/mapwise_dev/county/okaloosa/processing/database/current/source_data/sales_current.csv'
-reader = csv.reader(open(file_name, 'r'))
-next(reader)  # skip the headers
+reader = csv.reader(open(file_name, 'rb'))
+reader.next()  # skip the headers
 for a in reader:
 
     #print cnt
@@ -140,7 +140,7 @@ for a in reader:
             SALE_DAY = '0' + SALE_DAY
         SALE_DATE = SALE_YEAR + '-' + SALE_MO + '-' + SALE_DAY
     except:
-        print('Date problem')
+        print 'Date problem'
     
     SALE_AMT = SALE_AMT.replace('$','')
     SALE_AMT = SALE_AMT.replace(',','')

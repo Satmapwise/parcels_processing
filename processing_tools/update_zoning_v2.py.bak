@@ -5,14 +5,14 @@
 #
 
 # Import needed modules
-import sys, os, fileinput, string, math, psycopg2, io, datetime
+import sys, os, fileinput, string, math, psycopg2, StringIO, datetime
 import psycopg2.extras
 
 # Helper functions to reduce repetitive code
 def execute_sql_command(cmd, execute=True):
     """Execute a SQL command and print it"""
-    print(" ")
-    print(cmd)
+    print " "
+    print cmd
     if execute:
         os.system(cmd)
 
@@ -40,7 +40,7 @@ def dissolve_and_explode(county, city, temp_table_name, select_col_list):
             {1};
         """.format(temp_table_name, select_col_list)
 
-        print(sql)
+        print sql
         cursor.execute(sql)
         connection.commit()    
         
@@ -52,7 +52,7 @@ def dissolve_and_explode(county, city, temp_table_name, select_col_list):
         FROM {0}_dissolve;
         """.format(temp_table_name, select_col_list)
 
-        print(sql)
+        print sql
         cursor.execute(sql)
         connection.commit()
 
@@ -63,7 +63,7 @@ try:
     county = sys.argv[1].lower()
     city = sys.argv[2].lower()
 except:
-    print("Usage: python update_zoning_v2.py <county> <city>")
+    print "Usage: python update_zoning_v2.py <county> <city>"
     sys.exit(0)
 
 county_upper = county.upper()
@@ -81,22 +81,22 @@ connection = psycopg2.connect(pg_connection)
 # arg to cursor allows selection by column name
 cursor = connection.cursor(cursor_factory=psycopg2.extras.DictCursor)
 
-print(" ")
-print(" LOAD ZONING ")
+print " "
+print " LOAD ZONING "
 
 #-----------------------------------------------------------------------------------------
 # Get ZONING transform info from zoning_transform table
 #-----------------------------------------------------------------------------------------    
 sql = """SELECT * FROM zoning_transform WHERE county = '""" + county_upper + """' and city_name = '""" + city_upper + """';  """
-print(" ")
-print(sql)
+print " "
+print sql
 cursor.execute(sql)
 connection.commit()
 
 # initialize variables that have info about the ZONING SHP from zoning_transform
 rows = cursor.fetchall()
 for row in rows:
-    print("city_name = ", row['city_name'])
+    print "city_name = ", row['city_name']
     city_name = row['city_name']
     city_name_path = city_name.lower()
 
@@ -161,8 +161,8 @@ else:
     ord_num_col = 'Null'
 
 
-print(" ")
-print("Columns to load: ",select_col_list)
+print " "
+print "Columns to load: ",select_col_list
 
 # load the data into temp table
 #mycmd = 'ogr2ogr -skipfailures -select "' + select_col_list + '" -t_srs "EPSG:43000" -nlt GEOMETRY -f "PostgreSQL" PG:"user=postgres dbname=gisdev host=localhost port=5432 password=galactic529" -nln ' + temp_table_name + ' ' + shp_name
@@ -213,13 +213,13 @@ delete_conditions = {
 }
 
 # Apply delete conditions for matching county/city pairs
-for (county, city), condition in list(delete_conditions.items()):
+for (county, city), condition in delete_conditions.items():
     delete_city_polygons(county, city, temp_table_name, condition)
 
 # Special case for BROWARD county
 if (county_upper == 'BROWARD' and city_name == 'A_PROPERTY_APPRAISER_UNIFIED'):
-    print(" UPDATE BROWARD CITY NAME BASED ON OVERLAY WITH CITIES")
-    print("No command specified in original script")
+    print " UPDATE BROWARD CITY NAME BASED ON OVERLAY WITH CITIES"
+    print "No command specified in original script"
 
 # Counties that need dissolve and explode operations
 dissolve_counties = [
@@ -307,26 +307,26 @@ execute_sql_command(mycmd)
 # =========================================
 # RESTORE BACKUP FILE ON SAUNDERS SERVER
 # =========================================
-print(" ")
-print("----- SCRIPT to update on server -----")
-print(" ")
-print(" ")
-print('pg_restore -p 5432 -U postgres -d gislib -v "/home/bmay/incoming/' + temp_table_name + '.backup"')
+print " "
+print "----- SCRIPT to update on server -----"
+print " "
+print " "
+print 'pg_restore -p 5432 -U postgres -d gislib -v "/home/bmay/incoming/' + temp_table_name + '.backup"'
 # C:\"Program Files (x86)"\PostgreSQL\9.1\bin\pg_restore.exe -h localhost -p 5433 -U postgres -d postgis -v "C:\ftp_filezilla\ols\incoming\raw_flu_charlotte_unincorp.backup
-print(" ")
+print " "
 
 # Delete existing data from zoning
-print('psql -p 5432 -U postgres -d gislib -c "DELETE FROM zoning WHERE city_name = ' + "'" + city_name + "' and county_name = '" + county_upper + "'" + ';"')
+print 'psql -p 5432 -U postgres -d gislib -c "DELETE FROM zoning WHERE city_name = ' + "'" + city_name + "' and county_name = '" + county_upper + "'" + ';"'
 # Miami-Dade special case
 if (county_upper == 'MIAMI-DADE' and city_name == 'INCORPORATED'):
-    print('psql -p 5432 -U postgres -d gislib -c "DELETE FROM zoning WHERE county_name = \'MIAMI-DADE\';"')
-print(" ")
+    print 'psql -p 5432 -U postgres -d gislib -c "DELETE FROM zoning WHERE county_name = \'MIAMI-DADE\';"'
+print " "
 
 # Load raw data into standard table and project geometry (transform)
 
-print("""psql -d gislib -U postgres -p 5432 -c "INSERT INTO zoning (zon_code,zon_code2,zon_desc,zon_gen,ord_num,city_name,county_name,notes,the_geom) 
-SELECT zon_code, zon_code2, zon_desc, zon_gen, ord_num, city_name, county_name, notes, the_geom FROM """ + temp_table_name + """_2;" """)
-print(" ")
+print """psql -d gislib -U postgres -p 5432 -c "INSERT INTO zoning (zon_code,zon_code2,zon_desc,zon_gen,ord_num,city_name,county_name,notes,the_geom) 
+SELECT zon_code, zon_code2, zon_desc, zon_gen, ord_num, city_name, county_name, notes, the_geom FROM """ + temp_table_name + """_2;" """
+print " "
 
 #print 'psql -d gislib -U postgres -p 5432 -c "INSERT INTO zoning (zon_code,zon_code2,zon_desc,zon_gen,ord_num,city_name,county_name,notes,the_geom) SELECT ' + zon_code_col + ',' + zon_code2_col + ',' + zon_desc_col + ',' + zon_gen_col + ',' + ord_num_col + ",'" + city_name + "','" + county_upper + "'," + notes_col + ', wkb_geometry FROM ' + temp_table_name + ';"'
 
@@ -341,14 +341,14 @@ if (county_upper == 'MIAMI-DADE' and city_name == 'INCORPORATED'):
     # clear city name from old column
     mycmd = pg_psql + '"' + "UPDATE zoning SET zon_code2 = null WHERE county_name = 'MIAMI-DADE' and city_name != 'UNINCORPORATED';"
     execute_sql_command(mycmd)
-print(" ")
+print " "
 
-print('psql -d gislib -U postgres -p 5432 -c "DROP TABLE ' + temp_table_name + '_2;"')
+print 'psql -d gislib -U postgres -p 5432 -c "DROP TABLE ' + temp_table_name + '_2;"'
 # C:\"Program Files (x86)"\PostgreSQL\9.1\bin\psql -d postgis -U postgres -c "DROP TABLE raw_flu_charlotte_unified;"
-print(" ")
-print(" ")
-print("----- END SCRIPT to update on server -----")
-print(" ")
+print " "
+print " "
+print "----- END SCRIPT to update on server -----"
+print " "
 
 #==============================================================================
 # Write batch file to run update commands

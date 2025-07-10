@@ -24,7 +24,7 @@ if missing_modules:
     for module in missing_modules:
         print(f"  - {module}")
     print("\nTo install missing modules, run:")
-    print(("  pip install " + " ".join(missing_modules)))
+    print("  pip install " + " ".join(missing_modules))
     exit(1)
 
 import requests
@@ -126,9 +126,9 @@ def get_most_reliable_date(findings: List[DateFinding]) -> Optional[DateFinding]
 
 def print_date_summary(findings: List[DateFinding], most_reliable: Optional[DateFinding]):
     """Print a comprehensive summary of all date findings grouped by method"""
-    print(("\n" + "="*80))
+    print("\n" + "="*80)
     print("DATE DETECTION SUMMARY")
-    print(("="*80))
+    print("="*80)
     
     if not findings:
         print("No dates found by any method.")
@@ -155,7 +155,7 @@ def print_date_summary(findings: List[DateFinding], most_reliable: Optional[Date
     
     # Display findings grouped by method
     print(f"\nDATE FINDINGS BY METHOD:")
-    print(("="*80))
+    print("="*80)
     
     method_descriptions = {
         "Method 1": "Query Date Fields",
@@ -169,7 +169,7 @@ def print_date_summary(findings: List[DateFinding], most_reliable: Optional[Date
         method_findings = methods[method_key]
         
         print(f"\n{method_key}: {method_descriptions[method_key]}")
-        print(("-" * 50))
+        print("-" * 50)
         
         if not method_findings:
             print("  No dates found")
@@ -190,9 +190,9 @@ def print_date_summary(findings: List[DateFinding], most_reliable: Optional[Date
                     print(f"    Notes: {finding.notes}")
     
     # Show most reliable date
-    print((f"\n" + "="*80))
+    print(f"\n" + "="*80)
     print("MOST RELIABLE DATE:")
-    print(("-" * 50))
+    print("-" * 50)
     if most_reliable:
         print(f"  ★ {most_reliable.converted_date or most_reliable.raw_value}")
         print(f"    Source: {most_reliable.method} ({most_reliable.source})")
@@ -201,7 +201,7 @@ def print_date_summary(findings: List[DateFinding], most_reliable: Optional[Date
     else:
         print("  No reliable date could be determined")
     
-    print(("="*80))
+    print("="*80)
 
 def to_date_string(ms) -> Optional[str]:
     """Convert epoch milliseconds to ISO string"""
@@ -213,7 +213,7 @@ def to_date_string(ms) -> Optional[str]:
         logger.warning(f"Failed to convert timestamp {ms}: {e}")
         return None
 
-def make_request(url: str, params: Optional[dict] = None, timeout: int = 30) -> Optional[dict]:
+def make_request(url: str, params: dict = None, timeout: int = 30) -> Optional[dict]:
     """Make HTTP request with proper error handling"""
     try:
         response = requests.get(url, params=params, timeout=timeout)
@@ -818,7 +818,7 @@ def get_arcgis_data_date(layer_url: str) -> Tuple[Optional[str], List[DateFindin
     
     return most_reliable_date, all_findings
 
-def lookup_layer_url(county: Optional[str] = None, city: Optional[str] = None, table_name: Optional[str] = None) -> Optional[str]:
+def lookup_layer_url(county: str = None, city: str = None, table_name: str = None) -> Optional[str]:
     """
     Look up layer URL from m_gis_data_catalog_main table based on search criteria
     
@@ -953,12 +953,12 @@ Examples:
         sys.exit(1)
     
     print(f"\nRunning comprehensive date detection on all methods...")
-    print(("="*60))
+    print("="*60)
     
     # Run the detection
     result, all_findings = get_arcgis_data_date(layer_url)
     
-    print(("="*60))
+    print("="*60)
     
     # Show comprehensive summary
     most_reliable = get_most_reliable_date(all_findings)

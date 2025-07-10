@@ -5,7 +5,7 @@
 #
 
 # Import needed modules
-import sys,os,fileinput,string,math,psycopg2,io,datetime
+import sys,os,fileinput,string,math,psycopg2,StringIO,datetime
 import psycopg2.extras
 
 #
@@ -21,7 +21,7 @@ try:
     #    pass
     
 except:
-    print(msgUsage)
+    print msgUsage
     sys.exit(0)
 
 
@@ -45,22 +45,22 @@ connection = psycopg2.connect(pg_connection)
 cursor = connection.cursor(cursor_factory=psycopg2.extras.DictCursor)
 
 
-print(" ")
-print(" LOAD ZONING ")
+print " "
+print " LOAD ZONING "
 
 #-----------------------------------------------------------------------------------------
 # Get ZONING transform info from zoning_transform table
 #-----------------------------------------------------------------------------------------    
 sql = """SELECT * FROM zoning_transform WHERE county = '""" + county_upper + """' and city_name = '""" + city_upper + """';  """
-print(" ")
-print(sql)
+print " "
+print sql
 cursor.execute(sql)
 connection.commit()
 
 # initialize variables that have info about the ZONING SHP from zoning_transform
 rows = cursor.fetchall()
 for row in rows:
-    print("city_name = ", row['city_name'])
+    print "city_name = ", row['city_name']
     city_name = row['city_name']
     city_name_path = city_name.lower()
 
@@ -89,19 +89,19 @@ os.chdir(path_src)
 
 # repair shapefile
 mycmd = 'L:/projects/tools/python/lib/gp_repair_geometry.py ' + shp_name
-print(" ")
-print(mycmd)
+print " "
+print mycmd
 #os.system(mycmd)
 
 # Delete existing pg table
 mycmd = pg_psql + '"' + 'DROP TABLE ' + temp_table_name + ';"'
-print(" ")
-print(mycmd)
+print " "
+print mycmd
 os.system(mycmd)
 
 mycmd = pg_psql + '"' + 'DROP TABLE ' + temp_table_name + '_2;"'
-print(" ")
-print(mycmd)
+print " "
+print mycmd
 os.system(mycmd)
 
 # Load raw shp into postgres
@@ -134,14 +134,14 @@ else:
     ord_num_col = 'Null'
 
 
-print(" ")
-print("Columns to load: ",select_col_list)
+print " "
+print "Columns to load: ",select_col_list
 
 # load the data into temp table
 #mycmd = 'ogr2ogr -skipfailures -select "' + select_col_list + '" -t_srs "EPSG:43000" -nlt GEOMETRY -f "PostgreSQL" PG:"user=postgres dbname=gisdev host=localhost port=5432 password=galactic529" -nln ' + temp_table_name + ' ' + shp_name
 mycmd = 'ogr2ogr -skipfailures  -t_srs "EPSG:32767" -s_srs "EPSG:' + srs_epsg + '" -select "' + select_col_list + '" -nlt GEOMETRY -f "PostgreSQL" PG:"user=postgres dbname=gisdev host=localhost port=5432 password=galactic529" -nln ' + temp_table_name + ' ' + shp_name
-print(" ")
-print(mycmd)
+print " "
+print mycmd
 os.system(mycmd)
 
 # TODO: How to read signal info from shell if ogr2ogr bails?
@@ -149,16 +149,16 @@ os.system(mycmd)
 
 # Updates the SRID of all features in a geometry column, geometry_columns metadata and srid table constraint
 mycmd = pg_psql + '"' + "SELECT UpdateGeometrySRID('" + temp_table_name + "', 'wkb_geometry', 32767)" +  ';"'
-print(" ")
-print(mycmd)
+print " "
+print mycmd
 os.system(mycmd)
 
 
 # Fix any invalid polygons
 mycmd = pg_psql + '"' + "UPDATE " + temp_table_name + " SET wkb_geometry =  ST_MakeValid(wkb_geometry) WHERE st_isvalid(wkb_geometry) is false;" + '"'
 #mycmd = pg_psql + '"' + "UPDATE " + temp_table_name + " SET wkb_geometry =  ST_BuildArea(ST_Boundary(wkb_geometry)) WHERE st_isvalid(wkb_geometry) is false;"
-print(" ")
-print(mycmd)
+print " "
+print mycmd
 os.system(mycmd)
 
 # -----------------------------------------
@@ -167,8 +167,8 @@ os.system(mycmd)
 if (county_upper == 'BAKER' and city_name == 'UNINCORPORATED'):
     # Delete city polygons
     mycmd = pg_psql + '"' + "DELETE FROM " + temp_table_name + " WHERE zone_code = 'CITY';" + '"'
-    print(" ")
-    print(mycmd)
+    print " "
+    print mycmd
     os.system(mycmd)
 
 
@@ -176,60 +176,60 @@ if (county_upper == 'BAKER' and city_name == 'UNINCORPORATED'):
 if (county_upper == 'BROWARD' and city_name == 'A_PROPERTY_APPRAISER_UNIFIED'):
     # Delete city polygons
     #mycmd = pg_psql + '"' + "DELETE FROM " + temp_table_name + " WHERE zone_ = 'CITY';"
-    print(" UPDATE BROWARD CITY NAME BASED ON OVERLAY WITH CITIES")
-    print(mycmd)
+    print " UPDATE BROWARD CITY NAME BASED ON OVERLAY WITH CITIES"
+    print mycmd
     os.system(mycmd)
     
 if (county_upper == 'CHARLOTTE' and city_name == 'UNINCORPORATED'):
     # Delete city polygons
     mycmd = pg_psql + '"' + "DELETE FROM " + temp_table_name + " WHERE zone_ = 'CITY';" + '"'
-    print(" ")
-    print(mycmd)
+    print " "
+    print mycmd
     os.system(mycmd)
 
 if (county_upper == 'CITRUS' and city_name == 'UNINCORPORATED'):
     # Delete city polygons
     mycmd = pg_psql + '"' + "DELETE FROM " + temp_table_name + " WHERE zoning IN ('CITY');" + '"'
-    print(" ")
-    print(mycmd)
+    print " "
+    print mycmd
     os.system(mycmd)
     
 if (county_upper == 'CLAY' and city_name == 'UNINCORPORATED'):
     # Delete city polygons
     mycmd = pg_psql + '"' + "DELETE FROM " + temp_table_name + " WHERE zoning IN ('GCSMUNI','KHMUNI','OPMUNI','PFMUNI');" + '"'
-    print(" ")
-    print(mycmd)
+    print " "
+    print mycmd
     os.system(mycmd)
 
 if (county_upper == 'COLLIER' and city_name == 'UNINCORPORATED'):
     # Delete city polygons
     mycmd = pg_psql + '"' + "DELETE FROM " + temp_table_name + " WHERE zoning IN ('CITY OF NAPLES','CITY OF MARCO ISLAND');" + '"'
-    print(" ")
-    print(mycmd)
+    print " "
+    print mycmd
     os.system(mycmd)
     
 if (county_upper == 'DESOTO' and city_name == 'UNINCORPORATED'):
     
     # Delete city polygons
     mycmd = pg_psql + '"' + "DELETE FROM " + temp_table_name + " WHERE zoning IN ('CITY','');" + '"'
-    print(" ")
-    print(mycmd)
+    print " "
+    print mycmd
     os.system(mycmd)
     
 if (county_upper == 'HERNANDO' and city_name == 'UNINCORPORATED'):
     
     # Delete city polygons
     mycmd = pg_psql + '"' + "DELETE FROM " + temp_table_name + " WHERE zoning IN ('CITY','');" + '"'
-    print(" ")
-    print(mycmd)
+    print " "
+    print mycmd
     os.system(mycmd)
 
 if (county_upper == 'INDIAN_RIVER' and city_name == 'UNINCORPORATED'):
     
     # Delete city polygons
     mycmd = pg_psql + '"' + "DELETE FROM " + temp_table_name + " WHERE zoning IN ('MUNI','');" + '"'
-    print(" ")
-    print(mycmd)
+    print " "
+    print mycmd
     os.system(mycmd)
     
 if (county_upper == 'LAKE' and city_name == 'UNINCORPORATED'):
@@ -250,7 +250,7 @@ if (county_upper == 'LAKE' and city_name == 'UNINCORPORATED'):
         """ + select_col_list + """;
     """
 
-    print(sql)
+    print sql
     cursor.execute(sql)
     connection.commit()    
     
@@ -262,7 +262,7 @@ if (county_upper == 'LAKE' and city_name == 'UNINCORPORATED'):
     FROM """ + temp_table_name + """_dissolve;
     """
 
-    print(sql)
+    print sql
     cursor.execute(sql)
     connection.commit() 
     
@@ -280,16 +280,16 @@ if (county_upper == 'MANATEE' and city_name == 'UNINCORPORATED'):
     
     # Delete city polygons
     mycmd = pg_psql + '"' + "DELETE FROM " + temp_table_name + " WHERE zonelabel IN ('CITY','');" + '"'
-    print(" ")
-    print(mycmd)
+    print " "
+    print mycmd
     os.system(mycmd)
     
 if (county_upper == 'MARTIN' and city_name == 'UNINCORPORATED'):
     
     # Delete city polygons
     mycmd = pg_psql + '"' + "DELETE FROM " + temp_table_name + " WHERE zoning in ('STUART','JUPITER', 'OCEAN BREE', 'SEWALL');" + '"'
-    print(" ")
-    print(mycmd)
+    print " "
+    print mycmd
     os.system(mycmd)
 
 if (county_upper == 'MIAMI-DADE' and city_name == 'INCORPORATED'):
@@ -298,8 +298,8 @@ if (county_upper == 'MIAMI-DADE' and city_name == 'INCORPORATED'):
     
     # Delete unincorporated polygons
     mycmd = pg_psql + '"' + "DELETE FROM " + temp_table_name + " WHERE zone = 'NONE';" + '"'
-    print(" ")
-    print(mycmd)
+    print " "
+    print mycmd
     os.system(mycmd)
     
     
@@ -311,32 +311,32 @@ if (county_upper == 'NASSAU' and city_name == 'UNINCORPORATED'):
     
     # Delete city polygons
     mycmd = pg_psql + '"' + "DELETE FROM " + temp_table_name + " WHERE zoning = 'INCORPORATED';" + '"'
-    print(" ")
-    print(mycmd)
+    print " "
+    print mycmd
     os.system(mycmd)
 
 
 if (county_upper == 'OKALOOSA' and city_name == 'UNINCORPORATED'):
     # Delete city polygons
     mycmd = pg_psql + '"' + "DELETE FROM " + temp_table_name + " WHERE zngpy_zone IN ('CRESTVIEW','DESTIN','EGLIN AFB','FWB','LAUREL HILL','MARY ESTHER','NICEVILLE','SHALIMAR','VALPARAISO');" + '"'
-    print(" ")
-    print(mycmd)
+    print " "
+    print mycmd
     os.system(mycmd)
     
 if (county_upper == 'ORANGE' and city_name == 'UNINCORPORATED'):
     
     # Delete city polygons
     mycmd = pg_psql + '"' + "DELETE FROM " + temp_table_name + " WHERE zoning = 'CITY';" + '"'
-    print(" ")
-    print(mycmd)
+    print " "
+    print mycmd
     os.system(mycmd)
 
 if (county_upper == 'ORANGE' and city_name == 'ORLANDO'):
     
     # Delete city polygons
     mycmd = pg_psql + '"' + "DELETE FROM " + temp_table_name + " WHERE zoning = 'UNINCORPORATED';" + '"'
-    print(" ")
-    print(mycmd)
+    print " "
+    print mycmd
     os.system(mycmd)     
 
 if (county_upper == 'OSCEOLA' and city_name == 'ST_CLOUD'):
@@ -357,7 +357,7 @@ if (county_upper == 'OSCEOLA' and city_name == 'ST_CLOUD'):
         """ + select_col_list + """;
     """
 
-    print(sql)
+    print sql
     cursor.execute(sql)
     connection.commit()    
     
@@ -369,7 +369,7 @@ if (county_upper == 'OSCEOLA' and city_name == 'ST_CLOUD'):
     FROM """ + temp_table_name + """_dissolve;
     """
 
-    print(sql)
+    print sql
     cursor.execute(sql)
     connection.commit()  
     
@@ -378,16 +378,16 @@ if (county_upper == 'OSCEOLA' and city_name == 'UNINCORPORATED'):
     
     # Delete city polygons
     mycmd = pg_psql + '"' + "DELETE FROM " + temp_table_name + " WHERE prim_zon = 'INCORP';" + '"'
-    print(" ")
-    print(mycmd)
+    print " "
+    print mycmd
     os.system(mycmd)
 
 if (county_upper == 'PASCO' and city_name == 'UNINCORPORATED'):
     
     # Delete city polygons
     mycmd = pg_psql + '"' + "DELETE FROM " + temp_table_name + " WHERE zn_type in ('NPR','DC','PR','ZH','SA');" + '"'
-    print(" ")
-    print(mycmd)
+    print " "
+    print mycmd
     os.system(mycmd)
     
 # Putnam raw data can be pulled from AGS Server
@@ -396,23 +396,23 @@ if (county_upper == 'PUTNAM' and city_name == 'UNINCORPORATED'):
     
     # Delete city polygons
     mycmd = pg_psql + '"' + "DELETE FROM " + temp_table_name + " WHERE zoning = 'SA';" + '"'
-    print(" ")
-    print(mycmd)
+    print " "
+    print mycmd
     os.system(mycmd)
 
 if (county_upper == 'SANTA_ROSA' and city_name == 'UNINCORPORATED'):
     # Delete city polygons
     mycmd = pg_psql + '"' + "DELETE FROM " + temp_table_name + " WHERE district IN ('CITY');" + '"'
-    print(" ")
-    print(mycmd)
+    print " "
+    print mycmd
     os.system(mycmd)
     
 if (county_upper == 'SARASOTA' and city_name == 'UNINCORPORATED'):
     
     # Delete city polygons
     mycmd = pg_psql + '"' + "DELETE FROM " + temp_table_name + " WHERE zoningcode IN ('LONGBOAT','NORTH PORT','SARASOTA','VENICE');" + '"'
-    print(" ")
-    print(mycmd)
+    print " "
+    print mycmd
     os.system(mycmd)
     
 if (county_upper == 'SEMINOLE' and city_name == 'CASSELBERRY'):
@@ -432,7 +432,7 @@ if (county_upper == 'SEMINOLE' and city_name == 'CASSELBERRY'):
         """ + select_col_list + """;
     """
 
-    print(sql)
+    print sql
     cursor.execute(sql)
     connection.commit()    
     
@@ -444,7 +444,7 @@ if (county_upper == 'SEMINOLE' and city_name == 'CASSELBERRY'):
     FROM """ + temp_table_name + """_dissolve;
     """
 
-    print(sql)
+    print sql
     cursor.execute(sql)
     connection.commit()   
 
@@ -466,7 +466,7 @@ if (county_upper == 'SEMINOLE' and city_name == 'LONGWOOD'):
         """ + select_col_list + """;
     """
 
-    print(sql)
+    print sql
     cursor.execute(sql)
     connection.commit()    
     
@@ -478,7 +478,7 @@ if (county_upper == 'SEMINOLE' and city_name == 'LONGWOOD'):
     FROM """ + temp_table_name + """_dissolve;
     """
 
-    print(sql)
+    print sql
     cursor.execute(sql)
     connection.commit()  
 
@@ -500,7 +500,7 @@ if (county_upper == 'SEMINOLE' and city_name == 'OVIEDO1'):
         """ + select_col_list + """;
     """
 
-    print(sql)
+    print sql
     cursor.execute(sql)
     connection.commit()    
     
@@ -512,7 +512,7 @@ if (county_upper == 'SEMINOLE' and city_name == 'OVIEDO1'):
     FROM """ + temp_table_name + """_dissolve;
     """
 
-    print(sql)
+    print sql
     cursor.execute(sql)
     connection.commit() 
     
@@ -533,7 +533,7 @@ if (county_upper == 'SEMINOLE' and city_name == 'SANFORD'):
         """ + select_col_list + """;
     """
 
-    print(sql)
+    print sql
     cursor.execute(sql)
     connection.commit()    
     
@@ -545,7 +545,7 @@ if (county_upper == 'SEMINOLE' and city_name == 'SANFORD'):
     FROM """ + temp_table_name + """_dissolve;
     """
 
-    print(sql)
+    print sql
     cursor.execute(sql)
     connection.commit() 
     
@@ -567,7 +567,7 @@ if (county_upper == 'SEMINOLE' and city_name == 'WINTER_SPRINGS'):
         """ + select_col_list + """;
     """
 
-    print(sql)
+    print sql
     cursor.execute(sql)
     connection.commit()    
     
@@ -579,7 +579,7 @@ if (county_upper == 'SEMINOLE' and city_name == 'WINTER_SPRINGS'):
     FROM """ + temp_table_name + """_dissolve;
     """
 
-    print(sql)
+    print sql
     cursor.execute(sql)
     connection.commit() 
     
@@ -587,8 +587,8 @@ if (county_upper == 'ST_JOHNS' and city_name == 'UNINCORPORATED'):
     
     # Delete city polygons
     mycmd = pg_psql + '"' + "DELETE FROM " + temp_table_name + " WHERE zoning = 'SA';" + '"'
-    print(" ")
-    print(mycmd)
+    print " "
+    print mycmd
     os.system(mycmd)
 
 # This produces a TONNN of slivers - take another look to see if we can eliminate that
@@ -609,7 +609,7 @@ if (county_upper == 'ST_LUCIE' and city_name == 'UNINCORPORATED11'):
         """ + select_col_list + """;
     """
 
-    print(sql)
+    print sql
     cursor.execute(sql)
     connection.commit()    
     
@@ -621,7 +621,7 @@ if (county_upper == 'ST_LUCIE' and city_name == 'UNINCORPORATED11'):
     FROM """ + temp_table_name + """_dissolve;
     """
 
-    print(sql)
+    print sql
     cursor.execute(sql)
     connection.commit() 
     
@@ -629,61 +629,61 @@ if (county_upper == 'VOLUSIA' and city_name == 'UNINCORPORATED'):
     
     # Delete city polygons
     mycmd = pg_psql + '"' + "DELETE FROM " + temp_table_name + " WHERE zoncode = '999';" + '"'
-    print(" ")
-    print(mycmd)
+    print " "
+    print mycmd
     os.system(mycmd)  
 
 if (county_upper == 'WALTON' and city_name == 'UNINCORPORATED'):
     
     # Delete city polygons
     mycmd = pg_psql + '"' + "DELETE FROM " + temp_table_name + " WHERE zone_class = 'Municipal';" + '"'
-    print(" ")
-    print(mycmd)
+    print " "
+    print mycmd
     os.system(mycmd)     
     
 # -----------------------------------------
 
 mycmd = pg_psql + '"CREATE TABLE ' + temp_table_name + '_2 (zon_code text, zon_code2 text, zon_desc text, zon_gen text, ord_num text, city_name text, county_name text, \
     notes text, the_geom geometry) ;"'
-print(" ")
-print(mycmd)
+print " "
+print mycmd
 os.system(mycmd)
 
 
 # Load raw data into standard table
 mycmd = pg_psql + '"INSERT INTO ' + temp_table_name + '_2 (zon_code, zon_code2, zon_desc, zon_gen, ord_num, city_name, county_name, notes, the_geom) SELECT ' + zon_code_col + ',' + zon_code2_col + ',' + zon_desc_col + ',' + zon_gen_col + ',' + ord_num_col + ",'" + city_name + "','" + county_upper + "'," + notes_col + ', wkb_geometry FROM ' + temp_table_name + ';"'
-print(" ")
-print(mycmd)
+print " "
+print mycmd
 os.system(mycmd)
 
 # Bay special processing
 if (county_upper == 'BAY'):
     mycmd = pg_psql + '"' + "UPDATE " + temp_table_name + "_2 SET city_name = 'CALLAWAY' WHERE zon_code2 = '2';" + '"'
-    print(mycmd)
+    print mycmd
     os.system(mycmd)   
 
     mycmd = pg_psql + '"' + "UPDATE " + temp_table_name + "_2 SET city_name = 'LYNN HAVEN' WHERE zon_code2 = '3';" + '"'
-    print(mycmd)
+    print mycmd
     os.system(mycmd)
 
     mycmd = pg_psql + '"' + "UPDATE " + temp_table_name + "_2 SET city_name = 'MEXICO BEACH' WHERE zon_code2 = '4';" + '"'
-    print(mycmd)
+    print mycmd
     os.system(mycmd)
     
     mycmd = pg_psql + '"' + "UPDATE " + temp_table_name + "_2 SET city_name = 'PANAMA CITY' WHERE zon_code2 = '5';" + '"'
-    print(mycmd)
+    print mycmd
     os.system(mycmd)
     
     mycmd = pg_psql + '"' + "UPDATE " + temp_table_name + "_2 SET city_name = 'PANAMA CITY BEACH' WHERE zon_code2 = '6';" + '"'
-    print(mycmd)
+    print mycmd
     os.system(mycmd)
     
     mycmd = pg_psql + '"' + "UPDATE " + temp_table_name + "_2 SET city_name = 'PARKER' WHERE zon_code2 = '7';" + '"'
-    print(mycmd)
+    print mycmd
     os.system(mycmd)
     
     mycmd = pg_psql + '"' + "UPDATE " + temp_table_name + "_2 SET city_name = 'SPRINGFIELD' WHERE zon_code2 = '8';" + '"'
-    print(mycmd)
+    print mycmd
     os.system(mycmd)
 
     #UPDATE temp_table_name SET city_name = 'UNINCORPORATED' WHERE county_name = 'BAY' and zon_code2 = '1';
@@ -694,34 +694,34 @@ if (county_upper == 'MIAMI-DADE' and city_name == 'INCORPORATED'):
     
     # move city name to proper column
     mycmd = pg_psql + '"' + "UPDATE zoning SET city_name = zon_code2 WHERE county_name = 'MIAMI-DADE' and city_name != 'UNINCORPORATED';" + '"'
-    print(" ")
-    print(mycmd)
+    print " "
+    print mycmd
     os.system(mycmd)
 
     # clear city name from old column
     mycmd = pg_psql + '"' + "UPDATE zoning SET zon_code2 = null WHERE county_name = 'MIAMI-DADE' and city_name != 'UNINCORPORATED';" + '"'
-    print(" ")
-    print(mycmd)
+    print " "
+    print mycmd
     os.system(mycmd) 
 
 # Delete existing data from zoning
 mycmd = pg_psql + '" DELETE FROM zoning WHERE city_name = ' + "'" + city_name + "' and county_name = '" + county_upper + "'" + ';"'
-print(" ")
-print(mycmd)
+print " "
+print mycmd
 os.system(mycmd)
 
 # Bay county special processing
 if (county_upper == 'BAY'):
     mycmd = pg_psql + '" DELETE FROM zoning WHERE city_name IN (\'CALLAWAY\',\'LYNN HAVEN\',\'MEXICO BEACH\',\'PANAMA CITY\',\'PANAMA CITY BEACH\',\'PARKER\',\'SPRINGFIELD\') and county_name = \'BAY\';"'
-    print(" ")
-    print(mycmd)
+    print " "
+    print mycmd
     os.system(mycmd)
 
 # Load raw data into standard table
 mycmd = pg_psql + '"INSERT INTO zoning (zon_code, zon_code2, zon_desc, zon_gen, ord_num, city_name, county_name, notes, the_geom) \
     SELECT zon_code, zon_code2, zon_desc, zon_gen, ord_num, city_name, county_name, notes, the_geom FROM ' + temp_table_name + '_2;"'
-print(" ")
-print(mycmd)
+print " "
+print mycmd
 os.system(mycmd)
 
 
@@ -730,34 +730,34 @@ os.system(mycmd)
 # DUMP TO BACKUP FILE
 # =========================================
 mycmd = 'pg_dump --port 5432 --username postgres --format custom --verbose --file "/var/www/apps/mapwise/htdocs/x342/' + temp_table_name + '.backup" --table "\\"temp\\".\\"' + temp_table_name + '_2\\"" gisdev'
-print(" ")
-print(mycmd)
+print " "
+print mycmd
 os.system(mycmd)
 
 
 # =========================================
 # RESTORE BACKUP FILE ON SAUNDERS SERVER
 # =========================================
-print(" ")
-print("----- SCRIPT to update on server -----")
-print(" ")
-print(" ")
-print('pg_restore -p 5432 -U postgres -d gislib -v "/home/bmay/incoming/' + temp_table_name + '.backup"')
+print " "
+print "----- SCRIPT to update on server -----"
+print " "
+print " "
+print 'pg_restore -p 5432 -U postgres -d gislib -v "/home/bmay/incoming/' + temp_table_name + '.backup"'
 # C:\"Program Files (x86)"\PostgreSQL\9.1\bin\pg_restore.exe -h localhost -p 5433 -U postgres -d postgis -v "C:\ftp_filezilla\ols\incoming\raw_flu_charlotte_unincorp.backup
-print(" ")
+print " "
 
 # Delete existing data from zoning
-print('psql -p 5432 -U postgres -d gislib -c "DELETE FROM zoning WHERE city_name = ' + "'" + city_name + "' and county_name = '" + county_upper + "'" + ';"')
+print 'psql -p 5432 -U postgres -d gislib -c "DELETE FROM zoning WHERE city_name = ' + "'" + city_name + "' and county_name = '" + county_upper + "'" + ';"'
 # Miami-Dade special case
 if (county_upper == 'MIAMI-DADE' and city_name == 'INCORPORATED'):
-    print('psql -p 5432 -U postgres -d gislib -c "DELETE FROM zoning WHERE county_name = \'MIAMI-DADE\';"')
-print(" ")
+    print 'psql -p 5432 -U postgres -d gislib -c "DELETE FROM zoning WHERE county_name = \'MIAMI-DADE\';"'
+print " "
 
 # Load raw data into standard table and project geometry (transform)
 
-print("""psql -d gislib -U postgres -p 5432 -c "INSERT INTO zoning (zon_code,zon_code2,zon_desc,zon_gen,ord_num,city_name,county_name,notes,the_geom) 
-SELECT zon_code, zon_code2, zon_desc, zon_gen, ord_num, city_name, county_name, notes, the_geom FROM """ + temp_table_name + """_2;" """)
-print(" ")
+print """psql -d gislib -U postgres -p 5432 -c "INSERT INTO zoning (zon_code,zon_code2,zon_desc,zon_gen,ord_num,city_name,county_name,notes,the_geom) 
+SELECT zon_code, zon_code2, zon_desc, zon_gen, ord_num, city_name, county_name, notes, the_geom FROM """ + temp_table_name + """_2;" """
+print " "
 
 #print 'psql -d gislib -U postgres -p 5432 -c "INSERT INTO zoning (zon_code,zon_code2,zon_desc,zon_gen,ord_num,city_name,county_name,notes,the_geom) SELECT ' + zon_code_col + ',' + zon_code2_col + ',' + zon_desc_col + ',' + zon_gen_col + ',' + ord_num_col + ",'" + city_name + "','" + county_upper + "'," + notes_col + ', wkb_geometry FROM ' + temp_table_name + ';"'
 
@@ -767,21 +767,21 @@ if (county_upper == 'MIAMI-DADE' and city_name == 'INCORPORATED'):
     
     # move city name to proper column
     mycmd = 'psql -p 5432 -U postgres -d gislib -c "UPDATE zoning SET city_name = zon_code2 WHERE county_name = \'MIAMI-DADE\' and city_name != \'UNINCORPORATED\';"'
-    print(" ")
-    print(mycmd)
+    print " "
+    print mycmd
 
     # clear city name from old column
     mycmd = 'psql -p 5432 -U postgres -d gislib -c "UPDATE zoning SET zon_code2 = null WHERE county_name = \'MIAMI-DADE\' and city_name != \'UNINCORPORATED\';"'
-    print(" ")
-    print(mycmd)
-print(" ")
+    print " "
+    print mycmd
+print " "
 
-print('psql -d gislib -U postgres -p 5432 -c "DROP TABLE ' + temp_table_name + '_2;"')
+print 'psql -d gislib -U postgres -p 5432 -c "DROP TABLE ' + temp_table_name + '_2;"'
 # C:\"Program Files (x86)"\PostgreSQL\9.1\bin\psql -d postgis -U postgres -c "DROP TABLE raw_flu_charlotte_unified;"
-print(" ")
-print(" ")
-print("----- END SCRIPT to update on server -----")
-print(" ")
+print " "
+print " "
+print "----- END SCRIPT to update on server -----"
+print " "
 
 #==============================================================================
 # Write batch file to run update commands

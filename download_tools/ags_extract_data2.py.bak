@@ -15,7 +15,7 @@
 #
 
 # Import needed modules
-import sys,os,fileinput,string,math,psycopg2,io,datetime,urllib.request,urllib.parse,urllib.error,urllib.request,urllib.error,urllib.parse,json,shutil,time
+import sys,os,fileinput,string,math,psycopg2,StringIO,datetime,urllib,urllib2,json,shutil,time
 import psycopg2.extras
 
 #
@@ -40,7 +40,7 @@ try:
         field_names = '*'
     
 except:
-    print(msgUsage)
+    print msgUsage
     sys.exit(0)
 
 
@@ -60,8 +60,8 @@ sql = """set work_mem = '2000MB';"""
 cursor.execute(sql)
 connection.commit()
 
-print(" ")
-print(" START layer extract from AGS \n")
+print " "
+print " START layer extract from AGS \n"
 
 #-----------------------------------------------------------------------------------------
 # Get data info from m_gis_data_catalog_main table
@@ -95,7 +95,7 @@ connection.close()
 # Set working directory
     
 os.chdir(sys_raw_folder)
-print('CWD: ', os.getcwd())
+print 'CWD: ', os.getcwd()
 
 
 #-----------------------------------------------------------------------------------------
@@ -112,22 +112,22 @@ out_file = out_file_file + ".geojson"
 #if delete_existing == 'DELETE' and not (os.path.isfile(out_file)):
 
 # Get the data
-print('\n Grabbing GeoJson data from AGS - ' + layer_url + ' ... \n')
+print '\n Grabbing GeoJson data from AGS - ' + layer_url + ' ... \n'
 myCmd = 'esri2geojson ' + layer_url + ' ' + out_file 
-print(myCmd)
+print myCmd
 os.system(myCmd)
-print('\n Finished Grabbing Data. \n')
+print '\n Finished Grabbing Data. \n'
 
 
 
   
 # Convert json to shp
 # Note: esri2geojson is always going to spit out 4326 projection, because it follows the geojson standard.
-print('\n Converting json to shapefile... \n')
+print '\n Converting json to shapefile... \n'
 myCmd = 'ogr2ogr -overwrite -a_srs "EPSG:4326" -F "ESRI Shapefile" ' + out_file_file + '.shp ' + out_file_file + '.geojson ' 
-print(myCmd)
+print myCmd
 os.system(myCmd)
-print('\n Finished converting json to shapefile... \n')
+print '\n Finished converting json to shapefile... \n'
     
     
 

@@ -33,7 +33,7 @@ try:
     county_capital = county_upper.capitalize() 
 
 except:
-    print('missing county')
+    print 'missing county'
     sys.exit(0)
 
 # /srv/mapwise_dev/county/walton/processing/database/current/source_data/
@@ -68,13 +68,13 @@ if (county_upper in qpublic_counties) :
         county_capital = 'SantaRosa'
     
     mycmd = ''.join(["cat ",pathProcessing,county_capital,"*.csv | sed '/",search_field,"/Id' > ",pathProcessing,"sales_current_temp.csv"])
-    print('Executing: ', mycmd)
+    print 'Executing: ', mycmd
     os.system(mycmd)
     
     # since work is being done on text files in MacOS, must convert files to unix for proper line endings
     # mix and match of line endings - postgres loader no likey
     mycmd = 'dos2unix -n ' + pathProcessing + 'sales_current_temp.csv ' + pathProcessing + 'sales_current.csv'
-    print('Executing: ', mycmd)
+    print 'Executing: ', mycmd
     os.system(mycmd)
     
     
@@ -108,7 +108,7 @@ if (county_upper in grizzly_counties) :
     else:
         mycmd = ''.join(["cat ",pathProcessing,county_lower,"_sales_2*.txt | sed '/",search_field,"/Id' > ",pathProcessing,"sales_dnld_2014-01-01_current_temp.txt"])
                 
-    print('Executing: ', mycmd)
+    print 'Executing: ', mycmd
     os.system(mycmd)
 
     # Now mailing files
@@ -121,17 +121,17 @@ if (county_upper in grizzly_counties) :
         mycmd = ''.join(["cat ",pathProcessing,county_lower,"_mailing_2*.txt | sed '/",search_field,"/Id' > ",pathProcessing,"sales_owner_mailing_dnld_2014-01-01_current_temp.txt"])
     
     
-    print('Executing: ', mycmd)
+    print 'Executing: ', mycmd
     os.system(mycmd)
 
     # since work is being done on text files in MacOS, must convert files to unix for proper line endings
     # mix and match of line endings - postgres loader no likey
     mycmd = 'dos2unix -n ' + pathProcessing + 'sales_dnld_2014-01-01_current_temp.txt ' + pathProcessing + 'sales_dnld_2014-01-01_current.txt'
-    print('Executing: ', mycmd)
+    print 'Executing: ', mycmd
     os.system(mycmd)
     
     mycmd = 'dos2unix -n ' + pathProcessing + 'sales_owner_mailing_dnld_2014-01-01_current_temp.txt ' + pathProcessing + 'sales_owner_mailing_dnld_2014-01-01_current.txt'
-    print('Executing: ', mycmd)
+    print 'Executing: ', mycmd
     os.system(mycmd)
     
 else:
