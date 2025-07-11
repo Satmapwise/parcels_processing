@@ -177,8 +177,8 @@ entities = {
 
 class Config:
     def __init__(self, 
-                 test_mode=True, debug=False, isolate_logs=False,
-                 run_download=True, run_metadata=True, run_processing=True, run_upload=True,
+                 test_mode=False, debug=True, isolate_logs=False,
+                 run_download=True, run_metadata=True, run_processing=False, run_upload=False,
                  generate_summary=False, remote_enabled=False, remote_execute=False
                  ):
         """
@@ -230,7 +230,7 @@ class Config:
 
 # Global config object
 CONFIG = Config()
-TEST_DATA = True
+TEST_DATA = False
 
 class LayerProcessingError(Exception):
     """Base exception for all processing errors in this script."""
@@ -1148,6 +1148,11 @@ def resolve_work_dir(layer: str, entity: str):
             work_dir = os.path.join('data', layer, county, city)
         return work_dir, county, city
     else:
+        if layer == 'zoning' and entity == 'hillsborough_plant_city':
+            county = 'hillsborough'
+            city = 'plant_city'
+            work_dir = '/mnt/sdb/datascrub/08_Land_Use_and_Zoning/zoning/florida/county/hillsborough/current/source_data/plant_city'
+            return work_dir, county, city
         template = WORK_DIR_PATTERNS.get(layer, os.path.join('data', '{layer}', '{county}', '{city}'))
         needs_city = '{city}' in template
         if needs_city:
