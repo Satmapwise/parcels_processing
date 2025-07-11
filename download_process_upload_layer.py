@@ -178,7 +178,7 @@ entities = {
 class Config:
     def __init__(self, 
                  test_mode=False, debug=True, isolate_logs=False,
-                 run_download=True, run_metadata=True, run_processing=False, run_upload=False,
+                 run_download=False, run_metadata=True, run_processing=True, run_upload=True,
                  generate_summary=False, remote_enabled=False, remote_execute=False
                  ):
         """
@@ -668,16 +668,16 @@ def upload_layer(results):
 
     logging.info("Starting upload process …")
 
-    if not CONFIG.remote_enabled:
-        logging.info("Remote upload disabled via configuration; skipping.")
-        return
-
     # Filter results that contain an upload plan
     items = [r for r in results if r.get('status') == 'success' and r.get('upload_plan')]
 
-    # if not items:
-    #     logging.info("No upload plans found in results; nothing to do.")
-    #     return
+    if not items:
+        logging.info("No upload plans found in results; nothing to do.")
+        return
+    
+    if not CONFIG.remote_enabled:
+        logging.info("Remote upload disabled via configuration; skipping.")
+        return
 
     for host in CONFIG.ssh_hosts:
         logging.info(f"Connecting to remote host {host} …")
