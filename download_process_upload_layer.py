@@ -179,7 +179,7 @@ class Config:
     def __init__(self, 
                  test_mode=False, debug=True, isolate_logs=False,
                  run_download=False, run_metadata=True, run_processing=True, run_upload=True,
-                 generate_summary=False, remote_enabled=True, remote_execute=False
+                 generate_summary=False, remote_enabled=False, remote_execute=False
                  ):
         """
         Configuration class to hold script settings.
@@ -691,6 +691,7 @@ def upload_layer(results):
     if not items:
         logging.info("No upload plans found in results; nothing to do.")
         return
+    logging.debug(f"Upload plans found: {items}")
     
     if not CONFIG.remote_enabled:
         logging.info("Remote upload disabled via configuration; skipping.")
