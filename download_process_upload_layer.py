@@ -178,8 +178,8 @@ entities = {
 class Config:
     def __init__(self, 
                  test_mode=False, debug=True, isolate_logs=False,
-                 run_download=True, run_metadata=True, run_processing=True, run_upload=False,
-                 generate_summary=False, remote_enabled=False, remote_execute=False
+                 run_download=False, run_metadata=True, run_processing=True, run_upload=True,
+                 generate_summary=False, remote_enabled=True, remote_execute=False
                  ):
         """
         Configuration class to hold script settings.
@@ -453,6 +453,14 @@ def _looks_like_download(cmd_list):
     return first in {"ags_extract_data2.py", "download_data.py"}
 
 
+def _looks_like_update(cmd_list):
+    """Return True if *cmd_list* is an update script that might generate upload plans."""
+    if not cmd_list:
+        return False
+    first = os.path.basename(cmd_list[1])
+    return "update" in first and first.endswith(".py")
+
+
 def _validate_download(work_dir, logger):
     """
     Ensure at least one recently-created *.shp* exists in *work_dir*.
@@ -558,6 +566,7 @@ def download_process_layer(layer, queue):
             metadata = {}
             processing_started = False
             shp_path = None
+            update_script_output = None  # Track output from update scripts
             for cmd in manifest_entry:
 
                 # Placeholder 'ogrinfo' → run metadata extraction helper
@@ -616,7 +625,13 @@ def download_process_layer(layer, queue):
                         if processing_started == False:
                             entity_logger.debug(f"Running processing for {layer}/{entity}")
                             processing_started = True
-                        stdout = _run_command(cmd_list, work_dir, entity_logger) # Runs all other commands
+                        
+                        # Check if this is an update script that might generate upload plans
+                        if _looks_like_update(cmd_list):
+                            entity_logger.debug(f"Running update script for {layer}/{entity}")
+                            update_script_output = _run_command(cmd_list, work_dir, entity_logger)
+                        else:
+                            stdout = _run_command(cmd_list, work_dir, entity_logger) # Runs all other commands
                     else:
                         if processing_started == False:
                             entity_logger.info(f"Skipping processing for {layer}/{entity} (disabled in config)")
@@ -640,15 +655,17 @@ def download_process_layer(layer, queue):
             upload_plan = None  # will be filled when parse_upload_block triggers
 
             # After executing all commands, try to parse any upload plan printed
-            # from the log of the last command.
-            # stdout from last executed command is still in 'stdout' variable if set
+            # from the update script output (if available) or the last command output
             try:
-                if 'stdout' in locals() and stdout:
-                    parsed = parse_upload_block(stdout)
+                # Prefer update script output for upload plan parsing
+                output_to_parse = update_script_output if update_script_output else (stdout if 'stdout' in locals() else None)
+                if output_to_parse:
+                    parsed = parse_upload_block(output_to_parse)
                     if parsed:
                         upload_plan = parsed
-            except Exception:
-                pass
+                        entity_logger.debug(f"Upload plan parsed from {'update script' if update_script_output else 'last command'} output")
+            except Exception as e:
+                entity_logger.debug(f"Failed to parse upload block: {e}")
 
             result_entry['upload_plan'] = upload_plan
 
