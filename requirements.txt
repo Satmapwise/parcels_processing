@@ -1,6 +1,6 @@
 pyshp==2.3.1
 requests>=2.31
-psycopg2-binary
+psycopg2
 paramiko
 requests
-psycopg2-binary
+esridump
