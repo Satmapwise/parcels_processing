@@ -184,7 +184,7 @@ entities = {
 class Config:
     def __init__(self, 
                  test_mode=False, debug=True, isolate_logs=True,
-                 run_download=False, run_metadata=True, run_processing=True, 
+                 run_download=True, run_metadata=True, run_processing=True, 
                  generate_json=True, run_upload=False, remote_enabled=False, remote_execute=False,
                  generate_summary=True, process_anyway=True
                  ):
