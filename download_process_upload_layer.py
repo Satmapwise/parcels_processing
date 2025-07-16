@@ -509,36 +509,83 @@ def _looks_like_update(cmd_list):
     return "update" in first and first.endswith(".py")
 
 
-def _validate_download(work_dir, logger):
+def _get_directory_state(work_dir):
     """
-    Ensure at least one recently downloaded file exists in *work_dir*.
-    "Recent" means modified within the last 24 hours.
-    This validates that a download actually occurred, but doesn't identify specific shapefiles.
-    Raises DownloadError if no recent download is found.
+    Get a snapshot of the current directory state (filenames and modification times).
+    Returns a dict mapping filename to modification timestamp.
     """
-    now = datetime.now()
-    day_ago = now - timedelta(days=1)
+    state = {}
+    try:
+        for filename in os.listdir(work_dir):
+            file_path = os.path.join(work_dir, filename)
+            try:
+                mtime = os.path.getmtime(file_path)
+                state[filename] = mtime
+            except OSError:
+                # Skip files we can't access
+                continue
+    except OSError:
+        # Directory doesn't exist or can't be accessed
+        pass
+    return state
 
-    # Check if any files were downloaded recently (any file type)
-    recent_downloads = []
-    for filename in os.listdir(work_dir):
-        file_path = os.path.join(work_dir, filename)
-        try:
-            mtime = os.path.getmtime(file_path)
-            mod_time = datetime.fromtimestamp(mtime)
-            if mod_time >= day_ago:
-                recent_downloads.append((mod_time, filename))
-        except OSError:
-            continue
 
-    if CONFIG.run_download == True and not recent_downloads:
-        raise DownloadError("No files found modified within the last 24 hours to indicate recent download.", layer=None, entity=None)
-
-    if CONFIG.run_download == True and recent_downloads:
-        recent_files_str = ", ".join([f[1] for f in sorted(recent_downloads, key=lambda x: x[0], reverse=True)[:3]])
-        logger.debug(f"Download validation passed – found recent files: {recent_files_str}")
+def _validate_download(work_dir, logger, before_state=None):
+    """
+    Validate that a download occurred by comparing directory state.
     
-    return True
+    If before_state is provided, compare against it to detect any changes.
+    Otherwise, fall back to checking for files modified in the last 24 hours.
+    
+    This validates that a download actually occurred, but doesn't identify specific shapefiles.
+    Raises DownloadError if no download is detected.
+    """
+    if before_state is not None:
+        # Compare against pre-download state
+        current_state = _get_directory_state(work_dir)
+        changed_files = []
+        
+        # Check for new or modified files
+        for filename, current_mtime in current_state.items():
+            if filename not in before_state:
+                changed_files.append(f"{filename} (new)")
+            elif current_mtime != before_state[filename]:
+                changed_files.append(f"{filename} (modified)")
+        
+        if not changed_files:
+            raise DownloadError("No files changed during download", layer=None, entity=None)
+        
+        changed_files_str = ", ".join(changed_files[:3])  # Show first 3 changes
+        if len(changed_files) > 3:
+            changed_files_str += f" and {len(changed_files) - 3} more"
+        
+        logger.debug(f"Download validation passed - found changed files: {changed_files_str}")
+        return True
+    else:
+        # Fallback to 24-hour check for backward compatibility
+        now = datetime.now()
+        day_ago = now - timedelta(days=1)
+
+        # Check if any files were downloaded recently (any file type)
+        recent_downloads = []
+        for filename in os.listdir(work_dir):
+            file_path = os.path.join(work_dir, filename)
+            try:
+                mtime = os.path.getmtime(file_path)
+                mod_time = datetime.fromtimestamp(mtime)
+                if mod_time >= day_ago:
+                    recent_downloads.append((mod_time, filename))
+            except OSError:
+                continue
+
+        if CONFIG.run_download == True and not recent_downloads:
+            raise DownloadError("No files found modified within the last 24 hours to indicate recent download.", layer=None, entity=None)
+
+        if CONFIG.run_download == True and recent_downloads:
+            recent_files_str = ", ".join([f[1] for f in sorted(recent_downloads, key=lambda x: x[0], reverse=True)[:3]])
+            logger.debug(f"Download validation passed – found recent files: {recent_files_str}")
+        
+        return True
 
 
 def _find_shapefile(work_dir, logger):
@@ -680,6 +727,8 @@ def download_process_layer(layer, queue):
                     download_step_found = True  # Mark that we found a download step
                     if CONFIG.run_download == True:
                         entity_logger.debug(f"Running download for {layer}/{entity}")
+                        # Capture directory state BEFORE download
+                        before_state = _get_directory_state(work_dir)
                         try:
                             _run_command(cmd_list, work_dir, entity_logger)
                         except SkipEntityError as e:
@@ -687,7 +736,7 @@ def download_process_layer(layer, queue):
                             raise
                         if CONFIG.test_mode == False: # Only validate in non-test mode
                             try:
-                                _validate_download(work_dir, entity_logger)
+                                _validate_download(work_dir, entity_logger, before_state)
                             except DownloadError as de:
                                 raise DownloadError(str(de), layer, entity) from de
                         else:
