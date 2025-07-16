@@ -210,6 +210,17 @@
         ["python3", "/srv/tools/python/lib/update_zoning2.py", "hillsborough", "unincorporated"],
         ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.zoning_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'HILLSBOROUGH' and city_name = 'UNINCORPORATED'"]
       ],
+      "indian_river_unincorporated": [
+        ["python3", "/srv/tools/python/lib/ags_extract_data2.py", "zoning_indian_river_unincorporated", "delete", "15", "zoning,zoning_abv,comment,ordinance"],
+        "ogrinfo",
+        ["python3", "/srv/tools/python/lib/update_zoning2.py", "indian_river", "unincorporated"],
+        ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.zoning_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'INDIAN_RIVER' and city_name = 'UNINCORPORATED'"]
+      ],
+      "indian_river_vero_beach": [
+        "ogrinfo",
+        ["python3", "/srv/tools/python/lib/update_zoning2.py", "indian_river", "vero_beach"],
+        ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.zoning_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'INDIAN_RIVER' and city_name = 'VERO_BEACH'"]
+      ],
       "orange_apopka": [
         ["python3", "/srv/tools/python/lib/ags_extract_data2.py", "zoning_apopka", "delete", "15"],
         "ogrinfo",

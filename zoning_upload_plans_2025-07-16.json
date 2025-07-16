@@ -1,13 +1,13 @@
 {
-  "highlands_unincorporated": {
-    "basename": "raw_zon_highlands_unincorp",
-    "remote_backup": "/home/bmay/incoming/raw_zon_highlands_unincorp.backup",
-    "remote_bat": "/home/bmay/incoming/raw_zon_highlands_unincorp.bat",
+  "indian_river_unincorporated": {
+    "basename": "raw_zon_indian_river_unincorp",
+    "remote_backup": "/home/bmay/incoming/raw_zon_indian_river_unincorp.backup",
+    "remote_bat": "/home/bmay/incoming/raw_zon_indian_river_unincorp.bat",
     "commands": [
-      "pg_restore -p 5432 -U postgres -d gislib -v \"/home/bmay/incoming/raw_zon_highlands_unincorp.backup\"",
-      "psql -p 5432 -U postgres -d gislib -c \"DELETE FROM zoning WHERE city_name = 'UNINCORPORATED' and county_name = 'HIGHLANDS';\"",
+      "pg_restore -p 5432 -U postgres -d gislib -v \"/home/bmay/incoming/raw_zon_indian_river_unincorp.backup\"",
+      "psql -p 5432 -U postgres -d gislib -c \"DELETE FROM zoning WHERE city_name = 'UNINCORPORATED' and county_name = 'INDIAN_RIVER';\"",
       "psql -d gislib -U postgres -p 5432 -c \"INSERT INTO zoning (zon_code,zon_code2,zon_desc,zon_gen,ord_num,city_name,county_name,notes,the_geom)",
-      "psql -d gislib -U postgres -p 5432 -c \"DROP TABLE raw_zon_highlands_unincorp_2;\""
+      "psql -d gislib -U postgres -p 5432 -c \"DROP TABLE raw_zon_indian_river_unincorp_2;\""
     ]
   }
 }
