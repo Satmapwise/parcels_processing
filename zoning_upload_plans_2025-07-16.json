@@ -1,24 +1,24 @@
 {
-  "leon_county_unified": {
-    "basename": "raw_zon_leon_county_unified",
-    "remote_backup": "/home/bmay/incoming/raw_zon_leon_county_unified.backup",
-    "remote_bat": "/home/bmay/incoming/raw_zon_leon_county_unified.bat",
+  "martin_stuart": {
+    "basename": "raw_zon_martin_stuart",
+    "remote_backup": "/home/bmay/incoming/raw_zon_martin_stuart.backup",
+    "remote_bat": "/home/bmay/incoming/raw_zon_martin_stuart.bat",
     "commands": [
-      "pg_restore -p 5432 -U postgres -d gislib -v \"/home/bmay/incoming/raw_zon_leon_county_unified.backup\"",
-      "psql -p 5432 -U postgres -d gislib -c \"DELETE FROM zoning WHERE city_name = 'COUNTY_UNIFIED' and county_name = 'LEON';\"",
+      "pg_restore -p 5432 -U postgres -d gislib -v \"/home/bmay/incoming/raw_zon_martin_stuart.backup\"",
+      "psql -p 5432 -U postgres -d gislib -c \"DELETE FROM zoning WHERE city_name = 'STUART' and county_name = 'MARTIN';\"",
       "psql -d gislib -U postgres -p 5432 -c \"INSERT INTO zoning (zon_code,zon_code2,zon_desc,zon_gen,ord_num,city_name,county_name,notes,the_geom)",
-      "psql -d gislib -U postgres -p 5432 -c \"DROP TABLE raw_zon_leon_county_unified_2;\""
+      "psql -d gislib -U postgres -p 5432 -c \"DROP TABLE raw_zon_martin_stuart_2;\""
     ]
   },
-  "manatee_bradenton": {
-    "basename": "raw_zon_manatee_bradenton",
-    "remote_backup": "/home/bmay/incoming/raw_zon_manatee_bradenton.backup",
-    "remote_bat": "/home/bmay/incoming/raw_zon_manatee_bradenton.bat",
+  "marion_unincorporated": {
+    "basename": "raw_zon_marion_unincorp",
+    "remote_backup": "/home/bmay/incoming/raw_zon_marion_unincorp.backup",
+    "remote_bat": "/home/bmay/incoming/raw_zon_marion_unincorp.bat",
     "commands": [
-      "pg_restore -p 5432 -U postgres -d gislib -v \"/home/bmay/incoming/raw_zon_manatee_bradenton.backup\"",
-      "psql -p 5432 -U postgres -d gislib -c \"DELETE FROM zoning WHERE city_name = 'BRADENTON' and county_name = 'MANATEE';\"",
+      "pg_restore -p 5432 -U postgres -d gislib -v \"/home/bmay/incoming/raw_zon_marion_unincorp.backup\"",
+      "psql -p 5432 -U postgres -d gislib -c \"DELETE FROM zoning WHERE city_name = 'UNINCORPORATED' and county_name = 'MARION';\"",
       "psql -d gislib -U postgres -p 5432 -c \"INSERT INTO zoning (zon_code,zon_code2,zon_desc,zon_gen,ord_num,city_name,county_name,notes,the_geom)",
-      "psql -d gislib -U postgres -p 5432 -c \"DROP TABLE raw_zon_manatee_bradenton_2;\""
+      "psql -d gislib -U postgres -p 5432 -c \"DROP TABLE raw_zon_marion_unincorp_2;\""
     ]
   }
 }

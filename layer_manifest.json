@@ -332,6 +332,31 @@
         ["python3", "/srv/tools/python/lib/update_zoning2.py", "manatee", "unincorporated"],
         ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.zoning_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'MANATEE' and city_name = 'UNINCORPORATED'"]
       ],
+      "marion_ocala": [
+        "ogrinfo",
+        ["python3", "/srv/tools/python/lib/update_zoning2.py", "marion", "ocala"],
+        ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.zoning_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'MARION' and city_name = 'OCALA'"]
+      ],
+      "marion_unincorporated": [
+        ["python3", "/srv/tools/python/lib/ags_extract_data2.py", "zoning_marion", "delete", "15"],
+        "ogrinfo",
+        ["ogr2ogr", "-explodecollections", "zoning_marion_single.shp", "zoning_marion.shp"],
+        ["python3", "/srv/tools/python/lib/update_zoning2.py", "marion", "unincorporated"],
+        ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.zoning_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'MARION' and city_name = 'UNINCORPORATED'"]
+      ],
+      "martin_stuart": [
+        ["python3", "/srv/tools/python/lib/ags_extract_data2.py", "zoning_stuart", "delete", "15"],
+        "ogrinfo",
+        ["python3", "/srv/tools/python/lib/update_zoning2.py", "martin", "stuart"],
+        ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.zoning_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'MARTIN' and city_name = 'STUART'"]
+      ],
+      "martin_unincorporated": [
+        ["unzip", "-oj", "Zoning.zip"],
+        ["zip_rename_date.sh", "Zoning.zip"],
+        "ogrinfo",
+        ["python3", "/srv/tools/python/lib/update_zoning2.py", "martin", "unincorporated"],
+        ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.zoning_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'MARTIN' and city_name = 'UNINCORPORATED'"]
+      ],
       "orange_apopka": [
         ["python3", "/srv/tools/python/lib/ags_extract_data2.py", "zoning_apopka", "delete", "15"],
         "ogrinfo",
