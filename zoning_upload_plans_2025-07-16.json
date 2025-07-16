@@ -1068,5 +1068,38 @@
       "psql -d gislib -U postgres -p 5432 -c \"INSERT INTO zoning (zon_code,zon_code2,zon_desc,zon_gen,ord_num,city_name,county_name,notes,the_geom)",
       "psql -d gislib -U postgres -p 5432 -c \"DROP TABLE raw_zon_seminole_winter_springs_2;\""
     ]
+  },
+  "st_lucie_port_st_lucie": {
+    "basename": "raw_zon_st_lucie_port_st_lucie",
+    "remote_backup": "/home/bmay/incoming/raw_zon_st_lucie_port_st_lucie.backup",
+    "remote_bat": "/home/bmay/incoming/raw_zon_st_lucie_port_st_lucie.bat",
+    "commands": [
+      "pg_restore -p 5432 -U postgres -d gislib -v \"/home/bmay/incoming/raw_zon_st_lucie_port_st_lucie.backup\"",
+      "psql -p 5432 -U postgres -d gislib -c \"DELETE FROM zoning WHERE city_name = 'PORT_ST_LUCIE' and county_name = 'ST_LUCIE';\"",
+      "psql -d gislib -U postgres -p 5432 -c \"INSERT INTO zoning (zon_code,zon_code2,zon_desc,zon_gen,ord_num,city_name,county_name,notes,the_geom)",
+      "psql -d gislib -U postgres -p 5432 -c \"DROP TABLE raw_zon_st_lucie_port_st_lucie_2;\""
+    ]
+  },
+  "st_lucie_unincorporated": {
+    "basename": "raw_zon_st_lucie_unincorp",
+    "remote_backup": "/home/bmay/incoming/raw_zon_st_lucie_unincorp.backup",
+    "remote_bat": "/home/bmay/incoming/raw_zon_st_lucie_unincorp.bat",
+    "commands": [
+      "pg_restore -p 5432 -U postgres -d gislib -v \"/home/bmay/incoming/raw_zon_st_lucie_unincorp.backup\"",
+      "psql -p 5432 -U postgres -d gislib -c \"DELETE FROM zoning WHERE city_name = 'UNINCORPORATED' and county_name = 'ST_LUCIE';\"",
+      "psql -d gislib -U postgres -p 5432 -c \"INSERT INTO zoning (zon_code,zon_code2,zon_desc,zon_gen,ord_num,city_name,county_name,notes,the_geom)",
+      "psql -d gislib -U postgres -p 5432 -c \"DROP TABLE raw_zon_st_lucie_unincorp_2;\""
+    ]
+  },
+  "walton_unincorporated": {
+    "basename": "raw_zon_walton_unincorp",
+    "remote_backup": "/home/bmay/incoming/raw_zon_walton_unincorp.backup",
+    "remote_bat": "/home/bmay/incoming/raw_zon_walton_unincorp.bat",
+    "commands": [
+      "pg_restore -p 5432 -U postgres -d gislib -v \"/home/bmay/incoming/raw_zon_walton_unincorp.backup\"",
+      "psql -p 5432 -U postgres -d gislib -c \"DELETE FROM zoning WHERE city_name = 'UNINCORPORATED' and county_name = 'WALTON';\"",
+      "psql -d gislib -U postgres -p 5432 -c \"INSERT INTO zoning (zon_code,zon_code2,zon_desc,zon_gen,ord_num,city_name,county_name,notes,the_geom)",
+      "psql -d gislib -U postgres -p 5432 -c \"DROP TABLE raw_zon_walton_unincorp_2;\""
+    ]
   }
 }

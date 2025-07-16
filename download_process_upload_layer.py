@@ -326,7 +326,7 @@ def set_queue(layer, entities):
                 if not matches:
                     logging.warning(f"Pattern '{pattern}' matched no entities in manifest; skipping.")
                 else:
-                    logging.info(f"Pattern '{pattern}' expanded to {len(matches)} entities.")
+                    logging.info(f"Pattern '{pattern}' expanded to {len(matches)} entities: {matches}")
                     expanded.extend(matches)
             else:
                 expanded.append(pattern)
