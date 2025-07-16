@@ -555,6 +555,28 @@ def _looks_like_update(cmd_list):
     return "update" in first and first.endswith(".py")
 
 
+def _should_skip_when_no_download(cmd_list):
+    """Return True if command should be skipped when run_download=False."""
+    if not cmd_list:
+        return False
+    
+    # Commands that depend on files created by download steps
+    skip_commands = {
+        'unzip',      # Depends on zip files from download
+        'mv',         # Moving files that may not exist
+        'zip',        # Zipping files that may not exist
+        'zip_rename_date.sh',  # Depends on zip files
+        'ogr2ogr',    # May depend on files from download
+    }
+    
+    # Check if the command is in our skip list
+    if len(cmd_list) > 0:
+        cmd_name = os.path.basename(cmd_list[0])
+        return cmd_name in skip_commands
+    
+    return False
+
+
 def _get_directory_state(work_dir):
     """
     Get a snapshot of the current directory state (filenames and modification times).
@@ -798,6 +820,11 @@ def download_process_layer(layer, queue):
                         if processing_started == False:
                             logging.debug(f"Running processing for {layer}/{entity}")
                             processing_started = True
+                        
+                        # Check if command should be skipped when download is disabled
+                        if CONFIG.run_download == False and _should_skip_when_no_download(cmd_list):
+                            entity_logger.info(f"Skipping command {cmd_list[0]} (depends on download files)")
+                            continue
                         
                         # Check if this is an update script that might generate upload plans
                         if _looks_like_update(cmd_list):
