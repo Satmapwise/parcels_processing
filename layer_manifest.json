@@ -438,6 +438,89 @@
         "ogrinfo",
         ["python3", "/srv/tools/python/lib/update_zoning2.py", "pasco", "unincorporated"],
         ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.zoning_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'PASCO' and city_name = 'UNINCORPORATED'"]
+      ],
+      "pinellas_belleair": [
+        ["python3", "/srv/tools/python/lib/ags_extract_data2.py", "zoning_belleair", "delete", "15"],
+        "ogrinfo",
+        ["python3", "/srv/tools/python/lib/update_zoning2.py", "pinellas", "belleair"],
+        ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.zoning_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'PINELLAS' and city_name = 'BELLEAIR'"]
+      ],
+      "pinellas_clearwater": [
+        ["python3", "/srv/tools/python/lib/ags_extract_data2.py", "zoning_clearwater", "delete", "15"],
+        "ogrinfo",
+        ["python3", "/srv/tools/python/lib/update_zoning2.py", "pinellas", "clearwater"],
+        ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.zoning_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'PINELLAS' and city_name = 'CLEARWATER'"]
+      ],
+      "pinellas_dunedin": [
+        ["python3", "/srv/tools/python/lib/ags_extract_data2.py", "zoning_dunedin", "delete", "15"],
+        "ogrinfo",
+        ["ogr2ogr", "-explodecollections", "-t_srs", "EPSG:2882", "zoning_dunedin_2882.shp", "zoning_dunedin.shp"],
+        ["python3", "/srv/tools/python/lib/update_zoning2.py", "pinellas", "dunedin"],
+        ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.zoning_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'PINELLAS' and city_name = 'DUNEDIN'"]
+      ],
+      "pinellas_indian_rocks_beach": [
+        "ogrinfo",
+        ["python3", "/srv/tools/python/lib/update_zoning2.py", "pinellas", "indian_rocks_beach"],
+        ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.zoning_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'PINELLAS' and city_name = 'INDIAN_ROCKS_BEACH'"]
+      ],
+      "pinellas_indian_shores": [
+        "ogrinfo",
+        ["python3", "/srv/tools/python/lib/update_zoning2.py", "pinellas", "indian_shores"],
+        ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.zoning_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'PINELLAS' and city_name = 'INDIAN_SHORES'"]
+      ],
+      "pinellas_kenneth_city": [
+        "ogrinfo",
+        ["python3", "/srv/tools/python/lib/update_zoning2.py", "pinellas", "kenneth_city"],
+        ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.zoning_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'PINELLAS' and city_name = 'KENNETH_CITY'"]
+      ],
+      "pinellas_madeira_beach": [
+        "ogrinfo",
+        ["python3", "/srv/tools/python/lib/update_zoning2.py", "pinellas", "madeira_beach"],
+        ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.zoning_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'PINELLAS' and city_name = 'MADEIRA_BEACH'"]
+      ],
+      "pinellas_north_redington_beach": [
+        "ogrinfo",
+        ["python3", "/srv/tools/python/lib/update_zoning2.py", "pinellas", "north_redington_beach"],
+        ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.zoning_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'PINELLAS' and city_name = 'NORTH_REDINGTON_BEACH'"]
+      ],
+      "pinellas_pinellas_park": [
+        ["python3", "/srv/tools/python/lib/ags_extract_data2.py", "zoning_pinellas_park", "delete", "15"],
+        "ogrinfo",
+        ["ogr2ogr", "-explodecollections", "-t_srs", "EPSG:2882", "zoning_pinellas_park_2882.shp", "zoning_pinellas_park.shp"],
+        ["python3", "/srv/tools/python/lib/update_zoning2.py", "pinellas", "pinellas_park"],
+        ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.zoning_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'PINELLAS' and city_name = 'PINELLAS_PARK'"]
+      ],
+      "pinellas_redington_shores": [
+        "ogrinfo",
+        ["python3", "/srv/tools/python/lib/update_zoning2.py", "pinellas", "redington_shores"],
+        ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.zoning_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'PINELLAS' and city_name = 'REDINGTON_SHORES'"]
+      ],
+      "pinellas_seminole": [
+        ["python3", "/srv/tools/python/lib/ags_extract_data2.py", "zoning_seminole", "delete", "15"],
+        "ogrinfo",
+        ["python3", "/srv/tools/python/lib/update_zoning2.py", "pinellas", "seminole"],
+        ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.zoning_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'PINELLAS' and city_name = 'SEMINOLE'"]
+      ],
+      "pinellas_south_pasadena": [
+        "ogrinfo",
+        ["python3", "/srv/tools/python/lib/update_zoning2.py", "pinellas", "south_pasadena"],
+        ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.zoning_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'PINELLAS' and city_name = 'SOUTH_PASADENA'"]
+      ],
+      "pinellas_st_petersburg": [
+        ["python3", "/srv/tools/python/lib/ags_extract_data2.py", "zoning_st_petersburg", "delete", "15"],
+        "ogrinfo",
+        ["python3", "/srv/tools/python/lib/update_zoning2.py", "pinellas", "st_petersburg"],
+        ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.zoning_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'PINELLAS' and city_name = 'ST_PETERSBURG'"]
+      ],
+      "pinellas_treasure_island": [
+        "ogrinfo",
+        ["python3", "/srv/tools/python/lib/update_zoning2.py", "pinellas", "treasure_island"],
+        ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.zoning_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'PINELLAS' and city_name = 'TREASURE_ISLAND'"]
+      ],
+      "pinellas_unincorporated": [
+        "ogrinfo",
+        ["python3", "/srv/tools/python/lib/update_zoning2.py", "pinellas", "unincorporated"],
+        ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.zoning_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'PINELLAS' and city_name = 'UNINCORPORATED'"]
       ]
     }
   },
