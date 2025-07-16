@@ -832,7 +832,9 @@ def generate_summary(results):
         logging.info("Skipping summary generation.")
         return
 
-    summary_filename = f"summary_{CONFIG.start_time.strftime('%Y-%m-%d')}.csv"
+    # Get the layer name from the first result
+    layer = results[0]['layer']
+    summary_filename = f"{layer}_summary_{CONFIG.start_time.strftime('%Y-%m-%d')}.csv"
     logging.info(f"Generating summary file: {summary_filename}")
 
     headers = ['layer', 'entity', 'status', 'data_date', 'error', 'warning']
