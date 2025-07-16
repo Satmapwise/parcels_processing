@@ -937,7 +937,7 @@ def generate_summary(results):
     layer = results[0]['layer']
     summary_filename = f"{layer}_summary_{CONFIG.start_time.strftime('%Y-%m-%d')}.csv"
     
-    headers = ['layer', 'entity', 'status', 'data_date', 'error', 'warning']
+    headers = ['layer', 'entity', 'status', 'data_date', 'warning', 'error']
     
     # Check if file already exists
     file_exists = os.path.exists(summary_filename)
