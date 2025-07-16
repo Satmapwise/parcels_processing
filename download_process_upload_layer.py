@@ -178,9 +178,9 @@ entities = {
 class Config:
     def __init__(self, 
                  test_mode=False, debug=True, isolate_logs=False,
-                 run_download=False, run_metadata=True, run_processing=True, 
+                 run_download=True, run_metadata=True, run_processing=True, 
                  generate_json=True, run_upload=False, remote_enabled=False, remote_execute=False,
-                 generate_summary=False
+                 generate_summary=True
                  ):
         """
         Configuration class to hold script settings.
@@ -472,53 +472,62 @@ def _looks_like_update(cmd_list):
 
 def _validate_download(work_dir, logger):
     """
-    Ensure at least one recently-created *.shp* exists in *work_dir*.
+    Ensure at least one recently downloaded file exists in *work_dir*.
     "Recent" means modified within the last 24 hours.
-    If multiple exist, returns the path to the newest one.
-    Raises DownloadError if no recent shapefile is found.
+    This validates that a download actually occurred, but doesn't identify specific shapefiles.
+    Raises DownloadError if no recent download is found.
     """
     now = datetime.now()
     day_ago = now - timedelta(days=1)
 
+    # Check if any files were downloaded recently (any file type)
+    recent_downloads = []
+    for filename in os.listdir(work_dir):
+        file_path = os.path.join(work_dir, filename)
+        try:
+            mtime = os.path.getmtime(file_path)
+            mod_time = datetime.fromtimestamp(mtime)
+            if mod_time >= day_ago:
+                recent_downloads.append((mod_time, filename))
+        except OSError:
+            continue
+
+    if CONFIG.run_download == True and not recent_downloads:
+        raise DownloadError("No files found modified within the last 24 hours to indicate recent download.", layer=None, entity=None)
+
+    if CONFIG.run_download == True and recent_downloads:
+        recent_files_str = ", ".join([f[1] for f in sorted(recent_downloads, key=lambda x: x[0], reverse=True)[:3]])
+        logger.debug(f"Download validation passed – found recent files: {recent_files_str}")
+    
+    return True
+
+
+def _find_shapefile(work_dir, logger):
+    """
+    Find the most recent shapefile in *work_dir*.
+    Returns the path to the newest shapefile, or raises DownloadError if none found.
+    """
     candidate_files = []
     for filename in os.listdir(work_dir):
         if filename.lower().endswith(".shp"):
-            logger.debug(f"Checking file: {filename}")
-            file_path = os.path.join(work_dir, filename)
-            try:
-                mtime = os.path.getmtime(file_path)
-                mod_time = datetime.fromtimestamp(mtime)
-
-                if mod_time >= day_ago:
-                    candidate_files.append((mod_time, file_path))
-            except OSError:
-                # File might have been removed during processing; skip it.
-                continue
-
-    if not candidate_files and CONFIG.run_download == True:
-        raise DownloadError("No shapefile found modified within the last 24 hours.", layer=None, entity=None)
-    elif not candidate_files and CONFIG.run_download == False:
-        found_files = [f for f in os.listdir(work_dir) if f.lower().endswith(".shp")]
-        if not found_files:
-            raise DownloadError("No shapefile found in directory.", layer=None, entity=None)
-        
-        for filename in found_files:
+            logger.debug(f"Found shapefile: {filename}")
             file_path = os.path.join(work_dir, filename)
             try:
                 mtime = os.path.getmtime(file_path)
                 mod_time = datetime.fromtimestamp(mtime)
                 candidate_files.append((mod_time, file_path))
             except OSError:
+                # File might have been removed during processing; skip it.
                 continue
+
+    if not candidate_files:
+        raise DownloadError("No shapefile found in directory.", layer=None, entity=None)
 
     # Sort by modification time (most recent first) and get the path
     candidate_files.sort(key=lambda x: x[0], reverse=True)
     newest_shp_path = candidate_files[0][1]
 
-    if CONFIG.run_download == True:
-        logger.debug(f"Download validation passed – found recent shapefile: {os.path.basename(newest_shp_path)}")
-    else:
-        logger.debug(f"Newest shapefile found: {os.path.basename(newest_shp_path)} from {mod_time.strftime('%Y-%m-%d %H:%M')}")
+    logger.debug(f"Using shapefile: {os.path.basename(newest_shp_path)} from {candidate_files[0][0].strftime('%Y-%m-%d %H:%M')}")
     return newest_shp_path
 
 
@@ -588,15 +597,15 @@ def download_process_layer(layer, queue):
                             # If no shp_path was set by a download step, scan the directory
                             # for a pre-existing file. This supports process-only runs.
                             try:
-                                shp_to_process = _validate_download(work_dir, entity_logger)
+                                shp_to_process = _find_shapefile(work_dir, entity_logger)
                             except DownloadError:
-                                pass # It's ok if no recent file is found here.
+                                pass # It's ok if no shapefile is found here.
 
                         if shp_to_process:
                             metadata = extract_shp_metadata(shp_to_process, entity_logger)
                             entity_logger.debug(f"Metadata extracted from: {os.path.basename(shp_to_process)}")
                         else:
-                            entity_logger.warning("ogrinfo placeholder encountered but no recent .shp file found to process.")
+                            entity_logger.warning("ogrinfo placeholder encountered but no shapefile found to process.")
                     else:
                         entity_logger.info(f"Skipping metadata extraction for {layer}/{entity} (disabled in config)")
                     continue  # skip _run_command
@@ -622,7 +631,7 @@ def download_process_layer(layer, queue):
                         _run_command(cmd_list, work_dir, entity_logger)
                         if CONFIG.test_mode == False: # Only validate in non-test mode
                             try:
-                                shp_path = _validate_download(work_dir, entity_logger)
+                                _validate_download(work_dir, entity_logger)
                             except DownloadError as de:
                                 raise DownloadError(str(de), layer, entity) from de
                         else:
