@@ -209,6 +209,7 @@ class Config:
         # More configuration can be added here
         # e.g. database credentials, server details
         # For now, keeping it simple
+        
 
         # -----------------------------
         # Upload-phase configuration (all env-driven)
@@ -780,11 +781,14 @@ def generate_json(results):
     for item in items_with_plans:
         plan = item['upload_plan']
         entity_plan = {
-            'entity': item['entity'],
-            'basename': plan['basename'],
-            'remote_backup': plan['remote_backup'],
-            'remote_bat': plan['remote_bat'],
-            'commands': plan['commands']
+            item['entity']: [
+                {
+                    'basename': plan['basename'],
+                    'remote_backup': plan['remote_backup'],
+                    'remote_bat': plan['remote_bat'],
+                    'commands': plan['commands']
+                }
+            ]
         }
         upload_plans.append(entity_plan)
     
