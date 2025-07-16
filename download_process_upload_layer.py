@@ -796,7 +796,7 @@ def generate_json(results):
     
     # Get the layer name from the first result
     layer = items_with_plans[0]['layer']
-    json_filename = f"{layer}_upload_plans.json"
+    json_filename = f"{layer}_upload_plans_{CONFIG.start_time.strftime('%Y-%m-%d')}.json"
     
     logging.info(f"Generating upload plans JSON file: {json_filename}")
     
@@ -832,7 +832,7 @@ def generate_summary(results):
         logging.info("Skipping summary generation.")
         return
 
-    summary_filename = f"summary_{CONFIG.start_time.strftime('%Y-%m-%d_%H-%M')}.csv"
+    summary_filename = f"summary_{CONFIG.start_time.strftime('%Y-%m-%d')}.csv"
     logging.info(f"Generating summary file: {summary_filename}")
 
     headers = ['layer', 'entity', 'status', 'data_date', 'error', 'warning']
