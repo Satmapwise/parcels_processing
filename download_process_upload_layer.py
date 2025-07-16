@@ -600,10 +600,22 @@ def download_process_layer(layer, queue):
             processing_started = False
             shp_path = None
             update_script_output = None  # Track output from update scripts
+            download_step_found = False  # Track if a download step was encountered
+            ogrinfo_encountered = False  # Track if ogrinfo step was encountered
             for cmd in manifest_entry:
 
                 # Placeholder 'ogrinfo' → run metadata extraction helper
                 if isinstance(cmd, str) and cmd.strip().lower() == "ogrinfo":
+                    ogrinfo_encountered = True
+                    
+                    # Check if run_download is True but no download step was found
+                    if CONFIG.run_download == True and not download_step_found:
+                        raise DownloadError(
+                            f"Download is enabled but no download step found before ogrinfo step for {layer}/{entity}. "
+                            f"Expected a download command (ags_extract_data2.py or download_data.py) before ogrinfo.",
+                            layer, entity
+                        )
+                    
                     if CONFIG.run_metadata == True:
                         shp_to_process = None
                         if shp_path:
@@ -641,6 +653,7 @@ def download_process_layer(layer, queue):
 
                 # Run the command
                 if _looks_like_download(cmd_list): # Detects download commands
+                    download_step_found = True  # Mark that we found a download step
                     if CONFIG.run_download == True:
                         entity_logger.debug(f"Running download for {layer}/{entity}")
                         _run_command(cmd_list, work_dir, entity_logger)
@@ -670,6 +683,14 @@ def download_process_layer(layer, queue):
                             entity_logger.info(f"Skipping processing for {layer}/{entity} (disabled in config)")
                             processing_started = True
 
+            # Check if run_download is True but no download step was found in the entire manifest
+            if CONFIG.run_download == True and not download_step_found:
+                raise DownloadError(
+                    f"Download is enabled but no download step found in manifest for {layer}/{entity}. "
+                    f"Expected at least one download command (ags_extract_data2.py or download_data.py) in the manifest.",
+                    layer, entity
+                )
+            
             # Record successful result with EPSG if we found it
             result_entry = {
                 'layer': layer,
