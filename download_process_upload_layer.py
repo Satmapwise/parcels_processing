@@ -786,20 +786,15 @@ def generate_json(results):
     logging.info(f"Generating upload plans JSON file: {json_filename}")
     
     # Structure the data for JSON output
-    upload_plans = []
+    upload_plans = {}
     for item in items_with_plans:
         plan = item['upload_plan']
-        entity_plan = {
-            item['entity']: [
-                {
-                    'basename': plan['basename'],
-                    'remote_backup': plan['remote_backup'],
-                    'remote_bat': plan['remote_bat'],
-                    'commands': plan['commands']
-                }
-            ]
+        upload_plans[item['entity']] = {
+            'basename': plan['basename'],
+            'remote_backup': plan['remote_backup'],
+            'remote_bat': plan['remote_bat'],
+            'commands': plan['commands']
         }
-        upload_plans.append(entity_plan)
     
     # Write the JSON file
     try:

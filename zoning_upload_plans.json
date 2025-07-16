@@ -1,17 +1,57 @@
-[
-  {
-    "bay_unincorporated": [
-      {
-        "basename": "raw_zon_bay_unincorp",
-        "remote_backup": "/home/bmay/incoming/raw_zon_bay_unincorp.backup",
-        "remote_bat": "/home/bmay/incoming/raw_zon_bay_unincorp.bat",
-        "commands": [
-          "pg_restore -p 5432 -U postgres -d gislib -v \"/home/bmay/incoming/raw_zon_bay_unincorp.backup\"",
-          "psql -p 5432 -U postgres -d gislib -c \"DELETE FROM zoning WHERE city_name = 'UNINCORPORATED' and county_name = 'BAY';\"",
-          "psql -d gislib -U postgres -p 5432 -c \"INSERT INTO zoning (zon_code,zon_code2,zon_desc,zon_gen,ord_num,city_name,county_name,notes,the_geom)",
-          "psql -d gislib -U postgres -p 5432 -c \"DROP TABLE raw_zon_bay_unincorp_2;\""
-        ]
-      }
+{
+  "orange_ocoee": {
+    "basename": "raw_zon_orange_ocoee",
+    "remote_backup": "/home/bmay/incoming/raw_zon_orange_ocoee.backup",
+    "remote_bat": "/home/bmay/incoming/raw_zon_orange_ocoee.bat",
+    "commands": [
+      "pg_restore -p 5432 -U postgres -d gislib -v \"/home/bmay/incoming/raw_zon_orange_ocoee.backup\"",
+      "psql -p 5432 -U postgres -d gislib -c \"DELETE FROM zoning WHERE city_name = 'OCOEE' and county_name = 'ORANGE';\"",
+      "psql -d gislib -U postgres -p 5432 -c \"INSERT INTO zoning (zon_code,zon_code2,zon_desc,zon_gen,ord_num,city_name,county_name,notes,the_geom)",
+      "psql -d gislib -U postgres -p 5432 -c \"DROP TABLE raw_zon_orange_ocoee_2;\""
+    ]
+  },
+  "orange_apopka": {
+    "basename": "raw_zon_orange_apopka",
+    "remote_backup": "/home/bmay/incoming/raw_zon_orange_apopka.backup",
+    "remote_bat": "/home/bmay/incoming/raw_zon_orange_apopka.bat",
+    "commands": [
+      "pg_restore -p 5432 -U postgres -d gislib -v \"/home/bmay/incoming/raw_zon_orange_apopka.backup\"",
+      "psql -p 5432 -U postgres -d gislib -c \"DELETE FROM zoning WHERE city_name = 'APOPKA' and county_name = 'ORANGE';\"",
+      "psql -d gislib -U postgres -p 5432 -c \"INSERT INTO zoning (zon_code,zon_code2,zon_desc,zon_gen,ord_num,city_name,county_name,notes,the_geom)",
+      "psql -d gislib -U postgres -p 5432 -c \"DROP TABLE raw_zon_orange_apopka_2;\""
+    ]
+  },
+  "orange_eatonville": {
+    "basename": "raw_zon_orange_eatonville",
+    "remote_backup": "/home/bmay/incoming/raw_zon_orange_eatonville.backup",
+    "remote_bat": "/home/bmay/incoming/raw_zon_orange_eatonville.bat",
+    "commands": [
+      "pg_restore -p 5432 -U postgres -d gislib -v \"/home/bmay/incoming/raw_zon_orange_eatonville.backup\"",
+      "psql -p 5432 -U postgres -d gislib -c \"DELETE FROM zoning WHERE city_name = 'EATONVILLE' and county_name = 'ORANGE';\"",
+      "psql -d gislib -U postgres -p 5432 -c \"INSERT INTO zoning (zon_code,zon_code2,zon_desc,zon_gen,ord_num,city_name,county_name,notes,the_geom)",
+      "psql -d gislib -U postgres -p 5432 -c \"DROP TABLE raw_zon_orange_eatonville_2;\""
+    ]
+  },
+  "orange_orlando": {
+    "basename": "raw_zon_orange_orlando",
+    "remote_backup": "/home/bmay/incoming/raw_zon_orange_orlando.backup",
+    "remote_bat": "/home/bmay/incoming/raw_zon_orange_orlando.bat",
+    "commands": [
+      "pg_restore -p 5432 -U postgres -d gislib -v \"/home/bmay/incoming/raw_zon_orange_orlando.backup\"",
+      "psql -p 5432 -U postgres -d gislib -c \"DELETE FROM zoning WHERE city_name = 'ORLANDO' and county_name = 'ORANGE';\"",
+      "psql -d gislib -U postgres -p 5432 -c \"INSERT INTO zoning (zon_code,zon_code2,zon_desc,zon_gen,ord_num,city_name,county_name,notes,the_geom)",
+      "psql -d gislib -U postgres -p 5432 -c \"DROP TABLE raw_zon_orange_orlando_2;\""
+    ]
+  },
+  "orange_unincorporated": {
+    "basename": "raw_zon_orange_unincorp",
+    "remote_backup": "/home/bmay/incoming/raw_zon_orange_unincorp.backup",
+    "remote_bat": "/home/bmay/incoming/raw_zon_orange_unincorp.bat",
+    "commands": [
+      "pg_restore -p 5432 -U postgres -d gislib -v \"/home/bmay/incoming/raw_zon_orange_unincorp.backup\"",
+      "psql -p 5432 -U postgres -d gislib -c \"DELETE FROM zoning WHERE city_name = 'UNINCORPORATED' and county_name = 'ORANGE';\"",
+      "psql -d gislib -U postgres -p 5432 -c \"INSERT INTO zoning (zon_code,zon_code2,zon_desc,zon_gen,ord_num,city_name,county_name,notes,the_geom)",
+      "psql -d gislib -U postgres -p 5432 -c \"DROP TABLE raw_zon_orange_unincorp_2;\""
     ]
   }
-]
+}
