@@ -270,6 +270,11 @@ class UploadError(LayerProcessingError):
     pass
 
 
+class SkipEntityError(LayerProcessingError):
+    """Exception for when an entity should be skipped (e.g., no new data available)."""
+    pass
+
+
 # Function to parse the input and set the queue
 def set_queue(layer, entities):
     """
@@ -363,6 +368,17 @@ def _run_command(command, work_dir, logger):
         logger.error(f"STDOUT: {process.stdout}")
         logger.error(f"STDERR: {process.stderr}")
         raise ProcessingError(f"Command failed with exit code {process.returncode}")
+    
+    # For download_data.py commands, parse output for 'not modified' messages to detect no new data
+    if (len(command) > 1 and 'download_data.py' in command[1] and process.returncode == 0):
+        stdout_lower = process.stdout.lower()
+        if (
+            '304 not modified' in stdout_lower
+            or 'not modified on server' in stdout_lower
+            or 'omitting download' in stdout_lower
+        ):
+            logger.info("download_data.py indicates no new data available - skipping entity")
+            raise SkipEntityError("No new data available from server", layer=None, entity=None)
     
     logger.debug(f"Command output: {process.stdout}")
     return process.stdout
@@ -656,7 +672,11 @@ def download_process_layer(layer, queue):
                     download_step_found = True  # Mark that we found a download step
                     if CONFIG.run_download == True:
                         entity_logger.debug(f"Running download for {layer}/{entity}")
-                        _run_command(cmd_list, work_dir, entity_logger)
+                        try:
+                            _run_command(cmd_list, work_dir, entity_logger)
+                        except SkipEntityError as e:
+                            # Skip validation and further processing for this entity
+                            raise
                         if CONFIG.test_mode == False: # Only validate in non-test mode
                             try:
                                 _validate_download(work_dir, entity_logger)
@@ -726,6 +746,9 @@ def download_process_layer(layer, queue):
             results.append(result_entry)
             entity_logger.info(f"--- Successfully processed entity: {entity} ---")
 
+        except SkipEntityError as e:
+            logging.info(f"Skipping entity {entity} for layer {layer}: {e}")
+            results.append({'layer': layer, 'entity': entity, 'status': 'skipped', 'warning': str(e), 'data_date': None})
         except LayerProcessingError as e:
             logging.error(f"Failed to process entity {entity} for layer {layer}: {e}")
             results.append({'layer': layer, 'entity': entity, 'status': 'failure', 'error': str(e), 'data_date': None})
