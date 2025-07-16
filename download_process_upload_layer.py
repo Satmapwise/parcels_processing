@@ -713,13 +713,19 @@ def download_process_layer(layer, queue):
     
     results = []
     for entity in queue:
+        entity_start_time = datetime.now()  # Track start time for each entity
         try:
             # Setup working directory first as logger needs it
             try:
                 work_dir, county, city = resolve_work_dir(layer, entity)
             except ValueError as e:
                 logging.error(str(e))
-                results.append({'layer': layer, 'entity': entity, 'status': 'failure', 'error': str(e), 'data_date': None})
+                entity_end_time = datetime.now()
+                entity_runtime = (entity_end_time - entity_start_time).total_seconds()
+                results.append({
+                    'layer': layer, 'entity': entity, 'status': 'failure', 
+                    'error': str(e), 'data_date': None, 'runtime_seconds': entity_runtime
+                })
                 continue
             logging.debug(f"Working directory: {work_dir}")
             
@@ -853,11 +859,14 @@ def download_process_layer(layer, queue):
                 )
             
             # Record successful result with EPSG if we found it
+            entity_end_time = datetime.now()
+            entity_runtime = (entity_end_time - entity_start_time).total_seconds()
             result_entry = {
                 'layer': layer,
                 'entity': entity,
                 'status': 'success',
                 'data_date': metadata.get('data_date') or datetime.now().date(),
+                'runtime_seconds': entity_runtime,
             }
             if metadata.get('epsg'):
                 result_entry['epsg'] = metadata['epsg']
@@ -889,10 +898,20 @@ def download_process_layer(layer, queue):
 
         except SkipEntityError as e:
             logging.info(f"Skipping entity {entity} for layer {layer}: {e}")
-            results.append({'layer': layer, 'entity': entity, 'status': 'skipped', 'warning': str(e), 'data_date': None})
+            entity_end_time = datetime.now()
+            entity_runtime = (entity_end_time - entity_start_time).total_seconds()
+            results.append({
+                'layer': layer, 'entity': entity, 'status': 'skipped', 
+                'warning': str(e), 'data_date': None, 'runtime_seconds': entity_runtime
+            })
         except LayerProcessingError as e:
             logging.error(f"Failed to process entity {entity} for layer {layer}: {e}")
-            results.append({'layer': layer, 'entity': entity, 'status': 'failure', 'error': str(e), 'data_date': None})
+            entity_end_time = datetime.now()
+            entity_runtime = (entity_end_time - entity_start_time).total_seconds()
+            results.append({
+                'layer': layer, 'entity': entity, 'status': 'failure', 
+                'error': str(e), 'data_date': None, 'runtime_seconds': entity_runtime
+            })
 
     return results
 
@@ -1040,7 +1059,30 @@ def generate_summary(results):
     layer = results[0]['layer']
     summary_filename = f"{layer}_summary_{CONFIG.start_time.strftime('%Y-%m-%d')}.csv"
     
-    headers = ['layer', 'entity', 'status', 'data_date', 'warning', 'error']
+    headers = ['layer', 'entity', 'status', 'data_date', 'warning', 'error', 'runtime_seconds']
+    
+    # Calculate summary statistics
+    def calculate_summary_stats(all_results):
+        total_entities = len(all_results)
+        successful = len([r for r in all_results if r.get('status') == 'success'])
+        skipped = len([r for r in all_results if r.get('status') == 'skipped'])
+        failed = len([r for r in all_results if r.get('status') == 'failure'])
+        
+        # Calculate total runtime
+        total_runtime = sum([r.get('runtime_seconds', 0) for r in all_results])
+        
+        # Calculate overall runtime from start time
+        end_time = datetime.now()
+        overall_runtime = (end_time - CONFIG.start_time).total_seconds()
+        
+        return {
+            'total_entities': total_entities,
+            'successful': successful,
+            'skipped': skipped,
+            'failed': failed,
+            'total_runtime': total_runtime,
+            'overall_runtime': overall_runtime
+        }
     
     # Check if file already exists
     file_exists = os.path.exists(summary_filename)
@@ -1057,6 +1099,9 @@ def generate_summary(results):
             with open(summary_filename, 'r', newline='') as csvfile:
                 reader = csv.DictReader(csvfile)
                 for row in reader:
+                    # Skip summary rows (they start with "SUMMARY")
+                    if row.get('entity', '').startswith('SUMMARY'):
+                        continue
                     # Use entity as the key to identify duplicates
                     existing_rows[row['entity']] = row
             
@@ -1074,17 +1119,48 @@ def generate_summary(results):
                     existing_rows[entity] = row
                     new_count += 1
             
-            # Write back all rows (existing + updated + new) in alphabetical order
+            # Calculate summary statistics for all rows
+            all_results = list(existing_rows.values())
+            stats = calculate_summary_stats(all_results)
+            
+            # Create summary row
+            summary_row = {
+                'layer': layer,
+                'entity': f'SUMMARY_{CONFIG.start_time.strftime("%Y-%m-%d_%H-%M-%S")}',
+                'status': f'Total: {stats["total_entities"]}, Success: {stats["successful"]}, Skipped: {stats["skipped"]}, Failed: {stats["failed"]}',
+                'data_date': '',
+                'warning': '',
+                'error': '',
+                'runtime_seconds': f'{stats["overall_runtime"]:.2f}'
+            }
+            
+            # Write back all rows (existing + updated + new + summary) in alphabetical order
             with open(summary_filename, 'w', newline='') as csvfile:
                 writer = csv.DictWriter(csvfile, fieldnames=headers)
                 writer.writeheader()
-                # Sort rows by entity name for consistent ordering
+                # Sort rows by entity name for consistent ordering, but put summary at the end
                 sorted_rows = sorted(existing_rows.values(), key=lambda row: row['entity'])
                 for row in sorted_rows:
                     writer.writerow(row)
+                # Add summary row at the end
+                writer.writerow(summary_row)
             
             logging.info(f"Summary file updated successfully. Updated: {updated_count}, Added: {new_count}, Total: {len(existing_rows)}")
         else:
+            # Calculate summary statistics for new results
+            stats = calculate_summary_stats(results)
+            
+            # Create summary row
+            summary_row = {
+                'layer': layer,
+                'entity': f'SUMMARY_{CONFIG.start_time.strftime("%Y-%m-%d_%H-%M-%S")}',
+                'status': f'Total: {stats["total_entities"]}, Success: {stats["successful"]}, Skipped: {stats["skipped"]}, Failed: {stats["failed"]}',
+                'data_date': '',
+                'warning': '',
+                'error': '',
+                'runtime_seconds': f'{stats["overall_runtime"]:.2f}'
+            }
+            
             # Create new file
             with open(summary_filename, 'w', newline='') as csvfile:
                 writer = csv.DictWriter(csvfile, fieldnames=headers)
@@ -1094,6 +1170,8 @@ def generate_summary(results):
                 for result in sorted_results:
                     row = {h: result.get(h, '') for h in headers}
                     writer.writerow(row)
+                # Add summary row at the end
+                writer.writerow(summary_row)
             
             logging.info(f"Summary file generated successfully with {len(results)} entries.")
             
