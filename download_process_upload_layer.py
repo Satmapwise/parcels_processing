@@ -356,30 +356,39 @@ def _expand_glob_patterns(command, work_dir, logger):
     Returns a new command list with glob patterns expanded.
     """
     import glob
+    import os
     expanded_command = []
     
-    for arg in command:
-        # Check if this argument contains glob patterns
-        if isinstance(arg, str) and any(char in arg for char in '*?[]'):
-            # This might be a glob pattern, try to expand it
-            try:
-                # Use glob to find matching files
-                matches = glob.glob(arg)
-                if matches:
-                    # Add all matches to the command
-                    expanded_command.extend(matches)
-                    logger.debug(f"Expanded glob pattern '{arg}' to: {matches}")
-                else:
-                    # No matches found, keep the original pattern
+    # Change to the working directory for glob expansion
+    original_cwd = os.getcwd()
+    try:
+        os.chdir(work_dir)
+        
+        for arg in command:
+            # Check if this argument contains glob patterns
+            if isinstance(arg, str) and any(char in arg for char in '*?[]'):
+                # This might be a glob pattern, try to expand it
+                try:
+                    # Use glob to find matching files
+                    matches = glob.glob(arg)
+                    if matches:
+                        # Add all matches to the command
+                        expanded_command.extend(matches)
+                        logger.debug(f"Expanded glob pattern '{arg}' to: {matches}")
+                    else:
+                        # No matches found, keep the original pattern
+                        expanded_command.append(arg)
+                        logger.warning(f"Glob pattern '{arg}' matched no files")
+                except Exception as e:
+                    # If glob expansion fails, keep the original argument
                     expanded_command.append(arg)
-                    logger.warning(f"Glob pattern '{arg}' matched no files")
-            except Exception as e:
-                # If glob expansion fails, keep the original argument
+                    logger.debug(f"Failed to expand glob pattern '{arg}': {e}")
+            else:
+                # No glob pattern, keep as-is
                 expanded_command.append(arg)
-                logger.debug(f"Failed to expand glob pattern '{arg}': {e}")
-        else:
-            # No glob pattern, keep as-is
-            expanded_command.append(arg)
+    finally:
+        # Always restore the original working directory
+        os.chdir(original_cwd)
     
     return expanded_command
 
