@@ -183,7 +183,7 @@ entities = {
 
 class Config:
     def __init__(self, 
-                 test_mode=False, debug=True, isolate_logs=False,
+                 test_mode=False, debug=True, isolate_logs=True,
                  run_download=True, run_metadata=True, run_processing=True, 
                  generate_json=True, run_upload=False, remote_enabled=False, remote_execute=False,
                  generate_summary=True
@@ -651,7 +651,7 @@ def download_process_layer(layer, queue):
             # Setup logger for this specific entity
             entity_logger = setup_entity_logger(layer, entity, work_dir)
 
-            entity_logger.info(f"--- Processing entity: {entity} ---")
+            logging.info(f"--- Processing entity: {entity} ---")
 
             # ------------------------------------------------------------------
             # Manifest-driven command execution (generic for all layers).
@@ -724,6 +724,7 @@ def download_process_layer(layer, queue):
 
                 # Run the command
                 if _looks_like_download(cmd_list): # Detects download commands
+                    logging.debug(f"Running download command: {cmd_list}")
                     download_step_found = True  # Mark that we found a download step
                     if CONFIG.run_download == True:
                         entity_logger.debug(f"Running download for {layer}/{entity}")
@@ -746,18 +747,18 @@ def download_process_layer(layer, queue):
                 else:
                     if CONFIG.run_processing == True:
                         if processing_started == False:
-                            entity_logger.debug(f"Running processing for {layer}/{entity}")
+                            logging.debug(f"Running processing for {layer}/{entity}")
                             processing_started = True
                         
                         # Check if this is an update script that might generate upload plans
                         if _looks_like_update(cmd_list):
-                            entity_logger.debug(f"Running update script for {layer}/{entity}")
+                            logging.debug(f"Running update script for {layer}/{entity}")
                             update_script_output = _run_command(cmd_list, work_dir, entity_logger)
                         else:
                             stdout = _run_command(cmd_list, work_dir, entity_logger) # Runs all other commands
                     else:
                         if processing_started == False:
-                            entity_logger.info(f"Skipping processing for {layer}/{entity} (disabled in config)")
+                            logging.info(f"Skipping processing for {layer}/{entity} (disabled in config)")
                             processing_started = True
 
             # Check if run_download is True but no download step was found in the entire manifest
@@ -801,7 +802,7 @@ def download_process_layer(layer, queue):
             result_entry['upload_plan'] = upload_plan
 
             results.append(result_entry)
-            entity_logger.info(f"--- Successfully processed entity: {entity} ---")
+            logging.info(f"--- Successfully processed entity: {entity} ---")
 
         except SkipEntityError as e:
             logging.info(f"Skipping entity {entity} for layer {layer}: {e}")
