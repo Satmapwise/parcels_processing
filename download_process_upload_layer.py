@@ -350,6 +350,40 @@ def set_queue(layer, entities):
     return queue
 
 
+def _expand_glob_patterns(command, work_dir, logger):
+    """
+    Expand glob patterns in command arguments using Python's glob module.
+    Returns a new command list with glob patterns expanded.
+    """
+    import glob
+    expanded_command = []
+    
+    for arg in command:
+        # Check if this argument contains glob patterns
+        if isinstance(arg, str) and any(char in arg for char in '*?[]'):
+            # This might be a glob pattern, try to expand it
+            try:
+                # Use glob to find matching files
+                matches = glob.glob(arg)
+                if matches:
+                    # Add all matches to the command
+                    expanded_command.extend(matches)
+                    logger.debug(f"Expanded glob pattern '{arg}' to: {matches}")
+                else:
+                    # No matches found, keep the original pattern
+                    expanded_command.append(arg)
+                    logger.warning(f"Glob pattern '{arg}' matched no files")
+            except Exception as e:
+                # If glob expansion fails, keep the original argument
+                expanded_command.append(arg)
+                logger.debug(f"Failed to expand glob pattern '{arg}': {e}")
+        else:
+            # No glob pattern, keep as-is
+            expanded_command.append(arg)
+    
+    return expanded_command
+
+
 def _run_command(command, work_dir, logger):
     """
     Runs a shell command in a specified directory and handles execution.
@@ -360,8 +394,11 @@ def _run_command(command, work_dir, logger):
     else:
         logger.debug(f"Running command in {work_dir}: \n\n{' '.join(command)}\n")
     
+    # Expand glob patterns in the command
+    expanded_command = _expand_glob_patterns(command, work_dir, logger)
+    
     # Using shell=False and passing command as a list is more secure
-    process = subprocess.run(command, cwd=work_dir, capture_output=True, text=True)
+    process = subprocess.run(expanded_command, cwd=work_dir, capture_output=True, text=True)
 
     # For download_data.py commands, check for no new data conditions
     if (len(command) > 1 and 'download_data.py' in command[1]):
@@ -383,10 +420,10 @@ def _run_command(command, work_dir, logger):
 
     # Only after skip logic, check for generic errors
     if process.returncode != 0:
-        logger.error(f"Error executing command: {' '.join(command)}")
+        logger.error(f"Error executing command: {' '.join(expanded_command)}")
         logger.error(f"STDOUT: {process.stdout}")
         logger.error(f"STDERR: {process.stderr}")
-        raise ProcessingError(f"Command failed with exit code {process.returncode}: {' '.join(command)}")
+        raise ProcessingError(f"Command failed with exit code {process.returncode}: {' '.join(expanded_command)}")
     
     logger.debug(f"Command output: {process.stdout}")
     return process.stdout
