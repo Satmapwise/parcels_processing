@@ -891,11 +891,13 @@ def generate_summary(results):
                     existing_rows[entity] = row
                     new_count += 1
             
-            # Write back all rows (existing + updated + new)
+            # Write back all rows (existing + updated + new) in alphabetical order
             with open(summary_filename, 'w', newline='') as csvfile:
                 writer = csv.DictWriter(csvfile, fieldnames=headers)
                 writer.writeheader()
-                for row in existing_rows.values():
+                # Sort rows by entity name for consistent ordering
+                sorted_rows = sorted(existing_rows.values(), key=lambda row: row['entity'])
+                for row in sorted_rows:
                     writer.writerow(row)
             
             logging.info(f"Summary file updated successfully. Updated: {updated_count}, Added: {new_count}, Total: {len(existing_rows)}")
@@ -904,7 +906,9 @@ def generate_summary(results):
             with open(summary_filename, 'w', newline='') as csvfile:
                 writer = csv.DictWriter(csvfile, fieldnames=headers)
                 writer.writeheader()
-                for result in results:
+                # Sort results by entity name for consistent ordering
+                sorted_results = sorted(results, key=lambda result: result['entity'])
+                for result in sorted_results:
                     row = {h: result.get(h, '') for h in headers}
                     writer.writerow(row)
             
