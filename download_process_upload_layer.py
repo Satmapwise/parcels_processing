@@ -39,6 +39,12 @@ layers = set(LAYER_CFG.keys())
 # Override legacy hard-coded layer list with the values loaded from the manifest
 layers = set(LAYER_CFG.keys())
 
+# Entities to skip (blacklist) - add problematic entities here
+SKIP_ENTITIES = {
+    "hillsborough_temple_terrace",  # Example blacklisted entity
+    # Add more problematic entities here as needed
+}
+
 counties = {
     "miami-dade",
     "broward",
@@ -326,6 +332,15 @@ def set_queue(layer, entities):
         if e not in seen:
             queue.append(e)
             seen.add(e)
+
+    # Filter out blacklisted entities
+    if SKIP_ENTITIES:
+        original_count = len(queue)
+        queue = [e for e in queue if e not in SKIP_ENTITIES]
+        skipped_count = original_count - len(queue)
+        if skipped_count > 0:
+            skipped_entities = [e for e in expanded if e in SKIP_ENTITIES]
+            logging.info(f"Skipped {skipped_count} blacklisted entities: {sorted(skipped_entities)}")
 
     return queue
 
