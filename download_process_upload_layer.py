@@ -757,7 +757,46 @@ def upload_layer(results):
 
 # Function to generate the upload plan json
 def generate_json(results):
-    pass
+    """Generate a JSON file containing upload plans for all entities that have them."""
+    if not results:
+        logging.warning("No results to generate JSON for.")
+        return
+    
+    # Filter results that contain an upload plan
+    items_with_plans = [r for r in results if r.get('status') == 'success' and r.get('upload_plan')]
+    
+    if not items_with_plans:
+        logging.info("No upload plans found in results; nothing to generate.")
+        return
+    
+    # Get the layer name from the first result
+    layer = items_with_plans[0]['layer']
+    json_filename = f"{layer}_upload_plans.json"
+    
+    logging.info(f"Generating upload plans JSON file: {json_filename}")
+    
+    # Structure the data for JSON output
+    upload_plans = []
+    for item in items_with_plans:
+        plan = item['upload_plan']
+        entity_plan = {
+            'entity': item['entity'],
+            'basename': plan['basename'],
+            'remote_backup': plan['remote_backup'],
+            'remote_bat': plan['remote_bat'],
+            'commands': plan['commands']
+        }
+        upload_plans.append(entity_plan)
+    
+    # Write the JSON file
+    try:
+        with open(json_filename, 'w') as jsonfile:
+            json.dump(upload_plans, jsonfile, indent=2)
+        logging.info(f"Upload plans JSON file generated successfully: {json_filename}")
+        logging.info(f"Generated plans for {len(upload_plans)} entities")
+    except IOError as e:
+        logging.error(f"Could not write JSON file: {e}")
+        raise
 
 # Function to generate a summary
 def generate_summary(results):
