@@ -856,19 +856,60 @@ def generate_summary(results):
     # Get the layer name from the first result
     layer = results[0]['layer']
     summary_filename = f"{layer}_summary_{CONFIG.start_time.strftime('%Y-%m-%d')}.csv"
-    logging.info(f"Generating summary file: {summary_filename}")
-
+    
     headers = ['layer', 'entity', 'status', 'data_date', 'error', 'warning']
     
+    # Check if file already exists
+    file_exists = os.path.exists(summary_filename)
+    
+    if file_exists:
+        logging.info(f"Updating existing summary file: {summary_filename}")
+    else:
+        logging.info(f"Creating new summary file: {summary_filename}")
+    
     try:
-        with open(summary_filename, 'w', newline='') as csvfile:
-            writer = csv.DictWriter(csvfile, fieldnames=headers)
-            writer.writeheader()
+        if file_exists:
+            # Read existing data and update/replace rows
+            existing_rows = {}
+            with open(summary_filename, 'r', newline='') as csvfile:
+                reader = csv.DictReader(csvfile)
+                for row in reader:
+                    # Use entity as the key to identify duplicates
+                    existing_rows[row['entity']] = row
+            
+            # Update existing rows with new results
+            updated_count = 0
+            new_count = 0
             for result in results:
-                # Ensure all keys are present
+                entity = result['entity']
                 row = {h: result.get(h, '') for h in headers}
-                writer.writerow(row)
-        logging.info("Summary file generated successfully.")
+                
+                if entity in existing_rows:
+                    existing_rows[entity] = row
+                    updated_count += 1
+                else:
+                    existing_rows[entity] = row
+                    new_count += 1
+            
+            # Write back all rows (existing + updated + new)
+            with open(summary_filename, 'w', newline='') as csvfile:
+                writer = csv.DictWriter(csvfile, fieldnames=headers)
+                writer.writeheader()
+                for row in existing_rows.values():
+                    writer.writerow(row)
+            
+            logging.info(f"Summary file updated successfully. Updated: {updated_count}, Added: {new_count}, Total: {len(existing_rows)}")
+        else:
+            # Create new file
+            with open(summary_filename, 'w', newline='') as csvfile:
+                writer = csv.DictWriter(csvfile, fieldnames=headers)
+                writer.writeheader()
+                for result in results:
+                    row = {h: result.get(h, '') for h in headers}
+                    writer.writerow(row)
+            
+            logging.info(f"Summary file generated successfully with {len(results)} entries.")
+            
     except IOError as e:
         logging.error(f"Could not write summary file: {e}")
 
