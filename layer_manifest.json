@@ -62,6 +62,7 @@
         ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.zoning_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'ALACHUA' and city_name = 'WALDO'"]
       ],
       "baker_unincorporated": [
+        ["python3", "/srv/tools/python/lib/ags_extract_data2.py", "zoning_baker_unincorporated", "delete", "15"],
         "ogrinfo",
         ["python3", "/srv/tools/python/lib/update_zoning2.py", "baker", "unincorporated"],
         ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.zoning_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'BAKER' and city_name = 'UNINCORPORATED'"]
