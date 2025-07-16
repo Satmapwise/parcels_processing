@@ -186,7 +186,7 @@ class Config:
                  test_mode=False, debug=True, isolate_logs=True,
                  run_download=True, run_metadata=True, run_processing=True, 
                  generate_json=True, run_upload=False, remote_enabled=False, remote_execute=False,
-                 generate_summary=True
+                 generate_summary=True, process_anyway=False
                  ):
         """
         Configuration class to hold script settings.
@@ -200,6 +200,7 @@ class Config:
         self.run_processing = run_processing # Run the processing phase
         self.generate_summary = generate_summary # Generate a summary file 
         self.generate_json = generate_json # Generate a json file (nulls upload)
+        self.process_anyway = process_anyway # Continue processing even when download returns "no new data"
         if self.generate_json == True:
             self.run_upload = False
             self.remote_enabled = False
@@ -413,8 +414,11 @@ def _run_command(command, work_dir, logger):
     if (len(command) > 1 and 'download_data.py' in command[1]):
         # Check for exit code 1 from download_data.py (indicates no new data)
         if process.returncode == 1:
-            logger.info("download_data.py returned exit code 1 - no new data available - skipping entity")
-            raise SkipEntityError("No new data available from server", layer=None, entity=None)
+            if CONFIG.process_anyway:
+                logger.warning("download_data.py returned exit code 1 - no new data available, but continuing with processing due to process_anyway=True")
+            else:
+                logger.info("download_data.py returned exit code 1 - no new data available - skipping entity")
+                raise SkipEntityError("No new data available from server", layer=None, entity=None)
         # Check for "not modified" messages in output when exit code is 0
         elif process.returncode == 0:
             stdout_lower = process.stdout.lower()
@@ -424,8 +428,11 @@ def _run_command(command, work_dir, logger):
                 or 'omitting download' in stdout_lower
                 or 'no new data available from server' in stdout_lower
             ):
-                logger.info("download_data.py indicates no new data available - skipping entity")
-                raise SkipEntityError("No new data available from server", layer=None, entity=None)
+                if CONFIG.process_anyway:
+                    logger.warning("download_data.py indicates no new data available, but continuing with processing due to process_anyway=True")
+                else:
+                    logger.info("download_data.py indicates no new data available - skipping entity")
+                    raise SkipEntityError("No new data available from server", layer=None, entity=None)
 
     # Only after skip logic, check for generic errors
     if process.returncode != 0:
@@ -1520,6 +1527,7 @@ def main():
     parser.add_argument("--no-processing", action="store_true", help="Skip the processing phase.")
     parser.add_argument("--no-upload", action="store_true", help="Skip the upload phase.")
     parser.add_argument("--no-summary", action="store_true", help="Skip the summary generation.")
+    parser.add_argument("--process-anyway", action="store_true", help="Continue processing even when download returns 'no new data' (except for commands that depend on download files).")
     
     args = parser.parse_args()
 
@@ -1543,6 +1551,8 @@ def main():
         CONFIG.run_upload = False
     if args.no_summary:
         CONFIG.generate_summary = False
+    if args.process_anyway:
+        CONFIG.process_anyway = True
     initialize_logging(CONFIG.debug)
 
     logging.info(f"Script started at {CONFIG.start_time.strftime('%Y-%m-%d %H:%M:%S')}")
