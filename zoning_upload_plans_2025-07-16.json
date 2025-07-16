@@ -1,35 +1,13 @@
 {
-  "pinellas_clearwater": {
-    "basename": "raw_zon_pinellas_clearwater",
-    "remote_backup": "/home/bmay/incoming/raw_zon_pinellas_clearwater.backup",
-    "remote_bat": "/home/bmay/incoming/raw_zon_pinellas_clearwater.bat",
+  "sarasota_north_port": {
+    "basename": "raw_zon_sarasota_north_port",
+    "remote_backup": "/home/bmay/incoming/raw_zon_sarasota_north_port.backup",
+    "remote_bat": "/home/bmay/incoming/raw_zon_sarasota_north_port.bat",
     "commands": [
-      "pg_restore -p 5432 -U postgres -d gislib -v \"/home/bmay/incoming/raw_zon_pinellas_clearwater.backup\"",
-      "psql -p 5432 -U postgres -d gislib -c \"DELETE FROM zoning WHERE city_name = 'CLEARWATER' and county_name = 'PINELLAS';\"",
+      "pg_restore -p 5432 -U postgres -d gislib -v \"/home/bmay/incoming/raw_zon_sarasota_north_port.backup\"",
+      "psql -p 5432 -U postgres -d gislib -c \"DELETE FROM zoning WHERE city_name = 'NORTH_PORT' and county_name = 'SARASOTA';\"",
       "psql -d gislib -U postgres -p 5432 -c \"INSERT INTO zoning (zon_code,zon_code2,zon_desc,zon_gen,ord_num,city_name,county_name,notes,the_geom)",
-      "psql -d gislib -U postgres -p 5432 -c \"DROP TABLE raw_zon_pinellas_clearwater_2;\""
-    ]
-  },
-  "pinellas_pinellas_park": {
-    "basename": "raw_zon_pinellas_pinellas_park",
-    "remote_backup": "/home/bmay/incoming/raw_zon_pinellas_pinellas_park.backup",
-    "remote_bat": "/home/bmay/incoming/raw_zon_pinellas_pinellas_park.bat",
-    "commands": [
-      "pg_restore -p 5432 -U postgres -d gislib -v \"/home/bmay/incoming/raw_zon_pinellas_pinellas_park.backup\"",
-      "psql -p 5432 -U postgres -d gislib -c \"DELETE FROM zoning WHERE city_name = 'PINELLAS_PARK' and county_name = 'PINELLAS';\"",
-      "psql -d gislib -U postgres -p 5432 -c \"INSERT INTO zoning (zon_code,zon_code2,zon_desc,zon_gen,ord_num,city_name,county_name,notes,the_geom)",
-      "psql -d gislib -U postgres -p 5432 -c \"DROP TABLE raw_zon_pinellas_pinellas_park_2;\""
-    ]
-  },
-  "pinellas_dunedin": {
-    "basename": "raw_zon_pinellas_dunedin",
-    "remote_backup": "/home/bmay/incoming/raw_zon_pinellas_dunedin.backup",
-    "remote_bat": "/home/bmay/incoming/raw_zon_pinellas_dunedin.bat",
-    "commands": [
-      "pg_restore -p 5432 -U postgres -d gislib -v \"/home/bmay/incoming/raw_zon_pinellas_dunedin.backup\"",
-      "psql -p 5432 -U postgres -d gislib -c \"DELETE FROM zoning WHERE city_name = 'DUNEDIN' and county_name = 'PINELLAS';\"",
-      "psql -d gislib -U postgres -p 5432 -c \"INSERT INTO zoning (zon_code,zon_code2,zon_desc,zon_gen,ord_num,city_name,county_name,notes,the_geom)",
-      "psql -d gislib -U postgres -p 5432 -c \"DROP TABLE raw_zon_pinellas_dunedin_2;\""
+      "psql -d gislib -U postgres -p 5432 -c \"DROP TABLE raw_zon_sarasota_north_port_2;\""
     ]
   }
 }

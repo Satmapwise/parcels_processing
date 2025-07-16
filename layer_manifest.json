@@ -545,6 +545,36 @@
         "ogrinfo",
         ["python3", "/srv/tools/python/lib/update_zoning2.py", "santa_rosa", "unincorporated"],
         ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.zoning_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'SANTA_ROSA' and city_name = 'UNINCORPORATED'"]
+      ],
+      "sarasota_north_port": [
+        ["python3", "/srv/tools/python/lib/ags_extract_data2.py", "zoning_north_port", "delete", "15"],
+        "ogrinfo",
+        ["zip", "zoning_north_port", "zoning_north_port.*"],
+        ["python3", "/srv/tools/python/lib/update_zoning2.py", "sarasota", "north_port"],
+        ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.zoning_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'SARASOTA' and city_name = 'NORTH_PORT'"]
+      ],
+      "sarasota_sarasota": [
+        ["mv", "Zoning_Districts_(View_Only)_3527818835144821311.zip", "zoning.zip"],
+        ["zip_rename_date.sh", "zoning.zip"],
+        "ogrinfo",
+        ["python3", "/srv/tools/python/lib/update_zoning2.py", "sarasota", "sarasota"],
+        ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.zoning_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'SARASOTA' and city_name = 'SARASOTA'"]
+      ],
+      "sarasota_venice": [
+        ["python3", "/srv/tools/python/lib/ags_extract_data2.py", "zoning_venice", "delete", "15"],
+        ["zip", "zoning.zip", "zoning_venice.*"],
+        ["zip_rename_date.sh", "zoning.zip"],
+        "ogrinfo",
+        ["ogr2ogr", "zoning_venice_dissolve.shp", "zoning_venice.shp", "-dialect", "sqlite", "-sql", "SELECT ST_Union(geometry), map_label, zoning_dis, notes FROM input GROUP BY map_label, zoning_dis, notes"],
+        ["python3", "/srv/tools/python/lib/update_zoning2.py", "sarasota", "venice"],
+        ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.zoning_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'SARASOTA' and city_name = 'VENICE'"]
+      ],
+      "sarasota_unincorporated": [
+        ["unzip", "-o", "CountyZoning.zip"],
+        ["zip_rename_date.sh", "CountyZoning.zip"],
+        "ogrinfo",
+        ["python3", "/srv/tools/python/lib/update_zoning2.py", "sarasota", "unincorporated"],
+        ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.zoning_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'SARASOTA' and city_name = 'UNINCORPORATED'"]
       ]
     }
   },
