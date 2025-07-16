@@ -221,6 +221,84 @@
         ["python3", "/srv/tools/python/lib/update_zoning2.py", "indian_river", "vero_beach"],
         ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.zoning_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'INDIAN_RIVER' and city_name = 'VERO_BEACH'"]
       ],
+      "lake_astatula": [
+        ["python3", "/srv/tools/python/lib/ags_extract_data2.py", "zoning_astatula", "delete", "15"],
+        "ogrinfo",
+        ["python3", "/srv/tools/python/lib/update_zoning2.py", "lake", "astatula"],
+        ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.zoning_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'LAKE' and city_name = 'ASTATULA'"]
+      ],
+      "lake_clermont": [
+        ["python3", "/srv/tools/python/lib/ags_extract_data2.py", "zoning_clermont", "delete", "15"],
+        "ogrinfo",
+        ["python3", "/srv/tools/python/lib/update_zoning2.py", "lake", "clermont"],
+        ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.zoning_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'LAKE' and city_name = 'CLERMONT'"]
+      ],
+      "lake_fruitland_park": [
+        ["python3", "/srv/tools/python/lib/ags_extract_data2.py", "zoning_fruitland_park", "delete", "15"],
+        "ogrinfo",
+        ["python3", "/srv/tools/python/lib/update_zoning2.py", "lake", "fruitland_park"],
+        ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.zoning_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'LAKE' and city_name = 'FRUITLAND_PARK'"]
+      ],
+      "lake_groveland": [
+        ["python3", "/srv/tools/python/lib/ags_extract_data2.py", "zoning_groveland", "delete", "15"],
+        "ogrinfo",
+        ["python3", "/srv/tools/python/lib/update_zoning2.py", "lake", "groveland"],
+        ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.zoning_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'LAKE' and city_name = 'GROVELAND'"]
+      ],
+      "lake_howey_in_the_hills": [
+        ["python3", "/srv/tools/python/lib/ags_extract_data2.py", "zoning_howey_in_the_hills", "delete", "15"],
+        "ogrinfo",
+        ["python3", "/srv/tools/python/lib/update_zoning2.py", "lake", "howey_in_the_hills"],
+        ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.zoning_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'LAKE' and city_name = 'HOWEY_IN_THE_HILLS'"]
+      ],
+      "lake_leesburg": [
+        ["python3", "/srv/tools/python/lib/ags_extract_data2.py", "zoning_leesburg", "delete", "15"],
+        "ogrinfo",
+        ["python3", "/srv/tools/python/lib/update_zoning2.py", "lake", "leesburg"],
+        ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.zoning_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'LAKE' and city_name = 'LEESBURG'"]
+      ],
+      "lake_mascotte": [
+        ["python3", "/srv/tools/python/lib/ags_extract_data2.py", "zoning_mascotte", "delete", "15"],
+        "ogrinfo",
+        ["python3", "/srv/tools/python/lib/update_zoning2.py", "lake", "mascotte"],
+        ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.zoning_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'LAKE' and city_name = 'MASCOTTE'"]
+      ],
+      "lake_minneola": [
+        ["python3", "/srv/tools/python/lib/ags_extract_data2.py", "zoning_minneola", "delete", "15"],
+        "ogrinfo",
+        ["python3", "/srv/tools/python/lib/update_zoning2.py", "lake", "minneola"],
+        ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.zoning_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'LAKE' and city_name = 'MINNEOLA'"]
+      ],
+      "lake_montverde": [
+        ["python3", "/srv/tools/python/lib/ags_extract_data2.py", "zoning_montverde", "delete", "15"],
+        "ogrinfo",
+        ["python3", "/srv/tools/python/lib/update_zoning2.py", "lake", "montverde"],
+        ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.zoning_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'LAKE' and city_name = 'MONTVERDE'"]
+      ],
+      "lake_mount_dora": [
+        ["python3", "/srv/tools/python/lib/ags_extract_data2.py", "zoning_mount_dora", "delete", "15"],
+        "ogrinfo",
+        ["python3", "/srv/tools/python/lib/update_zoning2.py", "lake", "mount_dora"],
+        ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.zoning_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'LAKE' and city_name = 'MOUNT_DORA'"]
+      ],
+      "lake_tavares": [
+        ["python3", "/srv/tools/python/lib/ags_extract_data2.py", "zoning_tavares", "delete", "15"],
+        "ogrinfo",
+        ["python3", "/srv/tools/python/lib/update_zoning2.py", "lake", "tavares"],
+        ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.zoning_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'LAKE' and city_name = 'TAVARES'"]
+      ],
+      "lake_umatilla": [
+        ["python3", "/srv/tools/python/lib/ags_extract_data2.py", "zoning_umatilla", "delete", "15"],
+        "ogrinfo",
+        ["python3", "/srv/tools/python/lib/update_zoning2.py", "lake", "umatilla"],
+        ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.zoning_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'LAKE' and city_name = 'UMATILLA'"]
+      ],
+      "lake_unincorporated": [
+        ["python3", "/srv/tools/python/lib/ags_extract_data2.py", "zoning_lake_unincorp", "delete", "15"],
+        "ogrinfo",
+        ["python3", "/srv/tools/python/lib/update_zoning2.py", "lake", "unincorporated"],
+        ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.zoning_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'LAKE' and city_name = 'UNINCORPORATED'"]
+      ],
       "orange_apopka": [
         ["python3", "/srv/tools/python/lib/ags_extract_data2.py", "zoning_apopka", "delete", "15"],
         "ogrinfo",
