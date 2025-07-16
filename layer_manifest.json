@@ -521,6 +521,30 @@
         "ogrinfo",
         ["python3", "/srv/tools/python/lib/update_zoning2.py", "pinellas", "unincorporated"],
         ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.zoning_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'PINELLAS' and city_name = 'UNINCORPORATED'"]
+      ],
+      "polk_lakeland": [
+        ["unzip", "-oj", "Zoning.zip"],
+        "ogrinfo",
+        ["python3", "/srv/tools/python/lib/update_zoning2.py", "polk", "lakeland"],
+        ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.zoning_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'POLK' and city_name = 'LAKELAND'"]
+      ],
+      "putnam_unincorporated": [
+        ["mv", "Zoning_Distritcs_hub.cpg", "zoning_putnam_unincorporated.cpg"],
+        ["mv", "Zoning_Distritcs_hub.dbf", "zoning_putnam_unincorporated.dbf"],
+        ["mv", "Zoning_Distritcs_hub.prj", "zoning_putnam_unincorporated.prj"],
+        ["mv", "Zoning_Distritcs_hub.shx", "zoning_putnam_unincorporated.shx"],
+        ["mv", "Zoning_Distritcs_hub.xml", "zoning_putnam_unincorporated.xml"],
+        ["mv", "Zoning_Distritcs_hub.shp", "zoning_putnam_unincorporated.shp"],
+        "ogrinfo",
+        ["python3", "/srv/tools/python/lib/update_zoning2.py", "putnam", "unincorporated"],
+        ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.zoning_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'PUTNAM' and city_name = 'UNINCORPORATED'"]
+      ],
+      "santa_rosa_unincorporated": [
+        ["unzip", "-oj", "zoning.zip"],
+        ["zip_rename_date.sh", "Zoning.zip"],
+        "ogrinfo",
+        ["python3", "/srv/tools/python/lib/update_zoning2.py", "santa_rosa", "unincorporated"],
+        ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.zoning_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'SANTA_ROSA' and city_name = 'UNINCORPORATED'"]
       ]
     }
   },
