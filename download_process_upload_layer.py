@@ -299,47 +299,47 @@ def set_queue(layer, entities):
     # -----------------------------------
     if not entities:
         logging.info(f"No entities specified, queuing all {len(layer_entities)} entities for layer '{layer}'")
-        return sorted(layer_entities)
+        queue = sorted(layer_entities)
+    else:
+        # Allow entities to be supplied as list (from argparse); also support old
+        # behaviour where a *single* entity string could be passed.
+        if isinstance(entities, str):
+            entities = [entities]
 
-    # Allow entities to be supplied as list (from argparse); also support old
-    # behaviour where a *single* entity string could be passed.
-    if isinstance(entities, str):
-        entities = [entities]
+        invalid = [e for e in entities if '*' not in e and '?' not in e and e not in layer_entities and e not in counties]
+        if invalid:
+            raise ValueError(f"Invalid entity/ies specified: {invalid}")
 
-    invalid = [e for e in entities if '*' not in e and '?' not in e and e not in layer_entities and e not in counties]
-    if invalid:
-        raise ValueError(f"Invalid entity/ies specified: {invalid}")
-
-    # -------------------------------------------------
-    # Expand wildcard patterns (alachua_* etc.)
-    # -------------------------------------------------
-    expanded = []
-    for pattern in entities:
-        if '*' in pattern or '?' in pattern:
-            matches = fnmatch.filter(layer_entities, pattern)
-            if not matches:
-                logging.warning(f"Pattern '{pattern}' matched no entities in manifest; skipping.")
+        # -------------------------------------------------
+        # Expand wildcard patterns (alachua_* etc.)
+        # -------------------------------------------------
+        expanded = []
+        for pattern in entities:
+            if '*' in pattern or '?' in pattern:
+                matches = fnmatch.filter(layer_entities, pattern)
+                if not matches:
+                    logging.warning(f"Pattern '{pattern}' matched no entities in manifest; skipping.")
+                else:
+                    logging.info(f"Pattern '{pattern}' expanded to {len(matches)} entities.")
+                    expanded.extend(matches)
             else:
-                logging.info(f"Pattern '{pattern}' expanded to {len(matches)} entities.")
-                expanded.extend(matches)
-        else:
-            expanded.append(pattern)
+                expanded.append(pattern)
 
-    # Deduplicate while preserving order
-    seen = set()
-    queue = []
-    for e in expanded:
-        if e not in seen:
-            queue.append(e)
-            seen.add(e)
+        # Deduplicate while preserving order
+        seen = set()
+        queue = []
+        for e in expanded:
+            if e not in seen:
+                queue.append(e)
+                seen.add(e)
 
-    # Filter out blacklisted entities
+    # Filter out blacklisted entities (applies to all cases)
     if SKIP_ENTITIES:
         original_count = len(queue)
+        skipped_entities = [e for e in queue if e in SKIP_ENTITIES]
         queue = [e for e in queue if e not in SKIP_ENTITIES]
         skipped_count = original_count - len(queue)
         if skipped_count > 0:
-            skipped_entities = [e for e in expanded if e in SKIP_ENTITIES]
             logging.info(f"Skipped {skipped_count} blacklisted entities: {sorted(skipped_entities)}")
 
     return queue
@@ -1306,6 +1306,11 @@ def main():
     try:
         # 1. Set the queue of entities to process
         queue = set_queue(args.layer, args.entities)
+
+        # Check if queue is empty after blacklist filtering
+        if not queue:
+            logging.info("No entities to process.")
+            return
 
         # 2. Download and process the layer for each entity
         results = download_process_layer(args.layer, queue)
