@@ -363,22 +363,30 @@ def _run_command(command, work_dir, logger):
     # Using shell=False and passing command as a list is more secure
     process = subprocess.run(command, cwd=work_dir, capture_output=True, text=True)
 
+    # For download_data.py commands, check for no new data conditions
+    if (len(command) > 1 and 'download_data.py' in command[1]):
+        # Check for exit code 1 from download_data.py (indicates no new data)
+        if process.returncode == 1:
+            logger.info("download_data.py returned exit code 1 - no new data available - skipping entity")
+            raise SkipEntityError("No new data available from server", layer=None, entity=None)
+        # Check for "not modified" messages in output when exit code is 0
+        elif process.returncode == 0:
+            stdout_lower = process.stdout.lower()
+            if (
+                '304 not modified' in stdout_lower
+                or 'not modified on server' in stdout_lower
+                or 'omitting download' in stdout_lower
+                or 'no new data available from server' in stdout_lower
+            ):
+                logger.info("download_data.py indicates no new data available - skipping entity")
+                raise SkipEntityError("No new data available from server", layer=None, entity=None)
+
+    # Only after skip logic, check for generic errors
     if process.returncode != 0:
         logger.error(f"Error executing command: {' '.join(command)}")
         logger.error(f"STDOUT: {process.stdout}")
         logger.error(f"STDERR: {process.stderr}")
         raise ProcessingError(f"Command failed with exit code {process.returncode}")
-    
-    # For download_data.py commands, parse output for 'not modified' messages to detect no new data
-    if (len(command) > 1 and 'download_data.py' in command[1] and process.returncode == 0):
-        stdout_lower = process.stdout.lower()
-        if (
-            '304 not modified' in stdout_lower
-            or 'not modified on server' in stdout_lower
-            or 'omitting download' in stdout_lower
-        ):
-            logger.info("download_data.py indicates no new data available - skipping entity")
-            raise SkipEntityError("No new data available from server", layer=None, entity=None)
     
     logger.debug(f"Command output: {process.stdout}")
     return process.stdout

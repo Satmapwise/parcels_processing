@@ -110,7 +110,7 @@
         ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.zoning_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'CHARLOTTE' and city_name = 'PUNTA_GORDA'"]
       ],
       "charlotte_unincorporated": [
-        ["python3", "/srv/tools/python/lib/download_data.py", "/data/zoning/charlotte/unincorporated"],
+        ["python3", "/srv/tools/python/layers_scraping/download_tools/download_data.py", "/data/zoning/charlotte/unincorporated"],
         ["unzip", "-oj", "zoning.zip"],
         ["zip_rename_date.sh", "zoning.zip"],
         "ogrinfo",

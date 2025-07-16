@@ -22,7 +22,7 @@
 #   src_url
 
 
-import sys,os,fileinput,string,math,psycopg2,io,datetime
+import sys,os,fileinput,string,math,psycopg2,io,datetime,subprocess
 import psycopg2.extras, smtplib, textwrap
 
 
@@ -79,11 +79,25 @@ def download_data(resource) :
             print("sys_raw_folder: '", sys_raw_folder,"' does not exist")
             return
 
-        # use python utlib2?
-        # or just use wget because we can use some of its features like checking to see if a newer version exists
+        # use subprocess.run to capture wget output
         mycmd = """wget -N """ + src_url_file
         print(mycmd)
-        os.system(mycmd)
+        
+        # Run wget and capture output
+        result = subprocess.run(mycmd, shell=True, capture_output=True, text=True)
+        
+        # Print the output so parent script can parse it
+        print(result.stdout)
+        if result.stderr:
+            print(result.stderr)
+        
+        # Check if no new data was available
+        output_lower = (result.stdout + result.stderr).lower()
+        if ('304 not modified' in output_lower or 
+            'not modified on server' in output_lower or 
+            'omitting download' in output_lower):
+            print("No new data available from server")
+            return 1  # Return exit code 1 to indicate no new data
     else :
         print("src_url_file: '", src_url_file,"' does not exist")
         return
@@ -116,5 +130,7 @@ except:
     sys.exit(0)
 
 
-download_data(resource)
+exit_code = download_data(resource)
+if exit_code:
+    sys.exit(exit_code)
 
