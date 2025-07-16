@@ -647,6 +647,22 @@
         "ogrinfo",
         ["python3", "/srv/tools/python/lib/update_zoning2.py", "sumter", "unincorporated"],
         ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.zoning_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'SUMTER' and city_name = 'UNINCORPORATED'"]
+      ],
+      "volusia_countywide": [
+        "ogrinfo",
+        ["python3", "/srv/tools/python/lib/update_zoning2.py", "volusia", "countywide"],
+        ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.zoning_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'VOLUSIA' and city_name = 'COUNTYWIDE'"]
+      ],
+      "volusia_daytona_beach": [
+        "ogrinfo",
+        ["python3", "/srv/tools/python/lib/update_zoning2.py", "volusia", "daytona_beach"],
+        ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.zoning_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'VOLUSIA' and city_name = 'DAYTONA_BEACH'"]
+      ],
+      "walton_unincorporated": [
+        ["python3", "/srv/tools/python/lib/ags_extract_data2.py", "zoning_walton", "delete", "15"],
+        "ogrinfo",
+        ["python3", "/srv/tools/python/lib/update_zoning2.py", "walton", "unincorporated"],
+        ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.zoning_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'WALTON' and city_name = 'UNINCORPORATED'"]
       ]
     }
   },
