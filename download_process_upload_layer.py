@@ -1059,7 +1059,7 @@ def generate_summary(results):
     layer = results[0]['layer']
     summary_filename = f"{layer}_summary_{CONFIG.start_time.strftime('%Y-%m-%d')}.csv"
     
-    headers = ['layer', 'entity', 'status', 'data_date', 'warning', 'error', 'runtime_seconds']
+    headers = ['layer', 'entity', 'status', 'runtime_seconds', 'data_date', 'warning', 'error']
     
     # Calculate summary statistics
     def calculate_summary_stats(all_results):
@@ -1126,12 +1126,12 @@ def generate_summary(results):
             # Create summary row
             summary_row = {
                 'layer': layer,
-                'entity': f'SUMMARY_{CONFIG.start_time.strftime("%Y-%m-%d_%H-%M-%S")}',
-                'status': f'Total: {stats["total_entities"]}, Success: {stats["successful"]}, Skipped: {stats["skipped"]}, Failed: {stats["failed"]}',
-                'data_date': '',
-                'warning': '',
-                'error': '',
-                'runtime_seconds': f'{stats["overall_runtime"]:.2f}'
+                'entity': f'SUMMARY_{CONFIG.start_time.strftime("%H-%M")}',
+                'status': f'Total: {stats["total_entities"]}',
+                'runtime_seconds': f'{stats["overall_runtime"]:.2f}',
+                'data_date': f'Success: {stats["successful"]}',
+                'warning': f'Skipped: {stats["skipped"]}',
+                'error': f'Failed: {stats["failed"]}'
             }
             
             # Write back all rows (existing + updated + new + summary) in alphabetical order
@@ -1153,12 +1153,12 @@ def generate_summary(results):
             # Create summary row
             summary_row = {
                 'layer': layer,
-                'entity': f'SUMMARY_{CONFIG.start_time.strftime("%Y-%m-%d_%H-%M-%S")}',
-                'status': f'Total: {stats["total_entities"]}, Success: {stats["successful"]}, Skipped: {stats["skipped"]}, Failed: {stats["failed"]}',
-                'data_date': '',
-                'warning': '',
-                'error': '',
-                'runtime_seconds': f'{stats["overall_runtime"]:.2f}'
+                'entity': f'SUMMARY_{CONFIG.start_time.strftime("%H-%M")}',
+                'status': f'Total: {stats["total_entities"]}',
+                'runtime_seconds': f'{stats["overall_runtime"]:.2f}',
+                'data_date': f'Success: {stats["successful"]}',
+                'warning': f'Skipped: {stats["skipped"]}',
+                'error': f'Failed: {stats["failed"]}'
             }
             
             # Create new file
