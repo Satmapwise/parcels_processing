@@ -1002,5 +1002,71 @@
       "psql -d gislib -U postgres -p 5432 -c \"INSERT INTO zoning (zon_code,zon_code2,zon_desc,zon_gen,ord_num,city_name,county_name,notes,the_geom)",
       "psql -d gislib -U postgres -p 5432 -c \"DROP TABLE raw_zon_sarasota_venice_2;\""
     ]
+  },
+  "seminole_casselberry": {
+    "basename": "raw_zon_seminole_casselberry",
+    "remote_backup": "/home/bmay/incoming/raw_zon_seminole_casselberry.backup",
+    "remote_bat": "/home/bmay/incoming/raw_zon_seminole_casselberry.bat",
+    "commands": [
+      "pg_restore -p 5432 -U postgres -d gislib -v \"/home/bmay/incoming/raw_zon_seminole_casselberry.backup\"",
+      "psql -p 5432 -U postgres -d gislib -c \"DELETE FROM zoning WHERE city_name = 'CASSELBERRY' and county_name = 'SEMINOLE';\"",
+      "psql -d gislib -U postgres -p 5432 -c \"INSERT INTO zoning (zon_code,zon_code2,zon_desc,zon_gen,ord_num,city_name,county_name,notes,the_geom)",
+      "psql -d gislib -U postgres -p 5432 -c \"DROP TABLE raw_zon_seminole_casselberry_2;\""
+    ]
+  },
+  "seminole_lake_mary": {
+    "basename": "raw_zon_seminole_lake_mary",
+    "remote_backup": "/home/bmay/incoming/raw_zon_seminole_lake_mary.backup",
+    "remote_bat": "/home/bmay/incoming/raw_zon_seminole_lake_mary.bat",
+    "commands": [
+      "pg_restore -p 5432 -U postgres -d gislib -v \"/home/bmay/incoming/raw_zon_seminole_lake_mary.backup\"",
+      "psql -p 5432 -U postgres -d gislib -c \"DELETE FROM zoning WHERE city_name = 'LAKE_MARY' and county_name = 'SEMINOLE';\"",
+      "psql -d gislib -U postgres -p 5432 -c \"INSERT INTO zoning (zon_code,zon_code2,zon_desc,zon_gen,ord_num,city_name,county_name,notes,the_geom)",
+      "psql -d gislib -U postgres -p 5432 -c \"DROP TABLE raw_zon_seminole_lake_mary_2;\""
+    ]
+  },
+  "seminole_longwood": {
+    "basename": "raw_zon_seminole_longwood",
+    "remote_backup": "/home/bmay/incoming/raw_zon_seminole_longwood.backup",
+    "remote_bat": "/home/bmay/incoming/raw_zon_seminole_longwood.bat",
+    "commands": [
+      "pg_restore -p 5432 -U postgres -d gislib -v \"/home/bmay/incoming/raw_zon_seminole_longwood.backup\"",
+      "psql -p 5432 -U postgres -d gislib -c \"DELETE FROM zoning WHERE city_name = 'LONGWOOD' and county_name = 'SEMINOLE';\"",
+      "psql -d gislib -U postgres -p 5432 -c \"INSERT INTO zoning (zon_code,zon_code2,zon_desc,zon_gen,ord_num,city_name,county_name,notes,the_geom)",
+      "psql -d gislib -U postgres -p 5432 -c \"DROP TABLE raw_zon_seminole_longwood_2;\""
+    ]
+  },
+  "seminole_oviedo": {
+    "basename": "raw_zon_seminole_oviedo",
+    "remote_backup": "/home/bmay/incoming/raw_zon_seminole_oviedo.backup",
+    "remote_bat": "/home/bmay/incoming/raw_zon_seminole_oviedo.bat",
+    "commands": [
+      "pg_restore -p 5432 -U postgres -d gislib -v \"/home/bmay/incoming/raw_zon_seminole_oviedo.backup\"",
+      "psql -p 5432 -U postgres -d gislib -c \"DELETE FROM zoning WHERE city_name = 'OVIEDO' and county_name = 'SEMINOLE';\"",
+      "psql -d gislib -U postgres -p 5432 -c \"INSERT INTO zoning (zon_code,zon_code2,zon_desc,zon_gen,ord_num,city_name,county_name,notes,the_geom)",
+      "psql -d gislib -U postgres -p 5432 -c \"DROP TABLE raw_zon_seminole_oviedo_2;\""
+    ]
+  },
+  "seminole_sanford": {
+    "basename": "raw_zon_seminole_sanford",
+    "remote_backup": "/home/bmay/incoming/raw_zon_seminole_sanford.backup",
+    "remote_bat": "/home/bmay/incoming/raw_zon_seminole_sanford.bat",
+    "commands": [
+      "pg_restore -p 5432 -U postgres -d gislib -v \"/home/bmay/incoming/raw_zon_seminole_sanford.backup\"",
+      "psql -p 5432 -U postgres -d gislib -c \"DELETE FROM zoning WHERE city_name = 'SANFORD' and county_name = 'SEMINOLE';\"",
+      "psql -d gislib -U postgres -p 5432 -c \"INSERT INTO zoning (zon_code,zon_code2,zon_desc,zon_gen,ord_num,city_name,county_name,notes,the_geom)",
+      "psql -d gislib -U postgres -p 5432 -c \"DROP TABLE raw_zon_seminole_sanford_2;\""
+    ]
+  },
+  "seminole_winter_springs": {
+    "basename": "raw_zon_seminole_winter_springs",
+    "remote_backup": "/home/bmay/incoming/raw_zon_seminole_winter_springs.backup",
+    "remote_bat": "/home/bmay/incoming/raw_zon_seminole_winter_springs.bat",
+    "commands": [
+      "pg_restore -p 5432 -U postgres -d gislib -v \"/home/bmay/incoming/raw_zon_seminole_winter_springs.backup\"",
+      "psql -p 5432 -U postgres -d gislib -c \"DELETE FROM zoning WHERE city_name = 'WINTER_SPRINGS' and county_name = 'SEMINOLE';\"",
+      "psql -d gislib -U postgres -p 5432 -c \"INSERT INTO zoning (zon_code,zon_code2,zon_desc,zon_gen,ord_num,city_name,county_name,notes,the_geom)",
+      "psql -d gislib -U postgres -p 5432 -c \"DROP TABLE raw_zon_seminole_winter_springs_2;\""
+    ]
   }
 }
