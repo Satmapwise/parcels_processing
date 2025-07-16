@@ -5,66 +5,66 @@
         ["python3", "/srv/tools/python/lib/ags_extract_data2.py", "zoning_alachua_city", "delete", "15"],
         "ogrinfo",
         ["python3", "/srv/tools/python/lib/update_zoning2.py", "alachua", "alachua"],
-        ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.zoning_transform SET shp_name = '{shp}', epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'ALACHUA' and city_name = 'ALACHUA'"]
+        ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.zoning_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'ALACHUA' and city_name = 'ALACHUA'"]
       ],
       "alachua_archer": [
         ["python3", "/srv/tools/python/lib/ags_extract_data2.py", "zoning_archer", "delete", "15"],
         "ogrinfo",
         ["python3", "/srv/tools/python/lib/update_zoning2.py", "alachua", "archer"],
-        ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.zoning_transform SET shp_name = '{shp}', epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'ALACHUA' and city_name = 'ARCHER'"]
+        ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.zoning_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'ALACHUA' and city_name = 'ARCHER'"]
       ],
       "alachua_gainesville": [
         ["python3", "/srv/tools/python/lib/ags_extract_data2.py", "zoning_gainesville", "delete", "15"],
         "ogrinfo",
         ["python3", "/srv/tools/python/lib/update_zoning2.py", "alachua", "gainesville"],
-        ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.zoning_transform SET shp_name = '{shp}', epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'ALACHUA' and city_name = 'GAINESVILLE'"]
+        ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.zoning_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'ALACHUA' and city_name = 'GAINESVILLE'"]
       ],
       "alachua_hawthorne": [
         ["python3", "/srv/tools/python/lib/ags_extract_data2.py", "zoning_hawthorne", "delete", "15"],
         "ogrinfo",
         ["python3", "/srv/tools/python/lib/update_zoning2.py", "alachua", "hawthorne"],
-        ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.zoning_transform SET shp_name = '{shp}', epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'ALACHUA' and city_name = 'HAWTHORNE'"]
+        ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.zoning_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'ALACHUA' and city_name = 'HAWTHORNE'"]
       ],
       "alachua_high_springs": [
         ["python3", "/srv/tools/python/lib/ags_extract_data2.py", "zoning_high_springs", "delete", "15"],
         "ogrinfo",
         ["python3", "/srv/tools/python/lib/update_zoning2.py", "alachua", "high_springs"],
-        ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.zoning_transform SET shp_name = '{shp}', epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'ALACHUA' and city_name = 'HIGH_SPRINGS'"]
+        ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.zoning_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'ALACHUA' and city_name = 'HIGH_SPRINGS'"]
       ],
       "alachua_lacrosse": [
         ["python3", "/srv/tools/python/lib/ags_extract_data2.py", "zoning_lacrosse", "delete", "15"],
         "ogrinfo",
         ["python3", "/srv/tools/python/lib/update_zoning2.py", "alachua", "lacrosse"],
-        ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.zoning_transform SET shp_name = '{shp}', epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'ALACHUA' and city_name = 'LACROSSE'"]
+        ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.zoning_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'ALACHUA' and city_name = 'LACROSSE'"]
       ],
       "alachua_micanopy": [
         ["python3", "/srv/tools/python/lib/ags_extract_data2.py", "zoning_micanopy", "delete", "15"],
         "ogrinfo",
         ["python3", "/srv/tools/python/lib/update_zoning2.py", "alachua", "micanopy"],
-        ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.zoning_transform SET shp_name = '{shp}', epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'ALACHUA' and city_name = 'MICANOPY'"]
+        ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.zoning_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'ALACHUA' and city_name = 'MICANOPY'"]
       ],
       "alachua_newberry": [
         ["python3", "/srv/tools/python/lib/ags_extract_data2.py", "zoning_newberry", "delete", "15"],
         "ogrinfo",
         ["python3", "/srv/tools/python/lib/update_zoning2.py", "alachua", "newberry"],
-        ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.zoning_transform SET shp_name = '{shp}', epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'ALACHUA' and city_name = 'NEWBERRY'"]
+        ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.zoning_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'ALACHUA' and city_name = 'NEWBERRY'"]
       ],
       "alachua_unincorporated": [
         ["python3", "/srv/tools/python/lib/ags_extract_data2.py", "zoning_alachua_unincorporated", "delete", "15"],
         "ogrinfo",
         ["python3", "/srv/tools/python/lib/update_zoning2.py", "alachua", "unincorporated"],
-        ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.zoning_transform SET shp_name = '{shp}', epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'ALACHUA' and city_name = 'UNINCORPORATED'"]
+        ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.zoning_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'ALACHUA' and city_name = 'UNINCORPORATED'"]
       ],
       "alachua_waldo": [
         ["python3", "/srv/tools/python/lib/ags_extract_data2.py", "zoning_waldo", "delete", "15"],
         "ogrinfo",
         ["python3", "/srv/tools/python/lib/update_zoning2.py", "alachua", "waldo"],
-        ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.zoning_transform SET shp_name = '{shp}', epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'ALACHUA' and city_name = 'WALDO'"]
+        ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.zoning_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'ALACHUA' and city_name = 'WALDO'"]
       ],
       "baker_unincorporated": [
         "ogrinfo",
         ["python3", "/srv/tools/python/lib/update_zoning2.py", "baker", "unincorporated"],
-        ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.zoning_transform SET shp_name = '{shp}', epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'BAKER' and city_name = 'UNINCORPORATED'"]
+        ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.zoning_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'BAKER' and city_name = 'UNINCORPORATED'"]
       ],
       "bay_unincorporated": [
         ["python3", "/srv/tools/python/lib/download_data.py", "/data/zoning/bay/unincorporated"],
@@ -73,7 +73,7 @@
         "ogrinfo",
         ["ogr2ogr", "-explodecollections", "Zoning_single.shp", "Zoning.shp"],
         ["python3", "/srv/tools/python/lib/update_zoning2.py", "bay", "unincorporated"],
-        ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.zoning_transform SET shp_name = 'Zoning_single.shp', epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'BAY' and city_name = 'UNINCORPORATED'"]
+        ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.zoning_transform SET shp_name = 'Zoning_single.shp', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'BAY' and city_name = 'UNINCORPORATED'"]
       ],
       "hillsborough_plant_city": [
         ["python3", "/srv/tools/python/lib/ags_extract_data2.py", "zoning_plant_city", "delete", "15"],
@@ -84,47 +84,47 @@
       "hillsborough_tampa": [
         "ogrinfo",
         ["python3", "/srv/tools/python/lib/update_zoning2.py", "hillsborough", "tampa"],
-        ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.zoning_transform SET shp_name = '{shp}', epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'HILLSBOROUGH' and city_name = 'TAMPA'"]
+        ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.zoning_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'HILLSBOROUGH' and city_name = 'TAMPA'"]
       ],
       "hillsborough_temple_terrace": [
         ["python3", "/srv/tools/python/lib/ags_extract_data2.py", "zoning_temple_terrace", "delete", "15"],
         "ogrinfo",
         ["python3", "/srv/tools/python/lib/update_zoning2.py", "hillsborough", "temple_terrace"],
-        ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.zoning_transform SET shp_name = '{shp}', epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'HILLSBOROUGH' and city_name = 'TEMPLE_TERRACE'"]
+        ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.zoning_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'HILLSBOROUGH' and city_name = 'TEMPLE_TERRACE'"]
       ],
       "hillsborough_unincorporated": [
         ["python3", "/srv/tools/python/lib/ags_extract_data2.py", "zoning_hillsborough_unincorporated", "delete", "15"],
         "ogrinfo",
         ["python3", "/srv/tools/python/lib/update_zoning2.py", "hillsborough", "unincorporated"],
-        ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.zoning_transform SET shp_name = '{shp}', epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'HILLSBOROUGH' and city_name = 'UNINCORPORATED'"]
+        ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.zoning_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'HILLSBOROUGH' and city_name = 'UNINCORPORATED'"]
       ],
       "orange_apopka": [
         ["python3", "/srv/tools/python/lib/ags_extract_data2.py", "zoning_apopka", "delete", "15"],
         "ogrinfo",
         ["python3", "/srv/tools/python/lib/update_zoning2.py", "orange", "apopka"],
-        ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.zoning_transform SET shp_name = '{shp}', epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'ORANGE' and city_name = 'APOPKA'"]
+        ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.zoning_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'ORANGE' and city_name = 'APOPKA'"]
       ],
       "orange_eatonville": [
         "ogrinfo",
         ["python3", "/srv/tools/python/lib/update_zoning2.py", "orange", "eatonville"],
-        ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.zoning_transform SET shp_name = '{shp}', epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'ORANGE' and city_name = 'EATONVILLE'"]
+        ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.zoning_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'ORANGE' and city_name = 'EATONVILLE'"]
       ],
       "orange_ocoee": [
         ["python3", "/srv/tools/python/lib/ags_extract_data2.py", "zoning_ocoee", "delete", "15"],
         "ogrinfo",
         ["python3", "/srv/tools/python/lib/update_zoning2.py", "orange", "ocoee"],
-        ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.zoning_transform SET shp_name = '{shp}', epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'ORANGE' and city_name = 'OCOEE'"]
+        ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.zoning_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'ORANGE' and city_name = 'OCOEE'"]
       ],
       "orange_orlando": [
         "ogrinfo",
         ["python3", "/srv/tools/python/lib/update_zoning2.py", "orange", "orlando"],
-        ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.zoning_transform SET shp_name = '{shp}', epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'ORANGE' and city_name = 'ORLANDO'"]
+        ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.zoning_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'ORANGE' and city_name = 'ORLANDO'"]
       ],
       "orange_unincorporated": [
         ["python3", "/srv/tools/python/lib/download_data.py", "/data/zoning/orange/unincorporated"],
         "ogrinfo",
         ["python3", "/srv/tools/python/lib/update_zoning2.py", "orange", "unincorporated"],
-        ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.zoning_transform SET shp_name = '{shp}', epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'ORANGE' and city_name = 'UNINCORPORATED'"]
+        ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.zoning_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'ORANGE' and city_name = 'UNINCORPORATED'"]
       ]
     }
   },
