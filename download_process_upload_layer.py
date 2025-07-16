@@ -178,8 +178,9 @@ entities = {
 class Config:
     def __init__(self, 
                  test_mode=False, debug=True, isolate_logs=False,
-                 run_download=False, run_metadata=True, run_processing=True, run_upload=True,
-                 generate_summary=False, remote_enabled=False, remote_execute=False
+                 run_download=False, run_metadata=True, run_processing=True, 
+                 generate_json=True, run_upload=False, remote_enabled=False, remote_execute=False,
+                 generate_summary=False
                  ):
         """
         Configuration class to hold script settings.
@@ -191,13 +192,20 @@ class Config:
         self.run_download = run_download # Run the download phase
         self.run_metadata = run_metadata # Run the metadata extraction phase
         self.run_processing = run_processing # Run the processing phase
-        self.run_upload = run_upload # Run the upload phase
-        self.generate_summary = generate_summary # Generate a summary file
-        self.remote_enabled = remote_enabled # Run the upload phase
-        if self.test_mode == True:
+        self.generate_summary = generate_summary # Generate a summary file 
+        self.generate_json = generate_json # Generate a json file (nulls upload)
+        if self.generate_json == True:
+            self.run_upload = False
+            self.remote_enabled = False
             self.remote_execute = False
-        else:
-            self.remote_execute = remote_execute # Run the upload phase (if remote_enabled is True)
+        else: 
+            self.run_upload = run_upload # Run the upload phase
+            self.remote_enabled = remote_enabled # Connect to remote hosts
+            if self.test_mode == True:
+                self.remote_execute = False
+            else:
+                self.remote_execute = remote_execute # Run transfer and execute remote commands
+        
         # More configuration can be added here
         # e.g. database credentials, server details
         # For now, keeping it simple
@@ -747,6 +755,9 @@ def upload_layer(results):
 
     logging.info("All uploads completed.")
 
+# Function to generate the upload plan json
+def generate_json(results):
+    pass
 
 # Function to generate a summary
 def generate_summary(results):
@@ -1236,7 +1247,9 @@ def main():
         results = download_process_layer(args.layer, queue)
 
         # 3. Upload the processed data
-        if CONFIG.run_upload == True:
+        if CONFIG.generate_json == True:
+            generate_json(results)
+        elif CONFIG.run_upload == True:
             upload_layer(results)
         else:
             logging.info(f"Skipping upload for layer '{args.layer}' (disabled in config)")
