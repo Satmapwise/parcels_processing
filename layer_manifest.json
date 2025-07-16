@@ -153,7 +153,7 @@
         ["python3", "/srv/tools/python/lib/download_data.py", "/data/zoning/duval/jacksonville"],
         ["unzip", "-o", "zoning.zip"],
         ["zip_rename_date.sh", "zoning.zip"],
-        ["shpmv", "ZONING_20240423.shp", "zoning_duval.shp"],
+        ["/srv/tools/bash/shpmv.sh", "ZONING_20240423.shp", "zoning_duval.shp"],
         "ogrinfo",
         ["python3", "/srv/tools/python/lib/update_zoning2.py", "duval", "jacksonville"],
         ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.zoning_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'DUVAL' and city_name = 'JACKSONVILLE'"]
