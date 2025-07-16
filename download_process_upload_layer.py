@@ -184,7 +184,7 @@ entities = {
 class Config:
     def __init__(self, 
                  test_mode=False, debug=True, isolate_logs=True,
-                 run_download=True, run_metadata=True, run_processing=True, 
+                 run_download=False, run_metadata=True, run_processing=True, 
                  generate_json=True, run_upload=False, remote_enabled=False, remote_execute=False,
                  generate_summary=True
                  ):
@@ -770,7 +770,10 @@ def download_process_layer(layer, queue):
 
                 # Run the command
                 if _looks_like_download(cmd_list): # Detects download commands
-                    logging.debug(f"Running download command: {cmd_list}")
+                    if CONFIG.run_download == True:
+                        logging.debug(f"Running download command: {cmd_list}")
+                    else:
+                        logging.debug(f"Skipping download command: {cmd_list} (disabled in config)")
                     download_step_found = True  # Mark that we found a download step
                     if CONFIG.run_download == True:
                         entity_logger.debug(f"Running download for {layer}/{entity}")
@@ -930,7 +933,9 @@ def upload_layer(results):
 
 # Function to generate the upload plan json
 def generate_json(results):
-    """Generate a JSON file containing upload plans for all entities that have them."""
+    """Generate a JSON file containing upload plans for all entities that have them.
+    If the file exists, merge new plans in, overwriting by entity, and sort alphabetically."""
+    
     if not results:
         logging.warning("No results to generate JSON for.")
         return
@@ -948,23 +953,40 @@ def generate_json(results):
     
     logging.info(f"Generating upload plans JSON file: {json_filename}")
     
-    # Structure the data for JSON output
-    upload_plans = {}
+    # Structure the data for JSON output (new plans)
+    new_upload_plans = {}
     for item in items_with_plans:
         plan = item['upload_plan']
-        upload_plans[item['entity']] = {
+        new_upload_plans[item['entity']] = {
             'basename': plan['basename'],
             'remote_backup': plan['remote_backup'],
             'remote_bat': plan['remote_bat'],
             'commands': plan['commands']
         }
     
+    # If file exists, load and merge
+    if os.path.exists(json_filename):
+        try:
+            with open(json_filename, 'r') as jsonfile:
+                existing_upload_plans = json.load(jsonfile)
+        except Exception as e:
+            logging.error(f"Could not read existing JSON file: {e}")
+            existing_upload_plans = {}
+        # Merge: overwrite existing with new
+        existing_upload_plans.update(new_upload_plans)
+        merged_upload_plans = existing_upload_plans
+    else:
+        merged_upload_plans = new_upload_plans
+    
+    # Sort by entity name
+    sorted_upload_plans = {k: merged_upload_plans[k] for k in sorted(merged_upload_plans)}
+    
     # Write the JSON file
     try:
         with open(json_filename, 'w') as jsonfile:
-            json.dump(upload_plans, jsonfile, indent=2)
+            json.dump(sorted_upload_plans, jsonfile, indent=2)
         logging.info(f"Upload plans JSON file generated successfully: {json_filename}")
-        logging.info(f"Generated plans for {len(upload_plans)} out of {len(results)} entities")
+        logging.info(f"Generated plans for {len(sorted_upload_plans)} entities (merged mode)")
     except IOError as e:
         logging.error(f"Could not write JSON file: {e}")
         raise
