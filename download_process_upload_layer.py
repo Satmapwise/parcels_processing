@@ -184,7 +184,7 @@ entities = {
 class Config:
     def __init__(self, 
                  test_mode=False, debug=True, isolate_logs=True,
-                 run_download=True, run_metadata=True, run_processing=True, 
+                 run_download=False, run_metadata=True, run_processing=True, 
                  generate_json=True, run_upload=False, remote_enabled=False, remote_execute=False,
                  generate_summary=True
                  ):
@@ -386,7 +386,7 @@ def _run_command(command, work_dir, logger):
         logger.error(f"Error executing command: {' '.join(command)}")
         logger.error(f"STDOUT: {process.stdout}")
         logger.error(f"STDERR: {process.stderr}")
-        raise ProcessingError(f"Command failed with exit code {process.returncode}")
+        raise ProcessingError(f"Command failed with exit code {process.returncode}: {' '.join(command)}")
     
     logger.debug(f"Command output: {process.stdout}")
     return process.stdout
@@ -1392,6 +1392,11 @@ def resolve_work_dir(layer: str, entity: str):
             county = 'hillsborough'
             city = 'plant_city'
             work_dir = '/mnt/sdb/datascrub/08_Land_Use_and_Zoning/zoning/florida/county/hillsborough/current/source_data/plant_city'
+            return work_dir, county, city
+        elif layer == 'zoning' and entity == 'duval_unified':
+            county = 'duval'
+            city = 'jacksonville'
+            work_dir = '/srv/datascrub/08_Land_Use_and_Zoning/zoning/florida/county/duval/current/source_data/jacksonville'
             return work_dir, county, city
         template = WORK_DIR_PATTERNS.get(layer, os.path.join('data', '{layer}', '{county}', '{city}'))
         needs_city = '{city}' in template
