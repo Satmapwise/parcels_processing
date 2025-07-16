@@ -918,7 +918,7 @@ def generate_json(results):
         with open(json_filename, 'w') as jsonfile:
             json.dump(upload_plans, jsonfile, indent=2)
         logging.info(f"Upload plans JSON file generated successfully: {json_filename}")
-        logging.info(f"Generated plans for {len(upload_plans)} entities")
+        logging.info(f"Generated plans for {len(upload_plans)} out of {len(results)} entities")
     except IOError as e:
         logging.error(f"Could not write JSON file: {e}")
         raise
