@@ -1,24 +1,46 @@
 {
-  "martin_stuart": {
-    "basename": "raw_zon_martin_stuart",
-    "remote_backup": "/home/bmay/incoming/raw_zon_martin_stuart.backup",
-    "remote_bat": "/home/bmay/incoming/raw_zon_martin_stuart.bat",
+  "osceola_kissimmee": {
+    "basename": "raw_zon_osceola_kissimmee",
+    "remote_backup": "/home/bmay/incoming/raw_zon_osceola_kissimmee.backup",
+    "remote_bat": "/home/bmay/incoming/raw_zon_osceola_kissimmee.bat",
     "commands": [
-      "pg_restore -p 5432 -U postgres -d gislib -v \"/home/bmay/incoming/raw_zon_martin_stuart.backup\"",
-      "psql -p 5432 -U postgres -d gislib -c \"DELETE FROM zoning WHERE city_name = 'STUART' and county_name = 'MARTIN';\"",
+      "pg_restore -p 5432 -U postgres -d gislib -v \"/home/bmay/incoming/raw_zon_osceola_kissimmee.backup\"",
+      "psql -p 5432 -U postgres -d gislib -c \"DELETE FROM zoning WHERE city_name = 'KISSIMMEE' and county_name = 'OSCEOLA';\"",
       "psql -d gislib -U postgres -p 5432 -c \"INSERT INTO zoning (zon_code,zon_code2,zon_desc,zon_gen,ord_num,city_name,county_name,notes,the_geom)",
-      "psql -d gislib -U postgres -p 5432 -c \"DROP TABLE raw_zon_martin_stuart_2;\""
+      "psql -d gislib -U postgres -p 5432 -c \"DROP TABLE raw_zon_osceola_kissimmee_2;\""
     ]
   },
-  "marion_unincorporated": {
-    "basename": "raw_zon_marion_unincorp",
-    "remote_backup": "/home/bmay/incoming/raw_zon_marion_unincorp.backup",
-    "remote_bat": "/home/bmay/incoming/raw_zon_marion_unincorp.bat",
+  "osceola_st_cloud": {
+    "basename": "raw_osceola_st_cloud",
+    "remote_backup": "/home/bmay/incoming/raw_osceola_st_cloud.backup",
+    "remote_bat": "/home/bmay/incoming/raw_osceola_st_cloud.bat",
     "commands": [
-      "pg_restore -p 5432 -U postgres -d gislib -v \"/home/bmay/incoming/raw_zon_marion_unincorp.backup\"",
-      "psql -p 5432 -U postgres -d gislib -c \"DELETE FROM zoning WHERE city_name = 'UNINCORPORATED' and county_name = 'MARION';\"",
+      "pg_restore -p 5432 -U postgres -d gislib -v \"/home/bmay/incoming/raw_osceola_st_cloud.backup\"",
+      "psql -p 5432 -U postgres -d gislib -c \"DELETE FROM zoning WHERE city_name = 'ST_CLOUD' and county_name = 'OSCEOLA';\"",
       "psql -d gislib -U postgres -p 5432 -c \"INSERT INTO zoning (zon_code,zon_code2,zon_desc,zon_gen,ord_num,city_name,county_name,notes,the_geom)",
-      "psql -d gislib -U postgres -p 5432 -c \"DROP TABLE raw_zon_marion_unincorp_2;\""
+      "psql -d gislib -U postgres -p 5432 -c \"DROP TABLE raw_osceola_st_cloud_2;\""
+    ]
+  },
+  "osceola_unincorporated": {
+    "basename": "raw_zon_osceola_unincorp",
+    "remote_backup": "/home/bmay/incoming/raw_zon_osceola_unincorp.backup",
+    "remote_bat": "/home/bmay/incoming/raw_zon_osceola_unincorp.bat",
+    "commands": [
+      "pg_restore -p 5432 -U postgres -d gislib -v \"/home/bmay/incoming/raw_zon_osceola_unincorp.backup\"",
+      "psql -p 5432 -U postgres -d gislib -c \"DELETE FROM zoning WHERE city_name = 'UNINCORPORATED' and county_name = 'OSCEOLA';\"",
+      "psql -d gislib -U postgres -p 5432 -c \"INSERT INTO zoning (zon_code,zon_code2,zon_desc,zon_gen,ord_num,city_name,county_name,notes,the_geom)",
+      "psql -d gislib -U postgres -p 5432 -c \"DROP TABLE raw_zon_osceola_unincorp_2;\""
+    ]
+  },
+  "pasco_unincorporated": {
+    "basename": "raw_zon_pasco_unincorp",
+    "remote_backup": "/home/bmay/incoming/raw_zon_pasco_unincorp.backup",
+    "remote_bat": "/home/bmay/incoming/raw_zon_pasco_unincorp.bat",
+    "commands": [
+      "pg_restore -p 5432 -U postgres -d gislib -v \"/home/bmay/incoming/raw_zon_pasco_unincorp.backup\"",
+      "psql -p 5432 -U postgres -d gislib -c \"DELETE FROM zoning WHERE city_name = 'UNINCORPORATED' and county_name = 'PASCO';\"",
+      "psql -d gislib -U postgres -p 5432 -c \"INSERT INTO zoning (zon_code,zon_code2,zon_desc,zon_gen,ord_num,city_name,county_name,notes,the_geom)",
+      "psql -d gislib -U postgres -p 5432 -c \"DROP TABLE raw_zon_pasco_unincorp_2;\""
     ]
   }
 }
