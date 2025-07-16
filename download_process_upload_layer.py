@@ -184,7 +184,7 @@ entities = {
 class Config:
     def __init__(self, 
                  test_mode=False, debug=True, isolate_logs=True,
-                 run_download=True, run_metadata=True, run_processing=True, 
+                 run_download=False, run_metadata=True, run_processing=True, 
                  generate_json=True, run_upload=False, remote_enabled=False, remote_execute=False,
                  generate_summary=True, process_anyway=True
                  ):
@@ -860,13 +860,13 @@ def download_process_layer(layer, queue):
             
             # Record successful result with EPSG if we found it
             entity_end_time = datetime.now()
-            entity_runtime = (entity_end_time - entity_start_time).total_seconds()
+            entity_runtime = round((entity_end_time - entity_start_time).total_seconds())
             result_entry = {
                 'layer': layer,
                 'entity': entity,
                 'status': 'success',
                 'data_date': metadata.get('data_date') or datetime.now().date(),
-                'runtime_seconds': entity_runtime,
+                'runtime_seconds': f'{entity_runtime}s',
             }
             if metadata.get('epsg'):
                 result_entry['epsg'] = metadata['epsg']
@@ -1068,8 +1068,18 @@ def generate_summary(results):
         skipped = len([r for r in all_results if r.get('status') == 'skipped'])
         failed = len([r for r in all_results if r.get('status') == 'failure'])
         
-        # Calculate total runtime
-        total_runtime = sum([r.get('runtime_seconds', 0) for r in all_results])
+        # Calculate total runtime - handle both string and numeric values
+        total_runtime = 0
+        for r in all_results:
+            runtime_val = r.get('runtime_seconds', 0)
+            if isinstance(runtime_val, str):
+                try:
+                    total_runtime += float(runtime_val)
+                except (ValueError, TypeError):
+                    # Skip invalid runtime values
+                    pass
+            else:
+                total_runtime += float(runtime_val or 0)
         
         # Calculate overall runtime from start time
         end_time = datetime.now()
@@ -1083,6 +1093,18 @@ def generate_summary(results):
             'total_runtime': total_runtime,
             'overall_runtime': overall_runtime
         }
+    
+    def format_runtime(seconds):
+        """Format runtime in minutes and seconds."""
+        if seconds < 60:
+            return f"{seconds:.1f}s"
+        else:
+            minutes = int(seconds // 60)
+            remaining_seconds = seconds % 60
+            if remaining_seconds < 10:
+                return f"{minutes}m {remaining_seconds:.1f}s"
+            else:
+                return f"{minutes}m {int(remaining_seconds)}s"
     
     # Check if file already exists
     file_exists = os.path.exists(summary_filename)
@@ -1126,9 +1148,9 @@ def generate_summary(results):
             # Create summary row
             summary_row = {
                 'layer': layer,
-                'entity': f'SUMMARY_{CONFIG.start_time.strftime("%H-%M")}',
+                'entity': format_time_am_pm(),
                 'status': f'Total: {stats["total_entities"]}',
-                'runtime_seconds': f'{stats["overall_runtime"]:.2f}',
+                'runtime_seconds': format_runtime(stats["overall_runtime"]),
                 'data_date': f'Success: {stats["successful"]}',
                 'warning': f'Skipped: {stats["skipped"]}',
                 'error': f'Failed: {stats["failed"]}'
@@ -1153,9 +1175,9 @@ def generate_summary(results):
             # Create summary row
             summary_row = {
                 'layer': layer,
-                'entity': f'SUMMARY_{CONFIG.start_time.strftime("%H-%M")}',
+                'entity': format_time_am_pm(),
                 'status': f'Total: {stats["total_entities"]}',
-                'runtime_seconds': f'{stats["overall_runtime"]:.2f}',
+                'runtime_seconds': format_runtime(stats["overall_runtime"]),
                 'data_date': f'Success: {stats["successful"]}',
                 'warning': f'Skipped: {stats["skipped"]}',
                 'error': f'Failed: {stats["failed"]}'
@@ -1669,6 +1691,18 @@ def main():
         generate_summary(results)
         end_time = datetime.now()
         logging.info(f"Script finished at {end_time.strftime('%Y-%m-%d %H:%M:%S')}. Total runtime: {end_time - CONFIG.start_time}")
+
+
+def format_time_am_pm():
+    hour = int(CONFIG.start_time.strftime("%H"))
+    minute = CONFIG.start_time.strftime("%M")
+    
+    if hour < 12:
+        return f"SUMMARY_{hour:02d}-{minute}-AM"
+    elif hour == 12:
+        return f"SUMMARY_12-{minute}-PM"
+    else:
+        return f"SUMMARY_{hour-12}-{minute}-PM"
 
 
 if __name__ == "__main__":
