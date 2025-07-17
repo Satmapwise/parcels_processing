@@ -420,6 +420,7 @@ def _run_command(command, work_dir, logger):
                 return process.stdout  # Return the output and continue
             else:
                 logger.info("download_data.py returned exit code 1 - no new data available - skipping entity")
+                logger.debug(f"Command output: {process.stdout}")
                 raise SkipEntityError("No new data available from server", layer=None, entity=None)
         # Check for "not modified" messages in output when exit code is 0
         elif process.returncode == 0:
