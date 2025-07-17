@@ -1107,6 +1107,19 @@
       "psql -d gislib -U postgres -p 5432 -c \"DROP TABLE raw_zon_polk_lakeland_2;\""
     ]
   },
+  "putnam_unincorporated": {
+    "data_date": "2025-07-17",
+    "shp_name": "zoning_putnam.shp",
+    "basename": "raw_zon_putnam_unincorp",
+    "remote_backup": "/home/bmay/incoming/raw_zon_putnam_unincorp.backup",
+    "remote_bat": "/home/bmay/incoming/raw_zon_putnam_unincorp.bat",
+    "commands": [
+      "pg_restore -p 5432 -U postgres -d gislib -v \"/home/bmay/incoming/raw_zon_putnam_unincorp.backup\"",
+      "psql -p 5432 -U postgres -d gislib -c \"DELETE FROM zoning WHERE city_name = 'UNINCORPORATED' and county_name = 'PUTNAM';\"",
+      "psql -d gislib -U postgres -p 5432 -c \"INSERT INTO zoning (zon_code,zon_code2,zon_desc,zon_gen,ord_num,city_name,county_name,notes,the_geom)",
+      "psql -d gislib -U postgres -p 5432 -c \"DROP TABLE raw_zon_putnam_unincorp_2;\""
+    ]
+  },
   "santa_rosa_unincorporated": {
     "data_date": "2025-07-17",
     "shp_name": "zoning_santa_rosa_unincorporated.shp",
