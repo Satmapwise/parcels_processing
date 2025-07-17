@@ -899,6 +899,19 @@
       "psql -d gislib -U postgres -p 5432 -c \"DROP TABLE raw_zon_pasco_unincorp_2;\""
     ]
   },
+  "pinellas_belleair": {
+    "data_date": "2025-05-10",
+    "shp_name": "Belleair_Zoning_PPC.shp",
+    "basename": "raw_zon_pinellas_belleair",
+    "remote_backup": "/home/bmay/incoming/raw_zon_pinellas_belleair.backup",
+    "remote_bat": "/home/bmay/incoming/raw_zon_pinellas_belleair.bat",
+    "commands": [
+      "pg_restore -p 5432 -U postgres -d gislib -v \"/home/bmay/incoming/raw_zon_pinellas_belleair.backup\"",
+      "psql -p 5432 -U postgres -d gislib -c \"DELETE FROM zoning WHERE city_name = 'BELLEAIR' and county_name = 'PINELLAS';\"",
+      "psql -d gislib -U postgres -p 5432 -c \"INSERT INTO zoning (zon_code,zon_code2,zon_desc,zon_gen,ord_num,city_name,county_name,notes,the_geom)",
+      "psql -d gislib -U postgres -p 5432 -c \"DROP TABLE raw_zon_pinellas_belleair_2;\""
+    ]
+  },
   "pinellas_clearwater": {
     "data_date": "2025-07-17",
     "shp_name": "zoning_clearwater.shp",
@@ -925,6 +938,71 @@
       "psql -d gislib -U postgres -p 5432 -c \"DROP TABLE raw_zon_pinellas_dunedin_2;\""
     ]
   },
+  "pinellas_indian_rocks_beach": {
+    "data_date": "2025-05-10",
+    "shp_name": "Indian_Rocks_Beach_Zoning_PPC.shp",
+    "basename": "raw_zon_pinellas_indian_rocks_beach",
+    "remote_backup": "/home/bmay/incoming/raw_zon_pinellas_indian_rocks_beach.backup",
+    "remote_bat": "/home/bmay/incoming/raw_zon_pinellas_indian_rocks_beach.bat",
+    "commands": [
+      "pg_restore -p 5432 -U postgres -d gislib -v \"/home/bmay/incoming/raw_zon_pinellas_indian_rocks_beach.backup\"",
+      "psql -p 5432 -U postgres -d gislib -c \"DELETE FROM zoning WHERE city_name = 'INDIAN_ROCKS_BEACH' and county_name = 'PINELLAS';\"",
+      "psql -d gislib -U postgres -p 5432 -c \"INSERT INTO zoning (zon_code,zon_code2,zon_desc,zon_gen,ord_num,city_name,county_name,notes,the_geom)",
+      "psql -d gislib -U postgres -p 5432 -c \"DROP TABLE raw_zon_pinellas_indian_rocks_beach_2;\""
+    ]
+  },
+  "pinellas_indian_shores": {
+    "data_date": "2025-05-10",
+    "shp_name": "Indian_Shores_Zoning_PPC.shp",
+    "basename": "raw_zon_pinellas_indian_shores",
+    "remote_backup": "/home/bmay/incoming/raw_zon_pinellas_indian_shores.backup",
+    "remote_bat": "/home/bmay/incoming/raw_zon_pinellas_indian_shores.bat",
+    "commands": [
+      "pg_restore -p 5432 -U postgres -d gislib -v \"/home/bmay/incoming/raw_zon_pinellas_indian_shores.backup\"",
+      "psql -p 5432 -U postgres -d gislib -c \"DELETE FROM zoning WHERE city_name = 'INDIAN_SHORES' and county_name = 'PINELLAS';\"",
+      "psql -d gislib -U postgres -p 5432 -c \"INSERT INTO zoning (zon_code,zon_code2,zon_desc,zon_gen,ord_num,city_name,county_name,notes,the_geom)",
+      "psql -d gislib -U postgres -p 5432 -c \"DROP TABLE raw_zon_pinellas_indian_shores_2;\""
+    ]
+  },
+  "pinellas_kenneth_city": {
+    "data_date": "2025-05-10",
+    "shp_name": "Kenneth_City_Zoning_PPC.shp",
+    "basename": "raw_zon_pinellas_kenneth_city",
+    "remote_backup": "/home/bmay/incoming/raw_zon_pinellas_kenneth_city.backup",
+    "remote_bat": "/home/bmay/incoming/raw_zon_pinellas_kenneth_city.bat",
+    "commands": [
+      "pg_restore -p 5432 -U postgres -d gislib -v \"/home/bmay/incoming/raw_zon_pinellas_kenneth_city.backup\"",
+      "psql -p 5432 -U postgres -d gislib -c \"DELETE FROM zoning WHERE city_name = 'KENNETH_CITY' and county_name = 'PINELLAS';\"",
+      "psql -d gislib -U postgres -p 5432 -c \"INSERT INTO zoning (zon_code,zon_code2,zon_desc,zon_gen,ord_num,city_name,county_name,notes,the_geom)",
+      "psql -d gislib -U postgres -p 5432 -c \"DROP TABLE raw_zon_pinellas_kenneth_city_2;\""
+    ]
+  },
+  "pinellas_madeira_beach": {
+    "data_date": "2025-05-10",
+    "shp_name": "Madeira_Beach_Zoning_PPC.shp",
+    "basename": "raw_zon_pinellas_madeira_beach",
+    "remote_backup": "/home/bmay/incoming/raw_zon_pinellas_madeira_beach.backup",
+    "remote_bat": "/home/bmay/incoming/raw_zon_pinellas_madeira_beach.bat",
+    "commands": [
+      "pg_restore -p 5432 -U postgres -d gislib -v \"/home/bmay/incoming/raw_zon_pinellas_madeira_beach.backup\"",
+      "psql -p 5432 -U postgres -d gislib -c \"DELETE FROM zoning WHERE city_name = 'MADEIRA_BEACH' and county_name = 'PINELLAS';\"",
+      "psql -d gislib -U postgres -p 5432 -c \"INSERT INTO zoning (zon_code,zon_code2,zon_desc,zon_gen,ord_num,city_name,county_name,notes,the_geom)",
+      "psql -d gislib -U postgres -p 5432 -c \"DROP TABLE raw_zon_pinellas_madeira_beach_2;\""
+    ]
+  },
+  "pinellas_north_redington_beach": {
+    "data_date": "2022-11-10",
+    "shp_name": "North_Redington_Beach_Zoning_PPC.shp",
+    "basename": "raw_zon_pinellas_north_redington_beach",
+    "remote_backup": "/home/bmay/incoming/raw_zon_pinellas_north_redington_beach.backup",
+    "remote_bat": "/home/bmay/incoming/raw_zon_pinellas_north_redington_beach.bat",
+    "commands": [
+      "pg_restore -p 5432 -U postgres -d gislib -v \"/home/bmay/incoming/raw_zon_pinellas_north_redington_beach.backup\"",
+      "psql -p 5432 -U postgres -d gislib -c \"DELETE FROM zoning WHERE city_name = 'NORTH_REDINGTON_BEACH' and county_name = 'PINELLAS';\"",
+      "psql -d gislib -U postgres -p 5432 -c \"INSERT INTO zoning (zon_code,zon_code2,zon_desc,zon_gen,ord_num,city_name,county_name,notes,the_geom)",
+      "psql -d gislib -U postgres -p 5432 -c \"DROP TABLE raw_zon_pinellas_north_redington_beach_2;\""
+    ]
+  },
   "pinellas_pinellas_park": {
     "data_date": "2025-07-17",
     "shp_name": "zoning_pinellas_park.shp",
@@ -936,6 +1014,84 @@
       "psql -p 5432 -U postgres -d gislib -c \"DELETE FROM zoning WHERE city_name = 'PINELLAS_PARK' and county_name = 'PINELLAS';\"",
       "psql -d gislib -U postgres -p 5432 -c \"INSERT INTO zoning (zon_code,zon_code2,zon_desc,zon_gen,ord_num,city_name,county_name,notes,the_geom)",
       "psql -d gislib -U postgres -p 5432 -c \"DROP TABLE raw_zon_pinellas_pinellas_park_2;\""
+    ]
+  },
+  "pinellas_redington_shores": {
+    "data_date": "2025-05-10",
+    "shp_name": "Redington_Shores_Zoning_PPC.shp",
+    "basename": "raw_zon_pinellas_redington_shores",
+    "remote_backup": "/home/bmay/incoming/raw_zon_pinellas_redington_shores.backup",
+    "remote_bat": "/home/bmay/incoming/raw_zon_pinellas_redington_shores.bat",
+    "commands": [
+      "pg_restore -p 5432 -U postgres -d gislib -v \"/home/bmay/incoming/raw_zon_pinellas_redington_shores.backup\"",
+      "psql -p 5432 -U postgres -d gislib -c \"DELETE FROM zoning WHERE city_name = 'REDINGTON_SHORES' and county_name = 'PINELLAS';\"",
+      "psql -d gislib -U postgres -p 5432 -c \"INSERT INTO zoning (zon_code,zon_code2,zon_desc,zon_gen,ord_num,city_name,county_name,notes,the_geom)",
+      "psql -d gislib -U postgres -p 5432 -c \"DROP TABLE raw_zon_pinellas_redington_shores_2;\""
+    ]
+  },
+  "pinellas_seminole": {
+    "data_date": "2025-05-10",
+    "shp_name": "Seminole_Zoning_PPC.shp",
+    "basename": "raw_zon_pinellas_seminole",
+    "remote_backup": "/home/bmay/incoming/raw_zon_pinellas_seminole.backup",
+    "remote_bat": "/home/bmay/incoming/raw_zon_pinellas_seminole.bat",
+    "commands": [
+      "pg_restore -p 5432 -U postgres -d gislib -v \"/home/bmay/incoming/raw_zon_pinellas_seminole.backup\"",
+      "psql -p 5432 -U postgres -d gislib -c \"DELETE FROM zoning WHERE city_name = 'SEMINOLE' and county_name = 'PINELLAS';\"",
+      "psql -d gislib -U postgres -p 5432 -c \"INSERT INTO zoning (zon_code,zon_code2,zon_desc,zon_gen,ord_num,city_name,county_name,notes,the_geom)",
+      "psql -d gislib -U postgres -p 5432 -c \"DROP TABLE raw_zon_pinellas_seminole_2;\""
+    ]
+  },
+  "pinellas_south_pasadena": {
+    "data_date": "2025-05-10",
+    "shp_name": "South_Pasadena_Zoning_PPC.shp",
+    "basename": "raw_zon_pinellas_south_pasadena",
+    "remote_backup": "/home/bmay/incoming/raw_zon_pinellas_south_pasadena.backup",
+    "remote_bat": "/home/bmay/incoming/raw_zon_pinellas_south_pasadena.bat",
+    "commands": [
+      "pg_restore -p 5432 -U postgres -d gislib -v \"/home/bmay/incoming/raw_zon_pinellas_south_pasadena.backup\"",
+      "psql -p 5432 -U postgres -d gislib -c \"DELETE FROM zoning WHERE city_name = 'SOUTH_PASADENA' and county_name = 'PINELLAS';\"",
+      "psql -d gislib -U postgres -p 5432 -c \"INSERT INTO zoning (zon_code,zon_code2,zon_desc,zon_gen,ord_num,city_name,county_name,notes,the_geom)",
+      "psql -d gislib -U postgres -p 5432 -c \"DROP TABLE raw_zon_pinellas_south_pasadena_2;\""
+    ]
+  },
+  "pinellas_st_petersburg": {
+    "data_date": "2025-07-17",
+    "shp_name": "zoning_st_petersburg.shp",
+    "basename": "raw_zon_pinellas_st_petersburg",
+    "remote_backup": "/home/bmay/incoming/raw_zon_pinellas_st_petersburg.backup",
+    "remote_bat": "/home/bmay/incoming/raw_zon_pinellas_st_petersburg.bat",
+    "commands": [
+      "pg_restore -p 5432 -U postgres -d gislib -v \"/home/bmay/incoming/raw_zon_pinellas_st_petersburg.backup\"",
+      "psql -p 5432 -U postgres -d gislib -c \"DELETE FROM zoning WHERE city_name = 'ST_PETERSBURG' and county_name = 'PINELLAS';\"",
+      "psql -d gislib -U postgres -p 5432 -c \"INSERT INTO zoning (zon_code,zon_code2,zon_desc,zon_gen,ord_num,city_name,county_name,notes,the_geom)",
+      "psql -d gislib -U postgres -p 5432 -c \"DROP TABLE raw_zon_pinellas_st_petersburg_2;\""
+    ]
+  },
+  "pinellas_treasure_island": {
+    "data_date": "2025-05-10",
+    "shp_name": "Treasure_Island_Zoning_PPC.shp",
+    "basename": "raw_zon_pinellas_treasure_island",
+    "remote_backup": "/home/bmay/incoming/raw_zon_pinellas_treasure_island.backup",
+    "remote_bat": "/home/bmay/incoming/raw_zon_pinellas_treasure_island.bat",
+    "commands": [
+      "pg_restore -p 5432 -U postgres -d gislib -v \"/home/bmay/incoming/raw_zon_pinellas_treasure_island.backup\"",
+      "psql -p 5432 -U postgres -d gislib -c \"DELETE FROM zoning WHERE city_name = 'TREASURE_ISLAND' and county_name = 'PINELLAS';\"",
+      "psql -d gislib -U postgres -p 5432 -c \"INSERT INTO zoning (zon_code,zon_code2,zon_desc,zon_gen,ord_num,city_name,county_name,notes,the_geom)",
+      "psql -d gislib -U postgres -p 5432 -c \"DROP TABLE raw_zon_pinellas_treasure_island_2;\""
+    ]
+  },
+  "pinellas_unincorporated": {
+    "data_date": "2025-05-10",
+    "shp_name": "Zoning_Unincorporated.shp",
+    "basename": "raw_zon_pinellas_unincorp",
+    "remote_backup": "/home/bmay/incoming/raw_zon_pinellas_unincorp.backup",
+    "remote_bat": "/home/bmay/incoming/raw_zon_pinellas_unincorp.bat",
+    "commands": [
+      "pg_restore -p 5432 -U postgres -d gislib -v \"/home/bmay/incoming/raw_zon_pinellas_unincorp.backup\"",
+      "psql -p 5432 -U postgres -d gislib -c \"DELETE FROM zoning WHERE city_name = 'UNINCORPORATED' and county_name = 'PINELLAS';\"",
+      "psql -d gislib -U postgres -p 5432 -c \"INSERT INTO zoning (zon_code,zon_code2,zon_desc,zon_gen,ord_num,city_name,county_name,notes,the_geom)",
+      "psql -d gislib -U postgres -p 5432 -c \"DROP TABLE raw_zon_pinellas_unincorp_2;\""
     ]
   },
   "polk_lakeland": {
