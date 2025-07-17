@@ -46,7 +46,7 @@ SKIP_ENTITIES = {
 }
 
 counties = {
-    "miami-dade",
+    "miami_dade",
     "broward",
     "palm_beach",
     "hillsborough",
@@ -115,7 +115,7 @@ counties = {
     }
 
 entities = {
-    "miami-dade_incorporated", "miami-dade_unincorporated", 
+    "miami_dade_incorporated", "miami_dade_unincorporated", 
     "broward_unified", "broward_unincorporated", 
     "palm_beach_unified", 
     "hillsborough_plant_city", "hillsborough_tampa", "hillsborough_temple_terrace", "hillsborough_unincorporated", 
@@ -1621,6 +1621,16 @@ def resolve_work_dir(layer: str, entity: str):
             county = 'duval'
             city = 'jacksonville'
             work_dir = '/srv/datascrub/08_Land_Use_and_Zoning/zoning/florida/county/duval/current/source_data/jacksonville'
+            return work_dir, county, city
+        if layer == 'zoning' and entity == 'miami_dade_incorporated':
+            county = 'miami_dade'
+            city = 'incorporated'
+            work_dir = '/srv/datascrub/08_Land_Use_and_Zoning/zoning/florida/county/miami-dade/current/source_data/incorporated'
+            return work_dir, county, city
+        if layer == 'zoning' and entity == 'miami_dade_unincorporated':
+            county = 'miami_dade'
+            city = 'unincorporated'
+            work_dir = '/srv/datascrub/08_Land_Use_and_Zoning/zoning/florida/county/miami-dade/current/source_data/unincorporated'
             return work_dir, county, city
         template = WORK_DIR_PATTERNS.get(layer, os.path.join('data', '{layer}', '{county}', '{city}'))
         needs_city = '{city}' in template

@@ -369,14 +369,14 @@
         ["python3", "/srv/tools/python/lib/update_zoning2.py", "martin", "unincorporated"],
         ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.zoning_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'MARTIN' and city_name = 'UNINCORPORATED'"]
       ],
-      "miami-dade_incorporated": [
-        ["python3", "/srv/tools/python/lib/ags_extract_data2.py", "zoning_miami-dade_incorporated", "delete", "15"],
+      "miami_dade_incorporated": [
+        ["python3", "/srv/tools/python/lib/ags_extract_data2.py", "zoning_miami_dade_incorporated", "delete", "15"],
         "ogrinfo",
         ["python3", "/srv/tools/python/lib/update_zoning2.py", "miami-dade", "incorporated"],
         ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.zoning_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'MIAMI-DADE' and city_name = 'INCORPORATED'"]
       ],
-      "miami-dade_unincorporated": [
-        ["python3", "/srv/tools/python/lib/ags_extract_data2.py", "zoning_miami-dade_unincorporated", "delete", "15"],
+      "miami_dade_unincorporated": [
+        ["python3", "/srv/tools/python/lib/ags_extract_data2.py", "zoning_miami_dade_unincorporated", "delete", "15"],
         "ogrinfo",
         ["python3", "/srv/tools/python/lib/update_zoning2.py", "miami-dade", "unincorporated"],
         ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.zoning_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'MIAMI-DADE' and city_name = 'UNINCORPORATED'"]
@@ -1059,14 +1059,14 @@
         ["python3", "/srv/tools/python/lib/update_flu2.py", "martin", "unincorporated"],
         ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.flu_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'MARTIN' and city_name = 'UNINCORPORATED'"]
       ],
-      "miami-dade_incorporated": [
-        ["python3", "/srv/tools/python/lib/ags_extract_data2.py", "flu_miami-dade_incorporated", "delete", "15"],
+      "miami_dade_incorporated": [
+        ["python3", "/srv/tools/python/lib/ags_extract_data2.py", "flu_miami_dade_incorporated", "delete", "15"],
         "ogrinfo",
         ["python3", "/srv/tools/python/lib/update_flu2.py", "miami-dade", "incorporated"],
         ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.flu_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'MIAMI-DADE' and city_name = 'INCORPORATED'"]
       ],
-      "miami-dade_unincorporated": [
-        ["python3", "/srv/tools/python/lib/ags_extract_data2.py", "flu_miami-dade_unincorporated", "delete", "15"],
+      "miami_dade_unincorporated": [
+        ["python3", "/srv/tools/python/lib/ags_extract_data2.py", "flu_miami_dade_unincorporated", "delete", "15"],
         "ogrinfo",
         ["python3", "/srv/tools/python/lib/update_flu2.py", "miami-dade", "unincorporated"],
         ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.flu_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'MIAMI-DADE' and city_name = 'UNINCORPORATED'"]
