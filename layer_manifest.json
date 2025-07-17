@@ -83,11 +83,13 @@
         ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.zoning_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'BREVARD' and city_name = 'MELBOURNE'"]
       ],
       "brevard_palm_bay": [
+        ["python3", "/srv/tools/python/lib/ags_extract_data2.py", "zoning_palm_bay", "delete", "15"],
         "ogrinfo",
         ["python3", "/srv/tools/python/lib/update_zoning2.py", "brevard", "palm_bay"],
         ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.zoning_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'BREVARD' and city_name = 'PALM_BAY'"]
       ],
       "brevard_titusville": [
+        ["python3", "/srv/tools/python/lib/ags_extract_data2.py", "zoning_titusville", "delete", "15"],
         "ogrinfo",
         ["python3", "/srv/tools/python/lib/update_zoning2.py", "brevard", "titusville"],
         ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.zoning_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'BREVARD' and city_name = 'TITUSVILLE'"]
@@ -120,6 +122,7 @@
         ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.zoning_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'CHARLOTTE' and city_name = 'UNINCORPORATED'"]
       ],
       "citrus_unincorporated": [
+        ["python3", "/srv/tools/python/lib/download_data.py", "/data/zoning/citrus/unincorporated"],
         ["unzip", "-oj", "Zoning.zip"],
         "ogrinfo",
         ["python3", "/srv/tools/python/lib/update_zoning2.py", "citrus", "unincorporated"],
@@ -145,6 +148,7 @@
         ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.zoning_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'COLLIER' and city_name = 'NAPLES'"]
       ],
       "collier_unincorporated": [
+        ["python3", "/srv/tools/python/lib/ags_extract_data2.py", "zoning_collier_unincorporated", "delete", "15"],
         "ogrinfo",
         ["python3", "/srv/tools/python/lib/update_zoning2.py", "collier", "unincorporated"],
         ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.zoning_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'COLLIER' and city_name = 'UNINCORPORATED'"]
@@ -171,6 +175,7 @@
         ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.zoning_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'FLAGLER' and city_name = 'UNINCORPORATED'"]
       ],
       "hernando_brooksville": [
+        ["python3", "/srv/tools/python/lib/download_data.py", "/data/zoning/hernando/brooksville"],
         "ogrinfo",
         ["python3", "/srv/tools/python/lib/update_zoning2.py", "hernando", "brooksville"],
         ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.zoning_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'HERNANDO' and city_name = 'BROOKSVILLE'"]
@@ -194,6 +199,7 @@
         ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.zoning_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'HILLSBOROUGH' and city_name = 'PLANT_CITY'"]
       ],
       "hillsborough_tampa": [
+        ["python3", "/srv/tools/python/lib/ags_extract_data2.py", "zoning_tampa", "delete", "15"],
         "ogrinfo",
         ["python3", "/srv/tools/python/lib/update_zoning2.py", "hillsborough", "tampa"],
         ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.zoning_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'HILLSBOROUGH' and city_name = 'TAMPA'"]
@@ -217,6 +223,7 @@
         ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.zoning_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'INDIAN_RIVER' and city_name = 'UNINCORPORATED'"]
       ],
       "indian_river_vero_beach": [
+        ["python3", "/srv/tools/python/lib/ags_extract_data2.py", "zoning_vero_beach", "delete", "15"],
         "ogrinfo",
         ["python3", "/srv/tools/python/lib/update_zoning2.py", "indian_river", "vero_beach"],
         ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.zoning_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'INDIAN_RIVER' and city_name = 'VERO_BEACH'"]
@@ -300,16 +307,19 @@
         ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.zoning_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'LAKE' and city_name = 'UNINCORPORATED'"]
       ],
       "lee_cape_coral": [
+        ["python3", "/srv/tools/python/lib/ags_extract_data2.py", "zoning_cape_coral", "delete", "15"],
         "ogrinfo",
         ["python3", "/srv/tools/python/lib/update_zoning2.py", "lee", "cape_coral"],
         ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.zoning_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'LEE' and city_name = 'CAPE_CORAL'"]
       ],
       "lee_fort_myers": [
+        ["python3", "/srv/tools/python/lib/ags_extract_data2.py", "zoning_fort_myers", "delete", "15"],
         "ogrinfo",
         ["python3", "/srv/tools/python/lib/update_zoning2.py", "lee", "fort_myers"],
         ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.zoning_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'LEE' and city_name = 'FORT_MYERS'"]
       ],
       "lee_unincorporated": [
+        ["python3", "/srv/tools/python/lib/ags_extract_data2.py", "zoning_lee_unincorp", "delete", "15"],
         "ogrinfo",
         ["python3", "/srv/tools/python/lib/update_zoning2.py", "lee", "unincorporated"],
         ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.zoning_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'LEE' and city_name = 'UNINCORPORATED'"]
@@ -328,6 +338,7 @@
         ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.zoning_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'MANATEE' and city_name = 'BRADENTON'"]
       ],
       "manatee_unincorporated": [
+        ["python3", "/srv/tools/python/lib/ags_extract_data2.py", "zoning_manatee_unincorp", "delete", "15"],
         "ogrinfo",
         ["python3", "/srv/tools/python/lib/update_zoning2.py", "manatee", "unincorporated"],
         ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.zoning_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'MANATEE' and city_name = 'UNINCORPORATED'"]

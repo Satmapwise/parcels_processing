@@ -42,7 +42,7 @@ layers = set(LAYER_CFG.keys())
 # Entities to skip (blacklist) - add problematic entities here
 SKIP_ENTITIES = {
     "hillsborough_temple_terrace",  # Example blacklisted entity
-    # Add more problematic entities here as needed
+    "charlotte_punta_gorda"
 }
 
 counties = {
