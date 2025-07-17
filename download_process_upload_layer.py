@@ -186,7 +186,7 @@ class Config:
                  test_mode=False, debug=True, isolate_logs=False,
                  run_download=True, run_metadata=True, run_processing=True, 
                  generate_json=True, run_upload=False, remote_enabled=False, remote_execute=False,
-                 generate_summary=True, process_anyway=True
+                 generate_summary=True, process_anyway=False
                  ):
         """
         Configuration class to hold script settings.
@@ -416,6 +416,8 @@ def _run_command(command, work_dir, logger):
         if process.returncode == 1:
             if CONFIG.process_anyway:
                 logger.warning("download_data.py returned exit code 1 - no new data available, but continuing with processing due to process_anyway=True")
+                logger.debug(f"Command output: {process.stdout}")
+                return process.stdout  # Return the output and continue
             else:
                 logger.info("download_data.py returned exit code 1 - no new data available - skipping entity")
                 raise SkipEntityError("No new data available from server", layer=None, entity=None)
@@ -628,6 +630,9 @@ def _validate_download(work_dir, logger, before_state=None):
                 changed_files.append(f"{filename} (modified)")
         
         if not changed_files:
+            if CONFIG.process_anyway:
+                logger.warning("No files changed during download, but continuing with processing due to process_anyway=True")
+                return True
             raise DownloadError("No files changed during download", layer=None, entity=None)
         
         changed_files_str = ", ".join(changed_files[:3])  # Show first 3 changes
@@ -654,6 +659,9 @@ def _validate_download(work_dir, logger, before_state=None):
                 continue
 
         if CONFIG.run_download == True and not recent_downloads:
+            if CONFIG.process_anyway:
+                logger.warning("No files found modified within the last 24 hours to indicate recent download, but continuing with processing due to process_anyway=True")
+                return True
             raise DownloadError("No files found modified within the last 24 hours to indicate recent download.", layer=None, entity=None)
 
         if CONFIG.run_download == True and recent_downloads:
@@ -661,6 +669,7 @@ def _validate_download(work_dir, logger, before_state=None):
             logger.debug(f"Download validation passed – found recent files: {recent_files_str}")
         
         return True
+    
 
 
 def _find_shapefile(work_dir, logger):
@@ -819,7 +828,7 @@ def download_process_layer(layer, queue):
                         except SkipEntityError as e:
                             # Skip validation and further processing for this entity
                             raise
-                        if CONFIG.test_mode == False and CONFIG.process_anyway == False: # Only validate in non-test mode and when process_anyway is True
+                        if CONFIG.test_mode == False: # Only validate in non-test mode
                             try:
                                 _validate_download(work_dir, entity_logger, before_state)
                             except DownloadError as de:
