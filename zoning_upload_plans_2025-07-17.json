@@ -1341,6 +1341,32 @@
       "psql -d gislib -U postgres -p 5432 -c \"DROP TABLE raw_zon_sumter_unincorp_2;\""
     ]
   },
+  "volusia_countywide": {
+    "data_date": "2025-07-17",
+    "shp_name": "zoning_volusia_countywide.shp",
+    "basename": "raw_zon_volusia_countywide",
+    "remote_backup": "/home/bmay/incoming/raw_zon_volusia_countywide.backup",
+    "remote_bat": "/home/bmay/incoming/raw_zon_volusia_countywide.bat",
+    "commands": [
+      "pg_restore -p 5432 -U postgres -d gislib -v \"/home/bmay/incoming/raw_zon_volusia_countywide.backup\"",
+      "psql -p 5432 -U postgres -d gislib -c \"DELETE FROM zoning WHERE city_name = 'COUNTYWIDE' and county_name = 'VOLUSIA';\"",
+      "psql -d gislib -U postgres -p 5432 -c \"INSERT INTO zoning (zon_code,zon_code2,zon_desc,zon_gen,ord_num,city_name,county_name,notes,the_geom)",
+      "psql -d gislib -U postgres -p 5432 -c \"DROP TABLE raw_zon_volusia_countywide_2;\""
+    ]
+  },
+  "volusia_daytona_beach": {
+    "data_date": "2025-07-17",
+    "shp_name": "zoning_daytona_beach.shp",
+    "basename": "raw_zon_volusia_daytona_beach",
+    "remote_backup": "/home/bmay/incoming/raw_zon_volusia_daytona_beach.backup",
+    "remote_bat": "/home/bmay/incoming/raw_zon_volusia_daytona_beach.bat",
+    "commands": [
+      "pg_restore -p 5432 -U postgres -d gislib -v \"/home/bmay/incoming/raw_zon_volusia_daytona_beach.backup\"",
+      "psql -p 5432 -U postgres -d gislib -c \"DELETE FROM zoning WHERE city_name = 'DAYTONA_BEACH' and county_name = 'VOLUSIA';\"",
+      "psql -d gislib -U postgres -p 5432 -c \"INSERT INTO zoning (zon_code,zon_code2,zon_desc,zon_gen,ord_num,city_name,county_name,notes,the_geom)",
+      "psql -d gislib -U postgres -p 5432 -c \"DROP TABLE raw_zon_volusia_daytona_beach_2;\""
+    ]
+  },
   "walton_unincorporated": {
     "data_date": "2025-07-17",
     "shp_name": "zoning_walton.shp",
