@@ -1,0 +1,28 @@
+{
+  "alachua_alachua": {
+    "data_date": "2025-07-17",
+    "shp_name": "zoning_alachua_city.shp",
+    "basename": "raw_zon_alachua_alachua",
+    "remote_backup": "/home/bmay/incoming/raw_zon_alachua_alachua.backup",
+    "remote_bat": "/home/bmay/incoming/raw_zon_alachua_alachua.bat",
+    "commands": [
+      "pg_restore -p 5432 -U postgres -d gislib -v \"/home/bmay/incoming/raw_zon_alachua_alachua.backup\"",
+      "psql -p 5432 -U postgres -d gislib -c \"DELETE FROM zoning WHERE city_name = 'ALACHUA' and county_name = 'ALACHUA';\"",
+      "psql -d gislib -U postgres -p 5432 -c \"INSERT INTO zoning (zon_code,zon_code2,zon_desc,zon_gen,ord_num,city_name,county_name,notes,the_geom)",
+      "psql -d gislib -U postgres -p 5432 -c \"DROP TABLE raw_zon_alachua_alachua_2;\""
+    ]
+  },
+  "hillsborough_plant_city": {
+    "data_date": "2025-07-17",
+    "shp_name": "zoning_plant_city.shp",
+    "basename": "raw_zon_hillsborough_plant_city",
+    "remote_backup": "/home/bmay/incoming/raw_zon_hillsborough_plant_city.backup",
+    "remote_bat": "/home/bmay/incoming/raw_zon_hillsborough_plant_city.bat",
+    "commands": [
+      "pg_restore -p 5432 -U postgres -d gislib -v \"/home/bmay/incoming/raw_zon_hillsborough_plant_city.backup\"",
+      "psql -p 5432 -U postgres -d gislib -c \"DELETE FROM zoning WHERE city_name = 'PLANT_CITY' and county_name = 'HILLSBOROUGH';\"",
+      "psql -d gislib -U postgres -p 5432 -c \"INSERT INTO zoning (zon_code,zon_code2,zon_desc,zon_gen,ord_num,city_name,county_name,notes,the_geom)",
+      "psql -d gislib -U postgres -p 5432 -c \"DROP TABLE raw_zon_hillsborough_plant_city_2;\""
+    ]
+  }
+}

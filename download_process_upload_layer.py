@@ -870,6 +870,8 @@ def download_process_layer(layer, queue):
             }
             if metadata.get('epsg'):
                 result_entry['epsg'] = metadata['epsg']
+            if metadata.get('shp'):
+                result_entry['shp_name'] = metadata['shp']
             if metadata.get('_defaulted_today'):
                 warning_msg = 'data_date defaulted to current day'
                 entity_logger.warning(warning_msg)
@@ -1013,6 +1015,8 @@ def generate_json(results):
     for item in items_with_plans:
         plan = item['upload_plan']
         new_upload_plans[item['entity']] = {
+            'data_date': item.get('data_date', ''),
+            'shp_name': item.get('shp_name', ''),
             'basename': plan['basename'],
             'remote_backup': plan['remote_backup'],
             'remote_bat': plan['remote_bat'],
