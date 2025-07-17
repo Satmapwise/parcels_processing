@@ -873,6 +873,19 @@
       "psql -d gislib -U postgres -p 5432 -c \"DROP TABLE raw_zon_osceola_unincorp_2;\""
     ]
   },
+  "palm_beach_county_unified": {
+    "data_date": "2025-07-17",
+    "shp_name": "zoning_palm_beach_county_unified.shp",
+    "basename": "raw_zon_palm_beach_county_unified",
+    "remote_backup": "/home/bmay/incoming/raw_zon_palm_beach_county_unified.backup",
+    "remote_bat": "/home/bmay/incoming/raw_zon_palm_beach_county_unified.bat",
+    "commands": [
+      "pg_restore -p 5432 -U postgres -d gislib -v \"/home/bmay/incoming/raw_zon_palm_beach_county_unified.backup\"",
+      "psql -p 5432 -U postgres -d gislib -c \"DELETE FROM zoning WHERE city_name = 'COUNTY_UNIFIED' and county_name = 'PALM_BEACH';\"",
+      "psql -d gislib -U postgres -p 5432 -c \"INSERT INTO zoning (zon_code,zon_code2,zon_desc,zon_gen,ord_num,city_name,county_name,notes,the_geom)",
+      "psql -d gislib -U postgres -p 5432 -c \"DROP TABLE raw_zon_palm_beach_county_unified_2;\""
+    ]
+  },
   "pasco_unincorporated": {
     "data_date": "2025-07-17",
     "shp_name": "zoning_pasco_unincorporated.shp",
