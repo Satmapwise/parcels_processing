@@ -1003,8 +1003,10 @@ def generate_json(results):
     # Get the layer name from the first result
     layer = items_with_plans[0]['layer']
     json_filename = f"{layer}_upload_plans_{CONFIG.start_time.strftime('%Y-%m-%d')}.json"
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    json_filepath = os.path.join(script_dir, json_filename)
     
-    logging.info(f"Generating upload plans JSON file: {json_filename}")
+    logging.info(f"Generating upload plans JSON file: {json_filepath}")
     
     # Structure the data for JSON output (new plans)
     new_upload_plans = {}
@@ -1018,9 +1020,9 @@ def generate_json(results):
         }
     
     # If file exists, load and merge
-    if os.path.exists(json_filename):
+    if os.path.exists(json_filepath):
         try:
-            with open(json_filename, 'r') as jsonfile:
+            with open(json_filepath, 'r') as jsonfile:
                 existing_upload_plans = json.load(jsonfile)
         except Exception as e:
             logging.error(f"Could not read existing JSON file: {e}")
@@ -1036,9 +1038,9 @@ def generate_json(results):
     
     # Write the JSON file
     try:
-        with open(json_filename, 'w') as jsonfile:
+        with open(json_filepath, 'w') as jsonfile:
             json.dump(sorted_upload_plans, jsonfile, indent=2)
-        logging.info(f"Upload plans JSON file generated successfully: {json_filename}")
+        logging.info(f"Upload plans JSON file generated successfully: {json_filepath}")
         logging.info(f"Generated plans for {len(sorted_upload_plans)} entities (merged mode)")
     except IOError as e:
         logging.error(f"Could not write JSON file: {e}")
@@ -1058,6 +1060,8 @@ def generate_summary(results):
     # Get the layer name from the first result
     layer = results[0]['layer']
     summary_filename = f"{layer}_summary_{CONFIG.start_time.strftime('%Y-%m-%d')}.csv"
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    summary_filepath = os.path.join(script_dir, summary_filename)
     
     headers = ['layer', 'entity', 'status', 'runtime_seconds', 'data_date', 'warning', 'error']
     
@@ -1107,18 +1111,18 @@ def generate_summary(results):
                 return f"{minutes}m {int(remaining_seconds)}s"
     
     # Check if file already exists
-    file_exists = os.path.exists(summary_filename)
+    file_exists = os.path.exists(summary_filepath)
     
     if file_exists:
-        logging.info(f"Updating existing summary file: {summary_filename}")
+        logging.info(f"Updating existing summary file: {summary_filepath}")
     else:
-        logging.info(f"Creating new summary file: {summary_filename}")
+        logging.info(f"Creating new summary file: {summary_filepath}")
     
     try:
         if file_exists:
             # Read existing data and update/replace rows
             existing_rows = {}
-            with open(summary_filename, 'r', newline='') as csvfile:
+            with open(summary_filepath, 'r', newline='') as csvfile:
                 reader = csv.DictReader(csvfile)
                 for row in reader:
                     # Skip summary rows (they start with "SUMMARY")
@@ -1157,7 +1161,7 @@ def generate_summary(results):
             }
             
             # Write back all rows (existing + updated + new + summary) in alphabetical order
-            with open(summary_filename, 'w', newline='') as csvfile:
+            with open(summary_filepath, 'w', newline='') as csvfile:
                 writer = csv.DictWriter(csvfile, fieldnames=headers)
                 writer.writeheader()
                 # Sort rows by entity name for consistent ordering, but put summary at the end
@@ -1184,7 +1188,7 @@ def generate_summary(results):
             }
             
             # Create new file
-            with open(summary_filename, 'w', newline='') as csvfile:
+            with open(summary_filepath, 'w', newline='') as csvfile:
                 writer = csv.DictWriter(csvfile, fieldnames=headers)
                 writer.writeheader()
                 # Sort results by entity name for consistent ordering
