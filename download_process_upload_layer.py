@@ -819,7 +819,7 @@ def download_process_layer(layer, queue):
                         except SkipEntityError as e:
                             # Skip validation and further processing for this entity
                             raise
-                        if CONFIG.test_mode == False: # Only validate in non-test mode
+                        if CONFIG.test_mode == False and CONFIG.process_anyway == False: # Only validate in non-test mode and when process_anyway is True
                             try:
                                 _validate_download(work_dir, entity_logger, before_state)
                             except DownloadError as de:
@@ -1544,41 +1544,7 @@ def split_entity(entity: str):
 # If a layer is not listed, a generic 3-part template is used.
 # ---------------------------------------------------------------------------
 
-# Base directory on the scraper host – adjust if your environment differs.
-DATA_ROOT = '/srv/datascrub'
 
-WORK_DIR_PATTERNS = {
-    # ------------------------------------------------------------------
-    # Layer-specific layouts – use str.format with {{layer}}, {{county}}, {{city}}
-    # ------------------------------------------------------------------
-
-    # Zoning –  …/08_Land_Use_and_Zoning/zoning/florida/county/<county>/current/source_data/<city>
-    'zoning': os.path.join(
-        DATA_ROOT,
-        '08_Land_Use_and_Zoning',
-        'zoning',
-        'florida',
-        'county',
-        '{county}',
-        'current',
-        'source_data',
-        '{city}'
-    ),
-
-    # FLU – stored under *future_land_use* folder
-    # …/08_Land_Use_and_Zoning/future_land_use/florida/county/<county>/current/source_data/<city>
-    'flu': os.path.join(
-        DATA_ROOT,
-        '08_Land_Use_and_Zoning',
-        'future_land_use',
-        'florida',
-        'county',
-        '{county}',
-        'current',
-        'source_data',
-        '{city}'
-    ),
-}
 
 
 def resolve_work_dir(layer: str, entity: str):
@@ -1588,6 +1554,46 @@ def resolve_work_dir(layer: str, entity: str):
     requires a *city* component.  If so we call :func:`split_entity`.  If not,
     we treat the entire entity string as the county id.
     """
+    # Base directory on the scraper host – adjust if your environment differs.
+    # if layer == 'zoning' and entity == ('baker', 'unincorporated'):
+    #     DATA_ROOT = '/mnt/sdb/datascrub'
+    # else:
+    #     DATA_ROOT = '/srv/datascrub'
+    DATA_ROOT = '/srv/datascrub'
+
+    WORK_DIR_PATTERNS = {
+        # ------------------------------------------------------------------
+        # Layer-specific layouts – use str.format with {{layer}}, {{county}}, {{city}}
+        # ------------------------------------------------------------------
+
+        # Zoning –  …/08_Land_Use_and_Zoning/zoning/florida/county/<county>/current/source_data/<city>
+        'zoning': os.path.join(
+            DATA_ROOT,
+            '08_Land_Use_and_Zoning',
+            'zoning',
+            'florida',
+            'county',
+            '{county}',
+            'current',
+            'source_data',
+            '{city}'
+        ),
+
+        # FLU – stored under *future_land_use* folder
+        # …/08_Land_Use_and_Zoning/future_land_use/florida/county/<county>/current/source_data/<city>
+        'flu': os.path.join(
+            DATA_ROOT,
+            '08_Land_Use_and_Zoning',
+            'future_land_use',
+            'florida',
+            'county',
+            '{county}',
+            'current',
+            'source_data',
+            '{city}'
+        ),
+    }
+
     if TEST_DATA:
         county, city = split_entity(entity)
         if city == 'unincorporated' and county == 'hillsborough':
@@ -1598,12 +1604,7 @@ def resolve_work_dir(layer: str, entity: str):
             work_dir = os.path.join('data', layer, county, city)
         return work_dir, county, city
     else:
-        if layer == 'zoning' and entity == 'hillsborough_plant_city':
-            county = 'hillsborough'
-            city = 'plant_city'
-            work_dir = '/mnt/sdb/datascrub/08_Land_Use_and_Zoning/zoning/florida/county/hillsborough/current/source_data/plant_city'
-            return work_dir, county, city
-        elif layer == 'zoning' and entity == 'duval_unified':
+        if layer == 'zoning' and entity == 'duval_unified':
             county = 'duval'
             city = 'jacksonville'
             work_dir = '/srv/datascrub/08_Land_Use_and_Zoning/zoning/florida/county/duval/current/source_data/jacksonville'
