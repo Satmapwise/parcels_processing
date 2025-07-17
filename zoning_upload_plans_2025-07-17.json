@@ -1172,6 +1172,19 @@
       "psql -d gislib -U postgres -p 5432 -c \"DROP TABLE raw_zon_sarasota_unincorp_2;\""
     ]
   },
+  "sarasota_venice": {
+    "data_date": "2025-05-01",
+    "shp_name": "zoning_venice.shp",
+    "basename": "raw_zon_sarasota_venice",
+    "remote_backup": "/home/bmay/incoming/raw_zon_sarasota_venice.backup",
+    "remote_bat": "/home/bmay/incoming/raw_zon_sarasota_venice.bat",
+    "commands": [
+      "pg_restore -p 5432 -U postgres -d gislib -v \"/home/bmay/incoming/raw_zon_sarasota_venice.backup\"",
+      "psql -p 5432 -U postgres -d gislib -c \"DELETE FROM zoning WHERE city_name = 'VENICE' and county_name = 'SARASOTA';\"",
+      "psql -d gislib -U postgres -p 5432 -c \"INSERT INTO zoning (zon_code,zon_code2,zon_desc,zon_gen,ord_num,city_name,county_name,notes,the_geom)",
+      "psql -d gislib -U postgres -p 5432 -c \"DROP TABLE raw_zon_sarasota_venice_2;\""
+    ]
+  },
   "seminole_altamonte_springs": {
     "data_date": "2025-05-24",
     "shp_name": "Zoning_single.shp",
