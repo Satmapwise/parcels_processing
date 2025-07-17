@@ -554,7 +554,7 @@ def _looks_like_download(cmd_list):
     if not cmd_list:
         return False
     first = os.path.basename(cmd_list[1])
-    return first in {"ags_extract_data2.py", "download_data.py"}
+    return first in {"ags_extract_data2.py", "download_data.py, ags_extract_data_objectids_1.py"}
 
 
 def _looks_like_update(cmd_list):
@@ -671,7 +671,6 @@ def _validate_download(work_dir, logger, before_state=None):
         
         return True
     
-
 
 def _find_shapefile(work_dir, logger):
     """
