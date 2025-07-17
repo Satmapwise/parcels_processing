@@ -108,6 +108,7 @@
         ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.zoning_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'BROWARD' and city_name = 'COUNTY_UNIFIED'"]
       ],
       "charlotte_punta_gorda": [
+        ["python3", "/srv/tools/python/lib/download_data.py", "/data/zoning/charlotte/punta_gorda"],
         "ogrinfo",
         ["python3", "/srv/tools/python/lib/update_zoning2.py", "charlotte", "punta_gorda"],
         ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.zoning_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'CHARLOTTE' and city_name = 'PUNTA_GORDA'"]
@@ -363,8 +364,7 @@
         ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.zoning_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'MARTIN' and city_name = 'STUART'"]
       ],
       "martin_unincorporated": [
-        ["unzip", "-oj", "Zoning.zip"],
-        ["zip_rename_date.sh", "Zoning.zip"],
+        ["python3", "/srv/tools/python/lib/ags_extract_data2.py", "zoning_martin_unincorp", "delete", "15"],
         "ogrinfo",
         ["python3", "/srv/tools/python/lib/update_zoning2.py", "martin", "unincorporated"],
         ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.zoning_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'MARTIN' and city_name = 'UNINCORPORATED'"]
@@ -388,6 +388,7 @@
         ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.zoning_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'NASSAU' and city_name = 'UNINCORPORATED'"]
       ],
       "okaloosa_unincorporated": [
+        ["python3", "/srv/tools/python/lib/download_data.py", "/data/zoning/okaloosa/unincorporated"],
         ["unzip", "-oj", "Local_Planning.zip"],
         ["zip_rename_date.sh", "Local_Planning.zip"],
         "ogrinfo",
