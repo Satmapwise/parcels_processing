@@ -743,6 +743,19 @@
       "psql -d gislib -U postgres -p 5432 -c \"DROP TABLE raw_zon_miami-dade_unincorp_2;\""
     ]
   },
+  "nassau_unincorporated": {
+    "data_date": "2025-05-15",
+    "shp_name": "zoning_nassau.shp",
+    "basename": "raw_zon_nassau_unincorp",
+    "remote_backup": "/home/bmay/incoming/raw_zon_nassau_unincorp.backup",
+    "remote_bat": "/home/bmay/incoming/raw_zon_nassau_unincorp.bat",
+    "commands": [
+      "pg_restore -p 5432 -U postgres -d gislib -v \"/home/bmay/incoming/raw_zon_nassau_unincorp.backup\"",
+      "psql -p 5432 -U postgres -d gislib -c \"DELETE FROM zoning WHERE city_name = 'UNINCORPORATED' and county_name = 'NASSAU';\"",
+      "psql -d gislib -U postgres -p 5432 -c \"INSERT INTO zoning (zon_code,zon_code2,zon_desc,zon_gen,ord_num,city_name,county_name,notes,the_geom)",
+      "psql -d gislib -U postgres -p 5432 -c \"DROP TABLE raw_zon_nassau_unincorp_2;\""
+    ]
+  },
   "okaloosa_unincorporated": {
     "data_date": "2025-07-13",
     "shp_name": "zngpy.shp",
