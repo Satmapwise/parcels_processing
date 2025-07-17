@@ -924,7 +924,10 @@ def download_process_layer(layer, queue):
                 'layer': layer, 'entity': entity, 'status': 'failure', 
                 'error': str(e), 'data_date': None, 'runtime_seconds': entity_runtime
             })
-
+    # Calculate successful vs total entities
+    total_entities = len(results)
+    successful_entities = len([r for r in results if r.get('status') == 'success'])
+    logging.info(f"{successful_entities}/{total_entities} entities processed successfully")
     return results
 
 

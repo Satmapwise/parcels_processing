@@ -584,6 +584,45 @@
       "psql -d gislib -U postgres -p 5432 -c \"DROP TABLE raw_zon_lake_unincorp_2;\""
     ]
   },
+  "lee_cape_coral": {
+    "data_date": "2025-07-17",
+    "shp_name": "zoning_cape_coral.shp",
+    "basename": "raw_zon_lee_cape_coral",
+    "remote_backup": "/home/bmay/incoming/raw_zon_lee_cape_coral.backup",
+    "remote_bat": "/home/bmay/incoming/raw_zon_lee_cape_coral.bat",
+    "commands": [
+      "pg_restore -p 5432 -U postgres -d gislib -v \"/home/bmay/incoming/raw_zon_lee_cape_coral.backup\"",
+      "psql -p 5432 -U postgres -d gislib -c \"DELETE FROM zoning WHERE city_name = 'CAPE_CORAL' and county_name = 'LEE';\"",
+      "psql -d gislib -U postgres -p 5432 -c \"INSERT INTO zoning (zon_code,zon_code2,zon_desc,zon_gen,ord_num,city_name,county_name,notes,the_geom)",
+      "psql -d gislib -U postgres -p 5432 -c \"DROP TABLE raw_zon_lee_cape_coral_2;\""
+    ]
+  },
+  "lee_fort_myers": {
+    "data_date": "2025-05-10",
+    "shp_name": "Zoning.shp",
+    "basename": "raw_zon_lee_fort_myers",
+    "remote_backup": "/home/bmay/incoming/raw_zon_lee_fort_myers.backup",
+    "remote_bat": "/home/bmay/incoming/raw_zon_lee_fort_myers.bat",
+    "commands": [
+      "pg_restore -p 5432 -U postgres -d gislib -v \"/home/bmay/incoming/raw_zon_lee_fort_myers.backup\"",
+      "psql -p 5432 -U postgres -d gislib -c \"DELETE FROM zoning WHERE city_name = 'FORT_MYERS' and county_name = 'LEE';\"",
+      "psql -d gislib -U postgres -p 5432 -c \"INSERT INTO zoning (zon_code,zon_code2,zon_desc,zon_gen,ord_num,city_name,county_name,notes,the_geom)",
+      "psql -d gislib -U postgres -p 5432 -c \"DROP TABLE raw_zon_lee_fort_myers_2;\""
+    ]
+  },
+  "lee_unincorporated": {
+    "data_date": "2025-07-17",
+    "shp_name": "zoning_lee_unincorp.shp",
+    "basename": "raw_zon_lee_unincorp",
+    "remote_backup": "/home/bmay/incoming/raw_zon_lee_unincorp.backup",
+    "remote_bat": "/home/bmay/incoming/raw_zon_lee_unincorp.bat",
+    "commands": [
+      "pg_restore -p 5432 -U postgres -d gislib -v \"/home/bmay/incoming/raw_zon_lee_unincorp.backup\"",
+      "psql -p 5432 -U postgres -d gislib -c \"DELETE FROM zoning WHERE city_name = 'UNINCORPORATED' and county_name = 'LEE';\"",
+      "psql -d gislib -U postgres -p 5432 -c \"INSERT INTO zoning (zon_code,zon_code2,zon_desc,zon_gen,ord_num,city_name,county_name,notes,the_geom)",
+      "psql -d gislib -U postgres -p 5432 -c \"DROP TABLE raw_zon_lee_unincorp_2;\""
+    ]
+  },
   "leon_county_unified": {
     "data_date": "2025-05-27",
     "shp_name": "zoning_leon.shp",
