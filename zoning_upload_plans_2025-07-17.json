@@ -143,8 +143,8 @@
     ]
   },
   "bay_unincorporated": {
-    "data_date": "2022-01-28",
-    "shp_name": "Zoning.shp",
+    "data_date": "2025-07-17",
+    "shp_name": "Zoning_single.shp",
     "basename": "raw_zon_bay_unincorp",
     "remote_backup": "/home/bmay/incoming/raw_zon_bay_unincorp.backup",
     "remote_bat": "/home/bmay/incoming/raw_zon_bay_unincorp.bat",
@@ -221,8 +221,8 @@
     ]
   },
   "charlotte_unincorporated": {
-    "data_date": "2024-06-02",
-    "shp_name": "ZONING.shp",
+    "data_date": "2025-07-17",
+    "shp_name": "Zoning_single.shp",
     "basename": "raw_zon_charlotte_unincorp",
     "remote_backup": "/home/bmay/incoming/raw_zon_charlotte_unincorp.backup",
     "remote_bat": "/home/bmay/incoming/raw_zon_charlotte_unincorp.bat",
@@ -244,6 +244,19 @@
       "psql -p 5432 -U postgres -d gislib -c \"DELETE FROM zoning WHERE city_name = 'UNINCORPORATED' and county_name = 'CITRUS';\"",
       "psql -d gislib -U postgres -p 5432 -c \"INSERT INTO zoning (zon_code,zon_code2,zon_desc,zon_gen,ord_num,city_name,county_name,notes,the_geom)",
       "psql -d gislib -U postgres -p 5432 -c \"DROP TABLE raw_zon_citrus_unincorp_2;\""
+    ]
+  },
+  "clay_unincorporated": {
+    "data_date": "2025-07-01",
+    "shp_name": "Zoning.shp",
+    "basename": "raw_zon_clay_unincorp",
+    "remote_backup": "/home/bmay/incoming/raw_zon_clay_unincorp.backup",
+    "remote_bat": "/home/bmay/incoming/raw_zon_clay_unincorp.bat",
+    "commands": [
+      "pg_restore -p 5432 -U postgres -d gislib -v \"/home/bmay/incoming/raw_zon_clay_unincorp.backup\"",
+      "psql -p 5432 -U postgres -d gislib -c \"DELETE FROM zoning WHERE city_name = 'UNINCORPORATED' and county_name = 'CLAY';\"",
+      "psql -d gislib -U postgres -p 5432 -c \"INSERT INTO zoning (zon_code,zon_code2,zon_desc,zon_gen,ord_num,city_name,county_name,notes,the_geom)",
+      "psql -d gislib -U postgres -p 5432 -c \"DROP TABLE raw_zon_clay_unincorp_2;\""
     ]
   },
   "collier_marco_island": {
@@ -322,6 +335,19 @@
       "psql -p 5432 -U postgres -d gislib -c \"DELETE FROM zoning WHERE city_name = 'UNINCORPORATED' and county_name = 'FLAGLER';\"",
       "psql -d gislib -U postgres -p 5432 -c \"INSERT INTO zoning (zon_code,zon_code2,zon_desc,zon_gen,ord_num,city_name,county_name,notes,the_geom)",
       "psql -d gislib -U postgres -p 5432 -c \"DROP TABLE raw_zon_flagler_unincorp_2;\""
+    ]
+  },
+  "hernando_brooksville": {
+    "data_date": "2025-05-27",
+    "shp_name": "BrooksvilleCityZoning.shp",
+    "basename": "raw_zon_hernando_brooksville",
+    "remote_backup": "/home/bmay/incoming/raw_zon_hernando_brooksville.backup",
+    "remote_bat": "/home/bmay/incoming/raw_zon_hernando_brooksville.bat",
+    "commands": [
+      "pg_restore -p 5432 -U postgres -d gislib -v \"/home/bmay/incoming/raw_zon_hernando_brooksville.backup\"",
+      "psql -p 5432 -U postgres -d gislib -c \"DELETE FROM zoning WHERE city_name = 'BROOKSVILLE' and county_name = 'HERNANDO';\"",
+      "psql -d gislib -U postgres -p 5432 -c \"INSERT INTO zoning (zon_code,zon_code2,zon_desc,zon_gen,ord_num,city_name,county_name,notes,the_geom)",
+      "psql -d gislib -U postgres -p 5432 -c \"DROP TABLE raw_zon_hernando_brooksville_2;\""
     ]
   },
   "hernando_unincorporated": {
@@ -573,7 +599,7 @@
   },
   "lake_unincorporated": {
     "data_date": "2025-07-17",
-    "shp_name": "zoning_lake_unincorp.shp",
+    "shp_name": "zoning_lake_unincorporated.shp",
     "basename": "raw_zon_lake_unincorp",
     "remote_backup": "/home/bmay/incoming/raw_zon_lake_unincorp.backup",
     "remote_bat": "/home/bmay/incoming/raw_zon_lake_unincorp.bat",
@@ -612,7 +638,7 @@
   },
   "lee_unincorporated": {
     "data_date": "2025-07-17",
-    "shp_name": "zoning_lee_unincorp.shp",
+    "shp_name": "zoning_lee_unincorporated.shp",
     "basename": "raw_zon_lee_unincorp",
     "remote_backup": "/home/bmay/incoming/raw_zon_lee_unincorp.backup",
     "remote_bat": "/home/bmay/incoming/raw_zon_lee_unincorp.bat",
@@ -624,7 +650,7 @@
     ]
   },
   "leon_county_unified": {
-    "data_date": "2025-05-27",
+    "data_date": "2025-07-17",
     "shp_name": "zoning_leon.shp",
     "basename": "raw_zon_leon_county_unified",
     "remote_backup": "/home/bmay/incoming/raw_zon_leon_county_unified.backup",
@@ -1056,7 +1082,7 @@
     ]
   },
   "pinellas_st_petersburg": {
-    "data_date": "2025-07-17",
+    "data_date": "2025-07-18",
     "shp_name": "zoning_st_petersburg.shp",
     "basename": "raw_zon_pinellas_st_petersburg",
     "remote_backup": "/home/bmay/incoming/raw_zon_pinellas_st_petersburg.backup",
@@ -1108,7 +1134,7 @@
     ]
   },
   "putnam_unincorporated": {
-    "data_date": "2025-07-17",
+    "data_date": "2025-07-18",
     "shp_name": "zoning_putnam.shp",
     "basename": "raw_zon_putnam_unincorp",
     "remote_backup": "/home/bmay/incoming/raw_zon_putnam_unincorp.backup",
@@ -1121,7 +1147,7 @@
     ]
   },
   "santa_rosa_unincorporated": {
-    "data_date": "2025-07-17",
+    "data_date": "2025-07-18",
     "shp_name": "zoning_santa_rosa_unincorporated.shp",
     "basename": "raw_zon_santa_rosa_unincorp",
     "remote_backup": "/home/bmay/incoming/raw_zon_santa_rosa_unincorp.backup",
@@ -1134,7 +1160,7 @@
     ]
   },
   "sarasota_north_port": {
-    "data_date": "2025-07-17",
+    "data_date": "2025-07-18",
     "shp_name": "zoning_north_port.shp",
     "basename": "raw_zon_sarasota_north_port",
     "remote_backup": "/home/bmay/incoming/raw_zon_sarasota_north_port.backup",
@@ -1147,7 +1173,7 @@
     ]
   },
   "sarasota_sarasota": {
-    "data_date": "2025-07-17",
+    "data_date": "2025-07-18",
     "shp_name": "zoning_sarasota.shp",
     "basename": "raw_zon_sarasota_sarasota",
     "remote_backup": "/home/bmay/incoming/raw_zon_sarasota_sarasota.backup",
@@ -1160,7 +1186,7 @@
     ]
   },
   "sarasota_unincorporated": {
-    "data_date": "2025-07-17",
+    "data_date": "2025-07-18",
     "shp_name": "zoning_sarasota_unincorporated.shp",
     "basename": "raw_zon_sarasota_unincorp",
     "remote_backup": "/home/bmay/incoming/raw_zon_sarasota_unincorp.backup",
@@ -1186,7 +1212,7 @@
     ]
   },
   "seminole_altamonte_springs": {
-    "data_date": "2025-05-24",
+    "data_date": "2025-07-17",
     "shp_name": "Zoning_single.shp",
     "basename": "raw_zon_seminole_altamonte_springs",
     "remote_backup": "/home/bmay/incoming/raw_zon_seminole_altamonte_springs.backup",
@@ -1212,7 +1238,7 @@
     ]
   },
   "seminole_lake_mary": {
-    "data_date": "2025-07-17",
+    "data_date": "2025-07-18",
     "shp_name": "zoning_lake_mary.shp",
     "basename": "raw_zon_seminole_lake_mary",
     "remote_backup": "/home/bmay/incoming/raw_zon_seminole_lake_mary.backup",
@@ -1238,7 +1264,7 @@
     ]
   },
   "seminole_oviedo": {
-    "data_date": "2025-07-17",
+    "data_date": "2025-07-18",
     "shp_name": "zoning_oviedo.shp",
     "basename": "raw_zon_seminole_oviedo",
     "remote_backup": "/home/bmay/incoming/raw_zon_seminole_oviedo.backup",
@@ -1251,7 +1277,7 @@
     ]
   },
   "seminole_sanford": {
-    "data_date": "2025-07-17",
+    "data_date": "2025-07-18",
     "shp_name": "zoning_sanford.shp",
     "basename": "raw_zon_seminole_sanford",
     "remote_backup": "/home/bmay/incoming/raw_zon_seminole_sanford.backup",
@@ -1264,7 +1290,7 @@
     ]
   },
   "seminole_unincorporated": {
-    "data_date": "2025-07-17",
+    "data_date": "2025-07-18",
     "shp_name": "Zoning_single.shp",
     "basename": "raw_zon_seminole_unincorp",
     "remote_backup": "/home/bmay/incoming/raw_zon_seminole_unincorp.backup",
@@ -1277,7 +1303,7 @@
     ]
   },
   "seminole_winter_springs": {
-    "data_date": "2025-07-17",
+    "data_date": "2025-07-18",
     "shp_name": "zoning_winter_springs.shp",
     "basename": "raw_zon_seminole_winter_springs",
     "remote_backup": "/home/bmay/incoming/raw_zon_seminole_winter_springs.backup",
@@ -1290,7 +1316,7 @@
     ]
   },
   "st_johns_unincorporated": {
-    "data_date": "2025-07-17",
+    "data_date": "2025-07-18",
     "shp_name": "zoning_st_johns_unincorporated.shp",
     "basename": "raw_zon_st_johns_unincorp",
     "remote_backup": "/home/bmay/incoming/raw_zon_st_johns_unincorp.backup",
@@ -1303,7 +1329,7 @@
     ]
   },
   "st_lucie_port_st_lucie": {
-    "data_date": "2025-07-17",
+    "data_date": "2025-07-18",
     "shp_name": "zoning_port_st_lucie.shp",
     "basename": "raw_zon_st_lucie_port_st_lucie",
     "remote_backup": "/home/bmay/incoming/raw_zon_st_lucie_port_st_lucie.backup",
@@ -1329,7 +1355,7 @@
     ]
   },
   "sumter_unincorporated": {
-    "data_date": "2025-07-17",
+    "data_date": "2025-07-18",
     "shp_name": "zoning_sumter.shp",
     "basename": "raw_zon_sumter_unincorp",
     "remote_backup": "/home/bmay/incoming/raw_zon_sumter_unincorp.backup",
@@ -1342,7 +1368,7 @@
     ]
   },
   "volusia_countywide": {
-    "data_date": "2025-07-17",
+    "data_date": "2025-07-18",
     "shp_name": "zoning_volusia_countywide.shp",
     "basename": "raw_zon_volusia_countywide",
     "remote_backup": "/home/bmay/incoming/raw_zon_volusia_countywide.backup",
@@ -1355,7 +1381,7 @@
     ]
   },
   "volusia_daytona_beach": {
-    "data_date": "2025-07-17",
+    "data_date": "2025-07-18",
     "shp_name": "zoning_daytona_beach.shp",
     "basename": "raw_zon_volusia_daytona_beach",
     "remote_backup": "/home/bmay/incoming/raw_zon_volusia_daytona_beach.backup",
@@ -1368,7 +1394,7 @@
     ]
   },
   "walton_unincorporated": {
-    "data_date": "2025-07-17",
+    "data_date": "2025-07-18",
     "shp_name": "zoning_walton.shp",
     "basename": "raw_zon_walton_unincorp",
     "remote_backup": "/home/bmay/incoming/raw_zon_walton_unincorp.backup",

@@ -691,67 +691,67 @@
       "alachua_alachua": [
         ["python3", "/srv/tools/python/lib/ags_extract_data2.py", "flu_alachua_city", "delete", "15"],
         "ogrinfo",
-        ["python3", "/srv/tools/python/lib/update_flu2.py", "alachua", "alachua"],
+        ["python3", "/srv/tools/python/lib/update_flu.py", "alachua", "alachua"],
         ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.flu_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'ALACHUA' and city_name = 'ALACHUA'"]
       ],
       "alachua_archer": [
         ["python3", "/srv/tools/python/lib/ags_extract_data2.py", "flu_archer", "delete", "15"],
         "ogrinfo",
-        ["python3", "/srv/tools/python/lib/update_flu2.py", "alachua", "archer"],
+        ["python3", "/srv/tools/python/lib/update_flu.py", "alachua", "archer"],
         ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.flu_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'ALACHUA' and city_name = 'ARCHER'"]
       ],
       "alachua_gainesville": [
         ["python3", "/srv/tools/python/lib/ags_extract_data2.py", "flu_gainesville", "delete", "15"],
         "ogrinfo",
-        ["python3", "/srv/tools/python/lib/update_flu2.py", "alachua", "gainesville"],
+        ["python3", "/srv/tools/python/lib/update_flu.py", "alachua", "gainesville"],
         ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.flu_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'ALACHUA' and city_name = 'GAINESVILLE'"]
       ],
       "alachua_hawthorne": [
         ["python3", "/srv/tools/python/lib/ags_extract_data2.py", "flu_hawthorne", "delete", "15"],
         "ogrinfo",
-        ["python3", "/srv/tools/python/lib/update_flu2.py", "alachua", "hawthorne"],
+        ["python3", "/srv/tools/python/lib/update_flu.py", "alachua", "hawthorne"],
         ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.flu_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'ALACHUA' and city_name = 'HAWTHORNE'"]
       ],
       "alachua_high_springs": [
         ["python3", "/srv/tools/python/lib/ags_extract_data2.py", "flu_high_springs", "delete", "15"],
         "ogrinfo",
-        ["python3", "/srv/tools/python/lib/update_flu2.py", "alachua", "high_springs"],
+        ["python3", "/srv/tools/python/lib/update_flu.py", "alachua", "high_springs"],
         ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.flu_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'ALACHUA' and city_name = 'HIGH_SPRINGS'"]
       ],
       "alachua_lacrosse": [
         ["python3", "/srv/tools/python/lib/ags_extract_data2.py", "flu_lacrosse", "delete", "15"],
         "ogrinfo",
-        ["python3", "/srv/tools/python/lib/update_flu2.py", "alachua", "lacrosse"],
+        ["python3", "/srv/tools/python/lib/update_flu.py", "alachua", "lacrosse"],
         ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.flu_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'ALACHUA' and city_name = 'LACROSSE'"]
       ],
       "alachua_micanopy": [
         ["python3", "/srv/tools/python/lib/ags_extract_data2.py", "flu_micanopy", "delete", "15"],
         "ogrinfo",
-        ["python3", "/srv/tools/python/lib/update_flu2.py", "alachua", "micanopy"],
+        ["python3", "/srv/tools/python/lib/update_flu.py", "alachua", "micanopy"],
         ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.flu_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'ALACHUA' and city_name = 'MICANOPY'"]
       ],
       "alachua_newberry": [
         ["python3", "/srv/tools/python/lib/ags_extract_data2.py", "flu_newberry", "delete", "15"],
         "ogrinfo",
-        ["python3", "/srv/tools/python/lib/update_flu2.py", "alachua", "newberry"],
+        ["python3", "/srv/tools/python/lib/update_flu.py", "alachua", "newberry"],
         ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.flu_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'ALACHUA' and city_name = 'NEWBERRY'"]
       ],
       "alachua_unincorporated": [
         ["python3", "/srv/tools/python/lib/ags_extract_data2.py", "flu_alachua_unincorporated", "delete", "15"],
         "ogrinfo",
-        ["python3", "/srv/tools/python/lib/update_flu2.py", "alachua", "unincorporated"],
+        ["python3", "/srv/tools/python/lib/update_flu.py", "alachua", "unincorporated"],
         ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.flu_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'ALACHUA' and city_name = 'UNINCORPORATED'"]
       ],
       "alachua_waldo": [
         ["python3", "/srv/tools/python/lib/ags_extract_data2.py", "flu_waldo", "delete", "15"],
         "ogrinfo",
-        ["python3", "/srv/tools/python/lib/update_flu2.py", "alachua", "waldo"],
+        ["python3", "/srv/tools/python/lib/update_flu.py", "alachua", "waldo"],
         ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.flu_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'ALACHUA' and city_name = 'WALDO'"]
       ],
       "baker_unincorporated": [
         ["python3", "/srv/tools/python/lib/ags_extract_data2.py", "flu_baker", "delete", "15"],
         "ogrinfo",
-        ["python3", "/srv/tools/python/lib/update_flu2.py", "baker", "unincorporated"],
+        ["python3", "/srv/tools/python/lib/update_flu.py", "baker", "unincorporated"],
         ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.flu_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'BAKER' and city_name = 'UNINCORPORATED'"]
       ],
       "bay_unincorporated": [
@@ -760,44 +760,44 @@
         ["zip_rename_date.sh", "Zoning.zip"],
         "ogrinfo",
         ["ogr2ogr", "-explodecollections", "Zoning_single.shp", "Zoning.shp"],
-        ["python3", "/srv/tools/python/lib/update_flu2.py", "bay", "unincorporated"],
+        ["python3", "/srv/tools/python/lib/update_flu.py", "bay", "unincorporated"],
         ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.flu_transform SET shp_name = 'Zoning_single.shp', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'BAY' and city_name = 'UNINCORPORATED'"]
       ],
       "brevard_melbourne": [
         ["python3", "/srv/tools/python/lib/ags_extract_data2.py", "flu_melbourne", "delete", "15"],
         "ogrinfo",
-        ["python3", "/srv/tools/python/lib/update_flu2.py", "brevard", "melbourne"],
+        ["python3", "/srv/tools/python/lib/update_flu.py", "brevard", "melbourne"],
         ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.flu_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'BREVARD' and city_name = 'MELBOURNE'"]
       ],
       "brevard_palm_bay": [
         ["python3", "/srv/tools/python/lib/ags_extract_data2.py", "flu_palm_bay", "delete", "15"],
         "ogrinfo",
-        ["python3", "/srv/tools/python/lib/update_flu2.py", "brevard", "palm_bay"],
+        ["python3", "/srv/tools/python/lib/update_flu.py", "brevard", "palm_bay"],
         ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.flu_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'BREVARD' and city_name = 'PALM_BAY'"]
       ],
       "brevard_titusville": [
         ["python3", "/srv/tools/python/lib/ags_extract_data2.py", "flu_titusville", "delete", "15"],
         "ogrinfo",
-        ["python3", "/srv/tools/python/lib/update_flu2.py", "brevard", "titusville"],
+        ["python3", "/srv/tools/python/lib/update_flu.py", "brevard", "titusville"],
         ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.flu_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'BREVARD' and city_name = 'TITUSVILLE'"]
       ],
       "brevard_unincorporated": [
         ["python3", "/srv/tools/python/lib/ags_extract_data2.py", "flu_brevard", "delete", "15"],
         "ogrinfo",
-        ["python3", "/srv/tools/python/lib/update_flu2.py", "brevard", "unincorporated"],
+        ["python3", "/srv/tools/python/lib/update_flu.py", "brevard", "unincorporated"],
         ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.flu_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'BREVARD' and city_name = 'UNINCORPORATED'"]
       ],
       "broward_county_unified": [
         ["python3", "/srv/tools/python/lib/ags_extract_data2.py", "flu_broward", "delete", "15"],
         "ogrinfo",
         ["ogr2ogr", "-explodecollections", "-t_srs", "EPSG:2881", "-select", "ZONING,ZONE_NAME", "flu_broward_single_2881.shp", "flu_broward.shp"],
-        ["python3", "/srv/tools/python/lib/update_flu2.py", "broward", "county_unified"],
+        ["python3", "/srv/tools/python/lib/update_flu.py", "broward", "county_unified"],
         ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.flu_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'BROWARD' and city_name = 'COUNTY_UNIFIED'"]
       ],
       "charlotte_punta_gorda": [
         ["python3", "/srv/tools/python/lib/download_data.py", "/data/flu/charlotte/punta_gorda"],
         "ogrinfo",
-        ["python3", "/srv/tools/python/lib/update_flu2.py", "charlotte", "punta_gorda"],
+        ["python3", "/srv/tools/python/lib/update_flu.py", "charlotte", "punta_gorda"],
         ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.flu_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'CHARLOTTE' and city_name = 'PUNTA_GORDA'"]
       ],
       "charlotte_unincorporated": [
@@ -806,39 +806,39 @@
         ["zip_rename_date.sh", "zoning.zip"],
         "ogrinfo",
         ["ogr2ogr", "-explodecollections", "Zoning_single.shp", "ZONING.shp"],
-        ["python3", "/srv/tools/python/lib/update_flu2.py", "charlotte", "unincorporated"],
+        ["python3", "/srv/tools/python/lib/update_flu.py", "charlotte", "unincorporated"],
         ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.flu_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'CHARLOTTE' and city_name = 'UNINCORPORATED'"]
       ],
       "citrus_unincorporated": [
         ["python3", "/srv/tools/python/lib/download_data.py", "/data/flu/citrus/unincorporated"],
         ["unzip", "-oj", "Zoning.zip"],
         "ogrinfo",
-        ["python3", "/srv/tools/python/lib/update_flu2.py", "citrus", "unincorporated"],
+        ["python3", "/srv/tools/python/lib/update_flu.py", "citrus", "unincorporated"],
         ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.flu_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'CITRUS' and city_name = 'UNINCORPORATED'"]
       ],
       "clay_unincorporated": [
         ["python3", "/srv/tools/python/lib/download_data.py", "/data/flu/clay/unincorporated"],
         ["unzip", "-oj", "Zoning.zip"],
         "ogrinfo",
-        ["python3", "/srv/tools/python/lib/update_flu2.py", "clay", "unincorporated"],
+        ["python3", "/srv/tools/python/lib/update_flu.py", "clay", "unincorporated"],
         ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.flu_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'CLAY' and city_name = 'UNINCORPORATED'"]
       ],
       "collier_marco_island": [
         ["python3", "/srv/tools/python/lib/ags_extract_data2.py", "flu_marco_island", "delete", "15"],
         "ogrinfo",
-        ["python3", "/srv/tools/python/lib/update_flu2.py", "collier", "marco_island"],
+        ["python3", "/srv/tools/python/lib/update_flu.py", "collier", "marco_island"],
         ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.flu_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'COLLIER' and city_name = 'MARCO_ISLAND'"]
       ],
       "collier_naples": [
         ["python3", "/srv/tools/python/lib/ags_extract_data2.py", "flu_naples", "delete", "15"],
         "ogrinfo",
-        ["python3", "/srv/tools/python/lib/update_flu2.py", "collier", "naples"],
+        ["python3", "/srv/tools/python/lib/update_flu.py", "collier", "naples"],
         ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.flu_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'COLLIER' and city_name = 'NAPLES'"]
       ],
       "collier_unincorporated": [
         ["python3", "/srv/tools/python/lib/ags_extract_data2.py", "flu_collier_unincorporated", "delete", "15"],
         "ogrinfo",
-        ["python3", "/srv/tools/python/lib/update_flu2.py", "collier", "unincorporated"],
+        ["python3", "/srv/tools/python/lib/update_flu.py", "collier", "unincorporated"],
         ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.flu_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'COLLIER' and city_name = 'UNINCORPORATED'"]
       ],
       "duval_unified": [
@@ -847,231 +847,231 @@
         ["zip_rename_date.sh", "zoning.zip"],
         ["/srv/tools/bash/shpmv.sh", "ZONING_20240423.shp", "flu_duval.shp"],
         "ogrinfo",
-        ["python3", "/srv/tools/python/lib/update_flu2.py", "duval", "jacksonville"],
+        ["python3", "/srv/tools/python/lib/update_flu.py", "duval", "jacksonville"],
         ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.flu_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'DUVAL' and city_name = 'JACKSONVILLE'"]
       ],
       "escambia_unincorporated": [
         ["python3", "/srv/tools/python/lib/ags_extract_data2.py", "flu_escambia", "delete", "15"],
         "ogrinfo",
-        ["python3", "/srv/tools/python/lib/update_flu2.py", "escambia", "unincorporated"],
+        ["python3", "/srv/tools/python/lib/update_flu.py", "escambia", "unincorporated"],
         ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.flu_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'ESCAMBIA' and city_name = 'UNINCORPORATED'"]
       ],
       "flagler_unincorporated": [
         ["python3", "/srv/tools/python/lib/ags_extract_data2.py", "flu_flagler_unincorporated", "delete", "15"],
         "ogrinfo",
-        ["python3", "/srv/tools/python/lib/update_flu2.py", "flagler", "unincorporated"],
+        ["python3", "/srv/tools/python/lib/update_flu.py", "flagler", "unincorporated"],
         ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.flu_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'FLAGLER' and city_name = 'UNINCORPORATED'"]
       ],
       "hernando_brooksville": [
         ["python3", "/srv/tools/python/lib/download_data.py", "/data/flu/hernando/brooksville"],
         "ogrinfo",
-        ["python3", "/srv/tools/python/lib/update_flu2.py", "hernando", "brooksville"],
+        ["python3", "/srv/tools/python/lib/update_flu.py", "hernando", "brooksville"],
         ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.flu_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'HERNANDO' and city_name = 'BROOKSVILLE'"]
       ],
       "hernando_unincorporated": [
         ["python3", "/srv/tools/python/lib/ags_extract_data2.py", "flu_hernando", "delete", "15"],
         "ogrinfo",
-        ["python3", "/srv/tools/python/lib/update_flu2.py", "hernando", "unincorporated"],
+        ["python3", "/srv/tools/python/lib/update_flu.py", "hernando", "unincorporated"],
         ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.flu_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'HERNANDO' and city_name = 'UNINCORPORATED'"]
       ],
       "highlands_unincorporated": [
         ["python3", "/srv/tools/python/lib/ags_extract_data2.py", "flu_highlands", "delete", "15"],
         "ogrinfo",
-        ["python3", "/srv/tools/python/lib/update_flu2.py", "highlands", "unincorporated"],
+        ["python3", "/srv/tools/python/lib/update_flu.py", "highlands", "unincorporated"],
         ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.flu_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'HIGHLANDS' and city_name = 'UNINCORPORATED'"]
       ],
       "hillsborough_plant_city": [
         ["python3", "/srv/tools/python/lib/ags_extract_data2.py", "flu_plant_city", "delete", "15"],
         "ogrinfo",
-        ["python3", "/srv/tools/python/lib/update_flu2.py", "hillsborough", "plant_city"],
+        ["python3", "/srv/tools/python/lib/update_flu.py", "hillsborough", "plant_city"],
         ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.flu_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'HILLSBOROUGH' and city_name = 'PLANT_CITY'"]
       ],
       "hillsborough_tampa": [
         ["python3", "/srv/tools/python/lib/ags_extract_data2.py", "flu_tampa", "delete", "15"],
         "ogrinfo",
-        ["python3", "/srv/tools/python/lib/update_flu2.py", "hillsborough", "tampa"],
+        ["python3", "/srv/tools/python/lib/update_flu.py", "hillsborough", "tampa"],
         ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.flu_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'HILLSBOROUGH' and city_name = 'TAMPA'"]
       ],
       "hillsborough_temple_terrace": [
         ["python3", "/srv/tools/python/lib/ags_extract_data2.py", "flu_temple_terrace", "delete", "15"],
         "ogrinfo",
-        ["python3", "/srv/tools/python/lib/update_flu2.py", "hillsborough", "temple_terrace"],
+        ["python3", "/srv/tools/python/lib/update_flu.py", "hillsborough", "temple_terrace"],
         ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.flu_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'HILLSBOROUGH' and city_name = 'TEMPLE_TERRACE'"]
       ],
       "hillsborough_unincorporated": [
         ["python3", "/srv/tools/python/lib/ags_extract_data2.py", "flu_hillsborough_unincorporated", "delete", "15"],
         "ogrinfo",
-        ["python3", "/srv/tools/python/lib/update_flu2.py", "hillsborough", "unincorporated"],
+        ["python3", "/srv/tools/python/lib/update_flu.py", "hillsborough", "unincorporated"],
         ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.flu_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'HILLSBOROUGH' and city_name = 'UNINCORPORATED'"]
       ],
       "indian_river_unincorporated": [
         ["python3", "/srv/tools/python/lib/ags_extract_data2.py", "flu_indian_river_unincorporated", "delete", "15", "zoning,zoning_abv,comment,ordinance"],
         "ogrinfo",
-        ["python3", "/srv/tools/python/lib/update_flu2.py", "indian_river", "unincorporated"],
+        ["python3", "/srv/tools/python/lib/update_flu.py", "indian_river", "unincorporated"],
         ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.flu_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'INDIAN_RIVER' and city_name = 'UNINCORPORATED'"]
       ],
       "indian_river_vero_beach": [
         ["python3", "/srv/tools/python/lib/ags_extract_data2.py", "flu_vero_beach", "delete", "15"],
         "ogrinfo",
-        ["python3", "/srv/tools/python/lib/update_flu2.py", "indian_river", "vero_beach"],
+        ["python3", "/srv/tools/python/lib/update_flu.py", "indian_river", "vero_beach"],
         ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.flu_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'INDIAN_RIVER' and city_name = 'VERO_BEACH'"]
       ],
       "lake_astatula": [
         ["python3", "/srv/tools/python/lib/ags_extract_data2.py", "flu_astatula", "delete", "15"],
         "ogrinfo",
-        ["python3", "/srv/tools/python/lib/update_flu2.py", "lake", "astatula"],
+        ["python3", "/srv/tools/python/lib/update_flu.py", "lake", "astatula"],
         ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.flu_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'LAKE' and city_name = 'ASTATULA'"]
       ],
       "lake_clermont": [
         ["python3", "/srv/tools/python/lib/ags_extract_data2.py", "flu_clermont", "delete", "15"],
         "ogrinfo",
-        ["python3", "/srv/tools/python/lib/update_flu2.py", "lake", "clermont"],
+        ["python3", "/srv/tools/python/lib/update_flu.py", "lake", "clermont"],
         ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.flu_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'LAKE' and city_name = 'CLERMONT'"]
       ],
       "lake_fruitland_park": [
         ["python3", "/srv/tools/python/lib/ags_extract_data2.py", "flu_fruitland_park", "delete", "15"],
         "ogrinfo",
-        ["python3", "/srv/tools/python/lib/update_flu2.py", "lake", "fruitland_park"],
+        ["python3", "/srv/tools/python/lib/update_flu.py", "lake", "fruitland_park"],
         ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.flu_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'LAKE' and city_name = 'FRUITLAND_PARK'"]
       ],
       "lake_groveland": [
         ["python3", "/srv/tools/python/lib/ags_extract_data2.py", "flu_groveland", "delete", "15"],
         "ogrinfo",
-        ["python3", "/srv/tools/python/lib/update_flu2.py", "lake", "groveland"],
+        ["python3", "/srv/tools/python/lib/update_flu.py", "lake", "groveland"],
         ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.flu_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'LAKE' and city_name = 'GROVELAND'"]
       ],
       "lake_howey_in_the_hills": [
         ["python3", "/srv/tools/python/lib/ags_extract_data2.py", "flu_howey_in_the_hills", "delete", "15"],
         "ogrinfo",
-        ["python3", "/srv/tools/python/lib/update_flu2.py", "lake", "howey_in_the_hills"],
+        ["python3", "/srv/tools/python/lib/update_flu.py", "lake", "howey_in_the_hills"],
         ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.flu_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'LAKE' and city_name = 'HOWEY_IN_THE_HILLS'"]
       ],
       "lake_leesburg": [
         ["python3", "/srv/tools/python/lib/ags_extract_data2.py", "flu_leesburg", "delete", "15"],
         "ogrinfo",
-        ["python3", "/srv/tools/python/lib/update_flu2.py", "lake", "leesburg"],
+        ["python3", "/srv/tools/python/lib/update_flu.py", "lake", "leesburg"],
         ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.flu_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'LAKE' and city_name = 'LEESBURG'"]
       ],
       "lake_mascotte": [
         ["python3", "/srv/tools/python/lib/ags_extract_data2.py", "flu_mascotte", "delete", "15"],
         "ogrinfo",
-        ["python3", "/srv/tools/python/lib/update_flu2.py", "lake", "mascotte"],
+        ["python3", "/srv/tools/python/lib/update_flu.py", "lake", "mascotte"],
         ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.flu_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'LAKE' and city_name = 'MASCOTTE'"]
       ],
       "lake_minneola": [
         ["python3", "/srv/tools/python/lib/ags_extract_data2.py", "flu_minneola", "delete", "15"],
         "ogrinfo",
-        ["python3", "/srv/tools/python/lib/update_flu2.py", "lake", "minneola"],
+        ["python3", "/srv/tools/python/lib/update_flu.py", "lake", "minneola"],
         ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.flu_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'LAKE' and city_name = 'MINNEOLA'"]
       ],
       "lake_montverde": [
         ["python3", "/srv/tools/python/lib/ags_extract_data2.py", "flu_montverde", "delete", "15"],
         "ogrinfo",
-        ["python3", "/srv/tools/python/lib/update_flu2.py", "lake", "montverde"],
+        ["python3", "/srv/tools/python/lib/update_flu.py", "lake", "montverde"],
         ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.flu_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'LAKE' and city_name = 'MONTVERDE'"]
       ],
       "lake_mount_dora": [
         ["python3", "/srv/tools/python/lib/ags_extract_data2.py", "flu_mount_dora", "delete", "15"],
         "ogrinfo",
-        ["python3", "/srv/tools/python/lib/update_flu2.py", "lake", "mount_dora"],
+        ["python3", "/srv/tools/python/lib/update_flu.py", "lake", "mount_dora"],
         ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.flu_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'LAKE' and city_name = 'MOUNT_DORA'"]
       ],
       "lake_tavares": [
         ["python3", "/srv/tools/python/lib/ags_extract_data2.py", "flu_tavares", "delete", "15"],
         "ogrinfo",
-        ["python3", "/srv/tools/python/lib/update_flu2.py", "lake", "tavares"],
+        ["python3", "/srv/tools/python/lib/update_flu.py", "lake", "tavares"],
         ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.flu_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'LAKE' and city_name = 'TAVARES'"]
       ],
       "lake_umatilla": [
         ["python3", "/srv/tools/python/lib/ags_extract_data2.py", "flu_umatilla", "delete", "15"],
         "ogrinfo",
-        ["python3", "/srv/tools/python/lib/update_flu2.py", "lake", "umatilla"],
+        ["python3", "/srv/tools/python/lib/update_flu.py", "lake", "umatilla"],
         ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.flu_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'LAKE' and city_name = 'UMATILLA'"]
       ],
       "lake_unincorporated": [
         ["python3", "/srv/tools/python/lib/ags_extract_data2.py", "flu_lake_unincorporated", "delete", "15"],
         "ogrinfo",
-        ["python3", "/srv/tools/python/lib/update_flu2.py", "lake", "unincorporated"],
+        ["python3", "/srv/tools/python/lib/update_flu.py", "lake", "unincorporated"],
         ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.flu_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'LAKE' and city_name = 'UNINCORPORATED'"]
       ],
       "lee_cape_coral": [
         ["python3", "/srv/tools/python/lib/ags_extract_data2.py", "flu_cape_coral", "delete", "15"],
         "ogrinfo",
-        ["python3", "/srv/tools/python/lib/update_flu2.py", "lee", "cape_coral"],
+        ["python3", "/srv/tools/python/lib/update_flu.py", "lee", "cape_coral"],
         ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.flu_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'LEE' and city_name = 'CAPE_CORAL'"]
       ],
       "lee_fort_myers": [
         ["python3", "/srv/tools/python/lib/ags_extract_data2.py", "flu_fort_myers", "delete", "15"],
         "ogrinfo",
-        ["python3", "/srv/tools/python/lib/update_flu2.py", "lee", "fort_myers"],
+        ["python3", "/srv/tools/python/lib/update_flu.py", "lee", "fort_myers"],
         ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.flu_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'LEE' and city_name = 'FORT_MYERS'"]
       ],
       "lee_unincorporated": [
         ["python3", "/srv/tools/python/lib/ags_extract_data2.py", "flu_lee_unincorporated", "delete", "15"],
         "ogrinfo",
-        ["python3", "/srv/tools/python/lib/update_flu2.py", "lee", "unincorporated"],
+        ["python3", "/srv/tools/python/lib/update_flu.py", "lee", "unincorporated"],
         ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.flu_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'LEE' and city_name = 'UNINCORPORATED'"]
       ],
       "leon_county_unified": [
         ["python3", "/srv/tools/python/lib/ags_extract_data2.py", "flu_leon", "delete", "15"],
         "ogrinfo",
-        ["python3", "/srv/tools/python/lib/update_flu2.py", "leon", "county_unified"],
+        ["python3", "/srv/tools/python/lib/update_flu.py", "leon", "county_unified"],
         ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.flu_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'LEON' and city_name = 'COUNTY_UNIFIED'"]
       ],
       "manatee_bradenton": [
         ["python3", "/srv/tools/python/lib/ags_extract_data2.py", "flu_bradenton", "delete", "15"],
         "ogrinfo",
         ["ogr2ogr", "-explodecollections", "flu_bradenton_single.shp", "flu_bradenton.shp"],
-        ["python3", "/srv/tools/python/lib/update_flu2.py", "manatee", "bradenton"],
+        ["python3", "/srv/tools/python/lib/update_flu.py", "manatee", "bradenton"],
         ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.flu_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'MANATEE' and city_name = 'BRADENTON'"]
       ],
       "manatee_unincorporated": [
         ["python3", "/srv/tools/python/lib/ags_extract_data2.py", "flu_manatee_unincorporated", "delete", "15"],
         "ogrinfo",
-        ["python3", "/srv/tools/python/lib/update_flu2.py", "manatee", "unincorporated"],
+        ["python3", "/srv/tools/python/lib/update_flu.py", "manatee", "unincorporated"],
         ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.flu_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'MANATEE' and city_name = 'UNINCORPORATED'"]
       ],
       "marion_ocala": [
         ["python3", "/srv/tools/python/lib/ags_extract_data2.py", "flu_ocala", "delete", "15"],
         "ogrinfo",
-        ["python3", "/srv/tools/python/lib/update_flu2.py", "marion", "ocala"],
+        ["python3", "/srv/tools/python/lib/update_flu.py", "marion", "ocala"],
         ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.flu_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'MARION' and city_name = 'OCALA'"]
       ],
       "marion_unincorporated": [
         ["python3", "/srv/tools/python/lib/ags_extract_data2.py", "flu_marion", "delete", "15"],
         "ogrinfo",
         ["ogr2ogr", "-explodecollections", "flu_marion_single.shp", "flu_marion.shp"],
-        ["python3", "/srv/tools/python/lib/update_flu2.py", "marion", "unincorporated"],
+        ["python3", "/srv/tools/python/lib/update_flu.py", "marion", "unincorporated"],
         ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.flu_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'MARION' and city_name = 'UNINCORPORATED'"]
       ],
       "martin_stuart": [
         ["python3", "/srv/tools/python/lib/ags_extract_data2.py", "flu_stuart", "delete", "15"],
         "ogrinfo",
-        ["python3", "/srv/tools/python/lib/update_flu2.py", "martin", "stuart"],
+        ["python3", "/srv/tools/python/lib/update_flu.py", "martin", "stuart"],
         ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.flu_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'MARTIN' and city_name = 'STUART'"]
       ],
       "martin_unincorporated": [
         ["python3", "/srv/tools/python/lib/ags_extract_data2.py", "flu_martin_unincorporated", "delete", "15"],
         "ogrinfo",
-        ["python3", "/srv/tools/python/lib/update_flu2.py", "martin", "unincorporated"],
+        ["python3", "/srv/tools/python/lib/update_flu.py", "martin", "unincorporated"],
         ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.flu_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'MARTIN' and city_name = 'UNINCORPORATED'"]
       ],
       "miami_dade_incorporated": [
         ["python3", "/srv/tools/python/lib/ags_extract_data2.py", "flu_miami_dade_incorporated", "delete", "15"],
         "ogrinfo",
-        ["python3", "/srv/tools/python/lib/update_flu2.py", "miami-dade", "incorporated"],
+        ["python3", "/srv/tools/python/lib/update_flu.py", "miami-dade", "incorporated"],
         ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.flu_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'MIAMI-DADE' and city_name = 'INCORPORATED'"]
       ],
       "miami_dade_unincorporated": [
         ["python3", "/srv/tools/python/lib/ags_extract_data2.py", "flu_miami_dade_unincorporated", "delete", "15"],
         "ogrinfo",
-        ["python3", "/srv/tools/python/lib/update_flu2.py", "miami-dade", "unincorporated"],
+        ["python3", "/srv/tools/python/lib/update_flu.py", "miami-dade", "unincorporated"],
         ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.flu_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'MIAMI-DADE' and city_name = 'UNINCORPORATED'"]
       ],
       "nassau_unincorporated": [
         ["python3", "/srv/tools/python/lib/ags_extract_data_objectids_1.py", "flu_nassau", "delete", "15"],
         "ogrinfo",
-        ["python3", "/srv/tools/python/lib/update_flu2.py", "nassau", "unincorporated"],
+        ["python3", "/srv/tools/python/lib/update_flu.py", "nassau", "unincorporated"],
         ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.flu_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'NASSAU' and city_name = 'UNINCORPORATED'"]
       ],
       "okaloosa_unincorporated": [
@@ -1079,191 +1079,191 @@
         ["unzip", "-oj", "Local_Planning.zip"],
         ["zip_rename_date.sh", "Local_Planning.zip"],
         "ogrinfo",
-        ["python3", "/srv/tools/python/lib/update_flu2.py", "okaloosa", "unincorporated"],
+        ["python3", "/srv/tools/python/lib/update_flu.py", "okaloosa", "unincorporated"],
         ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.flu_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'OKALOOSA' and city_name = 'UNINCORPORATED'"]
       ],
       "orange_apopka": [
         ["python3", "/srv/tools/python/lib/ags_extract_data2.py", "flu_apopka", "delete", "15"],
         "ogrinfo",
-        ["python3", "/srv/tools/python/lib/update_flu2.py", "orange", "apopka"],
+        ["python3", "/srv/tools/python/lib/update_flu.py", "orange", "apopka"],
         ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.flu_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'ORANGE' and city_name = 'APOPKA'"]
       ],
       "orange_eatonville": [
         ["python3", "/srv/tools/python/lib/ags_extract_data2.py", "flu_eatonville", "delete", "15"],
         "ogrinfo",
-        ["python3", "/srv/tools/python/lib/update_flu2.py", "orange", "eatonville"],
+        ["python3", "/srv/tools/python/lib/update_flu.py", "orange", "eatonville"],
         ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.flu_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'ORANGE' and city_name = 'EATONVILLE'"]
       ],
       "orange_ocoee": [
         ["python3", "/srv/tools/python/lib/ags_extract_data2.py", "flu_ocoee", "delete", "15"],
         "ogrinfo",
-        ["python3", "/srv/tools/python/lib/update_flu2.py", "orange", "ocoee"],
+        ["python3", "/srv/tools/python/lib/update_flu.py", "orange", "ocoee"],
         ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.flu_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'ORANGE' and city_name = 'OCOEE'"]
       ],
       "orange_orlando": [
         ["python3", "/srv/tools/python/lib/ags_extract_data2.py", "flu_orlando", "delete", "15"],
         "ogrinfo",
-        ["python3", "/srv/tools/python/lib/update_flu2.py", "orange", "orlando"],
+        ["python3", "/srv/tools/python/lib/update_flu.py", "orange", "orlando"],
         ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.flu_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'ORANGE' and city_name = 'ORLANDO'"]
       ],
       "orange_unincorporated": [
         ["python3", "/srv/tools/python/lib/download_data.py", "/data/flu/orange/unincorporated"],
         "ogrinfo",
-        ["python3", "/srv/tools/python/lib/update_flu2.py", "orange", "unincorporated"],
+        ["python3", "/srv/tools/python/lib/update_flu.py", "orange", "unincorporated"],
         ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.flu_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'ORANGE' and city_name = 'UNINCORPORATED'"]
       ],
       "osceola_kissimmee": [
         ["python3", "/srv/tools/python/lib/ags_extract_data2.py", "flu_kissimmee", "delete", "15"],
         "ogrinfo",
         ["ogr2ogr", "-explodecollections", "flu_kissimmee_single.shp", "flu_kissimmee.shp"],
-        ["python3", "/srv/tools/python/lib/update_flu2.py", "osceola", "kissimmee"],
+        ["python3", "/srv/tools/python/lib/update_flu.py", "osceola", "kissimmee"],
         ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.flu_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'OSCEOLA' and city_name = 'KISSIMMEE'"]
       ],
       "osceola_st_cloud": [
         ["python3", "/srv/tools/python/lib/ags_extract_data2.py", "flu_st_cloud", "delete", "15"],
         "ogrinfo",
-        ["python3", "/srv/tools/python/lib/update_flu2.py", "osceola", "st_cloud"],
+        ["python3", "/srv/tools/python/lib/update_flu.py", "osceola", "st_cloud"],
         ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.flu_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'OSCEOLA' and city_name = 'ST_CLOUD'"]
       ],
       "osceola_unincorporated": [
         ["python3", "/srv/tools/python/lib/ags_extract_data2.py", "flu_osceola", "delete", "15"],
         "ogrinfo",
-        ["python3", "/srv/tools/python/lib/update_flu2.py", "osceola", "unincorporated"],
+        ["python3", "/srv/tools/python/lib/update_flu.py", "osceola", "unincorporated"],
         ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.flu_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'OSCEOLA' and city_name = 'UNINCORPORATED'"]
       ],
       "palm_beach_county_unified": [
         ["python3", "/srv/tools/python/lib/ags_extract_data2.py", "flu_palm_beach_county_unified", "delete", "15"],
         "ogrinfo",
-        ["python3", "/srv/tools/python/lib/update_flu2.py", "palm_beach", "county_unified"],
+        ["python3", "/srv/tools/python/lib/update_flu.py", "palm_beach", "county_unified"],
         ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.flu_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'PALM_BEACH' and city_name = 'COUNTY_UNIFIED'"]
       ],
       "pasco_unincorporated": [
         ["python3", "/srv/tools/python/lib/ags_extract_data2.py", "flu_pasco_unincorporated", "delete", "15"],
         "ogrinfo",
-        ["python3", "/srv/tools/python/lib/update_flu2.py", "pasco", "unincorporated"],
+        ["python3", "/srv/tools/python/lib/update_flu.py", "pasco", "unincorporated"],
         ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.flu_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'PASCO' and city_name = 'UNINCORPORATED'"]
       ],
       "pinellas_belleair": [
         ["python3", "/srv/tools/python/lib/ags_extract_data2.py", "flu_belleair", "delete", "15"],
         "ogrinfo",
-        ["python3", "/srv/tools/python/lib/update_flu2.py", "pinellas", "belleair"],
+        ["python3", "/srv/tools/python/lib/update_flu.py", "pinellas", "belleair"],
         ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.flu_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'PINELLAS' and city_name = 'BELLEAIR'"]
       ],
       "pinellas_clearwater": [
         ["python3", "/srv/tools/python/lib/ags_extract_data2.py", "flu_clearwater", "delete", "15"],
         "ogrinfo",
-        ["python3", "/srv/tools/python/lib/update_flu2.py", "pinellas", "clearwater"],
+        ["python3", "/srv/tools/python/lib/update_flu.py", "pinellas", "clearwater"],
         ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.flu_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'PINELLAS' and city_name = 'CLEARWATER'"]
       ],
       "pinellas_dunedin": [
         ["python3", "/srv/tools/python/lib/ags_extract_data2.py", "flu_dunedin", "delete", "15"],
         "ogrinfo",
         ["ogr2ogr", "-explodecollections", "-t_srs", "EPSG:2882", "flu_dunedin_2882.shp", "flu_dunedin.shp"],
-        ["python3", "/srv/tools/python/lib/update_flu2.py", "pinellas", "dunedin"],
+        ["python3", "/srv/tools/python/lib/update_flu.py", "pinellas", "dunedin"],
         ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.flu_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'PINELLAS' and city_name = 'DUNEDIN'"]
       ],
       "pinellas_indian_rocks_beach": [
         ["python3", "/srv/tools/python/lib/ags_extract_data2.py", "flu_indian_rocks_beach", "delete", "15"],
         "ogrinfo",
-        ["python3", "/srv/tools/python/lib/update_flu2.py", "pinellas", "indian_rocks_beach"],
+        ["python3", "/srv/tools/python/lib/update_flu.py", "pinellas", "indian_rocks_beach"],
         ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.flu_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'PINELLAS' and city_name = 'INDIAN_ROCKS_BEACH'"]
       ],
       "pinellas_indian_shores": [
         ["python3", "/srv/tools/python/lib/ags_extract_data2.py", "flu_indian_shores", "delete", "15"],
         "ogrinfo",
-        ["python3", "/srv/tools/python/lib/update_flu2.py", "pinellas", "indian_shores"],
+        ["python3", "/srv/tools/python/lib/update_flu.py", "pinellas", "indian_shores"],
         ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.flu_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'PINELLAS' and city_name = 'INDIAN_SHORES'"]
       ],
       "pinellas_kenneth_city": [
         ["python3", "/srv/tools/python/lib/ags_extract_data2.py", "flu_kenneth_city", "delete", "15"],
         "ogrinfo",
-        ["python3", "/srv/tools/python/lib/update_flu2.py", "pinellas", "kenneth_city"],
+        ["python3", "/srv/tools/python/lib/update_flu.py", "pinellas", "kenneth_city"],
         ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.flu_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'PINELLAS' and city_name = 'KENNETH_CITY'"]
       ],
       "pinellas_madeira_beach": [
         ["python3", "/srv/tools/python/lib/ags_extract_data2.py", "flu_madeira_beach", "delete", "15"],
         "ogrinfo",
-        ["python3", "/srv/tools/python/lib/update_flu2.py", "pinellas", "madeira_beach"],
+        ["python3", "/srv/tools/python/lib/update_flu.py", "pinellas", "madeira_beach"],
         ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.flu_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'PINELLAS' and city_name = 'MADEIRA_BEACH'"]
       ],
       "pinellas_north_redington_beach": [
         ["python3", "/srv/tools/python/lib/ags_extract_data2.py", "flu_north_redington_beach", "delete", "15"],
         "ogrinfo",
-        ["python3", "/srv/tools/python/lib/update_flu2.py", "pinellas", "north_redington_beach"],
+        ["python3", "/srv/tools/python/lib/update_flu.py", "pinellas", "north_redington_beach"],
         ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.flu_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'PINELLAS' and city_name = 'NORTH_REDINGTON_BEACH'"]
       ],
       "pinellas_pinellas_park": [
         ["python3", "/srv/tools/python/lib/ags_extract_data2.py", "flu_pinellas_park", "delete", "15"],
         "ogrinfo",
         ["ogr2ogr", "-explodecollections", "-t_srs", "EPSG:2882", "flu_pinellas_park_2882.shp", "flu_pinellas_park.shp"],
-        ["python3", "/srv/tools/python/lib/update_flu2.py", "pinellas", "pinellas_park"],
+        ["python3", "/srv/tools/python/lib/update_flu.py", "pinellas", "pinellas_park"],
         ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.flu_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'PINELLAS' and city_name = 'PINELLAS_PARK'"]
       ],
       "pinellas_redington_shores": [
         ["python3", "/srv/tools/python/lib/ags_extract_data2.py", "flu_redington_shores", "delete", "15"],
         "ogrinfo",
-        ["python3", "/srv/tools/python/lib/update_flu2.py", "pinellas", "redington_shores"],
+        ["python3", "/srv/tools/python/lib/update_flu.py", "pinellas", "redington_shores"],
         ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.flu_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'PINELLAS' and city_name = 'REDINGTON_SHORES'"]
       ],
       "pinellas_seminole": [
         ["python3", "/srv/tools/python/lib/ags_extract_data2.py", "flu_seminole", "delete", "15"],
         "ogrinfo",
-        ["python3", "/srv/tools/python/lib/update_flu2.py", "pinellas", "seminole"],
+        ["python3", "/srv/tools/python/lib/update_flu.py", "pinellas", "seminole"],
         ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.flu_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'PINELLAS' and city_name = 'SEMINOLE'"]
       ],
       "pinellas_south_pasadena": [
         ["python3", "/srv/tools/python/lib/ags_extract_data2.py", "flu_south_pasadena", "delete", "15"],
         "ogrinfo",
-        ["python3", "/srv/tools/python/lib/update_flu2.py", "pinellas", "south_pasadena"],
+        ["python3", "/srv/tools/python/lib/update_flu.py", "pinellas", "south_pasadena"],
         ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.flu_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'PINELLAS' and city_name = 'SOUTH_PASADENA'"]
       ],
       "pinellas_st_petersburg": [
         ["python3", "/srv/tools/python/lib/ags_extract_data2.py", "flu_st_petersburg", "delete", "15"],
         "ogrinfo",
-        ["python3", "/srv/tools/python/lib/update_flu2.py", "pinellas", "st_petersburg"],
+        ["python3", "/srv/tools/python/lib/update_flu.py", "pinellas", "st_petersburg"],
         ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.flu_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'PINELLAS' and city_name = 'ST_PETERSBURG'"]
       ],
       "pinellas_treasure_island": [
         ["python3", "/srv/tools/python/lib/ags_extract_data2.py", "flu_treasure_island", "delete", "15"],
         "ogrinfo",
-        ["python3", "/srv/tools/python/lib/update_flu2.py", "pinellas", "treasure_island"],
+        ["python3", "/srv/tools/python/lib/update_flu.py", "pinellas", "treasure_island"],
         ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.flu_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'PINELLAS' and city_name = 'TREASURE_ISLAND'"]
       ],
       "pinellas_unincorporated": [
         ["python3", "/srv/tools/python/lib/ags_extract_data2.py", "flu_pinellas_unincorporated", "delete", "15"],
         "ogrinfo",
-        ["python3", "/srv/tools/python/lib/update_flu2.py", "pinellas", "unincorporated"],
+        ["python3", "/srv/tools/python/lib/update_flu.py", "pinellas", "unincorporated"],
         ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.flu_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'PINELLAS' and city_name = 'UNINCORPORATED'"]
       ],
       "polk_lakeland": [
         ["python3", "/srv/tools/python/lib/ags_extract_data2.py", "flu_lakeland", "delete", "15"],
         "ogrinfo",
-        ["python3", "/srv/tools/python/lib/update_flu2.py", "polk", "lakeland"],
+        ["python3", "/srv/tools/python/lib/update_flu.py", "polk", "lakeland"],
         ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.flu_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'POLK' and city_name = 'LAKELAND'"]
       ],
       "putnam_unincorporated": [
         ["python3", "/srv/tools/python/lib/ags_extract_data2.py", "flu_putnam_unincorporated", "delete", "15"],
         "ogrinfo",
-        ["python3", "/srv/tools/python/lib/update_flu2.py", "putnam", "unincorporated"],
+        ["python3", "/srv/tools/python/lib/update_flu.py", "putnam", "unincorporated"],
         ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.flu_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'PUTNAM' and city_name = 'UNINCORPORATED'"]
       ],
       "santa_rosa_unincorporated": [
         ["python3", "/srv/tools/python/lib/ags_extract_data2.py", "flu_santa_rosa_unincorporated", "delete", "15"],
         "ogrinfo",
-        ["python3", "/srv/tools/python/lib/update_flu2.py", "santa_rosa", "unincorporated"],
+        ["python3", "/srv/tools/python/lib/update_flu.py", "santa_rosa", "unincorporated"],
         ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.flu_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'SANTA_ROSA' and city_name = 'UNINCORPORATED'"]
       ],
       "sarasota_north_port": [
         ["python3", "/srv/tools/python/lib/ags_extract_data2.py", "flu_north_port", "delete", "15"],
         "ogrinfo",
         ["zip", "flu_north_port", "flu_north_port.*"],
-        ["python3", "/srv/tools/python/lib/update_flu2.py", "sarasota", "north_port"],
+        ["python3", "/srv/tools/python/lib/update_flu.py", "sarasota", "north_port"],
         ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.flu_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'SARASOTA' and city_name = 'NORTH_PORT'"]
       ],
       "sarasota_sarasota": [
         ["python3", "/srv/tools/python/lib/ags_extract_data2.py", "flu_sarasota", "delete", "15"],
         "ogrinfo",
-        ["python3", "/srv/tools/python/lib/update_flu2.py", "sarasota", "sarasota"],
+        ["python3", "/srv/tools/python/lib/update_flu.py", "sarasota", "sarasota"],
         ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.flu_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'SARASOTA' and city_name = 'SARASOTA'"]
       ],
       "sarasota_venice": [
@@ -1272,13 +1272,13 @@
         ["zip_rename_date.sh", "zoning.zip"],
         "ogrinfo",
         ["ogr2ogr", "flu_venice_dissolve.shp", "flu_venice.shp", "-dialect", "sqlite", "-sql", "SELECT ST_Union(geometry), map_label, zoning_dis, notes FROM zoning_venice GROUP BY map_label, zoning_dis, notes"],
-        ["python3", "/srv/tools/python/lib/update_flu2.py", "sarasota", "venice"],
+        ["python3", "/srv/tools/python/lib/update_flu.py", "sarasota", "venice"],
         ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.flu_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'SARASOTA' and city_name = 'VENICE'"]
       ],
       "sarasota_unincorporated": [
         ["python3", "/srv/tools/python/lib/ags_extract_data2.py", "flu_sarasota_unincorporated", "delete", "15"],
         "ogrinfo",
-        ["python3", "/srv/tools/python/lib/update_flu2.py", "sarasota", "unincorporated"],
+        ["python3", "/srv/tools/python/lib/update_flu.py", "sarasota", "unincorporated"],
         ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.flu_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'SARASOTA' and city_name = 'UNINCORPORATED'"]
       ],
       "seminole_altamonte_springs": [
@@ -1286,92 +1286,92 @@
         "ogrinfo",
         ["rm", "Zoning_single.*"],
         ["ogr2ogr", "-explodecollections", "-select", "ZONING", "Zoning_single.shp", "Zoning.shp"],
-        ["python3", "/srv/tools/python/lib/update_flu2.py", "seminole", "altamonte_springs"],
+        ["python3", "/srv/tools/python/lib/update_flu.py", "seminole", "altamonte_springs"],
         ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.flu_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'SEMINOLE' and city_name = 'ALTAMONTE_SPRINGS'"]
       ],
       "seminole_casselberry": [
         ["python3", "/srv/tools/python/lib/ags_extract_data2.py", "flu_casselberry", "delete", "15"],
         "ogrinfo",
-        ["python3", "/srv/tools/python/lib/update_flu2.py", "seminole", "casselberry"],
+        ["python3", "/srv/tools/python/lib/update_flu.py", "seminole", "casselberry"],
         ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.flu_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'SEMINOLE' and city_name = 'CASSELBERRY'"]
       ],
       "seminole_lake_mary": [
         ["python3", "/srv/tools/python/lib/ags_extract_data2.py", "flu_lake_mary", "delete", "15"],
         "ogrinfo",
-        ["python3", "/srv/tools/python/lib/update_flu2.py", "seminole", "lake_mary"],
+        ["python3", "/srv/tools/python/lib/update_flu.py", "seminole", "lake_mary"],
         ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.flu_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'SEMINOLE' and city_name = 'LAKE_MARY'"]
       ],
       "seminole_longwood": [
         ["python3", "/srv/tools/python/lib/ags_extract_data2.py", "flu_longwood", "delete", "15"],
         "ogrinfo",
-        ["python3", "/srv/tools/python/lib/update_flu2.py", "seminole", "longwood"],
+        ["python3", "/srv/tools/python/lib/update_flu.py", "seminole", "longwood"],
         ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.flu_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'SEMINOLE' and city_name = 'LONGWOOD'"]
       ],
       "seminole_oviedo": [
         ["python3", "/srv/tools/python/lib/ags_extract_data2.py", "flu_oviedo", "delete", "15"],
         "ogrinfo",
-        ["python3", "/srv/tools/python/lib/update_flu2.py", "seminole", "oviedo"],
+        ["python3", "/srv/tools/python/lib/update_flu.py", "seminole", "oviedo"],
         ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.flu_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'SEMINOLE' and city_name = 'OVIEDO'"]
       ],
       "seminole_sanford": [
         ["python3", "/srv/tools/python/lib/ags_extract_data2.py", "flu_sanford", "delete", "15"],
         "ogrinfo",
-        ["python3", "/srv/tools/python/lib/update_flu2.py", "seminole", "sanford"],
+        ["python3", "/srv/tools/python/lib/update_flu.py", "seminole", "sanford"],
         ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.flu_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'SEMINOLE' and city_name = 'SANFORD'"]
       ],
       "seminole_winter_springs": [
         ["python3", "/srv/tools/python/lib/ags_extract_data2.py", "flu_winter_springs", "delete", "15"],
         "ogrinfo",
-        ["python3", "/srv/tools/python/lib/update_flu2.py", "seminole", "winter_springs"],
+        ["python3", "/srv/tools/python/lib/update_flu.py", "seminole", "winter_springs"],
         ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.flu_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'SEMINOLE' and city_name = 'WINTER_SPRINGS'"]
       ],
       "seminole_unincorporated": [
         ["python3", "/srv/tools/python/lib/download_data.py", "/data/flu/seminole/unincorporated"],
         "ogrinfo",
         ["ogr2ogr", "-explodecollections", "-select", "ZONING, ORDINANCE", "Zoning_single.shp", "LandUse.gdb", "Zoning"],
-        ["python3", "/srv/tools/python/lib/update_flu2.py", "seminole", "unincorporated"],
+        ["python3", "/srv/tools/python/lib/update_flu.py", "seminole", "unincorporated"],
         ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.flu_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'SEMINOLE' and city_name = 'UNINCORPORATED'"]
       ],
       "st_johns_unincorporated": [
         ["python3", "/srv/tools/python/lib/ags_extract_data2.py", "flu_st_johns_unincorporated", "delete", "15"],
         "ogrinfo",
-        ["python3", "/srv/tools/python/lib/update_flu2.py", "st_johns", "unincorporated"],
+        ["python3", "/srv/tools/python/lib/update_flu.py", "st_johns", "unincorporated"],
         ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.flu_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'ST_JOHNS' and city_name = 'UNINCORPORATED'"]
       ],
       "st_lucie_port_st_lucie": [
         ["python3", "/srv/tools/python/lib/ags_extract_data2.py", "flu_port_st_lucie", "delete", "15", "zoning,seu_type"],
         "ogrinfo",
-        ["python3", "/srv/tools/python/lib/update_flu2.py", "st_lucie", "port_st_lucie"],
+        ["python3", "/srv/tools/python/lib/update_flu.py", "st_lucie", "port_st_lucie"],
         ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.flu_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'ST_LUCIE' and city_name = 'PORT_ST_LUCIE'"]
       ],
       "st_lucie_unincorporated": [
         ["python3", "/srv/tools/python/lib/download_data.py", "/data/flu/st_lucie/unincorporated"],
         "ogrinfo",
-        ["python3", "/srv/tools/python/lib/update_flu2.py", "st_lucie", "unincorporated"],
+        ["python3", "/srv/tools/python/lib/update_flu.py", "st_lucie", "unincorporated"],
         ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.flu_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'ST_LUCIE' and city_name = 'UNINCORPORATED'"]
       ],
       "sumter_unincorporated": [
         ["python3", "/srv/tools/python/lib/ags_extract_data2.py", "flu_sumter", "delete", "15"],
         "ogrinfo",
-        ["python3", "/srv/tools/python/lib/update_flu2.py", "sumter", "unincorporated"],
+        ["python3", "/srv/tools/python/lib/update_flu.py", "sumter", "unincorporated"],
         ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.flu_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'SUMTER' and city_name = 'UNINCORPORATED'"]
       ],
       "volusia_countywide": [
         ["python3", "/srv/tools/python/lib/ags_extract_data2.py", "flu_volusia_countywide", "delete", "15"],
         "ogrinfo",
-        ["python3", "/srv/tools/python/lib/update_flu2.py", "volusia", "countywide"],
+        ["python3", "/srv/tools/python/lib/update_flu.py", "volusia", "countywide"],
         ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.flu_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'VOLUSIA' and city_name = 'COUNTYWIDE'"]
       ],
       "volusia_daytona_beach": [
         ["python3", "/srv/tools/python/lib/ags_extract_data2.py", "flu_volusia_daytona_beach", "delete", "15"],
         "ogrinfo",
-        ["python3", "/srv/tools/python/lib/update_flu2.py", "volusia", "daytona_beach"],
+        ["python3", "/srv/tools/python/lib/update_flu.py", "volusia", "daytona_beach"],
         ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.flu_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'VOLUSIA' and city_name = 'DAYTONA_BEACH'"]
       ],
       "walton_unincorporated": [
         ["python3", "/srv/tools/python/lib/ags_extract_data2.py", "flu_walton", "delete", "15"],
         "ogrinfo",
-        ["python3", "/srv/tools/python/lib/update_flu2.py", "walton", "unincorporated"],
+        ["python3", "/srv/tools/python/lib/update_flu.py", "walton", "unincorporated"],
         ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.flu_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'WALTON' and city_name = 'UNINCORPORATED'"]
       ]
     }

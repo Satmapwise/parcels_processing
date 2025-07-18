@@ -1,0 +1,15 @@
+{
+  "brevard_unincorporated": {
+    "data_date": "2024-11-01",
+    "shp_name": "Future_Land_Use.shp",
+    "basename": "raw_flu_brevard_unincorp_2",
+    "remote_backup": "/home/bmay/incoming/raw_flu_brevard_unincorp_2.backup",
+    "remote_bat": "/home/bmay/incoming/raw_flu_brevard_unincorp_2.bat",
+    "commands": [
+      "pg_restore -p 5432 -U postgres -d gislib -v \"/home/bmay/incoming/raw_flu_brevard_unincorp_2.backup\"",
+      "psql -p 5432 -U postgres -d gislib -c \"DELETE FROM flu WHERE city_name = 'UNINCORPORATED' and county_name = 'BREVARD' \" ;",
+      "psql -d gislib -U postgres -p 5432 -c \"INSERT INTO flu (flu_code, flu_code2, flu_desc, flu_desc_ext, flu_gen, city_name, county_name, notes, dca_num, d_date, wkb_geometry)",
+      "psql -d gislib -U postgres -p 5432 -c \"DROP TABLE raw_flu_brevard_unincorp_2;\""
+    ]
+  }
+}
