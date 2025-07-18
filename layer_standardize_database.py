@@ -38,7 +38,7 @@ import psycopg2.extras
 # Configuration variables
 optional_conditions = True
 generate_CSV = True
-debug = False
+debug = True
 test_mode = True
 
 # Database connection
@@ -578,8 +578,8 @@ class LayerStandardizer:
             return None
         
         # Normalize county and city
-        county_norm = county.lower().replace(' ', '_').replace('.', '').strip()
-        city_norm = (city or '').lower().replace(' ', '_').replace('.', '').strip()
+        county_norm = county.lower().replace(' ', '_').replace('.', '').replace('-', '_').strip()
+        city_norm = (city or '').lower().replace(' ', '_').replace('.', '').replace('-', '_').strip()
         
         # Remove trailing _county for matching
         county_base = county_norm[:-7] if county_norm.endswith('_county') else county_norm
@@ -597,11 +597,14 @@ class LayerStandardizer:
         if 'city of' in title_lower:
             city_match = title_lower.split('city of')[-1].strip()
             if city_match:
-                city_norm = city_match.replace(' ', '_').replace('.', '').strip()
+                city_norm = city_match.replace(' ', '_').replace('.', '').replace('-', '_').strip()
+                logger.debug(f"Extracted entity from title: {county_base}_{city_norm}")
                 return f"{county_base}_{city_norm}"
         if 'unincorporated' in title_lower:
+            logger.debug(f"Extracted entity from title: {county_base}_unincorporated")
             return f"{county_base}_unincorporated"
         if 'unified' in title_lower:
+            logger.debug(f"Extracted entity from title: {county_base}_unified")
             return f"{county_base}_unified"
         return None
     
@@ -856,12 +859,15 @@ class LayerStandardizer:
         
         for entity in entities:
             # Parse entity name using the same logic as process_entity
+            logger.info(f"Processing entity: {entity}")
             county, city = self.parse_entity_name(f"{layer}_{entity}")
+            logger.debug(f"Parsed entity: {county}, {city}")
             if not county or not city:
                 continue
             commands = self.manifest.get_entity_commands(layer, entity)
             is_ags = self.manifest.is_ags_download(commands)
             target_city = self.manifest.get_target_city(commands, entity)
+            logger.debug(f"Target city: {target_city}")
             
             entity_type = 'city'
             if city in ['unincorporated', 'unified']:
@@ -869,6 +875,7 @@ class LayerStandardizer:
             
             # Get catalog record
             catalog_records = self.find_catalog_records(layer, county, target_city)
+            #logger.debug(f"Catalog records: {catalog_records}")
             catalog = catalog_records[0] if catalog_records else {}
             
             # Get transform record
@@ -877,6 +884,7 @@ class LayerStandardizer:
                 transform_record = self.find_transform_record(layer, county, target_city)
                 if transform_record:
                     transform = dict(transform_record)
+                #logger.debug(f"Transform record: {transform}")
             
             check_results.append({
                 'layer': layer,
@@ -890,6 +898,7 @@ class LayerStandardizer:
         
         # Find orphaned records
         orphaned = self.check_orphaned_records(layer)
+        #logger.debug(f"Orphaned records: {orphaned}")
         for orphan in orphaned:
             check_results.append({
                 'layer': layer,
@@ -900,9 +909,15 @@ class LayerStandardizer:
                 'catalog': dict(orphan['record']) if orphan['table'] == 'm_gis_data_catalog_main' else {},
                 'transform': dict(orphan['record']) if orphan['table'] != 'm_gis_data_catalog_main' else {}
             })
-        
+
         # Generate CSV report
         self.generate_csv_report(layer, check_results)
+        logger.info(f"Missing fields: {len(self.missing_fields)}")
+        logger.info(f"Duplicates found: {len(self.duplicates)}")
+        logger.info(f"Orphaned records: {len(orphaned)}")
+        for orphan in orphaned:
+            record = orphan['record']
+            logger.debug(f"  {record.get('county', 'UNKNOWN')}_{record.get('city', 'UNKNOWN')}")
         
         return check_results
     
