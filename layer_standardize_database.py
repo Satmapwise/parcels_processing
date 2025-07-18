@@ -272,7 +272,7 @@ class Formatter:
 
         # Regex patterns for different entity types
         city_re = re.compile(r"^(?:city|town|village) of\s+(.+)$", re.I)
-        county_suffix_re = re.compile(r"^([A-Za-z\s\-]+?)\s+(unincorporated|unified|countywide)$", re.I)
+        county_suffix_re = re.compile(r"^([A-Za-z\s\-]+?)\s+(unincorporated|incorporated|unified|countywide)$", re.I)
 
         m_city = city_re.match(rest_main)
         if m_city:
@@ -545,7 +545,7 @@ class LayerStandardizer:
         if len(tokens) < 2:
             raise ValueError(f"Invalid entity format: {entity}")
 
-        suffixes = {"unincorporated", "unified", "countywide"}
+        suffixes = {"unincorporated", "incorporated", "unified", "countywide"}
         if tokens[-1] in suffixes:
             county = "_".join(tokens[:-1])
             city = tokens[-1]
