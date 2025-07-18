@@ -11,6 +11,7 @@ It supports the following modes:
 • --check – read only, output CSV report but make no DB changes
 • --manual-fill – read JSON of missing fields and apply only those edits
 • --create – create a brand-new record in the DB (requires manual data if optional fields are missing)
+• --check-orphans – find DB records lacking manifest entries
 
 Config flags (global):
 optional_conditions – toggle extra checks
@@ -342,6 +343,8 @@ class LayerStandardizer:
             self._run_manual_fill_mode()
         elif self.cfg.mode == "create":
             self._run_create_mode()
+        elif self.cfg.mode == "check-orphans":
+            self._run_check_orphans_mode()
         else:
             self._run_update_mode()
 
@@ -433,6 +436,15 @@ class LayerStandardizer:
         csv_rows_body.sort(key=lambda r: (r[0], r[1], r[2]))
         csv_rows = [csv_rows[0]] + csv_rows_body
 
+        # Orphan detection (records in DB but not manifest)
+        processed_entities = set(self._select_entities())
+        orphan_rows = self._find_db_orphans(processed_entities)
+
+        if orphan_rows:
+            csv_rows.append([])  # blank line separator
+            csv_rows.append(["ORPHANS", "entity", "title"])  # section header (3 cols)
+            csv_rows.extend([["", ent, title] for ent, title in orphan_rows])
+
         self._write_csv_report(csv_rows)
 
         # --------------------------------------------------
@@ -484,6 +496,25 @@ class LayerStandardizer:
         self.logger.info("Running CREATE mode – inserting new DB records.")
         # TODO: implement record creation
         self.logger.warning("CREATE mode not yet implemented in this scaffold.")
+
+    def _run_check_orphans_mode(self):
+        """Identify DB catalog rows that lack manifest entries and output like check mode."""
+        self.logger.info("Running CHECK-ORPHANS mode – searching for DB records without manifest counterparts.")
+
+        manifest_entities = set(self._select_entities())
+        orphan_rows = self._find_db_orphans(manifest_entities)
+
+        if not self.cfg.debug:
+            self.logger.info(f"Orphans found: {len(orphan_rows)}")
+        else:
+            self.logger.debug(f"Orphan records ({len(orphan_rows)}):")
+            for ent, title in orphan_rows:
+                self.logger.debug(f"  {ent} -> {title}")
+
+        # Build CSV rows with same format as check but only orphan section
+        csv_rows = [["ORPHANS", "entity", "title"]]
+        csv_rows.extend([["", ent, title] for ent, title in orphan_rows])
+        self._write_csv_report(csv_rows)
 
     # --------------------------------------------------
     # Helper utilities
@@ -564,16 +595,33 @@ class LayerStandardizer:
         }
 
     # --------------------------------------------------
-    # Extra helper to find DB records without manifest equivalents
+    # Orphan detection helpers
     # --------------------------------------------------
 
+    def _find_db_orphans(self, manifest_entities: set[str]) -> List[Tuple[str, str]]:
+        """Return list of (entity, title) pairs for DB rows whose layer matches cfg.layer but entity not in manifest."""
+        sql = "SELECT lower(county) AS county, lower(city) AS city, title FROM m_gis_data_catalog_main"
+        rows = self.db.fetchall(sql) or []
+        orphans: List[Tuple[str, str]] = []
+        for row in rows:
+            title = row["title"]
+            layer_from_title, county_from_title, city_from_title, _ = Formatter.format_title_to_entity(title)
+            if layer_from_title != self.cfg.layer:
+                continue
+            entity = f"{row['county']}_{row['city']}"
+            if entity not in manifest_entities:
+                orphans.append((entity, title))
+        return orphans
+
     def _db_entities_not_in_manifest(self, manifest_entities: set[str]) -> set[str]:
-        sql = (
-            "SELECT lower(county) AS county, lower(city) AS city "
-            "FROM m_gis_data_catalog_main WHERE lower(layer_group)=%s"
-        )
-        rows = self.db.fetchall(sql, (Formatter.LAYER_GROUP[self.cfg.layer],)) or []
-        db_entities = {f"{row['county']}_{row['city']}" for row in rows}
+        sql = "SELECT lower(county) AS county, lower(city) AS city, title FROM m_gis_data_catalog_main"
+        rows = self.db.fetchall(sql) or []
+        db_entities = set()
+        for row in rows:
+            layer_from_title, _, _, _ = Formatter.format_title_to_entity(row["title"])
+            if layer_from_title != self.cfg.layer:
+                continue
+            db_entities.add(f"{row['county']}_{row['city']}")
         return db_entities.difference(manifest_entities)
 
 # --------------------------------------------------
@@ -603,6 +651,7 @@ def build_arg_parser() -> argparse.ArgumentParser:
     group.add_argument("--check", action="store_true", help="Run in check-only mode (no DB writes)")
     group.add_argument("--manual-fill", action="store_true", help="Apply edits from missing_fields.json")
     group.add_argument("--create", action="store_true", help="Create a new record")
+    group.add_argument("--check-orphans", action="store_true", help="Find DB records lacking manifest entries")
 
     p.add_argument("--optional-conditions", action="store_true", help="Enable optional condition checks")
     p.add_argument("--no-csv", dest="generate_CSV", action="store_false", help="Disable CSV generation")
@@ -616,7 +665,9 @@ def main(argv: List[str] | None = None):
     args = parser.parse_args(argv)
 
     mode = "update"
-    if args.check:
+    if args.check_orphans:
+        mode = "check-orphans"
+    elif args.check:
         mode = "check"
     elif args.manual_fill:
         mode = "manual-fill"
