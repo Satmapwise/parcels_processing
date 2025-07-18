@@ -416,7 +416,7 @@ class LayerStandardizer:
                 present_entities_found.add(entity)
 
             if cat_row is None:
-                cat_values = ["MISSING"] * len(header_catalog)
+                cat_values = [self.cfg.layer, county, city, "RECORD MISSING"] + [""] * (len(header_catalog) - 4)
             else:
                 cat_values = [
                     self.cfg.layer,
