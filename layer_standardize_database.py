@@ -266,9 +266,16 @@ class Formatter:
         layer_norm = layer_part.strip().lower()
         layer_norm = layer_norm.replace("future land use", "flu")  # Preferred short name
 
-        # The remainder may have extra descriptors after additional dashes, e.g.
-        #   "City of Gainesville - AGS"  or  "Alachua Unincorporated - PDF"
-        rest_main = rest.split(" - ", 1)[0].strip()
+        # The remainder may contain multiple " - " separated pieces, e.g.
+        #   "Broward County - County Unified - AGS"
+        rest_parts = rest.split(" - ")
+        # If last token is a descriptor like AGS/PDF/SHP we drop it
+        descriptors = {"ags", "pdf", "shp", "zip"}
+        if len(rest_parts) > 1 and rest_parts[-1].lower() in descriptors:
+            rest_parts = rest_parts[:-1]
+        rest_main = " ".join(rest_parts).strip()
+        # Remove the word "County" if it appears immediately before a suffix word
+        rest_main = re.sub(r"\s+County\s+(?=(unincorporated|incorporated|unified|countywide)$)", " ", rest_main, flags=re.I)
 
         # Regex patterns for different entity types
         city_re = re.compile(r"^(?:city|town|village) of\s+(.+)$", re.I)
@@ -422,16 +429,43 @@ class LayerStandardizer:
             target_city_disp = title_case(target_city_raw.replace('_',' ')) if target_city_raw else ""
             self.logger.debug(f"Parsed for entity: county={county}, city={city}, target_city={target_city_disp}")
 
-            cat_row = self._fetch_catalog_row(county, target_city_fmt)
-            if cat_row is not None:
+            matches = self._fetch_catalog_rows(county, target_city_fmt)
+            dup_status = False
+            if not matches:
+                cat_row = None
+                self.logger.debug("  --> FAILURE")
+            elif len(matches) == 1:
+                cat_row = matches[0]
                 self.logger.debug(f"Matched DB title: {cat_row.get('title')}")
                 present_entities_found.add(entity)
                 self.logger.debug("  --> SUCCESS")
             else:
-                self.logger.debug("  --> FAILURE")
+                cat_row = matches[0]  # pick first but mark duplicate
+                dup_status = True
+                present_entities_found.add(entity)
+                self.logger.debug(f"Duplicate rows ({len(matches)}) – using first title: {cat_row.get('title')}")
+                self.logger.debug("  --> DUPLICATE")
 
             if cat_row is None:
-                cat_values = [self.cfg.layer, county, city, target_city_disp, "RECORD MISSING", "", "", "", "", "", "", "", "", "", ""]
+                cat_values = [self.cfg.layer, county, city, target_city_disp, "RECORD MISSING", ""] + ["" for _ in range(len(header_catalog)-6)]
+            elif dup_status:
+                cat_values = [
+                    self.cfg.layer,
+                    cat_row.get("county", "MISSING"),
+                    cat_row.get("city", "MISSING"),
+                    target_city_disp,
+                    "DUPLICATE",
+                    cat_row.get("city", "MISSING"),
+                    cat_row.get("src_url_file", "MISSING"),
+                    cat_row.get("format", "MISSING"),
+                    cat_row.get("download", "MISSING"),
+                    cat_row.get("resource", "MISSING"),
+                    cat_row.get("layer_group", "MISSING"),
+                    cat_row.get("category", "MISSING"),
+                    cat_row.get("sys_raw_folder", "MISSING"),
+                    cat_row.get("table_name", "MISSING"),
+                    cat_row.get("fields_obj_transform", "MISSING"),
+                ]
             else:
                 cat_values = [
                     self.cfg.layer,
@@ -596,20 +630,17 @@ class LayerStandardizer:
     # Data fetching helpers
     # --------------------------------------------------
 
-    def _fetch_catalog_row(self, county: str, city: str) -> Optional[Dict[str, Any]]:
-        """Fetch catalog row by parsing titles; relies on county match and title-derived city/layer."""
-        if not self.db:
-            return None
-
-        # Fetch rows whose county starts with the given county token to handle 'Alachua County'
+    def _fetch_catalog_rows(self, county: str, city_fmt: str) -> List[Dict[str, Any]]:
+        """Return all catalog rows matching county and formatted city."""
         sql = "SELECT * FROM m_gis_data_catalog_main WHERE lower(county) LIKE %s"
         rows = self.db.fetchall(sql, (f"{county.lower()}%",)) or []
+        matches = []
         for row in rows:
             title = row.get("title", "")
             lyr, cnty, cty_city, _ = Formatter.format_title_to_entity(title)
-            if lyr == self.cfg.layer and cty_city and norm_city(cty_city) == norm_city(city) and (cnty is None or norm_county(cnty) == norm_county(county)):
-                return dict(row)
-        return None
+            if lyr == self.cfg.layer and cty_city and norm_city(cty_city) == city_fmt and (cnty is None or norm_county(cnty) == norm_county(county)):
+                matches.append(dict(row))
+        return matches
 
     def _fetch_transform_row(self, county: str, city: str) -> Optional[Dict[str, Any]]:
         if not self.cfg.layer in {"zoning", "flu"}:
