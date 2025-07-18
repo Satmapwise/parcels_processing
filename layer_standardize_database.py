@@ -86,6 +86,11 @@ def norm_city(city: Optional[str]) -> str:
     cleaned = re.sub(r"[^a-z0-9]+", "_", city.lower())
     return cleaned.strip("_")
 
+def norm_county(county: Optional[str]) -> str:
+    if not county:
+        return ""
+    return re.sub(r"[^a-z0-9]+", "", county.lower())
+
 # --------------------------------------------------
 # Manifest processing
 # --------------------------------------------------
@@ -266,8 +271,8 @@ class Formatter:
         rest_main = rest.split(" - ", 1)[0].strip()
 
         # Regex patterns for different entity types
-        city_re = re.compile(r"^city of\s+(.+)$", re.I)
-        county_suffix_re = re.compile(r"^([A-Za-z\s]+?)\s+(unincorporated|unified|countywide)$", re.I)
+        city_re = re.compile(r"^(?:city|town|village) of\s+(.+)$", re.I)
+        county_suffix_re = re.compile(r"^([A-Za-z\s\-]+?)\s+(unincorporated|unified|countywide)$", re.I)
 
         m_city = city_re.match(rest_main)
         if m_city:
@@ -410,9 +415,16 @@ class LayerStandardizer:
 
             expected = self._expected_values(entity, county, city)
 
-            cat_row = self._fetch_catalog_row(county, city)
+            target_city = self.manifest.get_target_city(self.manifest.get_entity_commands(self.cfg.layer, entity), entity)
+            self.logger.debug(f"Parsed for entity: county={county}, city={city}, target_city={target_city}")
+
+            cat_row = self._fetch_catalog_row(county, target_city)
             if cat_row is not None:
+                self.logger.debug(f"Matched DB title: {cat_row.get('title')}")
                 present_entities_found.add(entity)
+                self.logger.debug("  --> SUCCESS")
+            else:
+                self.logger.debug("  --> FAILURE")
 
             if cat_row is None:
                 cat_values = [self.cfg.layer, county, city, "RECORD MISSING"] + [""] * (len(header_catalog) - 4)
@@ -517,10 +529,24 @@ class LayerStandardizer:
     # --------------------------------------------------
 
     def _split_entity(self, entity: str) -> Tuple[str, str]:
-        parts = entity.split("_", 1)
-        if len(parts) != 2:
+        """Split manifest entity into (county, city).
+
+        Handles multi-word counties like 'miami_dade_unincorporated': if the last
+        token is a known suffix (unincorporated/unified/countywide) it is treated
+        as the city and everything before it is the county. Otherwise the first
+        token is county and the remainder is city (standard behaviour)."""
+        tokens = entity.split("_")
+        if len(tokens) < 2:
             raise ValueError(f"Invalid entity format: {entity}")
-        return parts[0], parts[1]
+
+        suffixes = {"unincorporated", "unified", "countywide"}
+        if tokens[-1] in suffixes:
+            county = "_".join(tokens[:-1])
+            city = tokens[-1]
+        else:
+            county = tokens[0]
+            city = "_".join(tokens[1:])
+        return county, city
 
     def _select_entities(self) -> List[str]:
         from fnmatch import fnmatch
@@ -575,7 +601,7 @@ class LayerStandardizer:
         for row in rows:
             title = row.get("title", "")
             lyr, cnty, cty_city, _ = Formatter.format_title_to_entity(title)
-            if lyr == self.cfg.layer and cty_city and norm_city(cty_city) == norm_city(city) and (cnty is None or cnty == county.lower()):
+            if lyr == self.cfg.layer and cty_city and norm_city(cty_city) == norm_city(city) and (cnty is None or norm_county(cnty) == norm_county(county)):
                 return dict(row)
         return None
 
