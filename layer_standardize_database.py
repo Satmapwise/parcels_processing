@@ -449,46 +449,27 @@ class LayerStandardizer:
 
         # Sort rows after header: layer, county
         csv_rows_body = csv_rows[1:]
-        csv_rows_body.sort(key=lambda r: (r[0], r[1], r[2]))
+        csv_rows_body.sort(key=lambda r: (
+            str(r[0]) if len(r) > 0 and r[0] is not None else "",
+            str(r[1]) if len(r) > 1 and r[1] is not None else "",
+            str(r[2]) if len(r) > 2 and r[2] is not None else "",
+        ))
         csv_rows = [csv_rows[0]] + csv_rows_body
-
-        # Orphan detection (records in DB but not manifest)
-        processed_entities = set(self._select_entities())
-        orphan_rows = self._find_db_orphans(processed_entities)
-
-        if orphan_rows:
-            csv_rows.append([])  # blank line separator
-            csv_rows.append(["ORPHANS", "entity", "title"])  # section header (3 cols)
-            csv_rows.extend([["", ent, title] for ent, title in orphan_rows])
 
         self._write_csv_report(csv_rows)
 
-        # --------------------------------------------------
-        # Summary reporting
-        # --------------------------------------------------
-
         processed_entities = set(self._select_entities())
-
         missing_records = [e for e in processed_entities if e not in present_entities_found]
-
-        db_only_entities: set[str] = set()
-        try:
-            db_only_entities = self._db_entities_not_in_manifest(processed_entities)
-        except Exception as exc:
-            self.logger.warning(f"Could not fetch DB-only entities: {exc}")
 
         if not self.cfg.debug:
             self.logger.info("--- Check Summary ---")
             self.logger.info(f"Total entities processed: {len(processed_entities)}")
             self.logger.info(f"Entities missing DB records: {len(missing_records)}")
-            self.logger.info(f"Records without manifest entries: {len(db_only_entities)}")
         else:
             self.logger.debug("--- Detailed Check Summary ---")
             self.logger.debug(f"Processed entities: {sorted(processed_entities)}")
             if missing_records:
                 self.logger.debug(f"Entities missing a DB record ({len(missing_records)}): {missing_records}")
-            # if db_only_entities:
-            #     self.logger.debug(f"DB records without manifest entry ({len(db_only_entities)}): {sorted(db_only_entities)}")
 
     def _run_update_mode(self):
         self.logger.info("Running in UPDATE mode – DB rows will be modified as needed.")
