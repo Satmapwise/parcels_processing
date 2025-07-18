@@ -100,7 +100,7 @@
         ["python3", "/srv/tools/python/lib/update_zoning2.py", "brevard", "unincorporated"],
         ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.zoning_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'BREVARD' and city_name = 'UNINCORPORATED'"]
       ],
-      "broward_county_unified": [
+      "broward_unified": [
         ["python3", "/srv/tools/python/lib/ags_extract_data2.py", "zoning_broward", "delete", "15"],
         "ogrinfo",
         ["ogr2ogr", "-explodecollections", "-t_srs", "EPSG:2881", "-select", "ZONING,ZONE_NAME", "zoning_broward_single_2881.shp", "zoning_broward.shp"],
@@ -325,7 +325,7 @@
         ["python3", "/srv/tools/python/lib/update_zoning2.py", "lee", "unincorporated"],
         ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.zoning_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'LEE' and city_name = 'UNINCORPORATED'"]
       ],
-      "leon_county_unified": [
+      "leon_unified": [
         ["python3", "/srv/tools/python/lib/ags_extract_data2.py", "zoning_leon", "delete", "15"],
         "ogrinfo",
         ["python3", "/srv/tools/python/lib/update_zoning2.py", "leon", "county_unified"],
@@ -444,7 +444,7 @@
         ["python3", "/srv/tools/python/lib/update_zoning2.py", "osceola", "unincorporated"],
         ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.zoning_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'OSCEOLA' and city_name = 'UNINCORPORATED'"]
       ],
-      "palm_beach_county_unified": [
+      "palm_beach_unified": [
         ["python3", "/srv/tools/python/lib/ags_extract_data2.py", "zoning_palm_beach_county_unified", "delete", "15"],
         "ogrinfo",
         ["python3", "/srv/tools/python/lib/update_zoning2.py", "palm_beach", "county_unified"],
@@ -787,7 +787,7 @@
         ["python3", "/srv/tools/python/lib/update_flu.py", "brevard", "unincorporated"],
         ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.flu_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'BREVARD' and city_name = 'UNINCORPORATED'"]
       ],
-      "broward_county_unified": [
+      "broward_unified": [
         ["python3", "/srv/tools/python/lib/ags_extract_data2.py", "flu_broward", "delete", "15"],
         "ogrinfo",
         ["ogr2ogr", "-explodecollections", "-t_srs", "EPSG:2881", "-select", "ZONING,ZONE_NAME", "flu_broward_single_2881.shp", "flu_broward.shp"],
@@ -1012,7 +1012,7 @@
         ["python3", "/srv/tools/python/lib/update_flu.py", "lee", "unincorporated"],
         ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.flu_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'LEE' and city_name = 'UNINCORPORATED'"]
       ],
-      "leon_county_unified": [
+      "leon_unified": [
         ["python3", "/srv/tools/python/lib/ags_extract_data2.py", "flu_leon", "delete", "15"],
         "ogrinfo",
         ["python3", "/srv/tools/python/lib/update_flu.py", "leon", "county_unified"],
@@ -1131,7 +1131,7 @@
         ["python3", "/srv/tools/python/lib/update_flu.py", "osceola", "unincorporated"],
         ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.flu_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'OSCEOLA' and city_name = 'UNINCORPORATED'"]
       ],
-      "palm_beach_county_unified": [
+      "palm_beach_unified": [
         ["python3", "/srv/tools/python/lib/ags_extract_data2.py", "flu_palm_beach_county_unified", "delete", "15"],
         "ogrinfo",
         ["python3", "/srv/tools/python/lib/update_flu.py", "palm_beach", "county_unified"],
