@@ -435,6 +435,33 @@ class LayerStandardizer:
 
         self._write_csv_report(csv_rows)
 
+        # --------------------------------------------------
+        # Summary reporting
+        # --------------------------------------------------
+
+        processed_entities = set(self._select_entities())
+
+        missing_records = [e for e in processed_entities if e not in {f"{r[1].lower()}_{r[2].lower()}" for r in csv_rows[1:] if r[3] != "MISSING"}]
+
+        db_only_entities: set[str] = set()
+        try:
+            db_only_entities = self._db_entities_not_in_manifest(processed_entities)
+        except Exception as exc:
+            self.logger.warning(f"Could not fetch DB-only entities: {exc}")
+
+        if not self.cfg.debug:
+            self.logger.info("--- Check Summary ---")
+            self.logger.info(f"Total entities processed: {len(processed_entities)}")
+            self.logger.info(f"Entities missing DB records: {len(missing_records)}")
+            self.logger.info(f"Records without manifest entries: {len(db_only_entities)}")
+        else:
+            self.logger.debug("--- Detailed Check Summary ---")
+            self.logger.debug(f"Processed entities: {sorted(processed_entities)}")
+            if missing_records:
+                self.logger.debug(f"Entities missing a DB record ({len(missing_records)}): {missing_records}")
+            if db_only_entities:
+                self.logger.debug(f"DB records without manifest entry ({len(db_only_entities)}): {sorted(db_only_entities)}")
+
     def _run_update_mode(self):
         self.logger.info("Running in UPDATE mode – DB rows will be modified as needed.")
         # TODO: implement update logic
@@ -535,6 +562,19 @@ class LayerStandardizer:
             "sys_raw_folder": sys_raw_folder,
             "temp_table_name": temp_table_name,
         }
+
+    # --------------------------------------------------
+    # Extra helper to find DB records without manifest equivalents
+    # --------------------------------------------------
+
+    def _db_entities_not_in_manifest(self, manifest_entities: set[str]) -> set[str]:
+        sql = (
+            "SELECT lower(county) AS county, lower(city) AS city "
+            "FROM m_gis_data_catalog_main WHERE lower(layer_group)=%s"
+        )
+        rows = self.db.fetchall(sql, (Formatter.LAYER_GROUP[self.cfg.layer],)) or []
+        db_entities = {f"{row['county']}_{row['city']}" for row in rows}
+        return db_entities.difference(manifest_entities)
 
 # --------------------------------------------------
 # Placeholder – simple format detection (can be replaced later)
