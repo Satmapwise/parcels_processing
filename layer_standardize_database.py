@@ -453,7 +453,19 @@ class LayerStandardizer:
 
         processed_entities = set(self._select_entities())
 
-        missing_records = [e for e in processed_entities if e not in {f"{r[1].lower()}_{r[2].lower()}" for r in csv_rows[1:] if r[3] != "MISSING"}]
+        def _entity_from_row(r: List[str]) -> str | None:
+            if len(r) >= 3 and r[0] != "ORPHANS":
+                return f"{r[1].lower()}_{r[2].lower()}"
+            return None
+
+        present_entities = set()
+        for row in csv_rows[1:]:
+            if len(row) >= 4 and row[0] != "ORPHANS" and row[3] != "MISSING":
+                ent = _entity_from_row(row)
+                if ent:
+                    present_entities.add(ent)
+
+        missing_records = [e for e in processed_entities if e not in present_entities]
 
         db_only_entities: set[str] = set()
         try:
@@ -471,8 +483,8 @@ class LayerStandardizer:
             self.logger.debug(f"Processed entities: {sorted(processed_entities)}")
             if missing_records:
                 self.logger.debug(f"Entities missing a DB record ({len(missing_records)}): {missing_records}")
-            if db_only_entities:
-                self.logger.debug(f"DB records without manifest entry ({len(db_only_entities)}): {sorted(db_only_entities)}")
+            # if db_only_entities:
+            #     self.logger.debug(f"DB records without manifest entry ({len(db_only_entities)}): {sorted(db_only_entities)}")
 
     def _run_update_mode(self):
         self.logger.info("Running in UPDATE mode – DB rows will be modified as needed.")
