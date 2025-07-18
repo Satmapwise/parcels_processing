@@ -265,15 +265,27 @@ class LayerStandardizer:
         """Find records in m_gis_data_catalog_main"""
         layer_display = LAYER_DISPLAY_NAMES.get(layer, layer.title())
         
-        # Search by title containing layer name and city, and county field
-        # This ensures we only find records for the specific county
-        query = """
-        SELECT *, table_name as id FROM m_gis_data_catalog_main 
-        WHERE LOWER(title) LIKE LOWER(%s) 
-        AND LOWER(county) = LOWER(%s)
-        AND (LOWER(title) LIKE LOWER(%s) OR LOWER(city) LIKE LOWER(%s))
-        """
-        params = (f"%{layer_display}%", county, f"%{target_city}%", f"%{target_city}%")
+        # Determine if this is unincorporated/unified (should have county in title)
+        is_special_entity = target_city in ['unincorporated', 'unified']
+        
+        if is_special_entity:
+            # For unincorporated/unified: search by title containing layer, county, and entity type
+            query = """
+            SELECT *, table_name as id FROM m_gis_data_catalog_main 
+            WHERE LOWER(title) LIKE LOWER(%s) 
+            AND LOWER(title) LIKE LOWER(%s)
+            AND LOWER(title) LIKE LOWER(%s)
+            """
+            params = (f"%{layer_display}%", f"%{county}%", f"%{target_city}%")
+        else:
+            # For regular cities: search by title containing layer and city, with county field as backup
+            query = """
+            SELECT *, table_name as id FROM m_gis_data_catalog_main 
+            WHERE LOWER(title) LIKE LOWER(%s) 
+            AND (LOWER(title) LIKE LOWER(%s) OR LOWER(city) LIKE LOWER(%s))
+            AND (LOWER(county) = LOWER(%s) OR LOWER(title) LIKE LOWER(%s))
+            """
+            params = (f"%{layer_display}%", f"%{target_city}%", f"%{target_city}%", county, f"%{county}%")
         
         return self.db.execute_query(query, params)
     
