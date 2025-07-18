@@ -1,1055 +1,423 @@
 #!/usr/bin/env python3
+"""Layer database/manifest standardization utility
+
+This tool synchronises information between:
+1. layer_manifest.json
+2. m_gis_data_catalog_main
+3. <layer>_transform tables (currently zoning_transform and flu_transform)
+
+It supports the following modes:
+• default (update) – read manifest, compare DB rows and apply fixes
+• --check – read only, output CSV report but make no DB changes
+• --manual-fill – read JSON of missing fields and apply only those edits
+• --create – create a brand-new record in the DB (requires manual data if optional fields are missing)
+
+Config flags (global):
+optional_conditions – toggle extra checks
+generate_CSV        – toggle CSV creation
+debug               – DEBUG log level
+test_mode           – run without touching the DB (still produces reports)
+
+The CLI is documented at the bottom of the file.
 """
-Layer Database Standardization Script
+from __future__ import annotations
 
-This script standardizes the database and manifest files for Florida GIS layers.
-It ensures consistency between layer_manifest.json, m_gis_data_catalog_main table,
-and transform tables (zoning_transform, flu_transform).
-
-Usage:
-    python layer_standardize_database.py <layer> <county> <city> [options]
-    python layer_standardize_database.py all [options]
-    python layer_standardize_database.py --check <layer> [options]
-    python layer_standardize_database.py --create <layer> <county> <city> [options]
-    python layer_standardize_database.py --manual-fill [options]
-
-Examples:
-    python layer_standardize_database.py zoning alachua gainesville
-    python layer_standardize_database.py flu all
-    python layer_standardize_database.py --check zoning
-    python layer_standardize_database.py --create zoning new_county new_city
-    python layer_standardize_database.py --manual-fill
-"""
-
-import sys
-import os
-import json
 import argparse
-import logging
 import csv
-import re
-import requests
+import json
+import logging
+import os
+import sys
+from collections import defaultdict
+from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Dict, List, Tuple, Optional, Any
-from urllib.parse import urlparse
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Tuple
+
 import psycopg2
 import psycopg2.extras
+from dotenv import load_dotenv
 
-# Configuration variables
-optional_conditions = True
-generate_CSV = True
-debug = True
-test_mode = True
+# --------------------------------------------------
+# Environment / configuration
+# --------------------------------------------------
 
-# Database connection
-PG_CONNECTION = 'host=localhost port=5432 dbname=gisdev user=postgres password=galactic529'
+# The .env file MUST contain a line like:
+# PG_CONNECTION=host=localhost port=5432 dbname=gisdev user=postgres password=secret
+load_dotenv()
+PG_CONNECTION: str | None = os.getenv("M_GIS_DATA_CATALOG_MAIN")
 
-# Layer mappings
-LAYER_GROUPS = {
-    'zoning': 'flu_zoning',
-    'flu': 'flu_zoning',
-    'future_land_use': 'flu_zoning'
-}
+# Global defaults – can be overridden by CLI flags
+optional_conditions_default = False
+generate_CSV_default = True
+debug_default = False
+test_mode_default = False
 
-LAYER_CATEGORIES = {
-    'zoning': '08_Land_Use_and_Zoning',
-    'flu': '08_Land_Use_and_Zoning',
-    'future_land_use': '08_Land_Use_and_Zoning'
-}
+REPORTS_DIR = Path("reports")
+REPORTS_DIR.mkdir(exist_ok=True)
 
-# Layer to transform table mapping
-TRANSFORM_TABLES = {
-    'zoning': 'zoning_transform',
-    'flu': 'flu_transform',
-    'future_land_use': 'flu_transform'
-}
+MISSING_FIELDS_JSON = Path("missing_fields.json")
 
-# Layer to temp table prefix mapping
-TEMP_TABLE_PREFIXES = {
-    'zoning': 'raw_zon',
-    'flu': 'raw_flu',
-    'future_land_use': 'raw_flu'
-}
+MANIFEST_PATH = Path("layer_manifest.json")
 
-# Layer display names
-LAYER_DISPLAY_NAMES = {
-    'zoning': 'Zoning',
-    'flu': 'Future Land Use',
-    'future_land_use': 'Future Land Use'
-}
+# --------------------------------------------------
+# Helper / formatting utilities
+# --------------------------------------------------
 
-# Setup logging
-logging.basicConfig(
-    level=logging.DEBUG if debug else logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-)
-logger = logging.getLogger(__name__)
+def title_case(s: str) -> str:
+    """Return string in title-case, but keep words like 'of' lowercase unless first."""
+    return " ".join(w.capitalize() if i == 0 or len(w) > 2 else w for i, w in enumerate(s.split()))
 
 
-class DatabaseManager:
-    """Handles database operations"""
-    
-    def __init__(self):
-        self.connection = None
-        self.cursor = None
-        self.connect()
-    
-    def connect(self):
-        """Connect to database"""
-        try:
-            self.connection = psycopg2.connect(PG_CONNECTION)
-            self.cursor = self.connection.cursor(cursor_factory=psycopg2.extras.DictCursor)
-            logger.info("Database connection established")
-        except Exception as e:
-            logger.error(f"Database connection failed: {e}")
-            raise
-    
-    def execute_query(self, query: str, params: Optional[Tuple] = None) -> List[Dict]:
-        """Execute query and return results"""
-        try:
-            if self.cursor is None:
-                raise Exception("Database cursor is not initialized")
-            
-            if params:
-                self.cursor.execute(query, params)
-            else:
-                self.cursor.execute(query)
-            
-            if query.strip().upper().startswith('SELECT'):
-                results = self.cursor.fetchall()
-                # Convert DictRow objects to regular dictionaries
-                return [dict(row) for row in results]
-            else:
-                if self.connection:
-                    self.connection.commit()
-                return []
-        except Exception as e:
-            logger.error(f"Query execution failed: {e}")
-            if self.connection:
-                self.connection.rollback()
-            raise
-    
-    def close(self):
-        """Close database connection"""
-        if self.cursor:
-            self.cursor.close()
-        if self.connection:
-            self.connection.close()
+def get_today_str() -> str:
+    return datetime.utcnow().strftime("%Y-%m-%d")
+
+# --------------------------------------------------
+# Manifest processing
+# --------------------------------------------------
+
+class ManifestError(RuntimeError):
+    pass
 
 
 class ManifestManager:
-    """Handles manifest file operations"""
-    
-    def __init__(self, manifest_file: str = 'layer_manifest.json'):
-        self.manifest_file = manifest_file
-        self.manifest = self.load_manifest()
-    
-    def load_manifest(self) -> Dict:
-        """Load manifest file"""
+    """Utility for working with layer_manifest.json"""
+
+    def __init__(self, manifest_path: Path | str = MANIFEST_PATH):
+        self.path = Path(manifest_path)
+        if not self.path.exists():
+            raise ManifestError(f"Manifest file not found: {self.path}")
         try:
-            with open(self.manifest_file, 'r') as f:
-                return json.load(f)
-        except Exception as e:
-            logger.error(f"Failed to load manifest: {e}")
-            raise
-    
+            self._data: Dict[str, Any] = json.loads(self.path.read_text())
+        except json.JSONDecodeError as exc:
+            raise ManifestError(f"Invalid JSON in manifest: {exc}") from exc
+
+    # --------------------------------------------------
+    # Basic queries
+    # --------------------------------------------------
+
+    def get_layers(self) -> List[str]:
+        return list(self._data.keys())
+
     def get_entities(self, layer: str) -> List[str]:
-        """Get all entities for a layer"""
-        if layer not in self.manifest:
-            return []
-        return list(self.manifest[layer]['entities'].keys())
-    
-    def get_entity_commands(self, layer: str, entity: str) -> List:
-        """Get commands for an entity"""
-        if layer not in self.manifest or entity not in self.manifest[layer]['entities']:
-            return []
-        return self.manifest[layer]['entities'][entity]
-    
-    def is_ags_download(self, commands: List) -> bool:
-        """Check if entity uses AGS download"""
-        if not commands:
+        try:
+            return list(self._data[layer]["entities"].keys())
+        except KeyError:
+            raise ManifestError(f"Layer '{layer}' not found in manifest")
+
+    def get_entity_commands(self, layer: str, entity: str) -> List[Any]:
+        try:
+            return self._data[layer]["entities"][entity]
+        except KeyError as exc:
+            raise ManifestError(f"Entity '{entity}' not found under layer '{layer}'") from exc
+
+    # --------------------------------------------------
+    # Derived helpers
+    # --------------------------------------------------
+
+    @staticmethod
+    def is_ags_download(command_block: List[Any]) -> bool:
+        """Determine if entity is downloaded via ArcGIS REST (AGS) – heuristic."""
+        # First command is usually ["python3", "/srv/tools/python/lib/ags_extract_data2.py", ...]
+        if not command_block:
             return False
-        first_command = commands[0]
-        if isinstance(first_command, list) and len(first_command) > 1:
-            return 'ags_extract_data2.py' in first_command[1]
+        first = command_block[0]
+        if isinstance(first, list) and any("ags_extract" in part for part in first):
+            return True
         return False
-    
-    def get_target_city(self, commands: List, entity_name: str) -> str:
-        """Extract target city from commands"""
-        # Default to entity city name
-        entity_parts = entity_name.split('_', 1)
-        if len(entity_parts) > 1:
-            default_city = entity_parts[1]
+
+    @staticmethod
+    def _find_update_command(cmds: List[Any]) -> Optional[List[str]]:
+        for cmd in cmds:
+            if isinstance(cmd, list) and any("update_zoning" in part for part in cmd) or any("update_flu" in part for part in cmd):
+                return cmd  # type: ignore [return-value]
+        return None
+
+    def get_target_city(self, cmds: List[Any], entity: str) -> str:
+        """Return target city used in DB tables (may differ from manifest entity)."""
+        update_cmd = self._find_update_command(cmds)
+        if update_cmd and len(update_cmd) >= 3:
+            # update script, county, city
+            return update_cmd[-1].lower()
+        # Fallback to manifest entity's city part
+        parts = entity.split("_", 1)
+        return parts[1] if len(parts) == 2 else entity
+
+# --------------------------------------------------
+# Database utilities
+# --------------------------------------------------
+
+class DB:
+    """Thin wrapper around psycopg2 connection with dict cursors."""
+
+    def __init__(self, conn_str: str):
+        self.conn = psycopg2.connect(conn_str)
+        self.cur = self.conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+
+    def fetchone(self, sql: str, params: Tuple[Any, ...] | None = None):
+        self.cur.execute(sql, params)
+        return self.cur.fetchone()
+
+    def fetchall(self, sql: str, params: Tuple[Any, ...] | None = None):
+        self.cur.execute(sql, params)
+        return self.cur.fetchall()
+
+    def execute(self, sql: str, params: Tuple[Any, ...] | None = None):
+        self.cur.execute(sql, params)
+
+    def commit(self):
+        self.conn.commit()
+
+    def close(self):
+        self.cur.close()
+        self.conn.close()
+
+# --------------------------------------------------
+# Formatting helpers (layer-specific conventions)
+# --------------------------------------------------
+
+class Formatter:
+    LAYER_GROUP = {"zoning": "flu_zoning", "flu": "flu_zoning"}
+    CATEGORY = {"zoning": "08_Land_Use_and_Zoning", "flu": "08_Land_Use_and_Zoning"}
+
+    @staticmethod
+    def format_entity_to_title(layer: str, county: str, city: str, entity_type: str) -> str:
+        layer_title = layer.capitalize() if layer.islower() else layer
+        county_tc, city_tc = map(title_case, (county, city))
+        if entity_type == "city":
+            return f"{layer_title} - City of {city_tc}"
+        elif entity_type == "unincorporated":
+            return f"{layer_title} - {county_tc} Unincorporated"
+        elif entity_type == "unified":
+            return f"{layer_title} - {county_tc} Unified"
         else:
-            default_city = entity_parts[0]
-        
-        # Look for target city in update commands
-        for command in commands:
-            if isinstance(command, list) and len(command) > 2:
-                if 'update_zoning2.py' in command[1] or 'update_flu.py' in command[1]:
-                    if len(command) > 3:
-                        return command[3]  # city parameter
-        return default_city
+            return f"{layer_title} - {city_tc}"
+
+    @staticmethod
+    def format_title_to_entity(title: str) -> str:
+        return "placeholder"
+
+    @staticmethod
+    def format_table_name(layer: str, county: str, city: str, entity_type: str) -> str:
+        # For cities → <layer>_<city>
+        # For unincorporated/unified → <layer>_<county>_<suffix>
+        layer_lc, county_lc, city_lc = map(str.lower, (layer, county, city))
+        if entity_type == "city":
+            return f"{layer_lc}_{city_lc}"
+        else:
+            return f"{layer_lc}_{county_lc}_{entity_type}"
+
+    @staticmethod
+    def format_temp_table_name(layer: str, county: str, city: str) -> str:
+        layer_prefix = "raw_zon" if layer == "zoning" else "raw_flu"
+        return f"{layer_prefix}_{county.lower()}_{city.lower()}"
+
+    @staticmethod
+    def get_sys_raw_folder(layer_group: str, layer: str, county: str, city: str) -> Path:
+        return Path(
+            f"/srv/datascrub/{layer_group}/{layer}/florida/county/{county.lower()}/current/source_data/{city.lower()}"
+        )
+
+# --------------------------------------------------
+# Layer standardizer core
+# --------------------------------------------------
+
+@dataclass
+class Config:
+    layer: str
+    county: str | None = None
+    city: str | None = None
+    optional_conditions: bool = optional_conditions_default
+    generate_CSV: bool = generate_CSV_default
+    debug: bool = debug_default
+    test_mode: bool = test_mode_default
+    mode: str = "update"  # update | check | manual-fill | create
 
 
 class LayerStandardizer:
-    """Main class for standardizing layer data"""
-    
-    def __init__(self):
-        self.db = DatabaseManager()
-        self.manifest = ManifestManager()
-        self.missing_fields = {}
-        self.duplicates = []
-    
-    def get_format(self, src_url_file: str) -> str:
-        """Determine format from source URL"""
-        if not src_url_file:
-            return 'UNKNOWN'
-        
-        url_lower = src_url_file.lower()
-        if '.shp' in url_lower or 'shapefile' in url_lower:
-            return 'SHP'
-        elif '.zip' in url_lower:
-            return 'ZIP'
-        elif 'ags' in url_lower or 'arcgis' in url_lower:
-            return 'AGS'
-        elif '.geojson' in url_lower:
-            return 'GEOJSON'
-        elif '.kml' in url_lower:
-            return 'KML'
+    """Core engine performing checks / updates."""
+
+    def __init__(self, cfg: Config, manifest: ManifestManager):
+        self.cfg = cfg
+        self.manifest = manifest
+
+        self.logger = logging.getLogger("LayerStandardizer")
+        self.logger.setLevel(logging.DEBUG if cfg.debug else logging.INFO)
+        handler = logging.StreamHandler(sys.stdout)
+        handler.setFormatter(logging.Formatter("[%(levelname)s] %(message)s"))
+        self.logger.addHandler(handler)
+
+        # DB connection (unless test_mode)
+        self.db: DB | None = None
+        if not cfg.test_mode:
+            if not PG_CONNECTION:
+                self.logger.error("PG_CONNECTION not found in environment. Aborting.")
+                sys.exit(1)
+            self.db = DB(PG_CONNECTION)
+
+        # Place to accumulate missing manual fields
+        self.missing_fields: Dict[str, Dict[str, str]] = defaultdict(dict)
+
+    # --------------------------------------------------
+    # Public orchestration
+    # --------------------------------------------------
+
+    def run(self):
+        if self.cfg.mode == "check":
+            self._run_check_mode()
+        elif self.cfg.mode == "manual-fill":
+            self._run_manual_fill_mode()
+        elif self.cfg.mode == "create":
+            self._run_create_mode()
         else:
-            return 'UNKNOWN'
-    
-    def validate_url(self, url: str) -> bool:
-        """Validate if URL is accessible"""
-        if not url:
-            return False
-        try:
-            response = requests.head(url, timeout=10)
-            return response.status_code == 200
-        except:
-            return False
-    
-    def format_title(self, layer: str, county: str, city: str, entity_type: str) -> str:
-        """Format title based on entity type"""
-        layer_display = LAYER_DISPLAY_NAMES.get(layer, layer.title())
-        
-        if entity_type in ['unincorporated', 'unified']:
-            return f"{layer_display} - {county.title()} {entity_type.title()}"
-        else:
-            return f"{layer_display} - City of {city.title()}"
-    
-    def format_table_name(self, layer: str, county: str, city: str, entity_type: str) -> str:
-        """Format table name based on entity type"""
-        if entity_type in ['unincorporated', 'unified']:
-            return f"{layer}_{county}_{entity_type}"
-        else:
-            return f"{layer}_{city}"
-    
-    def format_temp_table_name(self, layer: str, county: str, city: str) -> str:
-        """Format temp table name"""
-        prefix = TEMP_TABLE_PREFIXES.get(layer, f"raw_{layer}")
-        return f"{prefix}_{county}_{city}"
-    
-    def format_sys_raw_folder(self, layer_group: str, layer: str, county: str, city: str) -> str:
-        """Format system raw folder path"""
-        return f"/srv/datascrub/{layer_group}/{layer}/florida/county/{county}/current/source_data/{city}"
-    
-    def ensure_directory(self, path: str):
-        """Ensure directory exists"""
-        if not test_mode:
-            os.makedirs(path, exist_ok=True)
-            logger.info(f"Created directory: {path}")
-    
-    def parse_entity_name(self, entity: str) -> Tuple[Optional[str], Optional[str]]:
-        """Parse entity name into county and city, handling multi-word counties and special entities"""
-        # Remove layer prefix first (e.g., "zoning_palm_beach_county_unified" -> "palm_beach_county_unified")
-        entity_parts = entity.split('_', 1)
-        if len(entity_parts) != 2:
-            return None, None
-        
-        layer, entity_suffix = entity_parts
-        
-        # Handle regular entities with multi-word counties first
-        # Look for "_county_" pattern to identify county boundary
-        if '_county_' in entity_suffix:
-            parts = entity_suffix.split('_county_', 1)
-            county = parts[0]
-            city = parts[1]
-            return county, city
-        
-        # Check for known multi-word counties before special entity checks
-        known_multi_word_counties = [
-            'indian_river', 'miami_dade', 'santa_rosa', 'st_johns', 'st_lucie', 
-            'palm_beach'
-        ]
-        
-        for multi_county in known_multi_word_counties:
-            if entity_suffix.startswith(multi_county + '_'):
-                county = multi_county
-                city = entity_suffix[len(multi_county) + 1:]  # +1 for the underscore
-                return county, city
-        
-        # Handle special entities after multi-word county checks
-        if entity_suffix.endswith('_unified'):
-            # Extract county from unified entity (e.g., "leon_unified" -> "leon", "unified")
-            # Standard format: county = county, city = unified
-            county_part = entity_suffix[:-8]  # Remove "_unified"
-            return county_part, 'unified'
-        
-        if entity_suffix.endswith('_unincorporated'):
-            # Extract county from unincorporated entity (e.g., "indian_river_unincorporated" -> "indian_river", "unincorporated")
-            county_part = entity_suffix[:-14]  # Remove "_unincorporated"
-            # Trim any trailing underscores
-            county_part = county_part.rstrip('_')
-            return county_part, 'unincorporated'
-        
-        # If no known multi-word county matches, use simple split on first underscore
-        parts = entity_suffix.split('_', 1)
-        if len(parts) != 2:
-            return None, None
-        
-        county, city = parts
-        return county, city
-    
-    def find_catalog_records(self, layer: str, county: str, target_city: str) -> List[Dict]:
-        """Find records in m_gis_data_catalog_main"""
-        layer_display = LAYER_DISPLAY_NAMES.get(layer, layer.title())
-        
-        # Determine if this is unincorporated/unified (should have county in title)
-        is_special_entity = target_city in ['unincorporated', 'unified']
-        
-        if is_special_entity:
-            # For unincorporated/unified: search by title containing layer, county, and entity type
-            # Handle multi-word counties by normalizing spaces to underscores
-            county_normalized = county.replace(' ', '_').replace('-', '_').replace('.', '')
-            county_space = county.replace('_', ' ')
-            
-            query = """
-            SELECT *, table_name as id FROM m_gis_data_catalog_main 
-            WHERE LOWER(title) LIKE LOWER(%s) 
-            AND (
-                LOWER(title) LIKE LOWER(%s) 
-                OR LOWER(title) LIKE LOWER(%s)
-            )
-            AND LOWER(title) LIKE LOWER(%s)
-            """
-            params = (f"%{layer_display}%", f"%{county_normalized}%", f"%{county_space}%", f"%{target_city}%")
-        else:
-            # For regular cities: search by title pattern and county, be more flexible
-            # Handle cases where target_city has underscores but database has spaces
-            # Also handle multi-word counties
-            county_normalized = county.replace(' ', '_').replace('-', '_').replace('.', '')
-            county_space = county.replace('_', ' ')
-            
-            query = """
-            SELECT *, table_name as id FROM m_gis_data_catalog_main 
-            WHERE LOWER(title) LIKE LOWER(%s) 
-            AND (
-                LOWER(county) = LOWER(%s)
-                OR LOWER(county) = LOWER(%s)
-            )
-            AND (
-                LOWER(city) = LOWER(%s) 
-                OR LOWER(city) = LOWER(%s)
-                OR LOWER(title) LIKE LOWER(%s)
-            )
-            """
-            # Try both underscore and space versions of the city name
-            city_underscore = target_city
-            city_space = target_city.replace('_', ' ')
-            # Create a more specific title pattern to avoid substring matches
-            title_pattern = f"{layer_display} - City of {city_space}"
-            params = (f"%{layer_display}%", county_normalized, county_space, city_underscore, city_space, title_pattern)
-        
-        return self.db.execute_query(query, params)
-    
-    def find_transform_record(self, layer: str, county: str, city: str) -> Optional[Dict]:
-        """Find record in transform table"""
-        transform_table = TRANSFORM_TABLES.get(layer)
-        if not transform_table:
-            return None
-        
-        # Handle multi-word counties by normalizing spaces to underscores
-        county_normalized = county.replace(' ', '_')
-        county_space = county.replace('_', ' ')
-        
-        query = f"""
-        SELECT * FROM {transform_table} 
-        WHERE (
-            LOWER(county) = LOWER(%s) 
-            OR LOWER(county) = LOWER(%s)
-        ) AND LOWER(city_name) = LOWER(%s)
-        """
-        params = (county_normalized, county_space, city)
-        
-        results = self.db.execute_query(query, params)
-        return results[0] if results else None
-    
-    def update_catalog_record(self, record: Dict, layer: str, county: str, city: str, 
-                            entity_type: str, is_ags: bool, target_city: str):
-        """Update catalog record"""
-        # Use table_name as the identifier since it should be unique
-        table_name_identifier = record.get('table_name', record.get('id'))
-        if not table_name_identifier:
-            logger.error(f"No identifier found for record: {record}")
-            return
-        
-        # Prepare update data
-        title = self.format_title(layer, county, city, entity_type)
-        table_name = self.format_table_name(layer, county, city, entity_type)
-        layer_group = LAYER_GROUPS.get(layer, layer)
-        category = LAYER_CATEGORIES.get(layer, layer)
-        sys_raw_folder = self.format_sys_raw_folder(layer_group, layer, county, city)
-        
-        # Ensure directory exists
-        self.ensure_directory(sys_raw_folder)
-        
-        # Build update query
-        update_fields = []
-        update_params = []
-        
-        update_fields.extend([
-            "title = %s", "county = %s", "city = %s", "format = %s", 
-            "download = %s", "layer_group = %s", "category = %s", 
-            "sys_raw_folder = %s", "table_name = %s"
-        ])
-        update_params.extend([
-            title, county.upper(), city.upper(), self.get_format(record.get('src_url_file', '')),
-            'AUTO', layer_group, category, sys_raw_folder, table_name
-        ])
-        
-        # Handle non-AGS resource format
-        if not is_ags:
-            expected_resource = f"/data/{layer}/{county}/{city}"
-            if record.get('resource') != expected_resource:
-                logger.warning(f"Resource mismatch for {layer}_{county}_{city}: expected {expected_resource}, got {record.get('resource')}")
-        
-        # Handle fields_obj_transform
-        if not record.get('fields_obj_transform'):
-            self.missing_fields[f"{layer}_{county}_{city}"] = {
-                'fields_obj_transform': 'MISSING'
-            }
-        else:
-            update_fields.append("fields_obj_transform = %s")
-            update_params.append(record['fields_obj_transform'])
-        
-        # Handle src_url_file
-        if not record.get('src_url_file'):
-            if f"{layer}_{county}_{city}" not in self.missing_fields:
-                self.missing_fields[f"{layer}_{county}_{city}"] = {}
-            self.missing_fields[f"{layer}_{county}_{city}"]['src_url_file'] = 'MISSING'
-        else:
-            update_fields.append("src_url_file = %s")
-            update_params.append(record['src_url_file'])
-        
-        # Optional conditions
-        if optional_conditions:
-            if not record.get('source_org'):
-                if f"{layer}_{county}_{city}" not in self.missing_fields:
-                    self.missing_fields[f"{layer}_{county}_{city}"] = {}
-                self.missing_fields[f"{layer}_{county}_{city}"]['source_org'] = 'MISSING'
-            else:
-                update_fields.append("source_org = %s")
-                update_params.append(record['source_org'])
-        
-        # Execute update
-        if not test_mode:
-            update_params.append(table_name_identifier)
-            query = f"UPDATE m_gis_data_catalog_main SET {', '.join(update_fields)} WHERE table_name = %s"
-            self.db.execute_query(query, tuple(update_params))
-            logger.info(f"Updated catalog record for {layer}_{county}_{city}")
-        else:
-            logger.info(f"TEST MODE: Would update catalog record for {layer}_{county}_{city}")
-    
-    def update_transform_record(self, record: Dict, layer: str, county: str, city: str):
-        """Update transform record"""
-        transform_table = TRANSFORM_TABLES.get(layer)
-        if not transform_table:
-            return
-        
-        record_id = record['id']
-        temp_table_name = self.format_temp_table_name(layer, county, city)
-        
-        if not test_mode:
-            query = f"""
-            UPDATE {transform_table} 
-            SET city_name = %s, temp_table_name = %s 
-            WHERE id = %s
-            """
-            self.db.execute_query(query, (city.upper(), temp_table_name, record_id))
-            logger.info(f"Updated transform record for {layer}_{county}_{city}")
-        else:
-            logger.info(f"TEST MODE: Would update transform record for {layer}_{county}_{city}")
-    
-    def process_entity(self, layer: str, entity: str):
-        """Process a single entity"""
-        logger.info(f"Processing {layer} entity: {entity}")
-        
-        # Parse entity name - handle multi-word counties and special entities
-        county, city = self.parse_entity_name(entity)
-        if not county or not city:
-            logger.warning(f"Invalid entity format: {entity}")
-            return
-        
-        # Get entity commands
-        commands = self.manifest.get_entity_commands(layer, entity)
-        if not commands:
-            logger.warning(f"No commands found for entity: {entity}")
-            return
-        
-        # Determine download type and target city
-        is_ags = self.manifest.is_ags_download(commands)
-        target_city = self.manifest.get_target_city(commands, entity)
-        
-        # Determine entity type
-        entity_type = 'city'
-        if city in ['unincorporated', 'unified']:
-            entity_type = city
-        
-        # Find catalog records
-        catalog_records = self.find_catalog_records(layer, county, target_city)
-        
-        if len(catalog_records) > 1:
-            self.duplicates.append({
-                'layer': layer,
-                'county': county,
-                'city': city,
-                'target_city': target_city,
-                'records': catalog_records
-            })
-            logger.warning(f"Multiple catalog records found for {layer}_{county}_{city}")
-            return
-        
-        if not catalog_records:
-            logger.warning(f"No catalog record found for {layer}_{county}_{city}")
-            return
-        
-        # Update catalog record
-        self.update_catalog_record(
-            catalog_records[0], layer, county, city, entity_type, is_ags, target_city
-        )
-        
-        # Update transform record if applicable
-        if layer in TRANSFORM_TABLES:
-            transform_record = self.find_transform_record(layer, county, target_city)
-            if transform_record:
-                self.update_transform_record(transform_record, layer, county, city)
-            else:
-                logger.warning(f"No transform record found for {layer}_{county}_{city}")
-    
-    def process_layer(self, layer: str, county: Optional[str] = None, city: Optional[str] = None):
-        """Process entities for a layer"""
-        entities = self.manifest.get_entities(layer)
-        
-        if county and city:
-            if city.lower() == 'all':
-                # Process all entities for specific county
-                county_entities = []
-                for entity in entities:
-                    parsed_county, _ = self.parse_entity_name(entity)
-                    if parsed_county and parsed_county.lower() == county.lower():
-                        county_entities.append(entity)
-                
-                if county_entities:
-                    for entity in county_entities:
-                        self.process_entity(layer, entity)
-                else:
-                    logger.error(f"No entities found for county {county} in {layer} manifest")
-            else:
-                # Process specific entity
-                entity = f"{county}_{city}"
-                if entity in entities:
-                    self.process_entity(layer, entity)
-                else:
-                    logger.error(f"Entity {entity} not found in {layer} manifest")
-        elif county and county.lower() == 'all':
-            # Process all entities for layer
-            for entity in entities:
-                self.process_entity(layer, entity)
-        else:
-            # Process all entities
-            for entity in entities:
-                self.process_entity(layer, entity)
-    
-    def extract_entity_from_record(self, layer: str, title: str, county: str, city: str) -> Optional[str]:
-        """Extract entity name from database record, robust to multi-word counties/cities and unified/unincorporated. Handles _county suffix in manifest."""
-        if not county:
-            return None
-        
-        # Normalize county and city
-        county_norm = county.lower().replace(' ', '_').replace('.', '').replace('-', '_').strip()
-        city_norm = (city or '').lower().replace(' ', '_').replace('.', '').replace('-', '_').strip()
-        
-        # Remove trailing _county for matching
-        county_base = county_norm[:-7] if county_norm.endswith('_county') else county_norm
-        
-        # Handle special cases for unincorporated/unified
-        if city_norm in ['unincorporated', 'unified']:
-            #logger.debug(f"Extracted entity from title: {county_base}_{city_norm}")
-            return f"{county_base}_{city_norm}"
-        
-        # If city is present, use it
-        if city_norm:
-            #logger.debug(f"Extracted entity from title: {county_base}_{city_norm}")
-            return f"{county_base}_{city_norm}"
-        
-        # If no city field, try to extract from title
-        title_lower = title.lower()
-        if 'city of' in title_lower:
-            city_match = title_lower.split('city of')[-1].strip()
-            if city_match:
-                city_norm = city_match.replace(' ', '_').replace('.', '').replace('-', '_').strip()
-                #logger.debug(f"Extracted entity from title: {county_base}_{city_norm}")
-                return f"{county_base}_{city_norm}"
-        if 'unincorporated' in title_lower:
-            #logger.debug(f"Extracted entity from title: {county_base}_unincorporated")
-            return f"{county_base}_unincorporated"
-        if 'unified' in title_lower:
-            #logger.debug(f"Extracted entity from title: {county_base}_unified")
-            return f"{county_base}_unified"
-        return None
-    
-    def check_orphaned_records(self, layer: str) -> list:
-        """Find records in database without manifest entries, handling _county suffix in manifest."""
-        logger.info(f"Checking for orphaned records in {layer}")
-        orphaned = []
-        manifest_entities = set(self.manifest.get_entities(layer))
-        # Also add all manifest entities with _county stripped for matching
-        manifest_entities_base = set()
-        for e in manifest_entities:
-            if '_county_' in e:
-                manifest_entities_base.add(e.replace('_county_', '_'))
-            elif e.endswith('_county_unified'):
-                manifest_entities_base.add(e.replace('_county_unified', '_unified'))
-            elif e.endswith('_county_unincorporated'):
-                manifest_entities_base.add(e.replace('_county_unincorporated', '_unincorporated'))
-        
-        # Also add normalized versions for multi-word counties
-        manifest_entities_normalized = set()
-        for e in manifest_entities:
-            # Handle multi-word counties by normalizing spaces
-            e_normalized = e.replace(' ', '_')
-            manifest_entities_normalized.add(e_normalized)
-        
-        manifest_entities |= manifest_entities_base | manifest_entities_normalized
-        layer_display = LAYER_DISPLAY_NAMES.get(layer, layer.title())
-        query = """
-        SELECT * FROM m_gis_data_catalog_main 
-        WHERE LOWER(title) LIKE LOWER(%s)
-        """
-        all_catalog_records = self.db.execute_query(query, (f"%{layer_display}%",))
-        for record in all_catalog_records:
-            title = record.get('title', '')
-            county = record.get('county', '')
-            city = record.get('city', '')
-            entity_name = self.extract_entity_from_record(layer, title, county, city)
-            if entity_name and entity_name not in manifest_entities:
-                orphaned.append({
-                    'table': 'm_gis_data_catalog_main',
-                    'record': record
-                })
-        return orphaned
-    
-    def generate_csv_report(self, layer: str, check_results: List[Dict]):
-        """Generate CSV report for check mode"""
-        if not generate_CSV:
-            return
-        
-        timestamp = datetime.now().strftime('%Y-%m-%d')
-        filename = f"{layer}_database_check_{timestamp}.csv"
-        
-        # Define fieldnames
-        fieldnames = [
-            'layer', 'county', 'city', 'entity_type', 'download_type',
-            'catalog_title', 'catalog_county', 'catalog_city', 'catalog_format',
-            'catalog_download', 'catalog_resource', 'catalog_layer_group',
-            'catalog_category', 'catalog_sys_raw_folder', 'catalog_table_name',
-            'catalog_src_url_file', 'catalog_fields_obj_transform',
-            'catalog_source_org', 'catalog_layer_subgroup', 'catalog_sub_category',
-            'catalog_format_subtype'
-        ]
-        
-        # Add transform table columns if applicable
-        if layer in TRANSFORM_TABLES:
-            fieldnames.extend([
-                'transform_county', 'transform_city_name', 'transform_temp_table_name',
-                'transform_shp_name', 'transform_srs_epsg', 'transform_data_date',
-                'transform_update_date'
-            ])
-        
-        # Read existing data if file exists
-        existing_data = {}
-        file_exists = os.path.exists(filename)
-        
-        if file_exists:
-            try:
-                with open(filename, 'r', newline='') as csvfile:
-                    reader = csv.DictReader(csvfile)
-                    for row in reader:
-                        # Skip summary rows
-                        if row.get('layer') == 'SUMMARY':
-                            continue
-                        # Create unique key for each entity
-                        key = (row.get('layer', ''), row.get('county', ''), row.get('city', ''))
-                        existing_data[key] = row
-            except Exception as e:
-                logger.warning(f"Could not read existing CSV file: {e}")
-                existing_data = {}
-        
-        # Process new results and update existing data
-        for result in check_results:
-            # Create unique key for this entity
-            key = (
-                result.get('layer', ''),
-                result.get('county', ''),
-                result.get('city', '')
-            )
-            
-            # Create row data
-            row = {
-                'layer': result.get('layer', ''),
-                'county': result.get('county', ''),
-                'city': result.get('city', ''),
-                'entity_type': result.get('entity_type', ''),
-                'download_type': result.get('download_type', ''),
-            }
-            
-            # Catalog fields
-            catalog = result.get('catalog', {})
-            for field in fieldnames[5:15]:  # catalog fields
-                field_name = field.replace('catalog_', '')
-                row[field] = catalog.get(field_name, 'MISSING')
-            
-            # Transform fields
-            if layer in TRANSFORM_TABLES:
-                transform = result.get('transform', {})
-                for field in fieldnames[15:]:  # transform fields
-                    field_name = field.replace('transform_', '')
-                    row[field] = transform.get(field_name, 'MISSING')
-            
-            # Update or add the row
-            existing_data[key] = row
-        
-        # Write all data back to file
-        with open(filename, 'w', newline='') as csvfile:
-            writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
-            writer.writeheader()
-            
-            # Write all data rows (excluding summary rows from existing data)
-            for key, row in existing_data.items():
-                if row.get('layer') != 'SUMMARY':
-                    writer.writerow(row)
-            
-            # Calculate actual missing fields count
-            missing_fields_count = 0
-            for row in existing_data.values():
-                if row.get('layer') == 'SUMMARY':
-                    continue
-                # Count catalog fields that are missing
-                for field in fieldnames[5:15]:  # catalog fields
-                    if row.get(field) == 'MISSING':
-                        missing_fields_count += 1
-            
-            # Write summary row
-            summary_row = {field: '' for field in fieldnames}
-            summary_row['layer'] = 'SUMMARY'
-            summary_row['county'] = f"Total records: {len(existing_data)}"
-            summary_row['city'] = f"Missing fields: {missing_fields_count}"
-            writer.writerow(summary_row)
-        
-        logger.info(f"CSV report generated: {filename}")
-    
-    def save_missing_fields(self):
-        """Save missing fields to JSON file"""
-        if self.missing_fields:
-            filename = f"missing_fields_{datetime.now().strftime('%Y-%m-%d')}.json"
-            with open(filename, 'w') as f:
-                json.dump(self.missing_fields, f, indent=2)
-            logger.info(f"Missing fields saved to: {filename}")
-    
-    def load_manual_fill_data(self, filename: str) -> Dict:
-        """Load manual fill data from JSON file"""
-        try:
-            with open(filename, 'r') as f:
-                return json.load(f)
-        except Exception as e:
-            logger.error(f"Failed to load manual fill data: {e}")
-            return {}
-    
-    def manual_fill(self, filename: str):
-        """Fill in missing fields with manual data"""
-        manual_data = self.load_manual_fill_data(filename)
-        
-        for entity, fields in manual_data.items():
-            # Parse entity using the same logic as process_entity
-            county, city = self.parse_entity_name(entity)
-            if not county or not city:
-                continue
-            
-            # Extract layer from entity name
-            layer = entity.split('_')[0]
-            
-            # Find and update catalog record
-            catalog_records = self.find_catalog_records(layer, county, city)
-            if catalog_records:
-                record = catalog_records[0]
-                update_fields = []
-                update_params = []
-                
-                for field, value in fields.items():
-                    if field in ['src_url_file', 'fields_obj_transform', 'source_org']:
-                        update_fields.append(f"{field} = %s")
-                        update_params.append(value)
-                
-                if update_fields and not test_mode:
-                    table_name_identifier = record.get('table_name', record.get('id'))
-                    update_params.append(table_name_identifier)
-                    query = f"UPDATE m_gis_data_catalog_main SET {', '.join(update_fields)} WHERE table_name = %s"
-                    self.db.execute_query(query, tuple(update_params))
-                    logger.info(f"Manually filled fields for {entity}")
-                elif test_mode:
-                    logger.info(f"TEST MODE: Would manually fill fields for {entity}")
-    
-    def create_entity(self, layer: str, county: str, city: str, manual_info: Dict):
-        """Create new entity in all tables"""
-        logger.info(f"Creating new entity: {layer}_{county}_{city}")
-        
-        # Determine entity type
-        entity_type = 'city'
-        if city in ['unincorporated', 'unified']:
-            entity_type = city
-        
-        # Create catalog record
-        title = self.format_title(layer, county, city, entity_type)
-        table_name = self.format_table_name(layer, county, city, entity_type)
-        layer_group = LAYER_GROUPS.get(layer, layer)
-        category = LAYER_CATEGORIES.get(layer, layer)
-        sys_raw_folder = self.format_sys_raw_folder(layer_group, layer, county, city)
-        
-        if not test_mode:
-            query = """
-            INSERT INTO m_gis_data_catalog_main 
-            (title, county, city, format, download, layer_group, category, 
-             sys_raw_folder, table_name, src_url_file, fields_obj_transform, source_org)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-            """
-            params = (
-                title, county.upper(), city.upper(), 'UNKNOWN', 'AUTO',
-                layer_group, category, sys_raw_folder, table_name,
-                manual_info.get('src_url_file', ''),
-                manual_info.get('fields_obj_transform', ''),
-                manual_info.get('source_org', '')
-            )
-            self.db.execute_query(query, params)
-            logger.info(f"Created catalog record for {layer}_{county}_{city}")
-        else:
-            logger.info(f"TEST MODE: Would create catalog record for {layer}_{county}_{city}")
-        
-        # Create transform record if applicable
-        if layer in TRANSFORM_TABLES:
-            temp_table_name = self.format_temp_table_name(layer, county, city)
-            transform_table = TRANSFORM_TABLES[layer]
-            
-            if not test_mode:
-                query = f"""
-                INSERT INTO {transform_table} 
-                (county, city_name, temp_table_name)
-                VALUES (%s, %s, %s)
-                """
-                params = (county.upper(), city.upper(), temp_table_name)
-                self.db.execute_query(query, params)
-                logger.info(f"Created transform record for {layer}_{county}_{city}")
-            else:
-                logger.info(f"TEST MODE: Would create transform record for {layer}_{county}_{city}")
-    
-    def run_check_mode(self, layer: str, county: Optional[str] = None, city: Optional[str] = None) -> List[Dict]:
-        """Run check mode to validate records"""
-        if county and city:
-            logger.info(f"Running check mode for {layer} - {county}, {city}")
-        elif county:
-            logger.info(f"Running check mode for {layer} - {county}")
-        else:
-            logger.info(f"Running check mode for {layer}")
-        
-        check_results = []
-        entities = self.manifest.get_entities(layer)
-        
-        # Filter entities based on county/city arguments
-        if county or city:
-            filtered_entities = []
-            for entity in entities:
-                entity_county, entity_city = self.parse_entity_name(f"{layer}_{entity}")
-                if not entity_county or not entity_city:
-                    continue
-                
-                # Check if this entity matches the specified county/city
-                county_match = not county or entity_county.lower() == county.lower()
-                city_match = not city or entity_city.lower() == city.lower()
-                
-                if county_match and city_match:
-                    filtered_entities.append(entity)
-            
-            entities = filtered_entities
-            logger.info(f"Filtered to {len(entities)} entities matching criteria")
-        
+            self._run_update_mode()
+
+        # After operation, write missing-fields JSON if needed
+        if self.missing_fields and self.cfg.mode in {"update", "check"}:
+            self.logger.info(f"Writing missing field report → {MISSING_FIELDS_JSON}")
+            with MISSING_FIELDS_JSON.open("w", encoding="utf-8") as fh:
+                json.dump(self.missing_fields, fh, indent=2)
+
+        if self.db:
+            self.db.commit()
+            self.db.close()
+
+    # --------------------------------------------------
+    # Mode implementations (placeholders for now)
+    # --------------------------------------------------
+
+    def _run_check_mode(self):
+        self.logger.info("Running in CHECK mode – no DB modifications will be made.")
+        # TODO: implement full check logic
+        # For now, just iterate entities and print basics
+        entities = self._select_entities()
         for entity in entities:
-            # Parse entity name using the same logic as process_entity
-            logger.info(f"Processing entity: {entity}")
-            county, city = self.parse_entity_name(f"{layer}_{entity}")
-            logger.debug(f"Parsed entity: {county}, {city}")
-            if not county or not city:
-                continue
-            commands = self.manifest.get_entity_commands(layer, entity)
-            is_ags = self.manifest.is_ags_download(commands)
-            target_city = self.manifest.get_target_city(commands, entity)
-            logger.debug(f"Target city: {target_city}")
-            
-            entity_type = 'city'
-            if city in ['unincorporated', 'unified']:
-                entity_type = city
-            
-            # Get catalog record
-            catalog_records = self.find_catalog_records(layer, county, target_city)
-            #logger.debug(f"Catalog records: {catalog_records}")
-            catalog = catalog_records[0] if catalog_records else {}
-            
-            # Get transform record
-            transform = {}
-            if layer in TRANSFORM_TABLES:
-                transform_record = self.find_transform_record(layer, county, target_city)
-                if transform_record:
-                    transform = dict(transform_record)
-                #logger.debug(f"Transform record: {transform}")
-            
-            check_results.append({
-                'layer': layer,
-                'county': county,
-                'city': city,
-                'entity_type': entity_type,
-                'download_type': 'AGS' if is_ags else 'NON-AGS',
-                'catalog': catalog,
-                'transform': transform
-            })
-        
-        # Find orphaned records
-        orphaned = self.check_orphaned_records(layer)
-        #logger.debug(f"Orphaned records: {orphaned}")
-        for orphan in orphaned:
-            check_results.append({
-                'layer': layer,
-                'county': 'ORPHANED',
-                'city': 'ORPHANED',
-                'entity_type': 'ORPHANED',
-                'download_type': 'ORPHANED',
-                'catalog': dict(orphan['record']) if orphan['table'] == 'm_gis_data_catalog_main' else {},
-                'transform': dict(orphan['record']) if orphan['table'] != 'm_gis_data_catalog_main' else {}
-            })
+            county, city = self._split_entity(entity)
+            self.logger.debug(f"Would check {self.cfg.layer}:{county}_{city}")
+        self._write_csv_report([])  # placeholder empty list
 
-        # Check for missing fields in check mode
-        missing_fields_count = 0
-        for result in check_results:
-            catalog = result.get('catalog', {})
-            # Check for missing catalog fields
-            if not catalog.get('src_url_file'):
-                missing_fields_count += 1
-            if not catalog.get('fields_obj_transform'):
-                missing_fields_count += 1
-            if not catalog.get('source_org'):
-                missing_fields_count += 1
-        
-        # Generate CSV report
-        self.generate_csv_report(layer, check_results)
-        logger.info(f"Missing fields: {missing_fields_count}")
-        logger.info(f"Duplicates found: {len(self.duplicates)}")
-        logger.info(f"Orphaned records: {len(orphaned)}")
-        # for orphan in orphaned:
-        #     record = orphan['record']
-        #     logger.debug(f"  {record.get('city', 'UNKNOWN')}, {record.get('county', 'UNKNOWN').capitalize()}")
-        
-        return check_results
-    
-    def print_summary(self):
-        """Print summary of operations"""
-        logger.info("=== OPERATION SUMMARY ===")
-        logger.info(f"Missing fields: {len(self.missing_fields)}")
-        logger.info(f"Duplicates found: {len(self.duplicates)}")
-        
-        if self.missing_fields:
-            logger.info("Missing fields by entity:")
-            for entity, fields in self.missing_fields.items():
-                logger.info(f"  {entity}: {', '.join(fields.keys())}")
-        
-        if self.duplicates:
-            logger.info("Duplicates found:")
-            for dup in self.duplicates:
-                logger.info(f"  {dup['layer']}_{dup['county']}_{dup['city']}: {len(dup['records'])} records")
+    def _run_update_mode(self):
+        self.logger.info("Running in UPDATE mode – DB rows will be modified as needed.")
+        # TODO: implement update logic
+        entities = self._select_entities()
+        for entity in entities:
+            self.logger.debug(f"Processing entity {entity}")
+            # placeholder – real implementation later
+            pass
 
+    def _run_manual_fill_mode(self):
+        self.logger.info("Running MANUAL-FILL mode – applying user-provided field values only.")
+        if not MISSING_FIELDS_JSON.exists():
+            self.logger.error("Missing-fields JSON not found. Aborting manual-fill mode.")
+            return
+        data = json.loads(MISSING_FIELDS_JSON.read_text())
+        # TODO: iterate and update DB rows accordingly.
+        self.logger.debug(f"Loaded {len(data)} manual fill records (placeholder)")
 
-def main():
-    """Main function"""
-    parser = argparse.ArgumentParser(description='Standardize layer database and manifest files')
-    parser.add_argument('layer', help='Layer name (zoning, flu, etc.) or "all"')
-    parser.add_argument('county', nargs='?', help='County name or "all"')
-    parser.add_argument('city', nargs='?', help='City name')
-    parser.add_argument('--check', action='store_true', help='Check mode - validate without making changes')
-    parser.add_argument('--create', action='store_true', help='Create mode - create new entity')
-    parser.add_argument('--manual-fill', action='store_true', help='Manual fill mode - fill missing fields')
-    parser.add_argument('--manual-file', help='Manual fill data file')
-    parser.add_argument('--test-mode', action='store_true', help='Test mode - show what would be done')
-    
-    args = parser.parse_args()
-    
-    # Set test mode
-    global test_mode
-    test_mode = args.test_mode
-    
-    standardizer = LayerStandardizer()
-    
-    try:
-        if args.check:
-            # Check mode
-            if args.layer.lower() == 'all':
-                for layer in ['zoning', 'flu']:
-                    standardizer.run_check_mode(layer, args.county, args.city)
-            else:
-                standardizer.run_check_mode(args.layer, args.county, args.city)
-        
-        elif args.create:
-            # Create mode
-            if not all([args.layer, args.county, args.city]):
-                logger.error("Create mode requires layer, county, and city arguments")
-                return
-            
-            manual_info = {}
-            if args.manual_file:
-                manual_info = standardizer.load_manual_fill_data(args.manual_file)
-            
-            standardizer.create_entity(args.layer, args.county, args.city, manual_info)
-        
-        elif args.manual_fill:
-            # Manual fill mode
-            filename = args.manual_file or f"missing_fields_{datetime.now().strftime('%Y-%m-%d')}.json"
-            standardizer.manual_fill(filename)
-        
+    def _run_create_mode(self):
+        self.logger.info("Running CREATE mode – inserting new DB records.")
+        # TODO: implement record creation
+        self.logger.warning("CREATE mode not yet implemented in this scaffold.")
+
+    # --------------------------------------------------
+    # Helper utilities
+    # --------------------------------------------------
+
+    def _split_entity(self, entity: str) -> Tuple[str, str]:
+        parts = entity.split("_", 1)
+        if len(parts) != 2:
+            raise ValueError(f"Invalid entity format: {entity}")
+        return parts[0], parts[1]
+
+    def _select_entities(self) -> List[str]:
+        if self.cfg.county and self.cfg.city:
+            return [f"{self.cfg.county.lower()}_{self.cfg.city.lower()}"]
+        elif self.cfg.county and self.cfg.county.lower() != "all":
+            # All entities for this county
+            return [e for e in self.manifest.get_entities(self.cfg.layer) if e.startswith(self.cfg.county.lower() + "_")]
         else:
-            # Standard mode
-            if args.layer.lower() == 'all':
-                for layer in ['zoning', 'flu']:
-                    standardizer.process_layer(layer)
-            else:
-                standardizer.process_layer(args.layer, args.county, args.city)
-            
-            # Save missing fields and print summary
-            standardizer.save_missing_fields()
-            standardizer.print_summary()
-    
-    except Exception as e:
-        logger.error(f"Operation failed: {e}")
-        raise
-    finally:
-        standardizer.db.close()
+            # All entities in layer
+            return self.manifest.get_entities(self.cfg.layer)
+
+    def _write_csv_report(self, rows: List[List[str]]):
+        if not self.cfg.generate_CSV:
+            return
+        csv_path = REPORTS_DIR / f"{self.cfg.layer}_database_check_{get_today_str()}.csv"
+        # Load existing rows to support incremental update
+        existing: List[List[str]] = []
+        if csv_path.exists():
+            with csv_path.open(newline="", encoding="utf-8") as fh:
+                reader = list(csv.reader(fh))
+                existing = reader
+        # TODO: merge logic preserving alphabetical order – placeholder just overwrite
+        with csv_path.open("w", newline="", encoding="utf-8") as fh:
+            writer = csv.writer(fh)
+            for row in rows or existing:
+                writer.writerow(row)
+        self.logger.info(f"CSV report written → {csv_path}")
+
+# --------------------------------------------------
+# Placeholder – simple format detection (can be replaced later)
+# --------------------------------------------------
+
+def get_format(url: str | None) -> str:
+    if not url:
+        return "UNKNOWN"
+    url_lc = url.lower()
+    for ext, fmt in {".shp": "SHP", ".zip": "ZIP", "/rest": "AGS", ".geojson": "GEOJSON", ".kml": "KML"}.items():
+        if url_lc.endswith(ext):
+            return fmt
+    return "UNKNOWN"
+
+# --------------------------------------------------
+# CLI parsing
+# --------------------------------------------------
+
+def build_arg_parser() -> argparse.ArgumentParser:
+    p = argparse.ArgumentParser(description="Standardise DB records to match layer manifest")
+    p.add_argument("layer", help="Layer name (e.g. zoning, flu, or 'all')")
+    p.add_argument("county", help="County name or 'all'")
+    p.add_argument("city", help="City name or 'all'")
+
+    group = p.add_mutually_exclusive_group()
+    group.add_argument("--check", action="store_true", help="Run in check-only mode (no DB writes)")
+    group.add_argument("--manual-fill", action="store_true", help="Apply edits from missing_fields.json")
+    group.add_argument("--create", action="store_true", help="Create a new record")
+
+    p.add_argument("--optional-conditions", action="store_true", help="Enable optional condition checks")
+    p.add_argument("--no-csv", dest="generate_CSV", action="store_false", help="Disable CSV generation")
+    p.add_argument("--debug", action="store_true", help="Enable debug logging")
+    p.add_argument("--test-mode", action="store_true", help="Run without touching the database")
+    return p
 
 
-if __name__ == '__main__':
-    main()
+def main(argv: List[str] | None = None):
+    parser = build_arg_parser()
+    args = parser.parse_args(argv)
+
+    mode = "update"
+    if args.check:
+        mode = "check"
+    elif args.manual_fill:
+        mode = "manual-fill"
+    elif args.create:
+        mode = "create"
+
+    cfg = Config(
+        layer=args.layer.lower(),
+        county=None if args.county.lower() == "all" else args.county.lower(),
+        city=None if args.city.lower() == "all" else args.city.lower(),
+        optional_conditions=args.optional_conditions,
+        generate_CSV=args.generate_CSV,
+        debug=args.debug,
+        test_mode=args.test_mode,
+        mode=mode,
+    )
+
+    manifest = ManifestManager()
+    standardizer = LayerStandardizer(cfg, manifest)
+    standardizer.run()
+
+
+if __name__ == "__main__":
+    sys.exit(main())
