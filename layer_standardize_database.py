@@ -586,12 +586,12 @@ class LayerStandardizer:
         
         # Handle special cases for unincorporated/unified
         if city_norm in ['unincorporated', 'unified']:
-            logger.debug(f"Extracted entity from title: {county_base}_{city_norm}")
+            #logger.debug(f"Extracted entity from title: {county_base}_{city_norm}")
             return f"{county_base}_{city_norm}"
         
         # If city is present, use it
         if city_norm:
-            logger.debug(f"Extracted entity from title: {county_base}_{city_norm}")
+            #logger.debug(f"Extracted entity from title: {county_base}_{city_norm}")
             return f"{county_base}_{city_norm}"
         
         # If no city field, try to extract from title
@@ -600,13 +600,13 @@ class LayerStandardizer:
             city_match = title_lower.split('city of')[-1].strip()
             if city_match:
                 city_norm = city_match.replace(' ', '_').replace('.', '').replace('-', '_').strip()
-                logger.debug(f"Extracted entity from title: {county_base}_{city_norm}")
+                #logger.debug(f"Extracted entity from title: {county_base}_{city_norm}")
                 return f"{county_base}_{city_norm}"
         if 'unincorporated' in title_lower:
-            logger.debug(f"Extracted entity from title: {county_base}_unincorporated")
+            #logger.debug(f"Extracted entity from title: {county_base}_unincorporated")
             return f"{county_base}_unincorporated"
         if 'unified' in title_lower:
-            logger.debug(f"Extracted entity from title: {county_base}_unified")
+            #logger.debug(f"Extracted entity from title: {county_base}_unified")
             return f"{county_base}_unified"
         return None
     
@@ -741,11 +741,21 @@ class LayerStandardizer:
                 if row.get('layer') != 'SUMMARY':
                     writer.writerow(row)
             
+            # Calculate actual missing fields count
+            missing_fields_count = 0
+            for row in existing_data.values():
+                if row.get('layer') == 'SUMMARY':
+                    continue
+                # Count catalog fields that are missing
+                for field in fieldnames[5:15]:  # catalog fields
+                    if row.get(field) == 'MISSING':
+                        missing_fields_count += 1
+            
             # Write summary row
             summary_row = {field: '' for field in fieldnames}
             summary_row['layer'] = 'SUMMARY'
             summary_row['county'] = f"Total records: {len(existing_data)}"
-            summary_row['city'] = f"Missing fields: {sum(1 for r in existing_data.values() if 'MISSING' in str(r.values()))}"
+            summary_row['city'] = f"Missing fields: {missing_fields_count}"
             writer.writerow(summary_row)
         
         logger.info(f"CSV report generated: {filename}")
@@ -936,14 +946,26 @@ class LayerStandardizer:
                 'transform': dict(orphan['record']) if orphan['table'] != 'm_gis_data_catalog_main' else {}
             })
 
+        # Check for missing fields in check mode
+        missing_fields_count = 0
+        for result in check_results:
+            catalog = result.get('catalog', {})
+            # Check for missing catalog fields
+            if not catalog.get('src_url_file'):
+                missing_fields_count += 1
+            if not catalog.get('fields_obj_transform'):
+                missing_fields_count += 1
+            if not catalog.get('source_org'):
+                missing_fields_count += 1
+        
         # Generate CSV report
         self.generate_csv_report(layer, check_results)
-        logger.info(f"Missing fields: {len(self.missing_fields)}")
+        logger.info(f"Missing fields: {missing_fields_count}")
         logger.info(f"Duplicates found: {len(self.duplicates)}")
         logger.info(f"Orphaned records: {len(orphaned)}")
-        for orphan in orphaned:
-            record = orphan['record']
-            logger.debug(f"  {record.get('city', 'UNKNOWN')}, {record.get('county', 'UNKNOWN').capitalize()}")
+        # for orphan in orphaned:
+        #     record = orphan['record']
+        #     logger.debug(f"  {record.get('city', 'UNKNOWN')}, {record.get('county', 'UNKNOWN').capitalize()}")
         
         return check_results
     
