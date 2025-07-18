@@ -49,9 +49,9 @@ PG_CONNECTION: str | None = os.getenv("PG_CONNECTION")
 
 # Global defaults – can be overridden by CLI flags
 optional_conditions_default = False
-generate_CSV_default = True
+generate_CSV_default = False
 debug_default = False
-test_mode_default = False
+test_mode_default = True
 
 REPORTS_DIR = Path("reports")
 REPORTS_DIR.mkdir(exist_ok=True)
@@ -184,7 +184,8 @@ class DB:
 
     def fetchone(self, sql: str, params: Tuple[Any, ...] | None = None):
         self.cur.execute(sql, params)
-        return self.cur.fetchone()
+        row = self.cur.fetchone()
+        return dict(row) if row else None
 
     def fetchall(self, sql: str, params: Tuple[Any, ...] | None = None):
         self.cur.execute(sql, params)
@@ -320,13 +321,12 @@ class LayerStandardizer:
         handler.setFormatter(logging.Formatter("[%(levelname)s] %(message)s"))
         self.logger.addHandler(handler)
 
-        # DB connection (unless test_mode)
-        self.db: DB | None = None
-        if not cfg.test_mode:
-            if not PG_CONNECTION:
-                self.logger.error("PG_CONNECTION not found in environment. Aborting.")
-                sys.exit(1)
-            self.db = DB(PG_CONNECTION)
+        # DB connection – always connect; test_mode only prevents writebacks.
+        if not PG_CONNECTION:
+            self.logger.error("PG_CONNECTION not found in environment. Aborting.")
+            sys.exit(1)
+
+        self.db: DB = DB(PG_CONNECTION)
 
         # Place to accumulate missing manual fields
         self.missing_fields: Dict[str, Dict[str, str]] = defaultdict(dict)
@@ -351,8 +351,12 @@ class LayerStandardizer:
             with MISSING_FIELDS_JSON.open("w", encoding="utf-8") as fh:
                 json.dump(self.missing_fields, fh, indent=2)
 
+        # Close DB connection; commit only when not in test_mode and in write modes
         if self.db:
-            self.db.commit()
+            if not self.cfg.test_mode and self.cfg.mode in {"update", "manual-fill", "create"}:
+                self.db.commit()
+            else:
+                self.db.conn.rollback()
             self.db.close()
 
     # --------------------------------------------------
@@ -361,13 +365,75 @@ class LayerStandardizer:
 
     def _run_check_mode(self):
         self.logger.info("Running in CHECK mode – no DB modifications will be made.")
-        # TODO: implement full check logic
-        # For now, just iterate entities and print basics
-        entities = self._select_entities()
-        for entity in entities:
+
+        header_catalog = [
+            "layer",
+            "county",
+            "city",
+            "title",
+            "src_url_file",
+            "format",
+            "download",
+            "resource",
+            "layer_group",
+            "category",
+            "sys_raw_folder",
+            "table_name",
+            "fields_obj_transform",
+        ]
+
+        header_transform = [
+            "transform_city_name",
+            "transform_temp_table_name",
+        ] if self.cfg.layer in {"zoning", "flu"} else []
+
+        csv_rows: List[List[str]] = [header_catalog + header_transform]
+
+        for entity in sorted(self._select_entities()):
+            self.logger.debug(f"Checking entity {entity}")
             county, city = self._split_entity(entity)
-            self.logger.debug(f"Would check {self.cfg.layer}:{county}_{city}")
-        self._write_csv_report([])  # placeholder empty list
+
+            expected = self._expected_values(entity, county, city)
+
+            cat_row = self._fetch_catalog_row(county, city)
+            if cat_row is None:
+                cat_values = ["MISSING"] * len(header_catalog)
+            else:
+                cat_values = [
+                    self.cfg.layer,
+                    cat_row.get("county", "MISSING"),
+                    cat_row.get("city", "MISSING"),
+                    cat_row.get("title", "MISSING"),
+                    cat_row.get("src_url_file", "MISSING"),
+                    cat_row.get("format", "MISSING"),
+                    cat_row.get("download", "MISSING"),
+                    cat_row.get("resource", "MISSING"),
+                    cat_row.get("layer_group", "MISSING"),
+                    cat_row.get("category", "MISSING"),
+                    cat_row.get("sys_raw_folder", "MISSING"),
+                    cat_row.get("table_name", "MISSING"),
+                    cat_row.get("fields_obj_transform", "MISSING"),
+                ]
+
+            transform_values: List[str] = []
+            if header_transform:
+                tr_row = self._fetch_transform_row(county, city)
+                if tr_row is None:
+                    transform_values = ["MISSING", "MISSING"]
+                else:
+                    transform_values = [
+                        tr_row.get("city_name", "MISSING"),
+                        tr_row.get("temp_table_name", "MISSING"),
+                    ]
+
+            csv_rows.append(cat_values + transform_values)
+
+        # Sort rows after header: layer, county
+        csv_rows_body = csv_rows[1:]
+        csv_rows_body.sort(key=lambda r: (r[0], r[1], r[2]))
+        csv_rows = [csv_rows[0]] + csv_rows_body
+
+        self._write_csv_report(csv_rows)
 
     def _run_update_mode(self):
         self.logger.info("Running in UPDATE mode – DB rows will be modified as needed.")
@@ -428,6 +494,47 @@ class LayerStandardizer:
             for row in rows or existing:
                 writer.writerow(row)
         self.logger.info(f"CSV report written → {csv_path}")
+
+    # --------------------------------------------------
+    # Data fetching helpers
+    # --------------------------------------------------
+
+    def _fetch_catalog_row(self, county: str, city: str) -> Optional[Dict[str, Any]]:
+        sql = (
+            "SELECT * FROM m_gis_data_catalog_main "
+            "WHERE lower(county)=%s AND lower(city)=%s AND lower(layer_group)=%s LIMIT 1"
+        )
+        params = (county.lower(), city.lower(), Formatter.LAYER_GROUP[self.cfg.layer])
+        return self.db.fetchone(sql, params)
+
+    def _fetch_transform_row(self, county: str, city: str) -> Optional[Dict[str, Any]]:
+        if not self.cfg.layer in {"zoning", "flu"}:
+            return None
+        table = f"{self.cfg.layer}_transform"
+        sql = f"SELECT city_name, temp_table_name FROM {table} WHERE county=%s AND city_name=%s LIMIT 1"
+        params = (county.upper(), city.upper())
+        return self.db.fetchone(sql, params)
+
+    def _expected_values(self, entity: str, county: str, city: str) -> Dict[str, Any]:
+        """Compute expected values for catalog / transform tables (not yet used for check mode)."""
+        layer_group = Formatter.LAYER_GROUP[self.cfg.layer]
+        category = Formatter.CATEGORY[self.cfg.layer]
+        entity_type = "city" if city not in {"unincorporated", "unified", "countywide"} else city
+        title = Formatter.format_entity_to_title(self.cfg.layer, county, city, entity_type)
+        table_name = Formatter.format_table_name(self.cfg.layer, county, city, entity_type)
+        sys_raw_folder = str(Formatter.get_sys_raw_folder(layer_group, self.cfg.layer, county, city))
+        temp_table_name = Formatter.format_temp_table_name(self.cfg.layer, county, city)
+
+        return {
+            "title": title,
+            "county": county.title(),
+            "city": city.title(),
+            "layer_group": layer_group,
+            "category": category,
+            "table_name": table_name,
+            "sys_raw_folder": sys_raw_folder,
+            "temp_table_name": temp_table_name,
+        }
 
 # --------------------------------------------------
 # Placeholder – simple format detection (can be replaced later)
