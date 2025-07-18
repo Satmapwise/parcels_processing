@@ -50,8 +50,8 @@ PG_CONNECTION: str | None = os.getenv("PG_CONNECTION")
 
 # Global defaults – can be overridden by CLI flags
 optional_conditions_default = False
-generate_CSV_default = False
-debug_default = False
+generate_CSV_default = True
+debug_default = True
 test_mode_default = True
 
 REPORTS_DIR = Path("reports")
@@ -72,6 +72,19 @@ def title_case(s: str) -> str:
 
 def get_today_str() -> str:
     return datetime.utcnow().strftime("%Y-%m-%d")
+
+# --------------------------------------------------
+# Normaliser helpers
+# --------------------------------------------------
+
+import re
+
+def norm_city(city: Optional[str]) -> str:
+    """Normalise a city string to lowercase+underscores (non-alnum → _ , collapse). Accepts None."""
+    if not city:
+        return ""
+    cleaned = re.sub(r"[^a-z0-9]+", "_", city.lower())
+    return cleaned.strip("_")
 
 # --------------------------------------------------
 # Manifest processing
@@ -238,8 +251,6 @@ class Formatter:
           Future Land Use - Duval Unified      -> ("flu",    "duval",   "unified",       "unified")
         Returns lowercase values; if parsing fails returns (None, None, None, None).
         """
-        import re
-
         # Split the string into layer part and the remainder.
         try:
             layer_part, rest = title.split(" - ", 1)
@@ -392,6 +403,8 @@ class LayerStandardizer:
 
         csv_rows: List[List[str]] = [header_catalog + header_transform]
 
+        present_entities_found = set()
+
         for entity in sorted(self._select_entities()):
             self.logger.debug(f"Checking entity {entity}")
             county, city = self._split_entity(entity)
@@ -399,6 +412,9 @@ class LayerStandardizer:
             expected = self._expected_values(entity, county, city)
 
             cat_row = self._fetch_catalog_row(county, city)
+            if cat_row is not None:
+                present_entities_found.add(entity)
+
             if cat_row is None:
                 cat_values = ["MISSING"] * len(header_catalog)
             else:
@@ -453,19 +469,7 @@ class LayerStandardizer:
 
         processed_entities = set(self._select_entities())
 
-        def _entity_from_row(r: List[str]) -> str | None:
-            if len(r) >= 3 and r[0] != "ORPHANS":
-                return f"{r[1].lower()}_{r[2].lower()}"
-            return None
-
-        present_entities = set()
-        for row in csv_rows[1:]:
-            if len(row) >= 4 and row[0] != "ORPHANS" and row[3] != "MISSING":
-                ent = _entity_from_row(row)
-                if ent:
-                    present_entities.add(ent)
-
-        missing_records = [e for e in processed_entities if e not in present_entities]
+        missing_records = [e for e in processed_entities if e not in present_entities_found]
 
         db_only_entities: set[str] = set()
         try:
@@ -570,12 +574,19 @@ class LayerStandardizer:
     # --------------------------------------------------
 
     def _fetch_catalog_row(self, county: str, city: str) -> Optional[Dict[str, Any]]:
-        sql = (
-            "SELECT * FROM m_gis_data_catalog_main "
-            "WHERE lower(county)=%s AND lower(city)=%s AND lower(layer_group)=%s LIMIT 1"
-        )
-        params = (county.lower(), city.lower(), Formatter.LAYER_GROUP[self.cfg.layer])
-        return self.db.fetchone(sql, params)
+        """Fetch catalog row by parsing titles; relies on county match and title-derived city/layer."""
+        if not self.db:
+            return None
+
+        # Fetch rows whose county starts with the given county token to handle 'Alachua County'
+        sql = "SELECT * FROM m_gis_data_catalog_main WHERE lower(county) LIKE %s"
+        rows = self.db.fetchall(sql, (f"{county.lower()}%",)) or []
+        for row in rows:
+            title = row.get("title", "")
+            lyr, cnty, cty_city, _ = Formatter.format_title_to_entity(title)
+            if lyr == self.cfg.layer and cty_city and norm_city(cty_city) == norm_city(city) and (cnty is None or cnty == county.lower()):
+                return dict(row)
+        return None
 
     def _fetch_transform_row(self, county: str, city: str) -> Optional[Dict[str, Any]]:
         if not self.cfg.layer in {"zoning", "flu"}:
