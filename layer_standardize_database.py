@@ -261,6 +261,57 @@ class LayerStandardizer:
             os.makedirs(path, exist_ok=True)
             logger.info(f"Created directory: {path}")
     
+    def parse_entity_name(self, entity: str) -> Tuple[Optional[str], Optional[str]]:
+        """Parse entity name into county and city, handling multi-word counties and special entities"""
+        # Remove layer prefix first (e.g., "zoning_palm_beach_county_unified" -> "palm_beach_county_unified")
+        entity_parts = entity.split('_', 1)
+        if len(entity_parts) != 2:
+            return None, None
+        
+        layer, entity_suffix = entity_parts
+        
+        # Handle regular entities with multi-word counties first
+        # Look for "_county_" pattern to identify county boundary
+        if '_county_' in entity_suffix:
+            parts = entity_suffix.split('_county_', 1)
+            county = parts[0]
+            city = parts[1]
+            return county, city
+        
+        # Check for known multi-word counties before special entity checks
+        known_multi_word_counties = [
+            'indian_river', 'miami_dade', 'santa_rosa', 'st_johns', 'st_lucie', 
+            'palm_beach'
+        ]
+        
+        for multi_county in known_multi_word_counties:
+            if entity_suffix.startswith(multi_county + '_'):
+                county = multi_county
+                city = entity_suffix[len(multi_county) + 1:]  # +1 for the underscore
+                return county, city
+        
+        # Handle special entities after multi-word county checks
+        if entity_suffix.endswith('_unified'):
+            # Extract county from unified entity (e.g., "leon_unified" -> "leon", "unified")
+            # Standard format: county = county, city = unified
+            county_part = entity_suffix[:-8]  # Remove "_unified"
+            return county_part, 'unified'
+        
+        if entity_suffix.endswith('_unincorporated'):
+            # Extract county from unincorporated entity (e.g., "indian_river_unincorporated" -> "indian_river", "unincorporated")
+            county_part = entity_suffix[:-14]  # Remove "_unincorporated"
+            # Trim any trailing underscores
+            county_part = county_part.rstrip('_')
+            return county_part, 'unincorporated'
+        
+        # If no known multi-word county matches, use simple split on first underscore
+        parts = entity_suffix.split('_', 1)
+        if len(parts) != 2:
+            return None, None
+        
+        county, city = parts
+        return county, city
+    
     def find_catalog_records(self, layer: str, county: str, target_city: str) -> List[Dict]:
         """Find records in m_gis_data_catalog_main"""
         layer_display = LAYER_DISPLAY_NAMES.get(layer, layer.title())
@@ -270,20 +321,34 @@ class LayerStandardizer:
         
         if is_special_entity:
             # For unincorporated/unified: search by title containing layer, county, and entity type
+            # Handle multi-word counties by normalizing spaces to underscores
+            county_normalized = county.replace(' ', '_')
+            county_space = county.replace('_', ' ')
+            
             query = """
             SELECT *, table_name as id FROM m_gis_data_catalog_main 
             WHERE LOWER(title) LIKE LOWER(%s) 
-            AND LOWER(title) LIKE LOWER(%s)
+            AND (
+                LOWER(title) LIKE LOWER(%s) 
+                OR LOWER(title) LIKE LOWER(%s)
+            )
             AND LOWER(title) LIKE LOWER(%s)
             """
-            params = (f"%{layer_display}%", f"%{county}%", f"%{target_city}%")
+            params = (f"%{layer_display}%", f"%{county_normalized}%", f"%{county_space}%", f"%{target_city}%")
         else:
             # For regular cities: search by title pattern and county, be more flexible
             # Handle cases where target_city has underscores but database has spaces
+            # Also handle multi-word counties
+            county_normalized = county.replace(' ', '_')
+            county_space = county.replace('_', ' ')
+            
             query = """
             SELECT *, table_name as id FROM m_gis_data_catalog_main 
             WHERE LOWER(title) LIKE LOWER(%s) 
-            AND LOWER(county) = LOWER(%s)
+            AND (
+                LOWER(county) = LOWER(%s)
+                OR LOWER(county) = LOWER(%s)
+            )
             AND (
                 LOWER(city) = LOWER(%s) 
                 OR LOWER(city) = LOWER(%s)
@@ -295,7 +360,7 @@ class LayerStandardizer:
             city_space = target_city.replace('_', ' ')
             # Create a more specific title pattern to avoid substring matches
             title_pattern = f"{layer_display} - City of {city_space}"
-            params = (f"%{layer_display}%", county, city_underscore, city_space, title_pattern)
+            params = (f"%{layer_display}%", county_normalized, county_space, city_underscore, city_space, title_pattern)
         
         return self.db.execute_query(query, params)
     
@@ -305,11 +370,18 @@ class LayerStandardizer:
         if not transform_table:
             return None
         
+        # Handle multi-word counties by normalizing spaces to underscores
+        county_normalized = county.replace(' ', '_')
+        county_space = county.replace('_', ' ')
+        
         query = f"""
         SELECT * FROM {transform_table} 
-        WHERE LOWER(county) = LOWER(%s) AND LOWER(city_name) = LOWER(%s)
+        WHERE (
+            LOWER(county) = LOWER(%s) 
+            OR LOWER(county) = LOWER(%s)
+        ) AND LOWER(city_name) = LOWER(%s)
         """
-        params = (county, city)
+        params = (county_normalized, county_space, city)
         
         results = self.db.execute_query(query, params)
         return results[0] if results else None
@@ -414,13 +486,11 @@ class LayerStandardizer:
         """Process a single entity"""
         logger.info(f"Processing {layer} entity: {entity}")
         
-        # Parse entity name
-        entity_parts = entity.split('_', 1)
-        if len(entity_parts) != 2:
+        # Parse entity name - handle multi-word counties and special entities
+        county, city = self.parse_entity_name(entity)
+        if not county or not city:
             logger.warning(f"Invalid entity format: {entity}")
             return
-        
-        county, city = entity_parts
         
         # Get entity commands
         commands = self.manifest.get_entity_commands(layer, entity)
@@ -475,7 +545,12 @@ class LayerStandardizer:
         if county and city:
             if city.lower() == 'all':
                 # Process all entities for specific county
-                county_entities = [entity for entity in entities if entity.startswith(f"{county}_")]
+                county_entities = []
+                for entity in entities:
+                    parsed_county, _ = self.parse_entity_name(entity)
+                    if parsed_county and parsed_county.lower() == county.lower():
+                        county_entities.append(entity)
+                
                 if county_entities:
                     for entity in county_entities:
                         self.process_entity(layer, entity)
@@ -497,77 +572,78 @@ class LayerStandardizer:
             for entity in entities:
                 self.process_entity(layer, entity)
     
-    def check_orphaned_records(self, layer: str) -> List[Dict]:
-        """Find records in database without manifest entries"""
+    def extract_entity_from_record(self, layer: str, title: str, county: str, city: str) -> Optional[str]:
+        """Extract entity name from database record, robust to multi-word counties/cities and unified/unincorporated. Handles _county suffix in manifest."""
+        if not county:
+            return None
+        
+        # Normalize county and city
+        county_norm = county.lower().replace(' ', '_').replace('.', '').strip()
+        city_norm = (city or '').lower().replace(' ', '_').replace('.', '').strip()
+        
+        # Remove trailing _county for matching
+        county_base = county_norm[:-7] if county_norm.endswith('_county') else county_norm
+        
+        # Handle special cases for unincorporated/unified
+        if city_norm in ['unincorporated', 'unified']:
+            return f"{county_base}_{city_norm}"
+        
+        # If city is present, use it
+        if city_norm:
+            return f"{county_base}_{city_norm}"
+        
+        # If no city field, try to extract from title
+        title_lower = title.lower()
+        if 'city of' in title_lower:
+            city_match = title_lower.split('city of')[-1].strip()
+            if city_match:
+                city_norm = city_match.replace(' ', '_').replace('.', '').strip()
+                return f"{county_base}_{city_norm}"
+        if 'unincorporated' in title_lower:
+            return f"{county_base}_unincorporated"
+        if 'unified' in title_lower:
+            return f"{county_base}_unified"
+        return None
+    
+    def check_orphaned_records(self, layer: str) -> list:
+        """Find records in database without manifest entries, handling _county suffix in manifest."""
         orphaned = []
-        
-        # Get all entities from manifest
         manifest_entities = set(self.manifest.get_entities(layer))
+        # Also add all manifest entities with _county stripped for matching
+        manifest_entities_base = set()
+        for e in manifest_entities:
+            if '_county_' in e:
+                manifest_entities_base.add(e.replace('_county_', '_'))
+            elif e.endswith('_county_unified'):
+                manifest_entities_base.add(e.replace('_county_unified', '_unified'))
+            elif e.endswith('_county_unincorporated'):
+                manifest_entities_base.add(e.replace('_county_unincorporated', '_unincorporated'))
         
-        # Find all records for this layer
+        # Also add normalized versions for multi-word counties
+        manifest_entities_normalized = set()
+        for e in manifest_entities:
+            # Handle multi-word counties by normalizing spaces
+            e_normalized = e.replace(' ', '_')
+            manifest_entities_normalized.add(e_normalized)
+        
+        manifest_entities |= manifest_entities_base | manifest_entities_normalized
         layer_display = LAYER_DISPLAY_NAMES.get(layer, layer.title())
         query = """
         SELECT * FROM m_gis_data_catalog_main 
         WHERE LOWER(title) LIKE LOWER(%s)
         """
         all_catalog_records = self.db.execute_query(query, (f"%{layer_display}%",))
-        
         for record in all_catalog_records:
             title = record.get('title', '')
             county = record.get('county', '')
             city = record.get('city', '')
-            
-            # Extract entity name from title and database fields
             entity_name = self.extract_entity_from_record(layer, title, county, city)
-            
             if entity_name and entity_name not in manifest_entities:
                 orphaned.append({
                     'table': 'm_gis_data_catalog_main',
                     'record': record
                 })
-        
         return orphaned
-    
-    def extract_entity_from_record(self, layer: str, title: str, county: str, city: str) -> Optional[str]:
-        """Extract entity name from database record"""
-        if not title or not county:
-            return None
-        
-        # Normalize county and city
-        county_lower = county.lower().strip()
-        city_lower = city.lower().strip() if city else ''
-        
-        # Handle special cases for unincorporated/unified
-        if city_lower in ['unincorporated', 'unified']:
-            return f"{county_lower}_{city_lower}"
-        
-        # For regular cities, use the city name from the database
-        if city_lower:
-            # Convert spaces to underscores to match manifest format
-            city_underscore = city_lower.replace(' ', '_')
-            return f"{county_lower}_{city_underscore}"
-        
-        # If no city field, try to extract from title
-        # Title format: "Zoning - City of Clearwater" or "Zoning - Pinellas Unincorporated"
-        title_lower = title.lower()
-        
-        # Check for "City of" pattern
-        if 'city of' in title_lower:
-            city_match = title_lower.split('city of')[-1].strip()
-            if city_match:
-                # Convert spaces to underscores
-                city_underscore = city_match.replace(' ', '_')
-                return f"{county_lower}_{city_underscore}"
-        
-        # Check for unincorporated pattern
-        if 'unincorporated' in title_lower:
-            return f"{county_lower}_unincorporated"
-        
-        # Check for unified pattern
-        if 'unified' in title_lower:
-            return f"{county_lower}_unified"
-        
-        return None
     
     def generate_csv_report(self, layer: str, check_results: List[Dict]):
         """Generate CSV report for check mode"""
@@ -660,12 +736,13 @@ class LayerStandardizer:
         manual_data = self.load_manual_fill_data(filename)
         
         for entity, fields in manual_data.items():
-            # Parse entity
-            parts = entity.split('_', 2)
-            if len(parts) < 3:
+            # Parse entity using the same logic as process_entity
+            county, city = self.parse_entity_name(entity)
+            if not county or not city:
                 continue
             
-            layer, county, city = parts[0], parts[1], '_'.join(parts[2:])
+            # Extract layer from entity name
+            layer = entity.split('_')[0]
             
             # Find and update catalog record
             catalog_records = self.find_catalog_records(layer, county, city)
@@ -748,11 +825,10 @@ class LayerStandardizer:
         entities = self.manifest.get_entities(layer)
         
         for entity in entities:
-            entity_parts = entity.split('_', 1)
-            if len(entity_parts) != 2:
+            # Parse entity name using the same logic as process_entity
+            county, city = self.parse_entity_name(f"{layer}_{entity}")
+            if not county or not city:
                 continue
-            
-            county, city = entity_parts
             commands = self.manifest.get_entity_commands(layer, entity)
             is_ags = self.manifest.is_ags_download(commands)
             target_city = self.manifest.get_target_city(commands, entity)
