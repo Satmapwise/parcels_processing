@@ -388,7 +388,9 @@ class LayerStandardizer:
             "layer",
             "county",
             "city",
+            "target_city",
             "title",
+            "catalog_city",
             "src_url_file",
             "format",
             "download",
@@ -415,10 +417,12 @@ class LayerStandardizer:
 
             expected = self._expected_values(entity, county, city)
 
-            target_city = self.manifest.get_target_city(self.manifest.get_entity_commands(self.cfg.layer, entity), entity)
-            self.logger.debug(f"Parsed for entity: county={county}, city={city}, target_city={target_city}")
+            target_city_raw = self.manifest.get_target_city(self.manifest.get_entity_commands(self.cfg.layer, entity), entity)
+            target_city_fmt = norm_city(target_city_raw)
+            target_city_disp = title_case(target_city_raw.replace('_',' ')) if target_city_raw else ""
+            self.logger.debug(f"Parsed for entity: county={county}, city={city}, target_city={target_city_disp}")
 
-            cat_row = self._fetch_catalog_row(county, target_city)
+            cat_row = self._fetch_catalog_row(county, target_city_fmt)
             if cat_row is not None:
                 self.logger.debug(f"Matched DB title: {cat_row.get('title')}")
                 present_entities_found.add(entity)
@@ -427,13 +431,15 @@ class LayerStandardizer:
                 self.logger.debug("  --> FAILURE")
 
             if cat_row is None:
-                cat_values = [self.cfg.layer, county, city, "RECORD MISSING"] + [""] * (len(header_catalog) - 4)
+                cat_values = [self.cfg.layer, county, city, target_city_disp, "RECORD MISSING", "", "", "", "", "", "", "", "", "", ""]
             else:
                 cat_values = [
                     self.cfg.layer,
                     cat_row.get("county", "MISSING"),
                     cat_row.get("city", "MISSING"),
+                    target_city_disp,
                     cat_row.get("title", "MISSING"),
+                    cat_row.get("city", "MISSING"),
                     cat_row.get("src_url_file", "MISSING"),
                     cat_row.get("format", "MISSING"),
                     cat_row.get("download", "MISSING"),
