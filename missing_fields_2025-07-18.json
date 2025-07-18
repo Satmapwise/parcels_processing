@@ -1,0 +1,173 @@
+{
+  "zoning_hillsborough_tampa": {
+    "fields_obj_transform": "MISSING"
+  },
+  "zoning_hillsborough_temple_terrace": {
+    "fields_obj_transform": "MISSING",
+    "src_url_file": "MISSING"
+  },
+  "zoning_indian_river_vero_beach": {
+    "fields_obj_transform": "MISSING"
+  },
+  "zoning_lake_astatula": {
+    "fields_obj_transform": "MISSING"
+  },
+  "zoning_lake_clermont": {
+    "fields_obj_transform": "MISSING"
+  },
+  "zoning_lake_fruitland_park": {
+    "fields_obj_transform": "MISSING"
+  },
+  "zoning_lake_groveland": {
+    "fields_obj_transform": "MISSING"
+  },
+  "zoning_lake_howey_in_the_hills": {
+    "fields_obj_transform": "MISSING"
+  },
+  "zoning_lake_mascotte": {
+    "fields_obj_transform": "MISSING"
+  },
+  "zoning_lake_minneola": {
+    "fields_obj_transform": "MISSING"
+  },
+  "zoning_lake_montverde": {
+    "fields_obj_transform": "MISSING"
+  },
+  "zoning_lake_mount_dora": {
+    "fields_obj_transform": "MISSING"
+  },
+  "zoning_lake_tavares": {
+    "fields_obj_transform": "MISSING"
+  },
+  "zoning_lake_umatilla": {
+    "fields_obj_transform": "MISSING"
+  },
+  "zoning_lee_cape_coral": {
+    "fields_obj_transform": "MISSING"
+  },
+  "zoning_manatee_bradenton": {
+    "fields_obj_transform": "MISSING"
+  },
+  "zoning_marion_ocala": {
+    "fields_obj_transform": "MISSING"
+  },
+  "zoning_martin_stuart": {
+    "fields_obj_transform": "MISSING"
+  },
+  "zoning_orange_apopka": {
+    "fields_obj_transform": "MISSING"
+  },
+  "zoning_orange_eatonville": {
+    "fields_obj_transform": "MISSING"
+  },
+  "zoning_orange_ocoee": {
+    "fields_obj_transform": "MISSING"
+  },
+  "zoning_orange_orlando": {
+    "fields_obj_transform": "MISSING"
+  },
+  "zoning_osceola_kissimmee": {
+    "fields_obj_transform": "MISSING"
+  },
+  "zoning_osceola_st_cloud": {
+    "fields_obj_transform": "MISSING"
+  },
+  "zoning_pinellas_dunedin": {
+    "fields_obj_transform": "MISSING"
+  },
+  "zoning_pinellas_indian_rocks_beach": {
+    "fields_obj_transform": "MISSING"
+  },
+  "zoning_pinellas_indian_shores": {
+    "fields_obj_transform": "MISSING"
+  },
+  "zoning_pinellas_kenneth_city": {
+    "fields_obj_transform": "MISSING"
+  },
+  "zoning_pinellas_madeira_beach": {
+    "fields_obj_transform": "MISSING"
+  },
+  "zoning_pinellas_north_redington_beach": {
+    "fields_obj_transform": "MISSING"
+  },
+  "zoning_pinellas_pinellas_park": {
+    "fields_obj_transform": "MISSING"
+  },
+  "zoning_pinellas_redington_shores": {
+    "fields_obj_transform": "MISSING"
+  },
+  "zoning_pinellas_south_pasadena": {
+    "fields_obj_transform": "MISSING"
+  },
+  "zoning_pinellas_treasure_island": {
+    "fields_obj_transform": "MISSING"
+  },
+  "zoning_polk_lakeland": {
+    "fields_obj_transform": "MISSING"
+  },
+  "zoning_sarasota_north_port": {
+    "fields_obj_transform": "MISSING"
+  },
+  "zoning_seminole_altamonte_springs": {
+    "fields_obj_transform": "MISSING"
+  },
+  "zoning_seminole_oviedo": {
+    "source_org": "MISSING"
+  },
+  "zoning_volusia_countywide": {
+    "fields_obj_transform": "MISSING"
+  },
+  "zoning_volusia_daytona_beach": {
+    "fields_obj_transform": "MISSING"
+  },
+  "flu_charlotte_punta_gorda": {
+    "fields_obj_transform": "MISSING",
+    "src_url_file": "MISSING"
+  },
+  "flu_collier_naples": {
+    "fields_obj_transform": "MISSING"
+  },
+  "flu_indian_river_vero_beach": {
+    "fields_obj_transform": "MISSING"
+  },
+  "flu_lake_leesburg": {
+    "fields_obj_transform": "MISSING"
+  },
+  "flu_lake_mount_dora": {
+    "fields_obj_transform": "MISSING"
+  },
+  "flu_lake_tavares": {
+    "fields_obj_transform": "MISSING"
+  },
+  "flu_lake_umatilla": {
+    "fields_obj_transform": "MISSING"
+  },
+  "flu_manatee_bradenton": {
+    "fields_obj_transform": "MISSING"
+  },
+  "flu_martin_stuart": {
+    "fields_obj_transform": "MISSING"
+  },
+  "flu_orange_apopka": {
+    "fields_obj_transform": "MISSING",
+    "src_url_file": "MISSING"
+  },
+  "flu_seminole_casselberry": {
+    "source_org": "MISSING"
+  },
+  "flu_seminole_lake_mary": {
+    "source_org": "MISSING"
+  },
+  "flu_seminole_longwood": {
+    "source_org": "MISSING"
+  },
+  "flu_seminole_oviedo": {
+    "source_org": "MISSING"
+  },
+  "flu_seminole_sanford": {
+    "source_org": "MISSING"
+  },
+  "flu_seminole_winter_springs": {
+    "source_org": "MISSING"
+  }
+}

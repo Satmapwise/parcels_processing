@@ -11,5 +11,135 @@
       "psql -d gislib -U postgres -p 5432 -c \"INSERT INTO flu (flu_code, flu_code2, flu_desc, flu_desc_ext, flu_gen, city_name, county_name, notes, dca_num, d_date, wkb_geometry)",
       "psql -d gislib -U postgres -p 5432 -c \"DROP TABLE raw_flu_brevard_unincorp_2;\""
     ]
+  },
+  "collier_naples": {
+    "data_date": "2025-07-18",
+    "shp_name": "flu_naples.shp",
+    "basename": "raw_flu_collier_naples_2",
+    "remote_backup": "/home/bmay/incoming/raw_flu_collier_naples_2.backup",
+    "remote_bat": "/home/bmay/incoming/raw_flu_collier_naples_2.bat",
+    "commands": [
+      "pg_restore -p 5432 -U postgres -d gislib -v \"/home/bmay/incoming/raw_flu_collier_naples_2.backup\"",
+      "psql -p 5432 -U postgres -d gislib -c \"DELETE FROM flu WHERE city_name = 'NAPLES' and county_name = 'COLLIER' \" ;",
+      "psql -d gislib -U postgres -p 5432 -c \"INSERT INTO flu (flu_code, flu_code2, flu_desc, flu_desc_ext, flu_gen, city_name, county_name, notes, dca_num, d_date, wkb_geometry)",
+      "psql -d gislib -U postgres -p 5432 -c \"DROP TABLE raw_flu_collier_naples_2;\""
+    ]
+  },
+  "collier_unincorporated": {
+    "data_date": "2024-06-12",
+    "shp_name": "Future_Land_Use.shp",
+    "basename": "raw_flu_collier_unincorp_2",
+    "remote_backup": "/home/bmay/incoming/raw_flu_collier_unincorp_2.backup",
+    "remote_bat": "/home/bmay/incoming/raw_flu_collier_unincorp_2.bat",
+    "commands": [
+      "pg_restore -p 5432 -U postgres -d gislib -v \"/home/bmay/incoming/raw_flu_collier_unincorp_2.backup\"",
+      "psql -p 5432 -U postgres -d gislib -c \"DELETE FROM flu WHERE city_name = 'UNINCORPORATED' and county_name = 'COLLIER' \" ;",
+      "psql -d gislib -U postgres -p 5432 -c \"INSERT INTO flu (flu_code, flu_code2, flu_desc, flu_desc_ext, flu_gen, city_name, county_name, notes, dca_num, d_date, wkb_geometry)",
+      "psql -d gislib -U postgres -p 5432 -c \"DROP TABLE raw_flu_collier_unincorp_2;\""
+    ]
+  },
+  "escambia_unincorporated": {
+    "data_date": "2025-07-18",
+    "shp_name": "flu_escambia.shp",
+    "basename": "raw_flu_escambia_unincorp_2",
+    "remote_backup": "/home/bmay/incoming/raw_flu_escambia_unincorp_2.backup",
+    "remote_bat": "/home/bmay/incoming/raw_flu_escambia_unincorp_2.bat",
+    "commands": [
+      "pg_restore -p 5432 -U postgres -d gislib -v \"/home/bmay/incoming/raw_flu_escambia_unincorp_2.backup\"",
+      "psql -p 5432 -U postgres -d gislib -c \"DELETE FROM flu WHERE city_name = 'UNINCORPORATED' and county_name = 'ESCAMBIA' \" ;",
+      "psql -d gislib -U postgres -p 5432 -c \"INSERT INTO flu (flu_code, flu_code2, flu_desc, flu_desc_ext, flu_gen, city_name, county_name, notes, dca_num, d_date, wkb_geometry)",
+      "psql -d gislib -U postgres -p 5432 -c \"DROP TABLE raw_flu_escambia_unincorp_2;\""
+    ]
+  },
+  "indian_river_unincorporated": {
+    "data_date": "2025-07-18",
+    "shp_name": "flu_indian_river_unincorporated.shp",
+    "basename": "raw_flu_indian_river_unincorp_2",
+    "remote_backup": "/home/bmay/incoming/raw_flu_indian_river_unincorp_2.backup",
+    "remote_bat": "/home/bmay/incoming/raw_flu_indian_river_unincorp_2.bat",
+    "commands": [
+      "pg_restore -p 5432 -U postgres -d gislib -v \"/home/bmay/incoming/raw_flu_indian_river_unincorp_2.backup\"",
+      "psql -p 5432 -U postgres -d gislib -c \"DELETE FROM flu WHERE city_name = 'UNINCORPORATED' and county_name = 'INDIAN_RIVER' \" ;",
+      "psql -d gislib -U postgres -p 5432 -c \"INSERT INTO flu (flu_code, flu_code2, flu_desc, flu_desc_ext, flu_gen, city_name, county_name, notes, dca_num, d_date, wkb_geometry)",
+      "psql -d gislib -U postgres -p 5432 -c \"DROP TABLE raw_flu_indian_river_unincorp_2;\""
+    ]
+  },
+  "lee_fort_myers": {
+    "data_date": "2025-07-18",
+    "shp_name": "flu_fort_myers.shp",
+    "basename": "raw_flu_lee_fort_myers_2",
+    "remote_backup": "/home/bmay/incoming/raw_flu_lee_fort_myers_2.backup",
+    "remote_bat": "/home/bmay/incoming/raw_flu_lee_fort_myers_2.bat",
+    "commands": [
+      "pg_restore -p 5432 -U postgres -d gislib -v \"/home/bmay/incoming/raw_flu_lee_fort_myers_2.backup\"",
+      "psql -p 5432 -U postgres -d gislib -c \"DELETE FROM flu WHERE city_name = 'FORT_MYERS' and county_name = 'LEE' \" ;",
+      "psql -d gislib -U postgres -p 5432 -c \"INSERT INTO flu (flu_code, flu_code2, flu_desc, flu_desc_ext, flu_gen, city_name, county_name, notes, dca_num, d_date, wkb_geometry)",
+      "psql -d gislib -U postgres -p 5432 -c \"DROP TABLE raw_flu_lee_fort_myers_2;\""
+    ]
+  },
+  "manatee_bradenton": {
+    "data_date": "2025-07-18",
+    "shp_name": "flu_bradenton.shp",
+    "basename": "raw_flu_manatee_bradenton_2",
+    "remote_backup": "/home/bmay/incoming/raw_flu_manatee_bradenton_2.backup",
+    "remote_bat": "/home/bmay/incoming/raw_flu_manatee_bradenton_2.bat",
+    "commands": [
+      "pg_restore -p 5432 -U postgres -d gislib -v \"/home/bmay/incoming/raw_flu_manatee_bradenton_2.backup\"",
+      "psql -p 5432 -U postgres -d gislib -c \"DELETE FROM flu WHERE city_name = 'BRADENTON' and county_name = 'MANATEE' \" ;",
+      "psql -d gislib -U postgres -p 5432 -c \"INSERT INTO flu (flu_code, flu_code2, flu_desc, flu_desc_ext, flu_gen, city_name, county_name, notes, dca_num, d_date, wkb_geometry)",
+      "psql -d gislib -U postgres -p 5432 -c \"DROP TABLE raw_flu_manatee_bradenton_2;\""
+    ]
+  },
+  "polk_lakeland": {
+    "data_date": "2025-04-19",
+    "shp_name": "flu_lakeland.shp",
+    "basename": "raw_flu_polk_lakeland_2",
+    "remote_backup": "/home/bmay/incoming/raw_flu_polk_lakeland_2.backup",
+    "remote_bat": "/home/bmay/incoming/raw_flu_polk_lakeland_2.bat",
+    "commands": [
+      "pg_restore -p 5432 -U postgres -d gislib -v \"/home/bmay/incoming/raw_flu_polk_lakeland_2.backup\"",
+      "psql -p 5432 -U postgres -d gislib -c \"DELETE FROM flu WHERE city_name = 'LAKELAND' and county_name = 'POLK' \" ;",
+      "psql -d gislib -U postgres -p 5432 -c \"INSERT INTO flu (flu_code, flu_code2, flu_desc, flu_desc_ext, flu_gen, city_name, county_name, notes, dca_num, d_date, wkb_geometry)",
+      "psql -d gislib -U postgres -p 5432 -c \"DROP TABLE raw_flu_polk_lakeland_2;\""
+    ]
+  },
+  "st_lucie_port_st_lucie": {
+    "data_date": "2025-07-18",
+    "shp_name": "flu_port_st_lucie.shp",
+    "basename": "raw_flu_st_lucie_port_st_lucie_2",
+    "remote_backup": "/home/bmay/incoming/raw_flu_st_lucie_port_st_lucie_2.backup",
+    "remote_bat": "/home/bmay/incoming/raw_flu_st_lucie_port_st_lucie_2.bat",
+    "commands": [
+      "pg_restore -p 5432 -U postgres -d gislib -v \"/home/bmay/incoming/raw_flu_st_lucie_port_st_lucie_2.backup\"",
+      "psql -p 5432 -U postgres -d gislib -c \"DELETE FROM flu WHERE city_name = 'PORT_ST_LUCIE' and county_name = 'ST_LUCIE' \" ;",
+      "psql -d gislib -U postgres -p 5432 -c \"INSERT INTO flu (flu_code, flu_code2, flu_desc, flu_desc_ext, flu_gen, city_name, county_name, notes, dca_num, d_date, wkb_geometry)",
+      "psql -d gislib -U postgres -p 5432 -c \"DROP TABLE raw_flu_st_lucie_port_st_lucie_2;\""
+    ]
+  },
+  "st_lucie_unincorporated": {
+    "data_date": "2024-10-30",
+    "shp_name": "Future_Land_Use.shp",
+    "basename": "raw_flu_st_lucie_unincorp_2",
+    "remote_backup": "/home/bmay/incoming/raw_flu_st_lucie_unincorp_2.backup",
+    "remote_bat": "/home/bmay/incoming/raw_flu_st_lucie_unincorp_2.bat",
+    "commands": [
+      "pg_restore -p 5432 -U postgres -d gislib -v \"/home/bmay/incoming/raw_flu_st_lucie_unincorp_2.backup\"",
+      "psql -p 5432 -U postgres -d gislib -c \"DELETE FROM flu WHERE city_name = 'UNINCORPORATED' and county_name = 'ST_LUCIE' \" ;",
+      "psql -d gislib -U postgres -p 5432 -c \"INSERT INTO flu (flu_code, flu_code2, flu_desc, flu_desc_ext, flu_gen, city_name, county_name, notes, dca_num, d_date, wkb_geometry)",
+      "psql -d gislib -U postgres -p 5432 -c \"DROP TABLE raw_flu_st_lucie_unincorp_2;\""
+    ]
+  },
+  "walton_unincorporated": {
+    "data_date": "2025-07-18",
+    "shp_name": "flu_walton.shp",
+    "basename": "raw_flu_walton_unincorp_2",
+    "remote_backup": "/home/bmay/incoming/raw_flu_walton_unincorp_2.backup",
+    "remote_bat": "/home/bmay/incoming/raw_flu_walton_unincorp_2.bat",
+    "commands": [
+      "pg_restore -p 5432 -U postgres -d gislib -v \"/home/bmay/incoming/raw_flu_walton_unincorp_2.backup\"",
+      "psql -p 5432 -U postgres -d gislib -c \"DELETE FROM flu WHERE city_name = 'UNINCORPORATED' and county_name = 'WALTON' \" ;",
+      "psql -d gislib -U postgres -p 5432 -c \"INSERT INTO flu (flu_code, flu_code2, flu_desc, flu_desc_ext, flu_gen, city_name, county_name, notes, dca_num, d_date, wkb_geometry)",
+      "psql -d gislib -U postgres -p 5432 -c \"DROP TABLE raw_flu_walton_unincorp_2;\""
+    ]
   }
 }
