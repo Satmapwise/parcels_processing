@@ -45,7 +45,7 @@ from dotenv import load_dotenv
 # The .env file MUST contain a line like:
 # PG_CONNECTION=host=localhost port=5432 dbname=gisdev user=postgres password=secret
 load_dotenv()
-PG_CONNECTION: str | None = os.getenv("M_GIS_DATA_CATALOG_MAIN")
+PG_CONNECTION: str | None = os.getenv("PG_CONNECTION")
 
 # Global defaults – can be overridden by CLI flags
 optional_conditions_default = False
@@ -143,6 +143,34 @@ class ManifestManager:
         parts = entity.split("_", 1)
         return parts[1] if len(parts) == 2 else entity
 
+    # --------------------------------------------------
+    # Resolution helpers
+    # --------------------------------------------------
+
+    def find_county_for_city(self, layer: str, city: str) -> Optional[str]:
+        """Given a city name (lower-case), return the unique county hosting that city in the manifest.
+        Returns None if not found or ambiguous (multiple counties share that city)."""
+        city_lc = city.lower()
+        matches = []
+        for entity in self.get_entities(layer):
+            parts = entity.split("_", 1)
+            if len(parts) != 2:
+                continue
+            county_part, city_part = parts
+            if city_part == city_lc:
+                matches.append(county_part)
+
+        if not matches:
+            return None
+
+        # If multiple matches, prefer the county that exactly matches the city name (e.g. alachua_alachua)
+        for c in matches:
+            if c == city_lc:
+                return c
+
+        # If still ambiguous, return None to signal caller to handle
+        return matches[0] if len(matches) == 1 else None
+
 # --------------------------------------------------
 # Database utilities
 # --------------------------------------------------
@@ -182,6 +210,8 @@ class Formatter:
 
     @staticmethod
     def format_entity_to_title(layer: str, county: str, city: str, entity_type: str) -> str:
+        """Renamed for clarity, but keep old name as alias below.
+        """
         layer_title = layer.capitalize() if layer.islower() else layer
         county_tc, city_tc = map(title_case, (county, city))
         if entity_type == "city":
@@ -193,9 +223,52 @@ class Formatter:
         else:
             return f"{layer_title} - {city_tc}"
 
+    # Back-compat alias for earlier tests
+    format_title = format_entity_to_title
+
     @staticmethod
-    def format_title_to_entity(title: str) -> str:
-        return "placeholder"
+    def format_title_to_entity(title: str) -> Tuple[Optional[str], Optional[str], Optional[str], Optional[str]]:
+        """Inverse of format_entity_to_title.
+        Attempts to reconstruct layer, county, city, and entity_type from a title.
+        Examples:
+          Zoning - City of Gainesville        -> ("zoning", "alachua", "gainesville", "city")
+          Zoning - Alachua Unincorporated      -> ("zoning", "alachua", "unincorporated", "unincorporated")
+          Future Land Use - Duval Unified      -> ("flu",    "duval",   "unified",       "unified")
+        Returns lowercase values; if parsing fails returns (None, None, None, None).
+        """
+        import re
+
+        # Split the string into layer part and the remainder.
+        try:
+            layer_part, rest = title.split(" - ", 1)
+        except ValueError:
+            return (None, None, None, None)
+
+        # Normalise layer name
+        layer_norm = layer_part.strip().lower()
+        layer_norm = layer_norm.replace("future land use", "flu")  # Preferred short name
+
+        # The remainder may have extra descriptors after additional dashes, e.g.
+        #   "City of Gainesville - AGS"  or  "Alachua Unincorporated - PDF"
+        rest_main = rest.split(" - ", 1)[0].strip()
+
+        # Regex patterns for different entity types
+        city_re = re.compile(r"^city of\s+(.+)$", re.I)
+        county_suffix_re = re.compile(r"^([A-Za-z\s]+?)\s+(unincorporated|unified|countywide)$", re.I)
+
+        m_city = city_re.match(rest_main)
+        if m_city:
+            city = m_city.group(1).strip().lower()
+            return (layer_norm, None, city, "city")
+
+        m_cnty = county_suffix_re.match(rest_main)
+        if m_cnty:
+            county = m_cnty.group(1).strip().lower()
+            suffix = m_cnty.group(2).strip().lower()
+            return (layer_norm, county, suffix, suffix)
+
+        # Fallback: cannot parse
+        return (None, None, None, None)
 
     @staticmethod
     def format_table_name(layer: str, county: str, city: str, entity_type: str) -> str:
