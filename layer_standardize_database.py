@@ -282,6 +282,7 @@ class Formatter:
         # Regex patterns for different entity types
         city_re = re.compile(r"^(?:city|town|village) of\s+(.+)$", re.I)
         county_suffix_re = re.compile(r"^([A-Za-z\s\-]+?)\s+(unincorporated|incorporated|unified|countywide)$", re.I)
+        county_only_re = re.compile(r"^([A-Za-z\s\-]+?)\s+county$", re.I)
 
         m_city = city_re.match(rest_main)
         if m_city:
@@ -293,6 +294,11 @@ class Formatter:
             county = m_cnty.group(1).strip().lower()
             suffix = m_cnty.group(2).strip().lower()
             return (layer_norm, county, suffix, suffix)
+
+        m_cnty_only = county_only_re.match(rest_main)
+        if m_cnty_only:
+            county = m_cnty_only.group(1).strip().lower()
+            return (layer_norm, county, None, None)
 
         # Fallback: cannot parse
         return (None, None, None, None)
@@ -667,6 +673,16 @@ class LayerStandardizer:
 
             if city_match and (cnty is None or norm_county(cnty) == norm_county(county)):
                 matches.append(dict(row))
+
+        # Fallback: for suffix type entities (unincorporated/unified/incorporated/countywide) accept titles that only mention county
+        if not matches and city_fmt in {"unincorporated", "unified", "countywide"}:
+            for row in rows:
+                title = row.get("title", "")
+                lyr, cnty, cty_city, _ = Formatter.format_title_to_entity(title)
+                if lyr != self.cfg.layer:
+                    continue
+                if cty_city is None and norm_county(cnty) == norm_county(county):
+                    matches.append(dict(row))
         return matches
 
     def _fetch_transform_row(self, county: str, city: str) -> Optional[Dict[str, Any]]:
