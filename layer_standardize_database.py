@@ -501,39 +501,73 @@ class LayerStandardizer:
         """Find records in database without manifest entries"""
         orphaned = []
         
-        # Check catalog records
+        # Get all entities from manifest
+        manifest_entities = set(self.manifest.get_entities(layer))
+        
+        # Find all records for this layer
         layer_display = LAYER_DISPLAY_NAMES.get(layer, layer.title())
         query = """
         SELECT * FROM m_gis_data_catalog_main 
         WHERE LOWER(title) LIKE LOWER(%s)
         """
-        catalog_records = self.db.execute_query(query, (f"%{layer_display}%",))
+        all_catalog_records = self.db.execute_query(query, (f"%{layer_display}%",))
         
-        for record in catalog_records:
-            # Extract county and city from title
-            title = record['title']
-            # This is a simplified check - you might need more sophisticated parsing
-            if not any(entity in title.lower() for entity in self.manifest.get_entities(layer)):
+        for record in all_catalog_records:
+            title = record.get('title', '')
+            county = record.get('county', '')
+            city = record.get('city', '')
+            
+            # Extract entity name from title and database fields
+            entity_name = self.extract_entity_from_record(layer, title, county, city)
+            
+            if entity_name and entity_name not in manifest_entities:
                 orphaned.append({
                     'table': 'm_gis_data_catalog_main',
                     'record': record
                 })
         
-        # Check transform records
-        if layer in TRANSFORM_TABLES:
-            transform_table = TRANSFORM_TABLES[layer]
-            query = f"SELECT * FROM {transform_table}"
-            transform_records = self.db.execute_query(query)
-            
-            for record in transform_records:
-                entity = f"{record['county'].lower()}_{record['city_name'].lower()}"
-                if entity not in self.manifest.get_entities(layer):
-                    orphaned.append({
-                        'table': transform_table,
-                        'record': record
-                    })
-        
         return orphaned
+    
+    def extract_entity_from_record(self, layer: str, title: str, county: str, city: str) -> Optional[str]:
+        """Extract entity name from database record"""
+        if not title or not county:
+            return None
+        
+        # Normalize county and city
+        county_lower = county.lower().strip()
+        city_lower = city.lower().strip() if city else ''
+        
+        # Handle special cases for unincorporated/unified
+        if city_lower in ['unincorporated', 'unified']:
+            return f"{county_lower}_{city_lower}"
+        
+        # For regular cities, use the city name from the database
+        if city_lower:
+            # Convert spaces to underscores to match manifest format
+            city_underscore = city_lower.replace(' ', '_')
+            return f"{county_lower}_{city_underscore}"
+        
+        # If no city field, try to extract from title
+        # Title format: "Zoning - City of Clearwater" or "Zoning - Pinellas Unincorporated"
+        title_lower = title.lower()
+        
+        # Check for "City of" pattern
+        if 'city of' in title_lower:
+            city_match = title_lower.split('city of')[-1].strip()
+            if city_match:
+                # Convert spaces to underscores
+                city_underscore = city_match.replace(' ', '_')
+                return f"{county_lower}_{city_underscore}"
+        
+        # Check for unincorporated pattern
+        if 'unincorporated' in title_lower:
+            return f"{county_lower}_unincorporated"
+        
+        # Check for unified pattern
+        if 'unified' in title_lower:
+            return f"{county_lower}_unified"
+        
+        return None
     
     def generate_csv_report(self, layer: str, check_results: List[Dict]):
         """Generate CSV report for check mode"""

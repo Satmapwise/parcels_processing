@@ -1,4 +1,125 @@
 {
+  "zoning_baker_unincorporated": {
+    "fields_obj_transform": "MISSING"
+  },
+  "zoning_bay_unincorporated": {
+    "fields_obj_transform": "MISSING"
+  },
+  "zoning_charlotte_unincorporated": {
+    "fields_obj_transform": "MISSING"
+  },
+  "zoning_clay_unincorporated": {
+    "fields_obj_transform": "MISSING"
+  },
+  "zoning_collier_unincorporated": {
+    "fields_obj_transform": "MISSING"
+  },
+  "zoning_escambia_unincorporated": {
+    "fields_obj_transform": "MISSING"
+  },
+  "zoning_flagler_unincorporated": {
+    "fields_obj_transform": "MISSING"
+  },
+  "zoning_hillsborough_tampa": {
+    "fields_obj_transform": "MISSING"
+  },
+  "zoning_hillsborough_temple_terrace": {
+    "fields_obj_transform": "MISSING",
+    "src_url_file": "MISSING"
+  },
+  "zoning_hillsborough_unincorporated": {
+    "fields_obj_transform": "MISSING"
+  },
+  "zoning_lake_astatula": {
+    "fields_obj_transform": "MISSING"
+  },
+  "zoning_lake_clermont": {
+    "fields_obj_transform": "MISSING"
+  },
+  "zoning_lake_fruitland_park": {
+    "fields_obj_transform": "MISSING"
+  },
+  "zoning_lake_groveland": {
+    "fields_obj_transform": "MISSING"
+  },
+  "zoning_lake_mascotte": {
+    "fields_obj_transform": "MISSING"
+  },
+  "zoning_lake_minneola": {
+    "fields_obj_transform": "MISSING"
+  },
+  "zoning_lake_montverde": {
+    "fields_obj_transform": "MISSING"
+  },
+  "zoning_lake_mount_dora": {
+    "fields_obj_transform": "MISSING"
+  },
+  "zoning_lake_tavares": {
+    "fields_obj_transform": "MISSING"
+  },
+  "zoning_lake_umatilla": {
+    "fields_obj_transform": "MISSING"
+  },
+  "zoning_lake_unincorporated": {
+    "fields_obj_transform": "MISSING"
+  },
+  "zoning_lee_cape_coral": {
+    "fields_obj_transform": "MISSING"
+  },
+  "zoning_lee_unincorporated": {
+    "fields_obj_transform": "MISSING"
+  },
+  "zoning_manatee_bradenton": {
+    "fields_obj_transform": "MISSING"
+  },
+  "zoning_manatee_unincorporated": {
+    "fields_obj_transform": "MISSING"
+  },
+  "zoning_marion_ocala": {
+    "fields_obj_transform": "MISSING"
+  },
+  "zoning_marion_unincorporated": {
+    "fields_obj_transform": "MISSING"
+  },
+  "zoning_martin_stuart": {
+    "fields_obj_transform": "MISSING"
+  },
+  "zoning_martin_unincorporated": {
+    "fields_obj_transform": "MISSING"
+  },
+  "zoning_miami_dade_unincorporated": {
+    "fields_obj_transform": "MISSING"
+  },
+  "zoning_nassau_unincorporated": {
+    "fields_obj_transform": "MISSING"
+  },
+  "zoning_okaloosa_unincorporated": {
+    "fields_obj_transform": "MISSING"
+  },
+  "zoning_orange_apopka": {
+    "fields_obj_transform": "MISSING"
+  },
+  "zoning_orange_eatonville": {
+    "fields_obj_transform": "MISSING"
+  },
+  "zoning_orange_ocoee": {
+    "fields_obj_transform": "MISSING"
+  },
+  "zoning_orange_orlando": {
+    "fields_obj_transform": "MISSING"
+  },
+  "zoning_orange_unincorporated": {
+    "fields_obj_transform": "MISSING"
+  },
+  "zoning_osceola_kissimmee": {
+    "fields_obj_transform": "MISSING"
+  },
+  "zoning_osceola_st_cloud": {
+    "fields_obj_transform": "MISSING"
+  },
+  "zoning_pasco_unincorporated": {
+    "fields_obj_transform": "MISSING"
+  },
   "zoning_pinellas_dunedin": {
     "fields_obj_transform": "MISSING"
   },
@@ -30,6 +151,33 @@
     "fields_obj_transform": "MISSING"
   },
   "zoning_pinellas_unincorporated": {
+    "fields_obj_transform": "MISSING"
+  },
+  "zoning_polk_lakeland": {
+    "fields_obj_transform": "MISSING"
+  },
+  "zoning_santa_rosa_unincorporated": {
+    "fields_obj_transform": "MISSING"
+  },
+  "zoning_sarasota_north_port": {
+    "fields_obj_transform": "MISSING"
+  },
+  "zoning_sarasota_unincorporated": {
+    "fields_obj_transform": "MISSING"
+  },
+  "zoning_seminole_altamonte_springs": {
+    "fields_obj_transform": "MISSING"
+  },
+  "zoning_seminole_oviedo": {
+    "source_org": "MISSING"
+  },
+  "zoning_seminole_unincorporated": {
+    "fields_obj_transform": "MISSING"
+  },
+  "zoning_sumter_unincorporated": {
+    "fields_obj_transform": "MISSING"
+  },
+  "zoning_volusia_daytona_beach": {
     "fields_obj_transform": "MISSING"
   }
 }
