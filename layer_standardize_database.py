@@ -87,9 +87,11 @@ def norm_city(city: Optional[str]) -> str:
     return cleaned.strip("_")
 
 def norm_county(county: Optional[str]) -> str:
+    """Normalise county name by removing non-alnum and the word 'county'."""
     if not county:
         return ""
-    return re.sub(r"[^a-z0-9]+", "", county.lower())
+    county_lc = county.lower().replace("county", "")
+    return re.sub(r"[^a-z0-9]+", "", county_lc)
 
 # --------------------------------------------------
 # Manifest processing
@@ -416,6 +418,9 @@ class LayerStandardizer:
 
         csv_rows: List[List[str]] = [header_catalog + header_transform]
 
+        # track duplicates across all entities in this run
+        self.duplicates_list: List[Tuple[str, str]] = []
+
         present_entities_found = set()
 
         for entity in sorted(self._select_entities()):
@@ -445,6 +450,9 @@ class LayerStandardizer:
                 present_entities_found.add(entity)
                 self.logger.debug(f"Duplicate rows ({len(matches)}) – using first title: {cat_row.get('title')}")
                 self.logger.debug("  --> DUPLICATE")
+                # record all duplicate rows including the extras beyond first
+                for extra in matches:
+                    self.duplicates_list.append((entity, extra.get("title", "MISSING")))
 
             if cat_row is None:
                 cat_values = [self.cfg.layer, county, city, target_city_disp, "RECORD MISSING", ""] + ["" for _ in range(len(header_catalog)-6)]
@@ -507,6 +515,12 @@ class LayerStandardizer:
         ))
         csv_rows = [csv_rows[0]] + csv_rows_body
 
+        # Append duplicate section if any duplicates recorded
+        if self.duplicates_list:
+            csv_rows.append([])  # blank line
+            csv_rows.append(["DUPLICATES", "entity", "title"])
+            csv_rows.extend([["", ent, title] for ent, title in self.duplicates_list])
+
         self._write_csv_report(csv_rows)
 
         processed_entities = set(self._select_entities())
@@ -516,11 +530,14 @@ class LayerStandardizer:
             self.logger.info("--- Check Summary ---")
             self.logger.info(f"Total entities processed: {len(processed_entities)}")
             self.logger.info(f"Entities missing DB records: {len(missing_records)}")
+            self.logger.info(f"Duplicate rows: {len(self.duplicates_list)}")
         else:
             self.logger.debug("--- Detailed Check Summary ---")
             self.logger.debug(f"Processed entities ({len(processed_entities)}): {sorted(processed_entities)}")
             if missing_records:
                 self.logger.debug(f"Entities missing a DB record ({len(missing_records)}): {missing_records}")
+            if self.duplicates_list:
+                self.logger.debug(f"Duplicate rows ({len(self.duplicates_list)}): {self.duplicates_list}")
 
     def _run_update_mode(self):
         self.logger.info("Running in UPDATE mode – DB rows will be modified as needed.")
@@ -638,7 +655,17 @@ class LayerStandardizer:
         for row in rows:
             title = row.get("title", "")
             lyr, cnty, cty_city, _ = Formatter.format_title_to_entity(title)
-            if lyr == self.cfg.layer and cty_city and norm_city(cty_city) == city_fmt and (cnty is None or norm_county(cnty) == norm_county(county)):
+            if lyr != self.cfg.layer or not cty_city:
+                continue
+
+            parsed_city_norm = norm_city(cty_city)
+            city_match = (
+                city_fmt == parsed_city_norm or
+                city_fmt == f"county_{parsed_city_norm}" or
+                parsed_city_norm == f"county_{city_fmt}"
+            )
+
+            if city_match and (cnty is None or norm_county(cnty) == norm_county(county)):
                 matches.append(dict(row))
         return matches
 
