@@ -182,10 +182,10 @@ entities = {
 
 class Config:
     def __init__(self, 
-                 test_mode=False, debug=True, isolate_logs=True,
+                 test_mode=False, debug=True, isolate_logs=False,
                  run_download=True, run_metadata=True, run_processing=True, 
                  generate_json=True, run_upload=False, remote_enabled=False, remote_execute=False,
-                 generate_summary=True, process_anyway=True
+                 generate_summary=False, process_anyway=True
                  ):
         """
         Configuration class to hold script settings.

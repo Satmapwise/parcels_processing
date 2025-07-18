@@ -653,63 +653,93 @@ class LayerStandardizer:
         timestamp = datetime.now().strftime('%Y-%m-%d')
         filename = f"{layer}_database_check_{timestamp}.csv"
         
-        # Check if file exists to append or create new
+        # Define fieldnames
+        fieldnames = [
+            'layer', 'county', 'city', 'entity_type', 'download_type',
+            'catalog_title', 'catalog_county', 'catalog_city', 'catalog_format',
+            'catalog_download', 'catalog_resource', 'catalog_layer_group',
+            'catalog_category', 'catalog_sys_raw_folder', 'catalog_table_name',
+            'catalog_src_url_file', 'catalog_fields_obj_transform',
+            'catalog_source_org', 'catalog_layer_subgroup', 'catalog_sub_category',
+            'catalog_format_subtype'
+        ]
+        
+        # Add transform table columns if applicable
+        if layer in TRANSFORM_TABLES:
+            fieldnames.extend([
+                'transform_county', 'transform_city_name', 'transform_temp_table_name',
+                'transform_shp_name', 'transform_srs_epsg', 'transform_data_date',
+                'transform_update_date'
+            ])
+        
+        # Read existing data if file exists
+        existing_data = {}
         file_exists = os.path.exists(filename)
         
-        with open(filename, 'a', newline='') as csvfile:
-            fieldnames = [
-                'layer', 'county', 'city', 'entity_type', 'download_type',
-                'catalog_title', 'catalog_county', 'catalog_city', 'catalog_format',
-                'catalog_download', 'catalog_resource', 'catalog_layer_group',
-                'catalog_category', 'catalog_sys_raw_folder', 'catalog_table_name',
-                'catalog_src_url_file', 'catalog_fields_obj_transform',
-                'catalog_source_org', 'catalog_layer_subgroup', 'catalog_sub_category',
-                'catalog_format_subtype'
-            ]
+        if file_exists:
+            try:
+                with open(filename, 'r', newline='') as csvfile:
+                    reader = csv.DictReader(csvfile)
+                    for row in reader:
+                        # Skip summary rows
+                        if row.get('layer') == 'SUMMARY':
+                            continue
+                        # Create unique key for each entity
+                        key = (row.get('layer', ''), row.get('county', ''), row.get('city', ''))
+                        existing_data[key] = row
+            except Exception as e:
+                logger.warning(f"Could not read existing CSV file: {e}")
+                existing_data = {}
+        
+        # Process new results and update existing data
+        for result in check_results:
+            # Create unique key for this entity
+            key = (
+                result.get('layer', ''),
+                result.get('county', ''),
+                result.get('city', '')
+            )
             
-            # Add transform table columns if applicable
+            # Create row data
+            row = {
+                'layer': result.get('layer', ''),
+                'county': result.get('county', ''),
+                'city': result.get('city', ''),
+                'entity_type': result.get('entity_type', ''),
+                'download_type': result.get('download_type', ''),
+            }
+            
+            # Catalog fields
+            catalog = result.get('catalog', {})
+            for field in fieldnames[5:15]:  # catalog fields
+                field_name = field.replace('catalog_', '')
+                row[field] = catalog.get(field_name, 'MISSING')
+            
+            # Transform fields
             if layer in TRANSFORM_TABLES:
-                fieldnames.extend([
-                    'transform_county', 'transform_city_name', 'transform_temp_table_name',
-                    'transform_shp_name', 'transform_srs_epsg', 'transform_data_date',
-                    'transform_update_date'
-                ])
+                transform = result.get('transform', {})
+                for field in fieldnames[15:]:  # transform fields
+                    field_name = field.replace('transform_', '')
+                    row[field] = transform.get(field_name, 'MISSING')
             
+            # Update or add the row
+            existing_data[key] = row
+        
+        # Write all data back to file
+        with open(filename, 'w', newline='') as csvfile:
             writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+            writer.writeheader()
             
-            if not file_exists:
-                writer.writeheader()
-            
-            # Write data rows
-            for result in check_results:
-                row = {
-                    'layer': result.get('layer', ''),
-                    'county': result.get('county', ''),
-                    'city': result.get('city', ''),
-                    'entity_type': result.get('entity_type', ''),
-                    'download_type': result.get('download_type', ''),
-                }
-                
-                # Catalog fields
-                catalog = result.get('catalog', {})
-                for field in fieldnames[5:15]:  # catalog fields
-                    field_name = field.replace('catalog_', '')
-                    row[field] = catalog.get(field_name, 'MISSING')
-                
-                # Transform fields
-                if layer in TRANSFORM_TABLES:
-                    transform = result.get('transform', {})
-                    for field in fieldnames[15:]:  # transform fields
-                        field_name = field.replace('transform_', '')
-                        row[field] = transform.get(field_name, 'MISSING')
-                
-                writer.writerow(row)
+            # Write all data rows (excluding summary rows from existing data)
+            for key, row in existing_data.items():
+                if row.get('layer') != 'SUMMARY':
+                    writer.writerow(row)
             
             # Write summary row
             summary_row = {field: '' for field in fieldnames}
             summary_row['layer'] = 'SUMMARY'
-            summary_row['county'] = f"Total records: {len(check_results)}"
-            summary_row['city'] = f"Missing fields: {sum(1 for r in check_results if 'MISSING' in str(r.values()))}"
+            summary_row['county'] = f"Total records: {len(existing_data)}"
+            summary_row['city'] = f"Missing fields: {sum(1 for r in existing_data.values() if 'MISSING' in str(r.values()))}"
             writer.writerow(summary_row)
         
         logger.info(f"CSV report generated: {filename}")
