@@ -278,14 +278,24 @@ class LayerStandardizer:
             """
             params = (f"%{layer_display}%", f"%{county}%", f"%{target_city}%")
         else:
-            # For regular cities: search by title containing layer and city, with county field as backup
+            # For regular cities: search by title pattern and county, be more flexible
+            # Handle cases where target_city has underscores but database has spaces
             query = """
             SELECT *, table_name as id FROM m_gis_data_catalog_main 
             WHERE LOWER(title) LIKE LOWER(%s) 
-            AND (LOWER(title) LIKE LOWER(%s) OR LOWER(city) LIKE LOWER(%s))
-            AND (LOWER(county) = LOWER(%s) OR LOWER(title) LIKE LOWER(%s))
+            AND LOWER(county) = LOWER(%s)
+            AND (
+                LOWER(city) = LOWER(%s) 
+                OR LOWER(city) = LOWER(%s)
+                OR LOWER(title) LIKE LOWER(%s)
+            )
             """
-            params = (f"%{layer_display}%", f"%{target_city}%", f"%{target_city}%", county, f"%{county}%")
+            # Try both underscore and space versions of the city name
+            city_underscore = target_city
+            city_space = target_city.replace('_', ' ')
+            # Create a more specific title pattern to avoid substring matches
+            title_pattern = f"{layer_display} - City of {city_space}"
+            params = (f"%{layer_display}%", county, city_underscore, city_space, title_pattern)
         
         return self.db.execute_query(query, params)
     
