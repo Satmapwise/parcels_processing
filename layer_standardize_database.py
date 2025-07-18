@@ -39,7 +39,7 @@ import psycopg2.extras
 optional_conditions = True
 generate_CSV = True
 debug = False
-test_mode = False
+test_mode = True
 
 # Database connection
 PG_CONNECTION = 'host=localhost port=5432 dbname=gisdev user=postgres password=galactic529'
@@ -265,13 +265,15 @@ class LayerStandardizer:
         """Find records in m_gis_data_catalog_main"""
         layer_display = LAYER_DISPLAY_NAMES.get(layer, layer.title())
         
-        # Search by title containing layer name and city
+        # Search by title containing layer name, county, and city
+        # This ensures we only find records for the specific county
         query = """
         SELECT *, table_name as id FROM m_gis_data_catalog_main 
         WHERE LOWER(title) LIKE LOWER(%s) 
+        AND LOWER(title) LIKE LOWER(%s)
         AND (LOWER(title) LIKE LOWER(%s) OR LOWER(city) LIKE LOWER(%s))
         """
-        params = (f"%{layer_display}%", f"%{target_city}%", f"%{target_city}%")
+        params = (f"%{layer_display}%", f"%{county}%", f"%{target_city}%", f"%{target_city}%")
         
         return self.db.execute_query(query, params)
     
