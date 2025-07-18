@@ -311,8 +311,7 @@ class Formatter:
 @dataclass
 class Config:
     layer: str
-    county: str | None = None
-    city: str | None = None
+    entities: List[str] | None = None
     optional_conditions: bool = optional_conditions_default
     generate_CSV: bool = generate_CSV_default
     debug: bool = debug_default
@@ -467,7 +466,7 @@ class LayerStandardizer:
             self.logger.info(f"Entities missing DB records: {len(missing_records)}")
         else:
             self.logger.debug("--- Detailed Check Summary ---")
-            self.logger.debug(f"Processed entities: {sorted(processed_entities)}")
+            self.logger.debug(f"Processed entities ({len(processed_entities)}): {sorted(processed_entities)}")
             if missing_records:
                 self.logger.debug(f"Entities missing a DB record ({len(missing_records)}): {missing_records}")
 
@@ -524,14 +523,25 @@ class LayerStandardizer:
         return parts[0], parts[1]
 
     def _select_entities(self) -> List[str]:
-        if self.cfg.county and self.cfg.city:
-            return [f"{self.cfg.county.lower()}_{self.cfg.city.lower()}"]
-        elif self.cfg.county and self.cfg.county.lower() != "all":
-            # All entities for this county
-            return [e for e in self.manifest.get_entities(self.cfg.layer) if e.startswith(self.cfg.county.lower() + "_")]
-        else:
-            # All entities in layer
-            return self.manifest.get_entities(self.cfg.layer)
+        from fnmatch import fnmatch
+        all_entities = self.manifest.get_entities(self.cfg.layer)
+        patterns = self.cfg.entities
+        if not patterns or patterns == ["*"]:
+            return all_entities
+        selected: List[str] = []
+        for pat in patterns:
+            # Convert simple '*' wildcards using fnmatch
+            for ent in all_entities:
+                if fnmatch(ent, pat):
+                    selected.append(ent)
+        # Remove duplicates while preserving order
+        seen = set()
+        uniq = []
+        for e in selected:
+            if e not in seen:
+                seen.add(e)
+                uniq.append(e)
+        return uniq
 
     def _write_csv_report(self, rows: List[List[str]]):
         if not self.cfg.generate_CSV:
@@ -648,8 +658,7 @@ def get_format(url: str | None) -> str:
 def build_arg_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(description="Standardise DB records to match layer manifest")
     p.add_argument("layer", help="Layer name (e.g. zoning, flu, or 'all')")
-    p.add_argument("county", help="County name or 'all'")
-    p.add_argument("city", help="City name or 'all'")
+    p.add_argument("entities", nargs="*", help="One or more <county>_<city> patterns; use '*' as wildcard. Omit for all entities of the layer.")
 
     group = p.add_mutually_exclusive_group()
     group.add_argument("--check", action="store_true", help="Run in check-only mode (no DB writes)")
@@ -680,8 +689,7 @@ def main(argv: List[str] | None = None):
 
     cfg = Config(
         layer=args.layer.lower(),
-        county=None if args.county.lower() == "all" else args.county.lower(),
-        city=None if args.city.lower() == "all" else args.city.lower(),
+        entities=[e.lower() for e in args.entities] if args.entities else None,
         optional_conditions=args.optional_conditions,
         generate_CSV=args.generate_CSV,
         debug=args.debug,
