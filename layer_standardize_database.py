@@ -322,7 +322,7 @@ class LayerStandardizer:
         if is_special_entity:
             # For unincorporated/unified: search by title containing layer, county, and entity type
             # Handle multi-word counties by normalizing spaces to underscores
-            county_normalized = county.replace(' ', '_')
+            county_normalized = county.replace(' ', '_').replace('-', '_').replace('.', '')
             county_space = county.replace('_', ' ')
             
             query = """
@@ -339,7 +339,7 @@ class LayerStandardizer:
             # For regular cities: search by title pattern and county, be more flexible
             # Handle cases where target_city has underscores but database has spaces
             # Also handle multi-word counties
-            county_normalized = county.replace(' ', '_')
+            county_normalized = county.replace(' ', '_').replace('-', '_').replace('.', '')
             county_space = county.replace('_', ' ')
             
             query = """
@@ -586,10 +586,12 @@ class LayerStandardizer:
         
         # Handle special cases for unincorporated/unified
         if city_norm in ['unincorporated', 'unified']:
+            logger.debug(f"Extracted entity from title: {county_base}_{city_norm}")
             return f"{county_base}_{city_norm}"
         
         # If city is present, use it
         if city_norm:
+            logger.debug(f"Extracted entity from title: {county_base}_{city_norm}")
             return f"{county_base}_{city_norm}"
         
         # If no city field, try to extract from title
@@ -610,6 +612,7 @@ class LayerStandardizer:
     
     def check_orphaned_records(self, layer: str) -> list:
         """Find records in database without manifest entries, handling _county suffix in manifest."""
+        logger.info(f"Checking for orphaned records in {layer}")
         orphaned = []
         manifest_entities = set(self.manifest.get_entities(layer))
         # Also add all manifest entities with _county stripped for matching
@@ -850,12 +853,35 @@ class LayerStandardizer:
             else:
                 logger.info(f"TEST MODE: Would create transform record for {layer}_{county}_{city}")
     
-    def run_check_mode(self, layer: str) -> List[Dict]:
-        """Run check mode to validate all records"""
-        logger.info(f"Running check mode for {layer}")
+    def run_check_mode(self, layer: str, county: Optional[str] = None, city: Optional[str] = None) -> List[Dict]:
+        """Run check mode to validate records"""
+        if county and city:
+            logger.info(f"Running check mode for {layer} - {county}, {city}")
+        elif county:
+            logger.info(f"Running check mode for {layer} - {county}")
+        else:
+            logger.info(f"Running check mode for {layer}")
         
         check_results = []
         entities = self.manifest.get_entities(layer)
+        
+        # Filter entities based on county/city arguments
+        if county or city:
+            filtered_entities = []
+            for entity in entities:
+                entity_county, entity_city = self.parse_entity_name(f"{layer}_{entity}")
+                if not entity_county or not entity_city:
+                    continue
+                
+                # Check if this entity matches the specified county/city
+                county_match = not county or entity_county.lower() == county.lower()
+                city_match = not city or entity_city.lower() == city.lower()
+                
+                if county_match and city_match:
+                    filtered_entities.append(entity)
+            
+            entities = filtered_entities
+            logger.info(f"Filtered to {len(entities)} entities matching criteria")
         
         for entity in entities:
             # Parse entity name using the same logic as process_entity
@@ -917,7 +943,7 @@ class LayerStandardizer:
         logger.info(f"Orphaned records: {len(orphaned)}")
         for orphan in orphaned:
             record = orphan['record']
-            logger.debug(f"  {record.get('county', 'UNKNOWN')}_{record.get('city', 'UNKNOWN')}")
+            logger.debug(f"  {record.get('city', 'UNKNOWN')}, {record.get('county', 'UNKNOWN').capitalize()}")
         
         return check_results
     
@@ -963,9 +989,9 @@ def main():
             # Check mode
             if args.layer.lower() == 'all':
                 for layer in ['zoning', 'flu']:
-                    standardizer.run_check_mode(layer)
+                    standardizer.run_check_mode(layer, args.county, args.city)
             else:
-                standardizer.run_check_mode(args.layer)
+                standardizer.run_check_mode(args.layer, args.county, args.city)
         
         elif args.create:
             # Create mode
