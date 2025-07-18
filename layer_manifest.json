@@ -456,7 +456,7 @@
         ["python3", "/srv/tools/python/lib/update_zoning2.py", "pasco", "unincorporated"],
         ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.zoning_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'PASCO' and city_name = 'UNINCORPORATED'"]
       ],
-      "pinellas_belleair": [
+      "pinellas_bellair": [
         ["python3", "/srv/tools/python/lib/ags_extract_data2.py", "zoning_belleair", "delete", "15"],
         "ogrinfo",
         ["python3", "/srv/tools/python/lib/update_zoning2.py", "pinellas", "belleair"],

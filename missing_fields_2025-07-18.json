@@ -1,5 +1,32 @@
 {
+  "zoning_pinellas_dunedin": {
+    "fields_obj_transform": "MISSING"
+  },
+  "zoning_pinellas_indian_rocks_beach": {
+    "fields_obj_transform": "MISSING"
+  },
+  "zoning_pinellas_indian_shores": {
+    "fields_obj_transform": "MISSING"
+  },
+  "zoning_pinellas_kenneth_city": {
+    "fields_obj_transform": "MISSING"
+  },
+  "zoning_pinellas_madeira_beach": {
+    "fields_obj_transform": "MISSING"
+  },
+  "zoning_pinellas_north_redington_beach": {
+    "fields_obj_transform": "MISSING"
+  },
   "zoning_pinellas_pinellas_park": {
+    "fields_obj_transform": "MISSING"
+  },
+  "zoning_pinellas_redington_shores": {
+    "fields_obj_transform": "MISSING"
+  },
+  "zoning_pinellas_south_pasadena": {
+    "fields_obj_transform": "MISSING"
+  },
+  "zoning_pinellas_treasure_island": {
     "fields_obj_transform": "MISSING"
   },
   "zoning_pinellas_unincorporated": {
