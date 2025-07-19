@@ -443,7 +443,7 @@ class LayerStandardizer:
         ]
 
         header_transform = [
-            "transform_record_exists",
+            "status",  # placeholder previously transform_record_exists
             "transform_city_name",
             "transform_temp_table_name",
         ] if self.cfg.layer in {"zoning", "flu"} else []
@@ -612,15 +612,16 @@ class LayerStandardizer:
         summary_row[3] = f"Duplicates: {len(duplicate_entities)}"
         
         # Column totals aligned with their respective data columns
-        for i in range(4, len(header_catalog)):
-            summary_row[i] = f"{header_catalog[i]}: {column_missing_counts[i]}"
-        
-        # Transform columns (if they exist)
-        if header_transform:
-            summary_row[len(header_catalog)] = f"Table record missing: {len(missing_transform_entities)}"
-            for i in range(len(header_catalog) + 1, total_columns):
-                col_name = header_transform[i - len(header_catalog)]
-                summary_row[i] = f"{col_name}: {column_missing_counts[i]}"
+        status_idx = len(header_catalog)  # first column in transform section when present
+        fot_idx = header_catalog.index("fields_obj_transform")
+
+        for idx in range(4, len(header_catalog)):
+            if idx == status_idx:
+                summary_row[idx] = f"missing transform: {len(missing_transform_entities)}"
+            elif idx == fot_idx:
+                summary_row[idx] = f"fields_obj_transform missing: {column_missing_counts[idx]}"
+            else:
+                summary_row[idx] = f"{header_catalog[idx]}: {column_missing_counts[idx]}"
 
         csv_rows.append([])
         csv_rows.append(summary_row)
@@ -686,7 +687,7 @@ class LayerStandardizer:
         ]
 
         header_transform = [
-            "transform_record_exists",
+            "status",  # placeholder previously transform_record_exists
             "transform_city_name",
             "transform_temp_table_name",
         ] if self.cfg.layer in {"zoning", "flu"} else []
@@ -703,6 +704,10 @@ class LayerStandardizer:
         # Track per-column change counts (indexes relative to combined header)
         total_columns = len(header_catalog) + len(header_transform)
         change_counts = [0] * total_columns
+
+        # Counters for special summary values
+        missing_transform_entities_count = 0  # status == MISSING
+        missing_fot_count = 0  # fields_obj_transform null/none across existing rows
 
         for entity in sorted(self._select_entities()):
             total_entities += 1
@@ -728,8 +733,8 @@ class LayerStandardizer:
                     county,
                     city,
                     target_city_disp,
-                    "",
-                    expected["title"],
+                    "",                    # target_title missing
+                    expected["title"],      # expected new title
                 ] + ["" for _ in range(len(header_catalog) - 6 + len(header_transform))]
                 csv_rows.append(blank_row)
                 continue
@@ -815,9 +820,16 @@ class LayerStandardizer:
                     transform_csv_vals[0] = "NO_CHANGE"
                 else:
                     transform_csv_vals[0] = "MISSING"
+                    missing_transform_entities_count += 1
 
                 csv_row.extend(transform_csv_vals)
-            # ------------------------------------------------------------------
+
+            # Track missing fields_obj_transform for summary
+            if cat_row:
+                cur_fot = cat_row.get("fields_obj_transform")
+                if cur_fot in (None, "", "NULL", "null"):
+                    missing_fot_count += 1
+
             csv_rows.append(csv_row)
 
         # ------------------------------------------------------------------
@@ -828,10 +840,18 @@ class LayerStandardizer:
         summary_row[0] = "SUMMARY"
         summary_row[1] = f"{found_entities}/{total_entities}"
         summary_row[2] = f"changed: {updated_entities}"
+        summary_row[3] = f"dbmissing: {len(missing_entities)}"  # target_city column
 
-        # fill per-column counts starting from index of 'title' (5)
-        for idx in range(5, total_columns):
-            summary_row[idx] = f"{header_all[idx]}: {change_counts[idx]}"
+        status_idx = len(header_catalog)  # first column in transform section when present
+        fot_idx = header_catalog.index("fields_obj_transform")
+
+        for idx in range(4, total_columns):
+            if idx == status_idx:
+                summary_row[idx] = f"tmissing: {missing_transform_entities_count}"
+            elif idx == fot_idx:
+                summary_row[idx] = f"fotmissing: {missing_fot_count}"
+            else:
+                summary_row[idx] = f"{header_all[idx]}: {change_counts[idx]}"
 
         csv_rows.append([])
         csv_rows.append(summary_row)
@@ -947,7 +967,7 @@ class LayerStandardizer:
         ]
 
         header_transform = [
-            "transform_record_exists",
+            "status",  # placeholder previously transform_record_exists
             "transform_city_name", 
             "transform_temp_table_name",
         ] if self.cfg.layer in {"zoning", "flu"} else []
@@ -1267,7 +1287,7 @@ class LayerStandardizer:
                 
                 # Add transform values from the orphan record
                 transform_values = [
-                    "YES",  # transform_record_exists
+                    "YES",  # status
                     safe_catalog_val(row.get("city_name")),
                     safe_catalog_val(row.get("temp_table_name")),
                 ]
