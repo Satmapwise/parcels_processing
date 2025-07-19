@@ -101,9 +101,8 @@
         ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.zoning_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'BREVARD' and city_name = 'UNINCORPORATED'"]
       ],
       "broward_unified": [
-        ["python3", "/srv/tools/python/lib/ags_extract_data2.py", "zoning_broward", "delete", "15"],
+        ["python3", "/srv/tools/python/lib/ags_extract_data2.py", "zoning_broward_cnty", "delete", "15"],
         "ogrinfo",
-        ["ogr2ogr", "-explodecollections", "-t_srs", "EPSG:2881", "-select", "ZONING,ZONE_NAME", "zoning_broward_single_2881.shp", "zoning_broward.shp"],
         ["python3", "/srv/tools/python/lib/update_zoning2.py", "broward", "county_unified"],
         ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.zoning_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'BROWARD' and city_name = 'COUNTY_UNIFIED'"]
       ],

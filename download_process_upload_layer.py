@@ -1630,6 +1630,11 @@ def resolve_work_dir(layer: str, entity: str):
             city = 'unincorporated'
             work_dir = '/srv/datascrub/08_Land_Use_and_Zoning/zoning/florida/county/miami-dade/current/source_data/unincorporated'
             return work_dir, county, city
+        if layer == 'zoning' and entity == 'broward_unified':
+            county = 'broward'
+            city = 'county_unified'
+            work_dir = '/srv/datascrub/08_Land_Use_And_Zoning/zoning/florida/county/broward/current/source_data/county_unified'
+            return work_dir, county, city
         template = WORK_DIR_PATTERNS.get(layer, os.path.join('data', '{layer}', '{county}', '{city}'))
         needs_city = '{city}' in template
         if needs_city:
