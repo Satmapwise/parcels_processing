@@ -660,20 +660,82 @@ class LayerStandardizer:
         """Identify DB catalog rows that lack manifest entries and output like check mode."""
         self.logger.info("Running CHECK-ORPHANS mode – searching for DB records without manifest counterparts.")
 
-        manifest_entities = set(self._select_entities())
-        orphan_rows = self._find_db_orphans(manifest_entities)
+        # Get all manifest entities for this layer to compare against
+        all_manifest_entities = set(self.manifest.get_entities(self.cfg.layer))
+
+        # Define headers (same as normal check mode)
+        header_catalog = [
+            "layer",
+            "county", 
+            "city",
+            "target_city",
+            "title",
+            "catalog_city",
+            "src_url_file",
+            "format",
+            "download",
+            "resource",
+            "layer_group",
+            "category",
+            "sys_raw_folder",
+            "table_name",
+            "fields_obj_transform",
+        ]
+
+        header_transform = [
+            "transform_record_exists",
+            "transform_city_name", 
+            "transform_temp_table_name",
+        ] if self.cfg.layer in {"zoning", "flu"} else []
+
+        csv_rows: List[List[str]] = []
+
+        # Find catalog orphans
+        catalog_orphans = self._find_catalog_orphans(all_manifest_entities)
+        
+        # Find transform orphans 
+        transform_orphans = self._find_transform_orphans(all_manifest_entities) if self.cfg.layer in {"zoning", "flu"} else []
+
+        # Build catalog orphans section
+        if catalog_orphans:
+            csv_rows.append(["CATALOG ORPHANS"] + [""] * (len(header_catalog) + len(header_transform) - 1))
+            csv_rows.append(header_catalog + header_transform)
+            
+            for orphan_data in catalog_orphans:
+                csv_rows.append(orphan_data)
+
+        # Build transform orphans section  
+        if transform_orphans:
+            if catalog_orphans:
+                csv_rows.append([])  # blank line separator
+            csv_rows.append(["TRANSFORM ORPHANS"] + [""] * (len(header_catalog) + len(header_transform) - 1))
+            csv_rows.append(header_catalog + header_transform)
+            
+            for orphan_data in transform_orphans:
+                csv_rows.append(orphan_data)
+
+        # Summary
+        total_orphans = len(catalog_orphans) + len(transform_orphans)
+        if not csv_rows:
+            csv_rows = [["No orphan records found"]]
+        else:
+            csv_rows.append([])
+            csv_rows.append([f"SUMMARY: {len(catalog_orphans)} catalog orphans, {len(transform_orphans)} transform orphans, {total_orphans} total"])
+
+        self._write_csv_report(csv_rows)
 
         if not self.cfg.debug:
-            self.logger.info(f"Orphans found: {len(orphan_rows)}")
+            self.logger.info(f"Catalog orphans: {len(catalog_orphans)}, Transform orphans: {len(transform_orphans)}, Total: {total_orphans}")
         else:
-            self.logger.debug(f"Orphan records ({len(orphan_rows)}):")
-            for ent, title in orphan_rows:
-                self.logger.debug(f"  {ent} -> {title}")
-
-        # Build CSV rows with same format as check but only orphan section
-        csv_rows = [["ORPHANS", "entity", "title"]]
-        csv_rows.extend([["", ent, title] for ent, title in orphan_rows])
-        self._write_csv_report(csv_rows)
+            self.logger.debug(f"Catalog orphan records ({len(catalog_orphans)}):")
+            for row in catalog_orphans:
+                entity = f"{row[1]}_{row[2]}" if len(row) > 2 else "unknown"
+                title = row[4] if len(row) > 4 else "unknown"
+                self.logger.debug(f"  {entity} -> {title}")
+            self.logger.debug(f"Transform orphan records ({len(transform_orphans)}):")
+            for row in transform_orphans:
+                entity = f"{row[1]}_{row[2]}" if len(row) > 2 else "unknown"
+                self.logger.debug(f"  {entity}")
 
     # --------------------------------------------------
     # Helper utilities
@@ -806,31 +868,118 @@ class LayerStandardizer:
     # Orphan detection helpers
     # --------------------------------------------------
 
-    def _find_db_orphans(self, manifest_entities: set[str]) -> List[Tuple[str, str]]:
-        """Return list of (entity, title) pairs for DB rows whose layer matches cfg.layer but entity not in manifest."""
-        sql = "SELECT lower(county) AS county, lower(city) AS city, title FROM m_gis_data_catalog_main"
+    def _find_catalog_orphans(self, manifest_entities: set[str]) -> List[List[str]]:
+        """Return list of full catalog record data for DB rows whose layer matches cfg.layer but entity not in manifest."""
+        sql = "SELECT * FROM m_gis_data_catalog_main"
         rows = self.db.fetchall(sql) or []
-        orphans: List[Tuple[str, str]] = []
+        orphans: List[List[str]] = []
+        
         for row in rows:
-            title = row["title"]
-            layer_from_title, county_from_title, city_from_title, _ = Formatter.format_title_to_entity(title)
+            title = row.get("title", "")
+            layer_from_title, county_from_title, city_from_title, entity_type = Formatter.format_title_to_entity(title)
+            
+            # Skip if not matching our layer
             if layer_from_title != self.cfg.layer:
                 continue
-            entity = f"{row['county']}_{row['city']}"
+                
+            # Construct the entity name based on parsed title components
+            if county_from_title and city_from_title:
+                if entity_type in {"unincorporated", "unified", "countywide"}:
+                    entity = f"{county_from_title}_{entity_type}"
+                else:
+                    entity = f"{county_from_title}_{city_from_title}"
+            else:
+                # Fallback to DB fields if title parsing fails
+                county_db = row.get('county') or ''
+                city_db = row.get('city') or ''
+                entity = f"{county_db.lower()}_{city_db.lower()}"
+                
+            # Check if this entity exists in manifest
             if entity not in manifest_entities:
-                orphans.append((entity, title))
+                # Build full row data matching the header structure
+                county = county_from_title or (row.get('county') or '')
+                city = city_from_title or (row.get('city') or '')
+                
+                cat_values = [
+                    self.cfg.layer,
+                    county,
+                    city,
+                    city.replace('_', ' ').title() if city else "",  # target_city display
+                    safe_catalog_val(row.get("title")),
+                    safe_catalog_val(row.get("city")),  # catalog_city
+                    safe_catalog_val(row.get("src_url_file")),
+                    safe_catalog_val(row.get("format")),
+                    safe_catalog_val(row.get("download")),
+                    safe_catalog_val(row.get("resource")),
+                    safe_catalog_val(row.get("layer_group")),
+                    safe_catalog_val(row.get("category")),
+                    safe_catalog_val(row.get("sys_raw_folder")),
+                    safe_catalog_val(row.get("table_name")),
+                    safe_catalog_val(row.get("fields_obj_transform")),
+                ]
+                
+                # Add transform values (empty for catalog orphans)
+                transform_values = ["", "", ""] if self.cfg.layer in {"zoning", "flu"} else []
+                
+                orphans.append(cat_values + transform_values)
+                
+        return orphans
+        
+    def _find_transform_orphans(self, manifest_entities: set[str]) -> List[List[str]]:
+        """Return list of full transform record data for transform table rows without manifest counterparts."""
+        if self.cfg.layer not in {"zoning", "flu"}:
+            return []
+            
+        table = f"{self.cfg.layer}_transform"
+        sql = f"SELECT * FROM {table}"
+        rows = self.db.fetchall(sql) or []
+        orphans: List[List[str]] = []
+        
+        for row in rows:
+            county = (row.get("county") or "").lower()
+            city_name = (row.get("city_name") or "").lower()
+            
+            # Try to construct entity name from transform table data
+            # Handle multi-word counties and special suffixes
+            suffixes = {"unincorporated", "unified", "countywide"}
+            if city_name in suffixes:
+                entity = f"{county}_{city_name}"
+            else:
+                entity = f"{county}_{city_name}"
+                
+            # Check if this entity exists in manifest
+            if entity not in manifest_entities:
+                # Build row data - mostly empty for catalog fields since this is a transform orphan
+                cat_values = [
+                    self.cfg.layer,
+                    county.title(),
+                    city_name.title(),
+                    city_name.replace('_', ' ').title(),  # target_city display
+                    "**TRANSFORM ORPHAN**",  # title
+                    "**MISSING**",  # catalog_city
+                    "**MISSING**",  # src_url_file
+                    "**MISSING**",  # format  
+                    "**MISSING**",  # download
+                    "**MISSING**",  # resource
+                    "**MISSING**",  # layer_group
+                    "**MISSING**",  # category
+                    "**MISSING**",  # sys_raw_folder
+                    "**MISSING**",  # table_name
+                    "**MISSING**",  # fields_obj_transform
+                ]
+                
+                # Add transform values from the orphan record
+                transform_values = [
+                    "YES",  # transform_record_exists
+                    safe_catalog_val(row.get("city_name")),
+                    safe_catalog_val(row.get("temp_table_name")),
+                ]
+                
+                orphans.append(cat_values + transform_values)
+                
         return orphans
 
-    def _db_entities_not_in_manifest(self, manifest_entities: set[str]) -> set[str]:
-        sql = "SELECT lower(county) AS county, lower(city) AS city, title FROM m_gis_data_catalog_main"
-        rows = self.db.fetchall(sql) or []
-        db_entities = set()
-        for row in rows:
-            layer_from_title, _, _, _ = Formatter.format_title_to_entity(row["title"])
-            if layer_from_title != self.cfg.layer:
-                continue
-            db_entities.add(f"{row['county']}_{row['city']}")
-        return db_entities.difference(manifest_entities)
+
 
 # --------------------------------------------------
 # Placeholder – simple format detection (can be replaced later)
