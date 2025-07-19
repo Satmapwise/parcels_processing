@@ -93,6 +93,12 @@ def norm_county(county: Optional[str]) -> str:
     county_lc = county.lower().replace("county", "")
     return re.sub(r"[^a-z0-9]+", "", county_lc)
 
+def safe_catalog_val(val: Any) -> str:
+    """Return value or **MISSING** if val is falsy/None."""
+    if val in (None, "", "NULL", "null"):
+        return "**MISSING**"
+    return str(val)
+
 # --------------------------------------------------
 # Manifest processing
 # --------------------------------------------------
@@ -418,6 +424,7 @@ class LayerStandardizer:
         ]
 
         header_transform = [
+            "transform_record_exists",
             "transform_city_name",
             "transform_temp_table_name",
         ] if self.cfg.layer in {"zoning", "flu"} else []
@@ -426,6 +433,10 @@ class LayerStandardizer:
 
         # track duplicates across all entities in this run
         self.duplicates_list: List[Tuple[str, str]] = []
+        duplicate_entities: set[str] = set()
+        missing_entities: set[str] = set()
+        missing_transform_entities: set[str] = set()
+        column_missing_counts = [0]*(len(header_catalog)+len(header_transform))
 
         present_entities_found = set()
 
@@ -459,6 +470,7 @@ class LayerStandardizer:
                 # record all duplicate rows including the extras beyond first
                 for extra in matches:
                     self.duplicates_list.append((entity, extra.get("title", "MISSING")))
+                    duplicate_entities.add(entity)
 
             if cat_row is None:
                 cat_values = [self.cfg.layer, county, city, target_city_disp, "RECORD MISSING", ""] + ["" for _ in range(len(header_catalog)-6)]
@@ -468,17 +480,17 @@ class LayerStandardizer:
                     county,
                     city,
                     target_city_disp,
-                    cat_row.get("title", "MISSING"),
-                    cat_row.get("city", ""),  # catalog city may be blank
-                    cat_row.get("src_url_file", "MISSING"),
-                    cat_row.get("format", "MISSING"),
-                    cat_row.get("download", "MISSING"),
-                    cat_row.get("resource", "MISSING"),
-                    cat_row.get("layer_group", "MISSING"),
-                    cat_row.get("category", "MISSING"),
-                    cat_row.get("sys_raw_folder", "MISSING"),
-                    cat_row.get("table_name", "MISSING"),
-                    cat_row.get("fields_obj_transform", "MISSING"),
+                    safe_catalog_val(cat_row.get("title")),
+                    safe_catalog_val(cat_row.get("city")),  # catalog city
+                    safe_catalog_val(cat_row.get("src_url_file")),
+                    safe_catalog_val(cat_row.get("format")),
+                    safe_catalog_val(cat_row.get("download")),
+                    safe_catalog_val(cat_row.get("resource")),
+                    safe_catalog_val(cat_row.get("layer_group")),
+                    safe_catalog_val(cat_row.get("category")),
+                    safe_catalog_val(cat_row.get("sys_raw_folder")),
+                    safe_catalog_val(cat_row.get("table_name")),
+                    safe_catalog_val(cat_row.get("fields_obj_transform")),
                 ]
             else:
                 cat_values = [
@@ -486,31 +498,41 @@ class LayerStandardizer:
                     county,
                     city,
                     target_city_disp,
-                    cat_row.get("title", "MISSING"),
-                    cat_row.get("city", ""),  # catalog city may be blank
-                    cat_row.get("src_url_file", "MISSING"),
-                    cat_row.get("format", "MISSING"),
-                    cat_row.get("download", "MISSING"),
-                    cat_row.get("resource", "MISSING"),
-                    cat_row.get("layer_group", "MISSING"),
-                    cat_row.get("category", "MISSING"),
-                    cat_row.get("sys_raw_folder", "MISSING"),
-                    cat_row.get("table_name", "MISSING"),
-                    cat_row.get("fields_obj_transform", "MISSING"),
+                    safe_catalog_val(cat_row.get("title")),
+                    safe_catalog_val(cat_row.get("city")),  # catalog city
+                    safe_catalog_val(cat_row.get("src_url_file")),
+                    safe_catalog_val(cat_row.get("format")),
+                    safe_catalog_val(cat_row.get("download")),
+                    safe_catalog_val(cat_row.get("resource")),
+                    safe_catalog_val(cat_row.get("layer_group")),
+                    safe_catalog_val(cat_row.get("category")),
+                    safe_catalog_val(cat_row.get("sys_raw_folder")),
+                    safe_catalog_val(cat_row.get("table_name")),
+                    safe_catalog_val(cat_row.get("fields_obj_transform")),
                 ]
 
             transform_values: List[str] = []
             if header_transform:
                 tr_row = self._fetch_transform_row(county, city)
                 if tr_row is None:
-                    transform_values = ["MISSING", "MISSING"]
+                    transform_values = ["NO", "**MISSING**", "**MISSING**"]
                 else:
                     transform_values = [
-                        tr_row.get("city_name", "MISSING"),
-                        tr_row.get("temp_table_name", "MISSING"),
+                        "YES",
+                        safe_catalog_val(tr_row.get("city_name")),
+                        safe_catalog_val(tr_row.get("temp_table_name")),
                     ]
 
-            csv_rows.append(cat_values + transform_values)
+            row_values = cat_values + transform_values
+            # check for missing markers
+            if any(isinstance(v,str) and "**MISSING**" in v for v in row_values):
+                missing_entities.add(entity)
+            # update per-column missing counts (skip transform_record_exists column for "NO")
+            for idx,val in enumerate(row_values):
+                if isinstance(val,str) and ("**MISSING**" in val or val=="NO"):
+                    column_missing_counts[idx]+=1
+
+            csv_rows.append(row_values)
 
         # Sort rows after header: layer, county
         csv_rows_body = csv_rows[1:]
@@ -521,7 +543,22 @@ class LayerStandardizer:
         ))
         csv_rows = [csv_rows[0]] + csv_rows_body
 
-        # Append duplicate section if any duplicates recorded
+        # Summary row (before duplicates section)
+        total_entities = len(set(self._select_entities()))
+        success_entities = len(present_entities_found)
+        summary_row = [
+            "SUMMARY",
+            f"{success_entities}/{total_entities}",
+            f"Missing: {len(missing_entities)}",
+            f"Duplicates: {len(duplicate_entities)}"
+        ]
+        summary_row.extend(str(c) for c in column_missing_counts[5:16])
+        summary_row.extend([f"Table record missing: {len(missing_transform_entities)}"])
+        summary_row.extend(str(c) for c in column_missing_counts[17:])
+        csv_rows.append([])
+        csv_rows.append(summary_row)
+
+        # Append duplicates section if any duplicates recorded
         if self.duplicates_list:
             csv_rows.append([])  # blank line
             csv_rows.append(["DUPLICATES", "entity", "title"])
