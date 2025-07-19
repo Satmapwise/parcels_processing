@@ -465,11 +465,11 @@ class LayerStandardizer:
             elif dup_status:
                 cat_values = [
                     self.cfg.layer,
-                    cat_row.get("county", "MISSING"),
-                    cat_row.get("city", "MISSING"),
+                    county,
+                    city,
                     target_city_disp,
-                    "DUPLICATE",
-                    cat_row.get("city", "MISSING"),
+                    cat_row.get("title", "MISSING"),
+                    cat_row.get("city", ""),  # catalog city may be blank
                     cat_row.get("src_url_file", "MISSING"),
                     cat_row.get("format", "MISSING"),
                     cat_row.get("download", "MISSING"),
@@ -483,11 +483,11 @@ class LayerStandardizer:
             else:
                 cat_values = [
                     self.cfg.layer,
-                    cat_row.get("county", "MISSING"),
-                    cat_row.get("city", "MISSING"),
+                    county,
+                    city,
                     target_city_disp,
                     cat_row.get("title", "MISSING"),
-                    cat_row.get("city", "MISSING"),
+                    cat_row.get("city", ""),  # catalog city may be blank
                     cat_row.get("src_url_file", "MISSING"),
                     cat_row.get("format", "MISSING"),
                     cat_row.get("download", "MISSING"),
