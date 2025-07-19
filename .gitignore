@@ -2,3 +2,4 @@ data/
 .env
 *.csv
 *.DS_Store
+upload_layer/test/
