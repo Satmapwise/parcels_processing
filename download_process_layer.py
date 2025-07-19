@@ -14,9 +14,6 @@ import os
 import csv
 import json
 import re
-import paramiko
-import os
-import re
 import fnmatch  # at top with other imports
 
 # ---------------------------------------------------------------------------
@@ -182,67 +179,37 @@ entities = {
     }
 
 class Config:
-    def __init__(self, 
-                 test_mode=False, debug=True, isolate_logs=False,
-                 run_download=True, run_metadata=True, run_processing=True, 
-                 generate_json=True, run_upload=False, remote_enabled=False, remote_execute=False,
-                 generate_summary=False, process_anyway=True
-                 ):
+    def __init__(self,
+                 test_mode: bool = False,
+                 debug: bool = True,
+                 isolate_logs: bool = False,
+                 run_download: bool = True,
+                 run_metadata: bool = True,
+                 run_processing: bool = True,
+                 run_upload: bool = True,
+                 generate_summary: bool = False,
+                 process_anyway: bool = True):
+        """Light-weight configuration holder.
+
+        The older version of this script had separate JSON-plan and remote SSH
+        upload modes. Those have been removed, so the configuration is greatly
+        simplified. All phase toggles now map one-to-one to command-line
+        options.
         """
-        Configuration class to hold script settings.
-        """
-        self.test_mode = test_mode # Dry fire external commands
-        self.debug = debug # Set logging level to DEBUG
-        self.isolate_logs = isolate_logs # Isolate logs to files
+        self.test_mode = test_mode
+        self.debug = debug
+        self.isolate_logs = isolate_logs
         self.start_time = datetime.now()
-        self.run_download = run_download # Run the download phase
-        self.run_metadata = run_metadata # Run the metadata extraction phase
-        self.run_processing = run_processing # Run the processing phase
-        self.generate_summary = generate_summary # Generate a summary file 
-        self.generate_json = generate_json # Generate a json file (nulls upload)
-        self.process_anyway = process_anyway # Continue processing even when download returns "no new data"
-        if self.generate_json == True:
-            self.run_upload = False
-            self.remote_enabled = False
-            self.remote_execute = False
-        else: 
-            self.run_upload = run_upload # Run the upload phase
-            self.remote_enabled = remote_enabled # Connect to remote hosts
-            if self.test_mode == True:
-                self.remote_execute = False
-            else:
-                self.remote_execute = remote_execute # Run transfer and execute remote commands
-        
-        # More configuration can be added here
-        # e.g. database credentials, server details
-        # For now, keeping it simple
-        
 
-        # -----------------------------
-        # Upload-phase configuration (all env-driven)
-        # -----------------------------
-        # Path where legacy update scripts deposit .backup / .bat files
-        self.local_backup_dir = '/var/www/apps/mapwise/htdocs/x342/'
+        # Phase toggles
+        self.run_download = run_download
+        self.run_metadata = run_metadata
+        self.run_processing = run_processing
+        self.run_upload = run_upload
 
-        # Remote incoming directory on map servers
-        self.remote_incoming_dir = '/home/bmay/incoming/'
-
-        # Remote hosts (comma-separated list)
-        self.ssh_hosts = [h.strip() for h in os.environ.get(
-            'REMOTE_SSH_HOSTS',
-            'mapserver-m2,mapserver-prod'
-        ).split(',') if h.strip()]
-
-        # SSH credentials – user plus either key or password
-        self.ssh_user = os.environ.get('REMOTE_SSH_USER', os.getenv('USER', ''))
-        self.ssh_keyfile = os.environ.get('REMOTE_SSH_KEYFILE')  # optional
-        self.ssh_password = os.environ.get('REMOTE_SSH_PASSWORD')  # optional (discouraged)
-
-        # Feature toggles
-        #   remote_enabled – attempt to connect to remote hosts
-        #   remote_execute – actually transfer and run commands
-        # REMOTE_EXECUTE defaults to true, but we force it off when test_mode=True
-        
+        # Misc behaviour flags
+        self.generate_summary = generate_summary
+        self.process_anyway = process_anyway
 
 # Global config object
 CONFIG = Config()
@@ -535,18 +502,8 @@ def parse_upload_block(text):
 
 
 def _ssh_connect(host):
-    """Return an open Paramiko SSHClient using CONFIG credentials."""
-    client = paramiko.SSHClient()
-    client.load_system_host_keys()
-    client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-
-    kwargs = {"hostname": host, "username": CONFIG.ssh_user}
-    if CONFIG.ssh_keyfile:
-        kwargs["key_filename"] = CONFIG.ssh_keyfile
-    elif CONFIG.ssh_password:
-        kwargs["password"] = CONFIG.ssh_password
-    client.connect(**kwargs)
-    return client
+    """Deprecated – remote upload logic removed."""
+    raise NotImplementedError("Remote upload logic has been removed from this script.")
 
 
 def _looks_like_download(cmd_list):
@@ -930,73 +887,10 @@ def download_process_layer(layer, queue):
     return results
 
 
-# Function to upload the data (push to prod)
 def upload_layer(results):
-    """Transfer files and execute SQL on remote map servers."""
+    """Deprecated – legacy remote upload logic removed."""
+    raise NotImplementedError("Legacy remote upload logic has been removed.")
 
-    logging.info("Starting upload process …")
-
-    # Filter results that contain an upload plan
-    items = [r for r in results if r.get('status') == 'success' and r.get('upload_plan')]
-
-    if not items:
-        logging.info("No upload plans found in results; nothing to do.")
-        return
-    logging.debug(f"Upload plans found: {items}")
-    
-    if not CONFIG.remote_enabled:
-        logging.info("Remote upload disabled via configuration; skipping.")
-        return
-
-    for host in CONFIG.ssh_hosts:
-        logging.info(f"Connecting to remote host {host} …")
-        try:
-            ssh = _ssh_connect(host)
-        except Exception as e:
-            logging.error(f"Failed to connect to {host}: {e}")
-            raise UploadError(f"SSH connection failed to {host}: {e}") from e
-
-        # If we only want to test connection, close immediately when remote_execute is False
-        if not CONFIG.remote_execute:
-            logging.info(f"Connection to {host} established (remote_execute disabled).")
-            ssh.close()
-            continue
-
-        sftp = ssh.open_sftp()
-
-        for row in items:
-            plan = row['upload_plan']
-
-            local_backup = os.path.join(CONFIG.local_backup_dir, f"{plan['basename']}.backup")
-            local_bat = os.path.join(CONFIG.local_backup_dir, f"{plan['basename']}.bat")
-
-            # Transfer files – overwrite existing ones
-            try:
-                logging.info(f"[{host}] uploading {os.path.basename(local_backup)} …")
-                sftp.put(local_backup, plan['remote_backup'])
-                sftp.put(local_bat, plan['remote_bat'])
-            except FileNotFoundError as fe:
-                logging.error(f"Local file missing: {fe}")
-                raise UploadError(f"Local file missing: {fe}") from fe
-            except Exception as te:
-                logging.error(f"SFTP error: {te}")
-                raise UploadError(f"SFTP failure to {host}: {te}") from te
-
-            # Execute remote commands
-            for cmd in plan['commands']:
-                logging.info(f"[{host}] executing: {cmd}")
-                stdin, stdout, stderr = ssh.exec_command(cmd)
-                exit_status = stdout.channel.recv_exit_status()
-                if exit_status != 0:
-                    err = stderr.read().decode()
-                    logging.error(f"Command failed (status {exit_status}): {err}")
-                    raise UploadError(f"Remote command failed on {host}: {cmd}\n{err}")
-
-        sftp.close()
-        ssh.close()
-        logging.info(f"Upload to {host} completed successfully.")
-
-    logging.info("All uploads completed.")
 
 # Function to generate the upload plan json
 def generate_json(results):
@@ -1708,13 +1602,7 @@ def main():
         # 2. Download and process the layer for each entity
         results = download_process_layer(args.layer, queue)
 
-        # 3. Upload the processed data
-        if CONFIG.generate_json == True:
-            generate_json(results)
-        elif CONFIG.run_upload == True:
-            upload_layer(results)
-        else:
-            logging.info(f"Skipping upload for layer '{args.layer}' (disabled in config)")
+        # 3. Uploads are now carried out inline via manifest psql commands – no JSON upload-plan logic.
 
     except (ValueError, NotImplementedError) as e:
         logging.critical(f"A critical error occurred: {e}")
