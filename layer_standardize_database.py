@@ -337,9 +337,15 @@ class Formatter:
         return f"{layer_prefix}_{county.lower()}_{city.lower()}"
 
     @staticmethod
-    def get_sys_raw_folder(layer_group: str, layer: str, county: str, city: str) -> Path:
+    def get_sys_raw_folder(category: str, layer: str, county: str, city: str) -> Path:
+        """Return the system RAW folder path.
+
+        We now key the top-level folder by *category* rather than the legacy
+        layer_group.  Example:
+          /srv/datascrub/08_Land_Use_and_Zoning/zoning/florida/county/duval/current/source_data/jacksonville
+        """
         return Path(
-            f"/srv/datascrub/{layer_group}/{layer}/florida/county/{county.lower()}/current/source_data/{city.lower()}"
+            f"/srv/datascrub/{category}/{layer}/florida/county/{county.lower()}/current/source_data/{city.lower()}"
         )
 
 # --------------------------------------------------
@@ -1098,7 +1104,7 @@ class LayerStandardizer:
         entity_type = "city" if city not in {"unincorporated", "unified", "countywide"} else city
         title = Formatter.format_entity_to_title(self.cfg.layer, county, city, entity_type)
         table_name = Formatter.format_table_name(self.cfg.layer, county, city, entity_type)
-        sys_raw_folder = str(Formatter.get_sys_raw_folder(layer_group, self.cfg.layer, county, city))
+        sys_raw_folder = str(Formatter.get_sys_raw_folder(category, self.cfg.layer, county, city))
         temp_table_name = Formatter.format_temp_table_name(self.cfg.layer, county, city)
 
         return {
