@@ -179,7 +179,7 @@ entities = {
     }
 
 class Config:
-    def __init__(self,
+    def __init__(self, 
                  test_mode: bool = False,
                  debug: bool = True,
                  isolate_logs: bool = False,
@@ -718,7 +718,7 @@ def download_process_layer(layer, queue):
             entity_logger = setup_entity_logger(layer, entity, work_dir)
 
             raw_zip_name = None  # will hold downloaded zip filename (if any)
-            
+
             logging.info(f"--- Processing entity: {entity} ---")
 
             # ------------------------------------------------------------------
@@ -1457,6 +1457,40 @@ def extract_shp_metadata(shp_path, logger):
     # Always stamp update_date as today for provenance
     metadata["update_date"] = datetime.now().date().strftime("%Y-%m-%d")
 
+    # ------------------------------------------------------------------
+    # Extract field names from the DBF file
+    # ------------------------------------------------------------------
+    field_names = []
+    
+    # Primary method: use pyshp to read the DBF header
+    try:
+        sf = shapefile.Reader(resolved_path)
+        field_names = [f[0] for f in sf.fields[1:]]  # skip deletion flag
+        logger.debug(f"Extracted {len(field_names)} field names via pyshp: {field_names}")
+    except Exception as e:
+        logger.debug(f"pyshp field extraction failed ({e}); falling back to ogrinfo parsing")
+        field_names = []
+    
+    # Fallback method: parse field names from ogrinfo output
+    if not field_names:
+        # Look for field definitions between geometry summary and first OGRFeature
+        pattern = r'(?s)^\s*?\w+\s+.*?\n(.*?)\nOGRFeature'
+        match = re.search(pattern, result.stdout)
+        if match:
+            lines = match.group(1).splitlines()
+            for line in lines:
+                line = line.strip()
+                if not line or line.lower().startswith(("geometry", "featureid", "fid")):
+                    continue
+                # Extract field name (everything before first space or colon)
+                field_name = re.split(r'[:\s(]', line, 1)[0]
+                if field_name:
+                    field_names.append(field_name)
+            logger.debug(f"Extracted {len(field_names)} field names via ogrinfo parsing: {field_names}")
+    
+    # Store as JSON array string
+    metadata["field_names"] = json.dumps(field_names) if field_names else "[]"
+
     return metadata
 
 
@@ -1716,8 +1750,6 @@ def _substitute_placeholders(cmd_list, placeholder_map, logger):
             if m not in placeholder_map:
                 missing_keys.add(m)
         substituted.append(new_tok)
-    # Allow field_names to be blank but present.
-    missing_keys.discard('field_names')
     if missing_keys:
         logger.error(f"Missing values for placeholders: {missing_keys}")
         raise UploadError(f"Missing placeholder values for: {', '.join(sorted(missing_keys))}")
