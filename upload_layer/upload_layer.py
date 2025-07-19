@@ -23,7 +23,6 @@ from __future__ import annotations
 
 import argparse
 import datetime as _dt
-import json
 import logging
 import os
 import shlex
@@ -266,6 +265,8 @@ def main(argv: List[str] | None = None) -> None:
             dry_run=args.test_retrieve,
             verbose=args.debug,
         )
+        if args.debug:
+            logging.debug("Changed files list: %s", changed_files)
     except subprocess.CalledProcessError:
         logging.error("Rsync failed; aborting.")
         sys.exit(1)
@@ -281,8 +282,12 @@ def main(argv: List[str] | None = None) -> None:
         logging.info("No new .bat files detected; nothing to process.")
         return
 
+    processed_count = 0
     for bat_path in bat_paths:
         process_bat_file(bat_path, test_execute=args.test_execute)
+        processed_count += 1
+
+    logging.info("Processed %d batch file(s).", processed_count)
 
     logging.info("Upload process completed.")
 
