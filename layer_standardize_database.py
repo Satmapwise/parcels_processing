@@ -428,6 +428,7 @@ class LayerStandardizer:
             "county",
             "city",
             "target_city",
+            "target_title",
             "title",
             "catalog_city",
             "src_url_file",
@@ -670,6 +671,7 @@ class LayerStandardizer:
             "county",
             "city",
             "target_city",
+            "target_title",
             "title",
             "catalog_city",
             "src_url_file",
@@ -721,8 +723,9 @@ class LayerStandardizer:
                     county,
                     city,
                     target_city_disp,
-                    expected["title"],  # still show the expected title for clarity
-                ] + ["" for _ in range(len(header_catalog) - 5 + len(header_transform))]
+                    "",
+                    expected["title"],
+                ] + ["" for _ in range(len(header_catalog) - 6 + len(header_transform))]
                 csv_rows.append(blank_row)
                 continue
             elif len(matches) > 1:
@@ -740,18 +743,19 @@ class LayerStandardizer:
                 county,
                 city,
                 target_city_disp,
-                expected["title"],  # always include title for visibility
+                safe_catalog_val(cat_row.get("title")) if cat_row else "",
+                expected["title"],
             ]
             # catalog_city, src_url_file, format, download, resource stay blank (script doesn't touch)
             csv_row += ["", "", "", "", ""]  # 5 columns
 
             # Fields we may update in main catalog
             updatable_catalog_fields = [
-                ("layer_group", 10),
-                ("category", 11),
-                ("sys_raw_folder", 12),
-                ("table_name", 13),
-                ("fields_obj_transform", 14),
+                ("layer_group", 11),
+                ("category", 12),
+                ("sys_raw_folder", 13),
+                ("table_name", 14),
+                ("fields_obj_transform", 15),
             ]
 
             for field_name, csv_idx in updatable_catalog_fields:
@@ -909,6 +913,7 @@ class LayerStandardizer:
             "county", 
             "city",
             "target_city",
+            "target_title",
             "title",
             "catalog_city",
             "src_url_file",
