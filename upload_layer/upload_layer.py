@@ -43,8 +43,9 @@ UPLOAD_PLAN_DIR = LOCAL_BASE_DIR / "upload_plan"
 BACKUP_DIR = LOCAL_BASE_DIR / "data_backups"
 LOG_DIR = LOCAL_BASE_DIR / "logs"
 
-RSYNC_COMMON_FLAGS = ["-ah"]  # -a (archive), -h (human-readable sizes)
+RSYNC_COMMON_FLAGS = ["-ah", "--no-motd"]  # -a (archive), -h (human-readable sizes), --no-motd (avoids protocol issues)
 RSYNC_ITEMIZE_FLAG = "-i"  # useful for detecting new/updated files
+RSYNC_BIN = os.getenv("RSYNC_BIN", "/opt/homebrew/bin/rsync")  # path to modern rsync binary
 
 # ---------------------------------------------------------------------------
 # Argument Parsing
@@ -121,12 +122,14 @@ def build_rsync_command(
 ) -> List[str]:
     """Construct rsync command for retrieving /srv/data/layers recursively."""
     remote_target = f"{remote_user}@{remote_host}:{REMOTE_BASE_DIR.rstrip('/')}/"
-    cmd = ["rsync", *RSYNC_COMMON_FLAGS]
+    cmd = [RSYNC_BIN, *RSYNC_COMMON_FLAGS]
     if verbose:
         cmd.append("-v")
     cmd.append(RSYNC_ITEMIZE_FLAG)
     if dry_run:
         cmd.append("--dry-run")
+    # Fix for macOS rsync protocol compatibility
+    # cmd.append("--rsync-path=/usr/bin/rsync")  # Removed as it didn't help
     if remote_port:
         cmd.extend(["-e", f"ssh -p {remote_port}"])
     cmd.append(remote_target)
