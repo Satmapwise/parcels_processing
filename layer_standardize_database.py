@@ -766,12 +766,8 @@ class LayerStandardizer:
             # Apply catalog updates (if any)
             # ------------------------------------------------------------------
             if update_fields:
-                row_id = cat_row.get("gid") or cat_row.get("id")
-                if row_id is None:
-                    self.logger.error("Cannot determine primary key for catalog row – skipping updates for this row.")
-                else:
-                    self._update_catalog_row(row_id, update_fields)
-                    updated_entities += 1
+                self._update_catalog_row(cat_row, update_fields)
+                updated_entities += 1
 
             # ------------------------------------------------------------------
             # Transform table handling (zoning / flu only)
@@ -824,22 +820,48 @@ class LayerStandardizer:
     # ------------------------------------------------------------------
     # SQL helper methods
     # ------------------------------------------------------------------
-    def _update_catalog_row(self, row_id: Any, updates: Dict[str, Any]):
+    def _update_catalog_row(self, cat_row: Dict[str, Any], updates: Dict[str, Any]):
+        """Apply UPDATE to m_gis_data_catalog_main.
+
+        Prefers primary-key columns `gid` or `id` if present; otherwise falls back to a
+        composite WHERE clause on (county, city, title) which are unique in practice.
+        """
         if not updates:
             return
+
         set_clause = ", ".join([f"{k} = %s" for k in updates.keys()])
-        sql = f"UPDATE m_gis_data_catalog_main SET {set_clause} WHERE "
-        # Try gid first, else id
-        if self.db.fetchone("SELECT 1 FROM m_gis_data_catalog_main WHERE gid = %s LIMIT 1", (row_id,)):
-            sql += "gid = %s"
+        params: Tuple[Any, ...] = tuple(updates.values())
+
+        gid = cat_row.get("gid")
+        cid = cat_row.get("id")
+
+        if gid is not None:
+            sql = f"UPDATE m_gis_data_catalog_main SET {set_clause} WHERE gid = %s"
+            params += (gid,)
+        elif cid is not None:
+            sql = f"UPDATE m_gis_data_catalog_main SET {set_clause} WHERE id = %s"
+            params += (cid,)
         else:
-            sql += "id = %s"
-        params = tuple(updates.values()) + (row_id,)
+            # Fallback to county+city+title (all comparisons case-insensitive)
+            sql = (
+                f"UPDATE m_gis_data_catalog_main SET {set_clause} "
+                f"WHERE lower(county) = %s AND lower(city) = %s AND lower(title) = %s"
+            )
+            params += (
+                str(cat_row.get("county", "")).lower(),
+                str(cat_row.get("city", "")).lower(),
+                str(cat_row.get("title", "")).lower(),
+            )
+
         if self.cfg.test_mode:
             self.logger.debug(f"TEST-MODE: Would execute SQL: {sql} params={params}")
         else:
             self.db.execute(sql, params)
-            self.logger.debug(f"Updated catalog row {row_id}: {list(updates.keys())}")
+            self.logger.debug(
+                "Updated catalog row (%s): %s",
+                cat_row.get("title", "unknown title"),
+                list(updates.keys()),
+            )
 
     def _update_transform_row(self, county: str, city: str, updates: Dict[str, Any]):
         if not updates:
