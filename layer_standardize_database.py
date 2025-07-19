@@ -87,11 +87,12 @@ def norm_city(city: Optional[str]) -> str:
     return cleaned.strip("_")
 
 def norm_county(county: Optional[str]) -> str:
-    """Normalise county name by removing non-alnum and the word 'county'."""
+    """Normalise county name by converting non-alnum to underscores and removing the word 'county'."""
     if not county:
         return ""
     county_lc = county.lower().replace("county", "")
-    return re.sub(r"[^a-z0-9]+", "", county_lc)
+    cleaned = re.sub(r"[^a-z0-9]+", "_", county_lc)
+    return cleaned.strip("_")
 
 def safe_catalog_val(val: Any) -> str:
     """Return value or **MISSING** if val is falsy/None."""
@@ -884,15 +885,30 @@ class LayerStandardizer:
                 
             # Construct the entity name based on parsed title components
             if county_from_title and city_from_title:
+                # Normalize county and city names to match manifest format
+                county_norm = norm_county(county_from_title)
                 if entity_type in {"unincorporated", "unified", "countywide"}:
-                    entity = f"{county_from_title}_{entity_type}"
+                    entity = f"{county_norm}_{entity_type}"
                 else:
-                    entity = f"{county_from_title}_{city_from_title}"
+                    city_norm = norm_city(city_from_title)
+                    entity = f"{county_norm}_{city_norm}"
+            elif county_from_title and not city_from_title:
+                # County-only title (e.g., "Zoning - Walton County") -> treat as unincorporated
+                county_norm = norm_county(county_from_title)
+                entity = f"{county_norm}_unincorporated"
             else:
                 # Fallback to DB fields if title parsing fails
                 county_db = row.get('county') or ''
                 city_db = row.get('city') or ''
-                entity = f"{county_db.lower()}_{city_db.lower()}"
+                
+                # Handle case where city is empty/None in DB -> treat as unincorporated
+                if county_db and (not city_db or city_db.lower() in {'none', 'null', ''}):
+                    county_norm = norm_county(county_db)
+                    entity = f"{county_norm}_unincorporated"
+                else:
+                    county_norm = norm_county(county_db)
+                    city_norm = norm_city(city_db)
+                    entity = f"{county_norm}_{city_norm}"
                 
             # Check if this entity exists in manifest
             if entity not in manifest_entities:
@@ -936,25 +952,29 @@ class LayerStandardizer:
         orphans: List[List[str]] = []
         
         for row in rows:
-            county = (row.get("county") or "").lower()
-            city_name = (row.get("city_name") or "").lower()
+            county_raw = row.get("county") or ""
+            city_name_raw = row.get("city_name") or ""
+            
+            # Normalize county and city names to match manifest format
+            county_norm = norm_county(county_raw)
+            city_name_norm = norm_city(city_name_raw)
             
             # Try to construct entity name from transform table data
             # Handle multi-word counties and special suffixes
             suffixes = {"unincorporated", "unified", "countywide"}
-            if city_name in suffixes:
-                entity = f"{county}_{city_name}"
+            if city_name_norm in suffixes:
+                entity = f"{county_norm}_{city_name_norm}"
             else:
-                entity = f"{county}_{city_name}"
+                entity = f"{county_norm}_{city_name_norm}"
                 
             # Check if this entity exists in manifest
             if entity not in manifest_entities:
                 # Build row data - mostly empty for catalog fields since this is a transform orphan
                 cat_values = [
                     self.cfg.layer,
-                    county.title(),
-                    city_name.title(),
-                    city_name.replace('_', ' ').title(),  # target_city display
+                    county_raw.title(),
+                    city_name_raw.title(),
+                    city_name_raw.replace('_', ' ').title(),  # target_city display
                     "**TRANSFORM ORPHAN**",  # title
                     "**MISSING**",  # catalog_city
                     "**MISSING**",  # src_url_file
