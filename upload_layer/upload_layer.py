@@ -12,6 +12,7 @@ Features:
 6. Sensitive login details (REMOTE_USER, REMOTE_HOST, optional REMOTE_PORT) are loaded from a .env file.
 7. Logs are written to /srv/data/layers/logs, with console output mirrored.
 8. Optional --local flag uses '~/Downloads/test' as local base directory for testing.
+   It also sets REMOTE_BASE_DIR to '/srv/tools/python/layers_scraping/upload_layer/test' so rsync pulls from the test directory.
 
 Environment variables expected in .env:
     REMOTE_USER   – SSH username for rsync.
@@ -267,6 +268,9 @@ def main(argv: List[str] | None = None) -> None:
     # If --local flag is provided, redirect all local paths to user's Downloads/test
     if args.local:
         set_local_base_dir(Path.home() / "Downloads/test")
+        # Point rsync at the test directory on the same host
+        global REMOTE_BASE_DIR
+        REMOTE_BASE_DIR = "/srv/tools/python/layers_scraping/upload_layer/test"
         args.test_retrieve = True
 
     # Load .env for remote credentials
