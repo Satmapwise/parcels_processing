@@ -695,9 +695,14 @@ class LayerStandardizer:
 
         # Counters for the summary row
         total_entities = 0
-        updated_entities = 0
+        found_entities = 0  # records that had a catalog match
+        updated_entities = 0  # entities where at least one field was changed in catalog or transform
         missing_entities: List[str] = []
         duplicate_entities: List[str] = []
+
+        # Track per-column change counts (indexes relative to combined header)
+        total_columns = len(header_catalog) + len(header_transform)
+        change_counts = [0] * total_columns
 
         for entity in sorted(self._select_entities()):
             total_entities += 1
@@ -733,6 +738,7 @@ class LayerStandardizer:
                 self.logger.warning(f"Duplicate catalog records ({len(matches)}) for {entity}; using the first match for updates.")
 
             cat_row = matches[0]
+            found_entities += 1
 
             # ------------------------------------------------------------------
             # Determine which fields need updating
@@ -743,14 +749,15 @@ class LayerStandardizer:
                 county,
                 city,
                 target_city_disp,
-                safe_catalog_val(cat_row.get("title")) if cat_row else "",
-                expected["title"],
+                safe_catalog_val(cat_row.get("title")) if cat_row else "",  # pre-change title
+                expected["title"],  # expected / desired title
             ]
             # catalog_city, src_url_file, format, download, resource stay blank (script doesn't touch)
             csv_row += ["", "", "", "", ""]  # 5 columns
 
-            # Fields we may update in main catalog
+            # Fields we may update in main catalog (column_name, csv_index)
             updatable_catalog_fields = [
+                ("title", 5),  # possible rename corrections
                 ("layer_group", 11),
                 ("category", 12),
                 ("sys_raw_folder", 13),
@@ -763,10 +770,11 @@ class LayerStandardizer:
                 current_val = cat_row.get(field_name)
                 if current_val in (None, "", "NULL", "null") or (current_val != expected_val):
                     update_fields[field_name] = expected_val
-                    # Extend csv_row list to proper length if not already (happens once)
+                    # Extend csv_row list to proper length if not already
                     while len(csv_row) <= csv_idx:
                         csv_row.append("")
                     csv_row[csv_idx] = str(expected_val)
+                    change_counts[csv_idx] += 1
 
             # Ensure csv_row has full catalog length
             while len(csv_row) < len(header_catalog):
@@ -800,6 +808,8 @@ class LayerStandardizer:
                     self._update_transform_row(county, city, tr_updates)
                     transform_csv_vals[0] = "UPDATED"
                     transform_csv_vals[2] = expected_temp_name
+                    # count change for temp_table_name column
+                    change_counts[len(header_catalog) + 2] += 1
                 elif tr_row:
                     # Exists but nothing changed
                     transform_csv_vals[0] = "NO_CHANGE"
@@ -811,11 +821,20 @@ class LayerStandardizer:
             csv_rows.append(csv_row)
 
         # ------------------------------------------------------------------
-        # Summary row
+        # Summary row (records found, changed records, per-column change counts)
         # ------------------------------------------------------------------
-        summary = ["SUMMARY", f"updated: {updated_entities}", f"missing: {len(missing_entities)}", f"duplicates: {len(duplicate_entities)}"]
+        header_all = header_catalog + header_transform
+        summary_row = ["" for _ in range(total_columns)]
+        summary_row[0] = "SUMMARY"
+        summary_row[1] = f"{found_entities}/{total_entities}"
+        summary_row[2] = f"changed: {updated_entities}"
+
+        # fill per-column counts starting from index of 'title' (5)
+        for idx in range(5, total_columns):
+            summary_row[idx] = f"{header_all[idx]}: {change_counts[idx]}"
+
         csv_rows.append([])
-        csv_rows.append(summary)
+        csv_rows.append(summary_row)
 
         # ------------------------------------------------------------------
         # Write CSV
