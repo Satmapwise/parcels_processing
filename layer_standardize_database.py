@@ -432,7 +432,7 @@ class LayerStandardizer:
         csv_rows: List[List[str]] = [header_catalog + header_transform]
 
         # track duplicates across all entities in this run
-        self.duplicates_list: List[Tuple[str, str]] = []
+        self.duplicates_list: List[List[str]] = []
         duplicate_entities: set[str] = set()
         missing_entities: set[str] = set()
         missing_transform_entities: set[str] = set()
@@ -469,7 +469,38 @@ class LayerStandardizer:
                 self.logger.debug("  --> DUPLICATE")
                 # record all duplicate rows including the extras beyond first
                 for extra in matches:
-                    self.duplicates_list.append((entity, extra.get("title", "MISSING")))
+                    # Build full row data for each duplicate
+                    dup_cat_values = [
+                        self.cfg.layer,
+                        county,
+                        city,
+                        target_city_disp,
+                        safe_catalog_val(extra.get("title")),
+                        safe_catalog_val(extra.get("city")),  # catalog city
+                        safe_catalog_val(extra.get("src_url_file")),
+                        safe_catalog_val(extra.get("format")),
+                        safe_catalog_val(extra.get("download")),
+                        safe_catalog_val(extra.get("resource")),
+                        safe_catalog_val(extra.get("layer_group")),
+                        safe_catalog_val(extra.get("category")),
+                        safe_catalog_val(extra.get("sys_raw_folder")),
+                        safe_catalog_val(extra.get("table_name")),
+                        safe_catalog_val(extra.get("fields_obj_transform")),
+                    ]
+                    # Add transform values for duplicates
+                    dup_transform_values: List[str] = []
+                    if header_transform:
+                        tr_row = self._fetch_transform_row(county, city)
+                        if tr_row is None:
+                            dup_transform_values = ["NO", "**MISSING**", "**MISSING**"]
+                        else:
+                            dup_transform_values = [
+                                "YES",
+                                safe_catalog_val(tr_row.get("city_name")),
+                                safe_catalog_val(tr_row.get("temp_table_name")),
+                            ]
+                    dup_row_values = dup_cat_values + dup_transform_values
+                    self.duplicates_list.append(dup_row_values)
                     duplicate_entities.add(entity)
 
             if cat_row is None:
@@ -578,8 +609,10 @@ class LayerStandardizer:
         # Append duplicates section if any duplicates recorded
         if self.duplicates_list:
             csv_rows.append([])  # blank line
-            csv_rows.append(["DUPLICATES", "entity", "title"])
-            csv_rows.extend([["", ent, title] for ent, title in self.duplicates_list])
+            # Use the same header as the main data, but prefix with "DUPLICATES"
+            dup_header = ["DUPLICATES"] + (header_catalog + header_transform)[1:]
+            csv_rows.append(dup_header)
+            csv_rows.extend(self.duplicates_list)
 
         self._write_csv_report(csv_rows)
 
@@ -597,7 +630,8 @@ class LayerStandardizer:
             if missing_records:
                 self.logger.debug(f"Entities missing a DB record ({len(missing_records)}): {missing_records}")
             if self.duplicates_list:
-                self.logger.debug(f"Duplicate rows ({len(self.duplicates_list)}): {self.duplicates_list}")
+                dup_entities = [f"{row[1]}_{row[2]}" for row in self.duplicates_list]  # county_city format
+                self.logger.debug(f"Duplicate rows ({len(self.duplicates_list)}): {dup_entities}")
 
     def _run_update_mode(self):
         self.logger.info("Running in UPDATE mode – DB rows will be modified as needed.")
