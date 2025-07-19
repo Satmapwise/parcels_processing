@@ -188,14 +188,14 @@ entities = {
 class Config:
     def __init__(self, 
                  test_mode: bool = False,
-                 debug: bool = True,
+                 debug: bool = False,
                  isolate_logs: bool = False,
                  run_download: bool = True,
                  run_metadata: bool = True,
                  run_processing: bool = True,
                  run_upload: bool = True,
-                 generate_summary: bool = False,
-                 process_anyway: bool = True):
+                 generate_summary: bool = True,
+                 process_anyway: bool = False):
         """Light-weight configuration holder.
 
         The older version of this script had separate JSON-plan and remote SSH
