@@ -11,6 +11,7 @@ Features:
    corresponding .backup and .bat files exist.
 6. Sensitive login details (REMOTE_USER, REMOTE_HOST, optional REMOTE_PORT) are loaded from a .env file.
 7. Logs are written to /srv/data/layers/logs, with console output mirrored.
+8. Optional --local flag uses '~/Downloads/test' as local base directory for testing.
 
 Environment variables expected in .env:
     REMOTE_USER   – SSH username for rsync.
@@ -55,6 +56,7 @@ def parse_args(argv: List[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--test-retrieve", action="store_true", help="Dry-run rsync only; skip further processing.")
     parser.add_argument("--test-execute", action="store_true", help="Print would-be executed commands instead of running them.")
     parser.add_argument("--debug", action="store_true", help="Enable debug logging and verbose rsync (-v).")
+    parser.add_argument("--local", action="store_true", help="Use ~/Downloads/test as LOCAL_BASE_DIR for local testing.")
     return parser.parse_args(argv)
 
 
@@ -250,8 +252,21 @@ def process_upload_plan(plan_path: Path, test_execute: bool) -> None:
 # ---------------------------------------------------------------------------
 
 
+def set_local_base_dir(new_dir: Path) -> None:
+    """Update module-level directory constants when --local flag is used."""
+    global LOCAL_BASE_DIR, UPLOAD_PLAN_DIR, BACKUP_DIR, LOG_DIR
+    LOCAL_BASE_DIR = new_dir.expanduser()
+    UPLOAD_PLAN_DIR = LOCAL_BASE_DIR / "upload_plan"
+    BACKUP_DIR = LOCAL_BASE_DIR / "data_backups"
+    LOG_DIR = LOCAL_BASE_DIR / "logs"
+
+
 def main(argv: List[str] | None = None) -> None:
     args = parse_args(argv)
+
+    # If --local flag is provided, redirect all local paths to user's Downloads/test
+    if args.local:
+        set_local_base_dir(Path.home() / "Downloads/test")
 
     # Load .env for remote credentials
     load_dotenv()
