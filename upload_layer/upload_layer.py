@@ -29,7 +29,7 @@ import shlex
 import subprocess
 import sys
 from pathlib import Path
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Union
 import re
 
 from dotenv import load_dotenv
@@ -88,13 +88,18 @@ def setup_logging(debug: bool) -> None:
 # ---------------------------------------------------------------------------
 
 
-def run_subprocess(cmd: List[str], capture: bool = True) -> subprocess.CompletedProcess[str]:
-    """Run a subprocess command and return the CompletedProcess.
+def run_subprocess(cmd: Union[List[str], str], capture: bool = True) -> subprocess.CompletedProcess[str]:
+    """Run a subprocess command (list-form or raw shell string) and return CompletedProcess.
 
-    Raises subprocess.CalledProcessError on non-zero exit codes.
+    Accepts:
+        cmd – Either a list of args (exec form) or a raw shell string.
     """
-    logging.debug("Running command: %s", shlex.join(cmd))
-    result = subprocess.run(cmd, text=True, capture_output=capture, check=False)
+    if isinstance(cmd, list):
+        logging.debug("Running command (exec): %s", shlex.join(cmd))
+        result = subprocess.run(cmd, text=True, capture_output=capture, check=False)
+    else:
+        logging.debug("Running command (shell): %s", cmd)
+        result = subprocess.run(cmd, text=True, capture_output=capture, check=False, shell=True)
     # Always print rsync output immediately for visibility, even if not captured
     if capture:
         if result.stdout:
