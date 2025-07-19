@@ -274,7 +274,7 @@ def main(argv: List[str] | None = None) -> None:
         # Point rsync at the test directory on the same host
         global REMOTE_BASE_DIR
         REMOTE_BASE_DIR = "/srv/tools/python/layers_scraping/upload_layer/test"
-        args.test_retrieve = True
+        args.test_execute = True
 
     # Load .env for remote credentials
     load_dotenv()
