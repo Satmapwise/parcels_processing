@@ -23,7 +23,6 @@ from __future__ import annotations
 
 import argparse
 import datetime as _dt
-import json
 import logging
 import os
 import shlex
@@ -31,6 +30,7 @@ import subprocess
 import sys
 from pathlib import Path
 from typing import List, Dict, Any
+import re
 
 from dotenv import load_dotenv
 
@@ -39,12 +39,12 @@ from dotenv import load_dotenv
 # ---------------------------------------------------------------------------
 LOCAL_BASE_DIR = Path("/srv/data/layers")
 REMOTE_BASE_DIR = "/srv/data/layers"  # absolute path on remote host – keep trailing path same as local
-UPLOAD_PLAN_DIR = LOCAL_BASE_DIR / "upload_plan"
-BACKUP_DIR = LOCAL_BASE_DIR / "data_backups"
+OUTPUT_DIR = LOCAL_BASE_DIR / "output"
 LOG_DIR = LOCAL_BASE_DIR / "logs"
 
-RSYNC_COMMON_FLAGS = ["-ah"]  # -a (archive), -h (human-readable sizes)
+RSYNC_COMMON_FLAGS = ["-ah", "--no-motd"]  # -a (archive), -h (human-readable sizes), --no-motd (avoids protocol issues)
 RSYNC_ITEMIZE_FLAG = "-i"  # useful for detecting new/updated files
+RSYNC_BIN = os.getenv("RSYNC_BIN", "/opt/homebrew/bin/rsync")  # path to modern rsync binary
 
 # ---------------------------------------------------------------------------
 # Argument Parsing
@@ -121,12 +121,14 @@ def build_rsync_command(
 ) -> List[str]:
     """Construct rsync command for retrieving /srv/data/layers recursively."""
     remote_target = f"{remote_user}@{remote_host}:{REMOTE_BASE_DIR.rstrip('/')}/"
-    cmd = ["rsync", *RSYNC_COMMON_FLAGS]
+    cmd = [RSYNC_BIN, *RSYNC_COMMON_FLAGS]
     if verbose:
         cmd.append("-v")
     cmd.append(RSYNC_ITEMIZE_FLAG)
     if dry_run:
         cmd.append("--dry-run")
+    # Fix for macOS rsync protocol compatibility
+    # cmd.append("--rsync-path=/usr/bin/rsync")  # Removed as it didn't help
     if remote_port:
         cmd.extend(["-e", f"ssh -p {remote_port}"])
     cmd.append(remote_target)
@@ -146,106 +148,74 @@ def perform_rsync(
     cmd = build_rsync_command(remote_user, remote_host, remote_port, dry_run, verbose)
     proc = run_subprocess(cmd)
     changed_files: List[str] = []
-    # Parse itemized change output: lines starting with a change indicator (e.g., ">f.st...... json_file")
+    itemized_pattern = re.compile(r"^[><c\.!].{10,}\s+(.*)$")
     for line in proc.stdout.splitlines():
-        if not line.strip():
+        m = itemized_pattern.match(line)
+        if not m:
+            continue  # skip summary or unrelated lines
+        # Skip directories (second char 'd' in itemized output)
+        if len(line) > 1 and line[1] == 'd':
             continue
-        # rsync itemized lines start with single char of change >, c, etc.
-        parts = line.split(maxsplit=1)
-        if len(parts) == 2:
-            filepath = parts[1]
-            changed_files.append(filepath)
+        filepath = m.group(1).strip()
+        if filepath in ("./", "."):
+            continue
+        changed_files.append(filepath.rstrip('/'))
     logging.debug("Detected %d changed files via rsync", len(changed_files))
     return changed_files
 
 
 # ---------------------------------------------------------------------------
-# Upload-Plan Processing
+# BAT Processing (new)
 # ---------------------------------------------------------------------------
 
 
 def files_with_extension(changed_files: List[str], ext: str) -> List[Path]:
+    """Helper to convert changed file strings to Path objects filtered by extension."""
     return [LOCAL_BASE_DIR / f for f in changed_files if f.endswith(ext)]
 
 
-def gather_json_paths(changed_files: List[str], force_all: bool) -> List[Path]:
-    """Return list of upload-plan JSON paths to process."""
+def gather_bat_paths(changed_files: List[str], force_all: bool) -> List[Path]:
+    """Return list of .bat files to process."""
     if force_all or not changed_files:
-        # Process every JSON found in UPLOAD_PLAN_DIR
-        return list(UPLOAD_PLAN_DIR.glob("*.json"))
-    return files_with_extension(changed_files, ".json")
+        return list(OUTPUT_DIR.glob("*.bat"))
+    return files_with_extension(changed_files, ".bat")
 
 
-def ensure_entity_files(entity: Dict[str, Any]) -> tuple[Path, Path] | None:
-    """Check presence of .backup and .bat files for an entity.
-
-    The entity dict is expected to specify at least keys `backup` and `bat` (filenames).
-    Returns tuple of Paths if both files exist, else None.
-    """
-    backup_name = entity.get("backup")
-    bat_name = entity.get("bat")
-    if not backup_name or not bat_name:
-        logging.error("Entity missing 'backup' or 'bat' fields: %s", entity)
-        return None
-    backup_path = BACKUP_DIR / backup_name
-    bat_path = BACKUP_DIR / bat_name
-    if not backup_path.exists() or not bat_path.exists():
-        logging.error("Missing .backup or .bat files for entity (%s, %s)", backup_path, bat_path)
-        return None
-    return backup_path, bat_path
+def parse_bat_commands(bat_path: Path) -> List[str]:
+    """Parse a .bat file and return a list of commands (ignores empty/comment lines)."""
+    commands: List[str] = []
+    for line in bat_path.read_text().splitlines():
+        stripped = line.strip()
+        if not stripped or stripped.lower().startswith("rem") or stripped.startswith("::"):
+            continue  # skip comments and empty lines
+        commands.append(stripped)
+    return commands
 
 
+def process_bat_file(bat_path: Path, test_execute: bool) -> None:
+    """Validate matching .backup exists and execute commands from .bat."""
+    backup_path = bat_path.with_suffix(".backup")
+    if not backup_path.exists():
+        logging.error("Missing .backup file for %s", bat_path.name)
+        return
 
-def execute_commands_for_entity(
-    commands: List[str],
-    context: Dict[str, str],
-    test_execute: bool,
-):
-    """Substitute placeholders in commands and execute or print them."""
-    for raw_cmd in commands:
-        formatted_cmd = raw_cmd.format(**context)
+    logging.info("Processing batch file: %s", bat_path)
+    commands = parse_bat_commands(bat_path)
+    if not commands:
+        logging.warning("No commands parsed from %s; skipping", bat_path)
+        return
+
+    context = {
+        "backup": str(backup_path),
+        "bat": str(bat_path),
+    }
+
+    for cmd in commands:
+        formatted_cmd = cmd.format(**context)
         if test_execute:
             logging.info("[TEST-EXECUTE] %s", formatted_cmd)
         else:
-            # We execute through shell=True to allow complex commands; user is responsible for safety
-            run_subprocess(formatted_cmd, capture=True)  # type: ignore[arg-type]
-
-
-
-def process_upload_plan(plan_path: Path, test_execute: bool) -> None:
-    """Process a single upload-plan JSON file: verify entity files and run commands."""
-    logging.info("Processing upload plan: %s", plan_path)
-    try:
-        data = json.loads(plan_path.read_text())
-    except json.JSONDecodeError as exc:
-        logging.error("Failed to parse JSON %s: %s", plan_path, exc)
-        return
-
-    commands: List[str] = data.get("commands", [])
-    entities = data.get("entities", [])
-    if not commands or len(commands) == 0:
-        logging.warning("No commands defined in %s; skipping", plan_path)
-        return
-    if len(commands) != 3:
-        logging.warning("Expected 3 commands but found %d in %s", len(commands), plan_path)
-    for entity in entities:
-        layer_name = data.get("layer") or entity.get("layer") or "unknown_layer"
-        county = entity.get("county", "")
-        city = entity.get("city", "")
-        # Verify files exist
-        paths = ensure_entity_files(entity)
-        if paths is None:
-            continue
-        backup_path, bat_path = paths
-        # Build context for command formatting
-        context = {
-            "layer": layer_name,
-            "county": county,
-            "city": city,
-            "backup": str(backup_path),
-            "bat": str(bat_path),
-        }
-        execute_commands_for_entity(commands, context, test_execute)
+            run_subprocess(formatted_cmd, capture=True)
 
 
 # ---------------------------------------------------------------------------
@@ -255,10 +225,9 @@ def process_upload_plan(plan_path: Path, test_execute: bool) -> None:
 
 def set_local_base_dir(new_dir: Path) -> None:
     """Update module-level directory constants when --local flag is used."""
-    global LOCAL_BASE_DIR, UPLOAD_PLAN_DIR, BACKUP_DIR, LOG_DIR
+    global LOCAL_BASE_DIR, OUTPUT_DIR, LOG_DIR
     LOCAL_BASE_DIR = new_dir.expanduser()
-    UPLOAD_PLAN_DIR = LOCAL_BASE_DIR / "upload_plan"
-    BACKUP_DIR = LOCAL_BASE_DIR / "data_backups"
+    OUTPUT_DIR = LOCAL_BASE_DIR / "output"
     LOG_DIR = LOCAL_BASE_DIR / "logs"
 
 
@@ -267,11 +236,12 @@ def main(argv: List[str] | None = None) -> None:
 
     # If --local flag is provided, redirect all local paths to user's Downloads/test
     if args.local:
-        set_local_base_dir(Path.home() / "Downloads/test")
+        # When --local is specified, use the repository-local test directory
+        set_local_base_dir(Path(__file__).resolve().parent / "test")
         # Point rsync at the test directory on the same host
         global REMOTE_BASE_DIR
         REMOTE_BASE_DIR = "/srv/tools/python/layers_scraping/upload_layer/test"
-        args.test_retrieve = True
+        args.test_execute = True
 
     # Load .env for remote credentials
     load_dotenv()
@@ -288,9 +258,8 @@ def main(argv: List[str] | None = None) -> None:
     logging.debug("Arguments: %s", args)
     logging.info("Starting layer data upload process…")
 
-    # Ensure base directories exist locally
-    for d in (UPLOAD_PLAN_DIR, BACKUP_DIR):
-        d.mkdir(parents=True, exist_ok=True)
+    # Ensure output directory exists locally
+    OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
     try:
         changed_files = perform_rsync(
@@ -300,6 +269,8 @@ def main(argv: List[str] | None = None) -> None:
             dry_run=args.test_retrieve,
             verbose=args.debug,
         )
+        if args.debug:
+            logging.debug("Changed files list: %s", changed_files)
     except subprocess.CalledProcessError:
         logging.error("Rsync failed; aborting.")
         sys.exit(1)
@@ -308,15 +279,19 @@ def main(argv: List[str] | None = None) -> None:
         logging.info("--test-retrieve specified; skipping further processing.")
         sys.exit(0)
 
-    # Determine which upload plans to process
-    json_paths = gather_json_paths(changed_files, force_all=args.test_execute)
+    # Determine which .bat files to process
+    bat_paths = gather_bat_paths(changed_files, force_all=args.test_execute)
 
-    if not json_paths and not args.test_execute:
-        logging.info("No new upload plans detected; nothing to process.")
+    if not bat_paths and not args.test_execute:
+        logging.info("No new .bat files detected; nothing to process.")
         return
 
-    for plan_path in json_paths:
-        process_upload_plan(plan_path, test_execute=args.test_execute)
+    processed_count = 0
+    for bat_path in bat_paths:
+        process_bat_file(bat_path, test_execute=args.test_execute)
+        processed_count += 1
+
+    logging.info("Processed %d batch file(s).", processed_count)
 
     logging.info("Upload process completed.")
 
