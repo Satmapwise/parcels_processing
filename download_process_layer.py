@@ -897,22 +897,7 @@ def download_process_layer(layer, queue):
                 result_entry['warning'] = warning_msg
 
             # (processing of commands now handled in unified loop above)
-            upload_plan = None  # will be filled when parse_upload_block triggers
-
-            # After executing all commands, try to parse any upload plan printed
-            # from the update script output (if available) or the last command output
-            try:
-                # Prefer update script output for upload plan parsing
-                output_to_parse = update_script_output if update_script_output else (stdout if 'stdout' in locals() else None)
-                if output_to_parse:
-                    parsed = parse_upload_block(output_to_parse)
-                    if parsed:
-                        upload_plan = parsed
-                        entity_logger.debug(f"Upload plan parsed from {'update script' if update_script_output else 'last command'} output")
-            except Exception as e:
-                entity_logger.debug(f"Failed to parse upload block: {e}")
-
-            result_entry['upload_plan'] = upload_plan
+            # Uploads now handled inline via manifest psql commands.
 
             results.append(result_entry)
             logging.info(f"--- Successfully processed entity: {entity} ---")
