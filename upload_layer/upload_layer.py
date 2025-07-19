@@ -30,6 +30,7 @@ import subprocess
 import sys
 from pathlib import Path
 from typing import List, Dict, Any
+import re
 
 from dotenv import load_dotenv
 
@@ -147,15 +148,18 @@ def perform_rsync(
     cmd = build_rsync_command(remote_user, remote_host, remote_port, dry_run, verbose)
     proc = run_subprocess(cmd)
     changed_files: List[str] = []
-    # Parse itemized change output: lines starting with a change indicator (e.g., ">f.st...... json_file")
+    itemized_pattern = re.compile(r"^[><c\.!].{10,}\s+(.*)$")
     for line in proc.stdout.splitlines():
-        if not line.strip():
+        m = itemized_pattern.match(line)
+        if not m:
+            continue  # skip summary or unrelated lines
+        # Skip directories (second char 'd' in itemized output)
+        if len(line) > 1 and line[1] == 'd':
             continue
-        # rsync itemized lines start with single char of change >, c, etc.
-        parts = line.split(maxsplit=1)
-        if len(parts) == 2:
-            filepath = parts[1]
-            changed_files.append(filepath)
+        filepath = m.group(1).strip()
+        if filepath in ("./", "."):
+            continue
+        changed_files.append(filepath.rstrip('/'))
     logging.debug("Detected %d changed files via rsync", len(changed_files))
     return changed_files
 
