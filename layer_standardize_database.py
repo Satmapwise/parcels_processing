@@ -516,6 +516,7 @@ class LayerStandardizer:
                 tr_row = self._fetch_transform_row(county, city)
                 if tr_row is None:
                     transform_values = ["NO", "**MISSING**", "**MISSING**"]
+                    missing_transform_entities.add(entity)
                 else:
                     transform_values = [
                         "YES",
@@ -527,9 +528,12 @@ class LayerStandardizer:
             # check for missing markers
             if any(isinstance(v,str) and "**MISSING**" in v for v in row_values):
                 missing_entities.add(entity)
-            # update per-column missing counts (skip transform_record_exists column for "NO")
+            # update per-column missing counts (skip transform_record_exists column at index 15)
             for idx,val in enumerate(row_values):
-                if isinstance(val,str) and ("**MISSING**" in val or val=="NO"):
+                if isinstance(val,str) and "**MISSING**" in val:
+                    column_missing_counts[idx]+=1
+                # Special handling: don't count "NO" as missing for transform_record_exists column
+                elif isinstance(val,str) and val=="NO" and idx != len(header_catalog):
                     column_missing_counts[idx]+=1
 
             csv_rows.append(row_values)
@@ -546,15 +550,27 @@ class LayerStandardizer:
         # Summary row (before duplicates section)
         total_entities = len(set(self._select_entities()))
         success_entities = len(present_entities_found)
-        summary_row = [
-            "SUMMARY",
-            f"{success_entities}/{total_entities}",
-            f"Missing: {len(missing_entities)}",
-            f"Duplicates: {len(duplicate_entities)}"
-        ]
-        summary_row.extend(str(c) for c in column_missing_counts[5:16])
-        summary_row.extend([f"Table record missing: {len(missing_transform_entities)}"])
-        summary_row.extend(str(c) for c in column_missing_counts[17:])
+        
+        # Build summary row to align with data columns
+        total_columns = len(header_catalog) + len(header_transform)
+        summary_row = [""] * total_columns
+        
+        # Fixed summary info in first columns
+        summary_row[0] = "SUMMARY"
+        summary_row[1] = f"{success_entities}/{total_entities}"
+        summary_row[2] = f"Missing: {len(missing_entities)}"
+        summary_row[3] = f"Duplicates: {len(duplicate_entities)}"
+        
+        # Column totals aligned with their respective data columns
+        for i in range(4, len(header_catalog)):
+            summary_row[i] = f"Tot: {column_missing_counts[i]}"
+        
+        # Transform columns (if they exist)
+        if header_transform:
+            summary_row[len(header_catalog)] = f"Table record missing: {len(missing_transform_entities)}"
+            for i in range(len(header_catalog) + 1, total_columns):
+                summary_row[i] = f"Tot: {column_missing_counts[i]}"
+
         csv_rows.append([])
         csv_rows.append(summary_row)
 
