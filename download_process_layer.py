@@ -3,6 +3,13 @@
 # Layer is required, entity is optional
 #   <entity> is a specific county or county_city (depending on layer) to download, process, and upload
 #   if <entity> is not provided, all entities for the layer will be downloaded, processed, and uploaded
+#
+# NEW UPLOAD SYSTEM:
+#   Uploads are now handled inline via psql commands specified in the layer manifest.
+#   Each entity's manifest entry can include a final psql command that updates the database
+#   with metadata extracted during processing. The command supports placeholders:
+#     {layer}, {county}, {city}, {data_date}, {publish_date}, {epsg}, {shp}, {raw_zip}, {field_names}
+#   Example: psql -d gis -c "UPDATE m_gis_data_catalog_main SET data_date='{data_date}' WHERE layer='{layer}' AND county='{county}' AND city='{city}';"
 
 import sys
 import logging
@@ -458,52 +465,7 @@ def initialize_logging(debug=False):
     logging.info("Logging initialized.")
 
 
-def parse_upload_block(text):
-    """Return an upload plan dict parsed from *text* (stdout).
-
-    Expected markers are printed by legacy update scripts.  If no block is
-    found, returns ``None``.
-    """
-    lines = text.splitlines()
-    in_block = False
-    remote_backup = None
-    commands = []
-    for line in lines:
-        if '----- SCRIPT to update on server' in line:
-            in_block = True
-            continue
-        if '----- END SCRIPT to update on server' in line:
-            break
-        if not in_block:
-            continue
-        stripped = line.strip()
-        if not stripped:
-            continue
-        if stripped.startswith('pg_restore') and '.backup' in stripped:
-            m = re.search(r'"([^"]+\.backup)"', stripped)
-            if m:
-                remote_backup = m.group(1)
-            commands.append(stripped)
-        elif stripped.startswith('psql'):
-            commands.append(stripped)
-
-    if not remote_backup:
-        return None
-
-    basename = os.path.basename(remote_backup).rsplit('.', 1)[0]
-    remote_bat = remote_backup.rsplit('.', 1)[0] + '.bat'
-
-    return {
-        'basename': basename,
-        'remote_backup': remote_backup,
-        'remote_bat': remote_bat,
-        'commands': commands,
-    }
-
-
-def _ssh_connect(host):
-    """Deprecated – remote upload logic removed."""
-    raise NotImplementedError("Remote upload logic has been removed from this script.")
+# Legacy SSH functions removed - remote upload logic no longer needed
 
 
 def _looks_like_download(cmd_list):
@@ -925,74 +887,7 @@ def download_process_layer(layer, queue):
     return results
 
 
-def upload_layer(results):
-    """Deprecated – legacy remote upload logic removed."""
-    raise NotImplementedError("Legacy remote upload logic has been removed.")
-
-
-# Function to generate the upload plan json
-def generate_json(results):
-    """Generate a JSON file containing upload plans for all entities that have them.
-    If the file exists, merge new plans in, overwriting by entity, and sort alphabetically."""
-    
-    if not results:
-        logging.warning("No results to generate JSON for.")
-        return
-    
-    # Filter results that contain an upload plan
-    items_with_plans = [r for r in results if r.get('status') == 'success' and r.get('upload_plan')]
-    
-    if not items_with_plans:
-        logging.info("No upload plans found in results; nothing to generate.")
-        return
-    
-    # Get the layer name from the first result
-    layer = items_with_plans[0]['layer']
-    json_filename = f"{layer}_upload_plans_{CONFIG.start_time.strftime('%Y-%m-%d')}.json"
-    script_dir = os.path.dirname(os.path.abspath(__file__))
-    json_filepath = os.path.join(script_dir, json_filename)
-    
-    logging.info(f"Generating upload plans JSON file: {json_filepath}")
-    
-    # Structure the data for JSON output (new plans)
-    new_upload_plans = {}
-    for item in items_with_plans:
-        plan = item['upload_plan']
-        new_upload_plans[item['entity']] = {
-            'data_date': item.get('data_date', ''),
-            'shp_name': item.get('shp_name', ''),
-            'basename': plan['basename'],
-            'remote_backup': plan['remote_backup'],
-            'remote_bat': plan['remote_bat'],
-            'commands': plan['commands']
-        }
-    
-    # If file exists, load and merge
-    if os.path.exists(json_filepath):
-        try:
-            with open(json_filepath, 'r') as jsonfile:
-                existing_upload_plans = json.load(jsonfile)
-        except Exception as e:
-            logging.error(f"Could not read existing JSON file: {e}")
-            existing_upload_plans = {}
-        # Merge: overwrite existing with new
-        existing_upload_plans.update(new_upload_plans)
-        merged_upload_plans = existing_upload_plans
-    else:
-        merged_upload_plans = new_upload_plans
-    
-    # Sort by entity name
-    sorted_upload_plans = {k: merged_upload_plans[k] for k in sorted(merged_upload_plans)}
-    
-    # Write the JSON file
-    try:
-        with open(json_filepath, 'w') as jsonfile:
-            json.dump(sorted_upload_plans, jsonfile, indent=2)
-        logging.info(f"Upload plans JSON file generated successfully: {json_filepath}")
-        logging.info(f"Generated plans for {len(sorted_upload_plans)} entities (merged mode)")
-    except IOError as e:
-        logging.error(f"Could not write JSON file: {e}")
-        raise
+# Legacy upload functions removed - uploads now handled inline via manifest psql commands
 
 # Function to generate a summary
 def generate_summary(results):
@@ -1158,7 +1053,7 @@ def generate_summary(results):
 # directory (or a specified path).  Currently returns EPSG code only.
 # ---------------------------------------------------------------------------
 def extract_shp_metadata(shp_path, logger):
-    """Return simple metadata (currently just EPSG code) for a shapefile.
+    """Return metadata for a shapefile including EPSG code, data date, and field names.
 
     Parameters
     ----------
@@ -1170,7 +1065,8 @@ def extract_shp_metadata(shp_path, logger):
     Returns
     -------
     dict
-        e.g. {"epsg": "3857"} or {} if not found / errored.
+        Contains keys: "epsg", "data_date", "update_date", "shp", "field_names"
+        e.g. {"epsg": "3857", "data_date": "2024-01-15", "field_names": "[\"prop_id\",\"owner\"]"}
     """
 
     metadata = {}
