@@ -558,18 +558,19 @@ class LayerStandardizer:
         # Fixed summary info in first columns
         summary_row[0] = "SUMMARY"
         summary_row[1] = f"{success_entities}/{total_entities}"
-        summary_row[2] = f"Missing: {len(missing_entities)}"
+        summary_row[2] = f"Missing field: {len(missing_entities)}"
         summary_row[3] = f"Duplicates: {len(duplicate_entities)}"
         
         # Column totals aligned with their respective data columns
         for i in range(4, len(header_catalog)):
-            summary_row[i] = f"Tot: {column_missing_counts[i]}"
+            summary_row[i] = f"{header_catalog[i]}: {column_missing_counts[i]}"
         
         # Transform columns (if they exist)
         if header_transform:
             summary_row[len(header_catalog)] = f"Table record missing: {len(missing_transform_entities)}"
             for i in range(len(header_catalog) + 1, total_columns):
-                summary_row[i] = f"Tot: {column_missing_counts[i]}"
+                col_name = header_transform[i - len(header_catalog)]
+                summary_row[i] = f"{col_name}: {column_missing_counts[i]}"
 
         csv_rows.append([])
         csv_rows.append(summary_row)
