@@ -635,13 +635,213 @@ class LayerStandardizer:
                 self.logger.debug(f"Duplicate rows ({len(self.duplicates_list)}): {dup_entities}")
 
     def _run_update_mode(self):
-        self.logger.info("Running in UPDATE mode – DB rows will be modified as needed.")
-        # TODO: implement update logic
-        entities = self._select_entities()
-        for entity in entities:
-            self.logger.debug(f"Processing entity {entity}")
-            # placeholder – real implementation later
-            pass
+        """Update existing catalog / transform rows to match expected values derived from the manifest.
+
+        Rules:
+        • Do *not* create new catalog rows – if none found we just note it in the CSV summary.
+        • Only overwrite fields that are blank / NULL **or** clearly differ from the expected value.
+        • Keep track of what we actually changed so the CSV only shows cells the script generated/modified.
+        • A companion CSV called <layer>_database_update_<date>.csv is written to the reports folder.
+        """
+        self.logger.info("Running in UPDATE mode – updating existing DB rows only (no record creation).")
+
+        # ------------------------------------------------------------------
+        # CSV setup   (mostly mirrors the check-mode headers)
+        # ------------------------------------------------------------------
+        header_catalog = [
+            "layer",
+            "county",
+            "city",
+            "target_city",
+            "title",
+            "catalog_city",
+            "src_url_file",
+            "format",
+            "download",
+            "resource",
+            "layer_group",
+            "category",
+            "sys_raw_folder",
+            "table_name",
+            "fields_obj_transform",
+        ]
+
+        header_transform = [
+            "transform_record_exists",
+            "transform_city_name",
+            "transform_temp_table_name",
+        ] if self.cfg.layer in {"zoning", "flu"} else []
+
+        csv_rows: List[List[str]] = [header_catalog + header_transform]
+
+        # Counters for the summary row
+        total_entities = 0
+        updated_entities = 0
+        missing_entities: List[str] = []
+        duplicate_entities: List[str] = []
+
+        for entity in sorted(self._select_entities()):
+            total_entities += 1
+            county, city = self._split_entity(entity)
+
+            # Compute expected values (title, layer_group, etc.)
+            expected = self._expected_values(entity, county, city)
+
+            # Determine target_city (pretty display name) via manifest helper
+            cmds = self.manifest.get_entity_commands(self.cfg.layer, entity)
+            target_city_raw = self.manifest.get_target_city(cmds, entity)
+            target_city_disp = title_case(target_city_raw.replace("_", " ")) if target_city_raw else ""
+
+            # Fetch matching catalog rows
+            matches = self._fetch_catalog_rows(county, norm_city(target_city_raw))
+
+            if not matches:
+                # No record – log & add minimal row.
+                self.logger.warning(f"No catalog record found for {entity}; skipping.")
+                missing_entities.append(entity)
+                blank_row = [
+                    self.cfg.layer,
+                    county,
+                    city,
+                    target_city_disp,
+                    expected["title"],  # still show the expected title for clarity
+                ] + ["" for _ in range(len(header_catalog) - 5 + len(header_transform))]
+                csv_rows.append(blank_row)
+                continue
+            elif len(matches) > 1:
+                duplicate_entities.append(entity)
+                self.logger.warning(f"Duplicate catalog records ({len(matches)}) for {entity}; using the first match for updates.")
+
+            cat_row = matches[0]
+
+            # ------------------------------------------------------------------
+            # Determine which fields need updating
+            # ------------------------------------------------------------------
+            update_fields: Dict[str, Any] = {}
+            csv_row = [
+                self.cfg.layer,
+                county,
+                city,
+                target_city_disp,
+                expected["title"],  # always include title for visibility
+            ]
+            # catalog_city, src_url_file, format, download, resource stay blank (script doesn't touch)
+            csv_row += ["", "", "", "", ""]  # 5 columns
+
+            # Fields we may update in main catalog
+            updatable_catalog_fields = [
+                ("layer_group", 10),
+                ("category", 11),
+                ("sys_raw_folder", 12),
+                ("table_name", 13),
+                ("fields_obj_transform", 14),
+            ]
+
+            for field_name, csv_idx in updatable_catalog_fields:
+                expected_val = expected.get(field_name)
+                current_val = cat_row.get(field_name)
+                if current_val in (None, "", "NULL", "null") or (current_val != expected_val):
+                    update_fields[field_name] = expected_val
+                    # Extend csv_row list to proper length if not already (happens once)
+                    while len(csv_row) <= csv_idx:
+                        csv_row.append("")
+                    csv_row[csv_idx] = str(expected_val)
+
+            # Ensure csv_row has full catalog length
+            while len(csv_row) < len(header_catalog):
+                csv_row.append("")
+
+            # ------------------------------------------------------------------
+            # Apply catalog updates (if any)
+            # ------------------------------------------------------------------
+            if update_fields:
+                row_id = cat_row.get("gid") or cat_row.get("id")
+                if row_id is None:
+                    self.logger.error("Cannot determine primary key for catalog row – skipping updates for this row.")
+                else:
+                    self._update_catalog_row(row_id, update_fields)
+                    updated_entities += 1
+
+            # ------------------------------------------------------------------
+            # Transform table handling (zoning / flu only)
+            # ------------------------------------------------------------------
+            if header_transform:
+                tr_updates: Dict[str, Any] = {}
+                tr_row = self._fetch_transform_row(county, city)
+                expected_temp_name = expected["temp_table_name"]
+
+                if tr_row:
+                    # Check temp_table_name
+                    if tr_row.get("temp_table_name") != expected_temp_name:
+                        tr_updates["temp_table_name"] = expected_temp_name
+                # No creation of transform rows here – just log missing
+
+                # Prepare transform columns for CSV – default blanks
+                transform_csv_vals = ["", "", ""]
+
+                if tr_updates and tr_row:
+                    self._update_transform_row(county, city, tr_updates)
+                    transform_csv_vals[0] = "UPDATED"
+                    transform_csv_vals[2] = expected_temp_name
+                elif tr_row:
+                    # Exists but nothing changed
+                    transform_csv_vals[0] = "NO_CHANGE"
+                else:
+                    transform_csv_vals[0] = "MISSING"
+
+                csv_row.extend(transform_csv_vals)
+            # ------------------------------------------------------------------
+            csv_rows.append(csv_row)
+
+        # ------------------------------------------------------------------
+        # Summary row
+        # ------------------------------------------------------------------
+        summary = ["SUMMARY", f"updated: {updated_entities}", f"missing: {len(missing_entities)}", f"duplicates: {len(duplicate_entities)}"]
+        csv_rows.append([])
+        csv_rows.append(summary)
+
+        # ------------------------------------------------------------------
+        # Write CSV
+        # ------------------------------------------------------------------
+        csv_path = REPORTS_DIR / f"{self.cfg.layer}_database_update_{get_today_str()}.csv"
+        with csv_path.open("w", newline="", encoding="utf-8") as fh:
+            writer = csv.writer(fh)
+            for row in csv_rows:
+                writer.writerow(row)
+        self.logger.info(f"Update CSV written → {csv_path}")
+
+    # ------------------------------------------------------------------
+    # SQL helper methods
+    # ------------------------------------------------------------------
+    def _update_catalog_row(self, row_id: Any, updates: Dict[str, Any]):
+        if not updates:
+            return
+        set_clause = ", ".join([f"{k} = %s" for k in updates.keys()])
+        sql = f"UPDATE m_gis_data_catalog_main SET {set_clause} WHERE "
+        # Try gid first, else id
+        if self.db.fetchone("SELECT 1 FROM m_gis_data_catalog_main WHERE gid = %s LIMIT 1", (row_id,)):
+            sql += "gid = %s"
+        else:
+            sql += "id = %s"
+        params = tuple(updates.values()) + (row_id,)
+        if self.cfg.test_mode:
+            self.logger.debug(f"TEST-MODE: Would execute SQL: {sql} params={params}")
+        else:
+            self.db.execute(sql, params)
+            self.logger.debug(f"Updated catalog row {row_id}: {list(updates.keys())}")
+
+    def _update_transform_row(self, county: str, city: str, updates: Dict[str, Any]):
+        if not updates:
+            return
+        table = f"{self.cfg.layer}_transform"
+        set_clause = ", ".join([f"{k} = %s" for k in updates.keys()])
+        sql = f"UPDATE {table} SET {set_clause} WHERE county = %s AND city_name = %s"
+        params = tuple(updates.values()) + (county.upper(), city.upper())
+        if self.cfg.test_mode:
+            self.logger.debug(f"TEST-MODE: Would execute SQL: {sql} params={params}")
+        else:
+            self.db.execute(sql, params)
+            self.logger.debug(f"Updated transform row ({county}, {city}): {list(updates.keys())}")
 
     def _run_manual_fill_mode(self):
         self.logger.info("Running MANUAL-FILL mode – applying user-provided field values only.")
