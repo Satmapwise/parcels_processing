@@ -428,7 +428,6 @@ class LayerStandardizer:
             "county",
             "city",
             "target_city",
-            "target_title",
             "title",
             "catalog_city",
             "src_url_file",
@@ -443,7 +442,7 @@ class LayerStandardizer:
         ]
 
         header_transform = [
-            "status",  # placeholder previously transform_record_exists
+            "transform_record_exists",
             "transform_city_name",
             "transform_temp_table_name",
         ] if self.cfg.layer in {"zoning", "flu"} else []
@@ -687,7 +686,7 @@ class LayerStandardizer:
         ]
 
         header_transform = [
-            "status",  # placeholder previously transform_record_exists
+            "transform_record_exists",
             "transform_city_name",
             "transform_temp_table_name",
         ] if self.cfg.layer in {"zoning", "flu"} else []
@@ -762,12 +761,12 @@ class LayerStandardizer:
 
             # Fields we may update in main catalog (column_name, csv_index)
             updatable_catalog_fields = [
-                ("title", 5),  # possible rename corrections
-                ("layer_group", 11),
-                ("category", 12),
-                ("sys_raw_folder", 13),
-                ("table_name", 14),
-                ("fields_obj_transform", 15),
+                ("title", 5),  # expected title column still index 5
+                ("layer_group", 12),
+                ("category", 13),
+                ("sys_raw_folder", 14),
+                ("table_name", 15),
+                ("fields_obj_transform", 16),
             ]
 
             for field_name, csv_idx in updatable_catalog_fields:
@@ -952,7 +951,6 @@ class LayerStandardizer:
             "county", 
             "city",
             "target_city",
-            "target_title",
             "title",
             "catalog_city",
             "src_url_file",
@@ -967,7 +965,7 @@ class LayerStandardizer:
         ]
 
         header_transform = [
-            "status",  # placeholder previously transform_record_exists
+            "transform_record_exists",
             "transform_city_name", 
             "transform_temp_table_name",
         ] if self.cfg.layer in {"zoning", "flu"} else []
