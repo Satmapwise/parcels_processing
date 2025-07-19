@@ -658,6 +658,25 @@ def _find_shapefile(work_dir, logger):
     return newest_shp_path
 
 
+def _find_latest_zip(work_dir, logger):
+    """Return the basename of the newest *.zip file in *work_dir* or None if none exist."""
+    zips = []
+    for fname in os.listdir(work_dir):
+        if fname.lower().endswith('.zip'):
+            path = os.path.join(work_dir, fname)
+            try:
+                mtime = os.path.getmtime(path)
+                zips.append((mtime, fname))
+            except OSError:
+                continue
+    if not zips:
+        return None
+    zips.sort(key=lambda t: t[0], reverse=True)
+    newest = zips[0][1]
+    logger.debug(f"Detected newest zip file: {newest}")
+    return newest
+
+
 # Function to download and process a layer
 def download_process_layer(layer, queue):
     """
@@ -698,6 +717,8 @@ def download_process_layer(layer, queue):
             # Setup logger for this specific entity
             entity_logger = setup_entity_logger(layer, entity, work_dir)
 
+            raw_zip_name = None  # will hold downloaded zip filename (if any)
+            
             logging.info(f"--- Processing entity: {entity} ---")
 
             # ------------------------------------------------------------------
@@ -790,6 +811,11 @@ def download_process_layer(layer, queue):
                                 _validate_download(work_dir, entity_logger, before_state)
                             except DownloadError as de:
                                 raise DownloadError(str(de), layer, entity) from de
+                            # After a successful download & validation, capture newest zip file
+                            try:
+                                raw_zip_name = _find_latest_zip(work_dir, entity_logger) or raw_zip_name
+                            except Exception as z_err:
+                                entity_logger.debug(f"Zip detection failed: {z_err}")
                         else:
                             entity_logger.info(f"[TEST MODE] Skipping download validation for {layer}/{entity}")
                     else:
@@ -811,6 +837,33 @@ def download_process_layer(layer, queue):
                             update_script_output = _run_command(cmd_list, work_dir, entity_logger)
                         else:
                             stdout = _run_command(cmd_list, work_dir, entity_logger) # Runs all other commands
+
+                        # Check if this is the new psql upload command
+                        if _looks_like_upload(cmd_list):
+                            if not CONFIG.run_upload:
+                                entity_logger.info('Skipping upload command (disabled via --no-upload)')
+                                continue
+
+                            placeholders = {
+                                'layer': layer,
+                                'county': county,
+                                'city': city,
+                                'data_date': metadata.get('data_date', datetime.now().strftime('%Y-%m-%d')),
+                                'publish_date': datetime.now().strftime('%Y-%m-%d'),
+                                'epsg': metadata.get('epsg', ''),
+                                'shp': metadata.get('shp', ''),
+                                'raw_zip': raw_zip_name or '',
+                                'field_names': metadata.get('field_names', ''),
+                            }
+
+                            if '{raw_zip}' in ' '.join(cmd_list) and not raw_zip_name:
+                                raise UploadError('Upload command expects {raw_zip} placeholder but no ZIP file detected', layer, entity)
+
+                            cmd_list = _substitute_placeholders(cmd_list, placeholders, entity_logger)
+                            entity_logger.debug(f"Running upload command: {cmd_list}")
+                            _run_command(cmd_list, work_dir, entity_logger)
+                            continue  # move to next manifest command
+
                     else:
                         if processing_started == False:
                             logging.info(f"Skipping processing for {layer}/{entity} (disabled in config)")
@@ -1627,6 +1680,48 @@ def format_time_am_pm():
         return f"SUMMARY_12-{minute}-PM"
     else:
         return f"SUMMARY_{hour-12}-{minute}-PM"
+
+
+def _looks_like_upload(cmd_list):
+    """Return True if *cmd_list* appears to be the psql-upload command.
+
+    Criteria: first item is 'psql' executable and SQL string mentions
+    'm_gis_data_catalog_main' (case-insensitive)."""
+    if not cmd_list:
+        return False
+    if os.path.basename(cmd_list[0]) != 'psql':
+        return False
+    joined = ' '.join(cmd_list).lower()
+    return 'm_gis_data_catalog_main' in joined
+
+
+def _substitute_placeholders(cmd_list, placeholder_map, logger):
+    """Return command list with {placeholders} substituted.
+
+    Raises UploadError if a placeholder in the command does not have a value
+    in *placeholder_map* (except {field_names} which may be blank for now)."""
+    substituted = []
+    missing_keys = set()
+    for token in cmd_list:
+        if not isinstance(token, str):
+            substituted.append(token)
+            continue
+        new_tok = token
+        for key, val in placeholder_map.items():
+            placeholder = f'{{{key}}}'
+            if placeholder in new_tok:
+                new_tok = new_tok.replace(placeholder, str(val))
+        # detect unreplaced placeholders
+        for m in re.findall(r'\{([^}]+)\}', new_tok):
+            if m not in placeholder_map:
+                missing_keys.add(m)
+        substituted.append(new_tok)
+    # Allow field_names to be blank but present.
+    missing_keys.discard('field_names')
+    if missing_keys:
+        logger.error(f"Missing values for placeholders: {missing_keys}")
+        raise UploadError(f"Missing placeholder values for: {', '.join(sorted(missing_keys))}")
+    return substituted
 
 
 if __name__ == "__main__":
