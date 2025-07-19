@@ -267,6 +267,7 @@ def main(argv: List[str] | None = None) -> None:
     # If --local flag is provided, redirect all local paths to user's Downloads/test
     if args.local:
         set_local_base_dir(Path.home() / "Downloads/test")
+        args.test_retrieve = True
 
     # Load .env for remote credentials
     load_dotenv()
