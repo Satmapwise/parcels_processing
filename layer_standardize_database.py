@@ -233,6 +233,17 @@ class DB:
 # Formatting helpers (layer-specific conventions)
 # --------------------------------------------------
 
+# Florida county list (lowercase, underscores). Used for entity parsing in LayerStandardizer._split_entity
+FL_COUNTIES: set[str] = {
+    "alachua","baker","bay","bradford","brevard","broward","calhoun","charlotte","citrus","clay",
+    "collier","columbia","desoto","dixie","duval","escambia","flagler","franklin","gadsden","gilchrist",
+    "glades","gulf","hamilton","hardee","hendry","hernando","highlands","hillsborough","holmes",
+    "indian_river","jackson","jefferson","lafayette","lake","lee","leon","levy","liberty","madison",
+    "manatee","marion","martin","miami_dade","monroe","nassau","okaloosa","okeechobee","orange","osceola",
+    "palm_beach","pasco","pinellas","polk","putnam","santa_rosa","sarasota","seminole","st_johns",
+    "st_lucie","sumter","suwannee","taylor","union","volusia","wakulla","walton","washington",
+}
+
 class Formatter:
     LAYER_GROUP = {"zoning": "flu_zoning", "flu": "flu_zoning"}
     CATEGORY = {"zoning": "08_Land_Use_and_Zoning", "flu": "08_Land_Use_and_Zoning"}
@@ -945,10 +956,12 @@ class LayerStandardizer:
     def _split_entity(self, entity: str) -> Tuple[str, str]:
         """Split manifest entity into (county, city).
 
-        Handles multi-word counties like 'miami_dade_unincorporated': if the last
-        token is a known suffix (unincorporated/unified/countywide) it is treated
-        as the city and everything before it is the county. Otherwise the first
-        token is county and the remainder is city (standard behaviour)."""
+        Handles multi-word counties like 'miami_dade_unincorporated' or 'st_lucie_port_st_lucie'.
+        Strategy:
+        1. If the last token is a known suffix (unincorporated/unified/incorporated/countywide) treat it as the city.
+        2. Otherwise, iterate from longest possible county prefix to shortest until we find a match in FL_COUNTIES.
+           The remainder is considered the city.  Fallback is original heuristic (first token as county).
+        """
         tokens = entity.split("_")
         if len(tokens) < 2:
             raise ValueError(f"Invalid entity format: {entity}")
@@ -957,9 +970,21 @@ class LayerStandardizer:
         if tokens[-1] in suffixes:
             county = "_".join(tokens[:-1])
             city = tokens[-1]
-        else:
-            county = tokens[0]
-            city = "_".join(tokens[1:])
+            return county, city
+
+        # Try to recognise multi-word counties by longest-prefix match
+        for i in range(len(tokens), 1, -1):  # from longest possible down to 2 tokens
+            candidate_county = "_".join(tokens[:i])
+            if candidate_county in FL_COUNTIES:
+                county = candidate_county
+                city = "_".join(tokens[i:])
+                if not city:  # edge case – entity only county
+                    raise ValueError(f"Could not determine city part in entity: {entity}")
+                return county, city
+
+        # Fallback to original simple split
+        county = tokens[0]
+        city = "_".join(tokens[1:])
         return county, city
 
     def _select_entities(self) -> List[str]:
