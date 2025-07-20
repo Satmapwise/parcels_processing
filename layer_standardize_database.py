@@ -66,8 +66,23 @@ MANIFEST_PATH = Path("layer_manifest.json")
 # --------------------------------------------------
 
 def title_case(s: str) -> str:
-    """Return string in title-case, but keep words like 'of' lowercase unless first."""
-    return " ".join(w.capitalize() if i == 0 or len(w) > 2 else w for i, w in enumerate(s.split()))
+    """Return a human-friendly title-case string.
+
+    • Replaces underscores with spaces so words are separated correctly.
+    • Capitalises each word except short stop-words ('of', 'and', etc.) unless the word
+      is the first in the string.
+    """
+    if not s:
+        return ""
+
+    # Convert underscores (and collapse multiple) to single spaces for readability
+    cleaned = " ".join(part for part in s.replace("_", " ").split())
+
+    words = cleaned.split()
+    return " ".join(
+        w.capitalize() if i == 0 or len(w) > 2 else w
+        for i, w in enumerate(words)
+    )
 
 
 def get_today_str() -> str:
