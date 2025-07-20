@@ -646,13 +646,10 @@ class LayerStandardizer:
         summary_row[3] = f"Duplicates: {len(duplicate_entities)}"
         
         # Column totals aligned with their respective data columns
-        status_idx = len(header_catalog)  # first column in transform section when present
         fot_idx = header_catalog.index("fields_obj_transform")
 
         for idx in range(4, len(header_catalog)):
-            if idx == status_idx:
-                summary_row[idx] = f"missing transform: {len(missing_transform_entities)}"
-            elif idx == fot_idx:
+            if idx == fot_idx:
                 summary_row[idx] = f"fields_obj_transform missing: {column_missing_counts[idx]}"
             else:
                 summary_row[idx] = f"{header_catalog[idx]}: {column_missing_counts[idx]}"
@@ -721,11 +718,8 @@ class LayerStandardizer:
             "fields_obj_transform",
         ]
 
-        header_transform = [
-            "transform_record_exists",
-            "transform_city_name",
-            "transform_temp_table_name",
-        ] if self.cfg.layer in {"zoning", "flu"} else []
+        # We are phasing out dedicated transform tables; skip any transform-table logic.
+        header_transform: list[str] = []
 
         csv_rows: List[List[str]] = [header_catalog + header_transform]
 
@@ -741,7 +735,6 @@ class LayerStandardizer:
         change_counts = [0] * total_columns
 
         # Counters for special summary values
-        missing_transform_entities_count = 0  # status == MISSING
         missing_fot_count = 0  # fields_obj_transform null/none across existing rows
 
         for entity in sorted(self._select_entities()):
@@ -848,7 +841,7 @@ class LayerStandardizer:
                     # Extend csv_row list to proper length if not already
                     while len(csv_row) <= csv_idx:
                         csv_row.append("")
-                    csv_row[csv_idx] = str(expected_val)
+                    csv_row[csv_idx] = "" if expected_val is None else str(expected_val)
                     change_counts[csv_idx] += 1
 
             # Ensure csv_row has full catalog length
@@ -862,63 +855,22 @@ class LayerStandardizer:
                 self._update_catalog_row(cat_row, update_fields)
                 updated_entities += 1
 
-            # ------------------------------------------------------------------
-            # Transform table handling (zoning / flu only)
-            # ------------------------------------------------------------------
-            if header_transform:
-                tr_updates: Dict[str, Any] = {}
-                tr_row = self._fetch_transform_row(county, city)
-                expected_temp_name = expected["temp_table_name"]
-
-                if tr_row:
-                    # Check temp_table_name
-                    if tr_row.get("temp_table_name") != expected_temp_name:
-                        tr_updates["temp_table_name"] = expected_temp_name
-                # No creation of transform rows here – just log missing
-
-                # Prepare transform columns for CSV – default blanks
-                transform_csv_vals = ["", "", ""]
-
-                if tr_updates and tr_row:
-                    self._update_transform_row(county, city, tr_updates)
-                    transform_csv_vals[0] = "UPDATED"
-                    transform_csv_vals[2] = expected_temp_name
-                    # count change for temp_table_name column
-                    change_counts[len(header_catalog) + 2] += 1
-                elif tr_row:
-                    # Exists but nothing changed
-                    transform_csv_vals[0] = "NO_CHANGE"
-                else:
-                    transform_csv_vals[0] = "MISSING"
-                    missing_transform_entities_count += 1
-
-                csv_row.extend(transform_csv_vals)
-
-            # Track missing fields_obj_transform for summary
-            if cat_row:
-                cur_fot = cat_row.get("fields_obj_transform")
-                if cur_fot in (None, "", "NULL", "null"):
-                    missing_fot_count += 1
-
             csv_rows.append(csv_row)
 
         # ------------------------------------------------------------------
         # Summary row (records found, changed records, per-column change counts)
         # ------------------------------------------------------------------
-        header_all = header_catalog + header_transform
+        header_all = header_catalog  # no transform columns
         summary_row = ["" for _ in range(total_columns)]
         summary_row[0] = "SUMMARY"
         summary_row[1] = f"{found_entities}/{total_entities}"
         summary_row[2] = f"changed: {updated_entities}"
         summary_row[3] = f"dbmissing: {len(missing_entities)}"  # target_city column
 
-        status_idx = len(header_catalog)  # first column in transform section when present
         fot_idx = header_catalog.index("fields_obj_transform")
 
         for idx in range(4, total_columns):
-            if idx == status_idx:
-                summary_row[idx] = f"tmissing: {missing_transform_entities_count}"
-            elif idx == fot_idx:
+            if idx == fot_idx:
                 summary_row[idx] = f"fotmissing: {missing_fot_count}"
             else:
                 summary_row[idx] = f"{header_all[idx]}: {change_counts[idx]}"
