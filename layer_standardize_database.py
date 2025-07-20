@@ -82,9 +82,13 @@ def title_case(s: str) -> str:
         parts = tok.split("-")
         new_parts: list[str] = []
         stop_words = {"of", "and", "in", "the"}
+        abbrev_map = {"st": "St", "ft": "Ft", "mt": "Mt"}
         for j, p in enumerate(parts):
             first_in_phrase = is_first and j == 0
-            if first_in_phrase or (p.lower() not in stop_words and len(p) > 2):
+            plow = p.lower()
+            if plow in abbrev_map:
+                new_parts.append(abbrev_map[plow])
+            elif first_in_phrase or (plow not in stop_words and len(p) > 2):
                 new_parts.append(p.capitalize())
             else:
                 new_parts.append(p.lower())
