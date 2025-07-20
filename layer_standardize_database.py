@@ -1173,7 +1173,7 @@ class LayerStandardizer:
 
     def _fetch_catalog_rows(self, county: str, city_fmt: str) -> List[Dict[str, Any]]:
         """Return all catalog rows matching county and formatted city."""
-        sql = "SELECT * FROM m_gis_data_catalog_main WHERE lower(county) LIKE %s"
+        sql = "SELECT * FROM m_gis_data_catalog_main WHERE status IS DISTINCT FROM 'DELETE' AND lower(county) LIKE %s"
         rows = self.db.fetchall(sql, (f"{county.lower()}%",)) or []
         matches = []
         for row in rows:
@@ -1245,7 +1245,7 @@ class LayerStandardizer:
 
     def _find_catalog_orphans(self, manifest_entities: set[str]) -> List[List[str]]:
         """Return list of full catalog record data for DB rows whose layer matches cfg.layer but entity not in manifest."""
-        sql = "SELECT * FROM m_gis_data_catalog_main"
+        sql = "SELECT * FROM m_gis_data_catalog_main WHERE status IS DISTINCT FROM 'DELETE'"
         rows = self.db.fetchall(sql) or []
         orphans: List[List[str]] = []
         
