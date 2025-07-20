@@ -72,17 +72,25 @@ def title_case(s: str) -> str:
     • Capitalises each word except short stop-words ('of', 'and', etc.) unless the word
       is the first in the string.
     """
-    if not s:
-        return ""
-
-    # Convert underscores (and collapse multiple) to single spaces for readability
     cleaned = " ".join(part for part in s.replace("_", " ").split())
 
     words = cleaned.split()
-    return " ".join(
-        w.capitalize() if i == 0 or len(w) > 2 else w
-        for i, w in enumerate(words)
-    )
+
+    def cap_token(tok: str, is_first: bool) -> str:
+        """Capitalize a token, preserving stop-words and hyphenated sub-parts."""
+        # Handle hyphenated names like "miami-dade" or "howey-in-the-hills"
+        parts = tok.split("-")
+        new_parts: list[str] = []
+        stop_words = {"of", "and", "in", "the"}
+        for j, p in enumerate(parts):
+            first_in_phrase = is_first and j == 0
+            if first_in_phrase or (p.lower() not in stop_words and len(p) > 2):
+                new_parts.append(p.capitalize())
+            else:
+                new_parts.append(p.lower())
+        return "-".join(new_parts)
+
+    return " ".join(cap_token(w, i == 0) for i, w in enumerate(words))
 
 
 def get_today_str() -> str:
@@ -274,6 +282,10 @@ class Formatter:
         elif entity_type == "unincorporated":
             return f"{layer_title} - {county_tc} Unincorporated"
         elif entity_type == "unified":
+            return f"{layer_title} - {county_tc} Unified"
+        elif entity_type == "incorporated":
+            return f"{layer_title} - {county_tc} Incorporated"
+        elif entity_type == "countywide":  # Alias → Unified
             return f"{layer_title} - {county_tc} Unified"
         else:
             return f"{layer_title} - {city_tc}"
@@ -764,6 +776,37 @@ class LayerStandardizer:
             cat_row = matches[0]
             found_entities += 1
 
+            # --------------------------------------------------
+            # Re-compute expected values so we can tweak prefix by referring to
+            # the existing DB title (to decide City/Town/Village)
+            # --------------------------------------------------
+            original_title_lower = str(cat_row.get("title", "")).lower()
+
+            if "town of" in original_title_lower:
+                expected_prefix = "Town of"
+            elif "village of" in original_title_lower:
+                expected_prefix = "Village of"
+            else:
+                expected_prefix = "City of"
+
+            # Replace the prefix only for normal municipality entities
+            if expected_prefix != "City of":
+                # Replace the default "City of" with the detected municipal prefix
+                expected["title"] = expected["title"].replace("City of", expected_prefix, 1)
+
+            # Preserve hyphens found in original county/city names
+            county_tc = title_case(county.replace("_", " "))
+            city_tc = title_case(city.replace("_", " "))
+
+            county_dash = county_tc.replace(" ", "-")
+            city_dash = city_tc.replace(" ", "-")
+
+            if county_dash in cat_row.get("title", "") and county_dash not in expected["title"]:
+                expected["title"] = expected["title"].replace(county_tc, county_dash, 1)
+
+            if city_dash in cat_row.get("title", "") and city_dash not in expected["title"]:
+                expected["title"] = expected["title"].replace(city_tc, city_dash, 1)
+
             # ------------------------------------------------------------------
             # Determine which fields need updating
             # ------------------------------------------------------------------
@@ -1168,16 +1211,22 @@ class LayerStandardizer:
         """Compute expected values for catalog / transform tables (not yet used for check mode)."""
         layer_group = Formatter.LAYER_GROUP[self.cfg.layer]
         category = Formatter.CATEGORY[self.cfg.layer]
-        entity_type = "city" if city not in {"unincorporated", "unified", "countywide"} else city
-        title = Formatter.format_entity_to_title(self.cfg.layer, county, city, entity_type)
-        table_name = Formatter.format_table_name(self.cfg.layer, county, city, entity_type)
-        sys_raw_folder = str(Formatter.get_sys_raw_folder(category, self.cfg.layer, county, city))
-        temp_table_name = Formatter.format_temp_table_name(self.cfg.layer, county, city)
+        # Map special suffixes / aliases
+        if city == "countywide":
+            entity_type = "unified"
+            city_std = "unified"
+        else:
+            entity_type = "city" if city not in {"unincorporated", "unified", "incorporated"} else city
+            city_std = city
+        title = Formatter.format_entity_to_title(self.cfg.layer, county, city_std, entity_type)
+        table_name = Formatter.format_table_name(self.cfg.layer, county, city_std, entity_type)
+        sys_raw_folder = str(Formatter.get_sys_raw_folder(category, self.cfg.layer, county, city_std))
+        temp_table_name = Formatter.format_temp_table_name(self.cfg.layer, county, city_std)
 
         return {
             "title": title,
             "county": county.title(),
-            "city": city.title(),
+            "city": city_std.title(),
             "layer_group": layer_group,
             "layer_subgroup": self.cfg.layer,
             "category": category,
