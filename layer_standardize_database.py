@@ -435,6 +435,7 @@ class LayerStandardizer:
             "download",
             "resource",
             "layer_group",
+            "layer_subgroup",
             "category",
             "sys_raw_folder",
             "table_name",
@@ -500,6 +501,7 @@ class LayerStandardizer:
                         safe_catalog_val(extra.get("download")),
                         safe_catalog_val(extra.get("resource")),
                         safe_catalog_val(extra.get("layer_group")),
+                        safe_catalog_val(extra.get("layer_subgroup")),
                         safe_catalog_val(extra.get("category")),
                         safe_catalog_val(extra.get("sys_raw_folder")),
                         safe_catalog_val(extra.get("table_name")),
@@ -536,6 +538,7 @@ class LayerStandardizer:
                     safe_catalog_val(cat_row.get("download")),
                     safe_catalog_val(cat_row.get("resource")),
                     safe_catalog_val(cat_row.get("layer_group")),
+                    safe_catalog_val(cat_row.get("layer_subgroup")),
                     safe_catalog_val(cat_row.get("category")),
                     safe_catalog_val(cat_row.get("sys_raw_folder")),
                     safe_catalog_val(cat_row.get("table_name")),
@@ -554,6 +557,7 @@ class LayerStandardizer:
                     safe_catalog_val(cat_row.get("download")),
                     safe_catalog_val(cat_row.get("resource")),
                     safe_catalog_val(cat_row.get("layer_group")),
+                    safe_catalog_val(cat_row.get("layer_subgroup")),
                     safe_catalog_val(cat_row.get("category")),
                     safe_catalog_val(cat_row.get("sys_raw_folder")),
                     safe_catalog_val(cat_row.get("table_name")),
@@ -679,6 +683,7 @@ class LayerStandardizer:
             "download",
             "resource",
             "layer_group",
+            "layer_subgroup",
             "category",
             "sys_raw_folder",
             "table_name",
@@ -759,14 +764,18 @@ class LayerStandardizer:
             # catalog_city, src_url_file, format, download, resource stay blank (script doesn't touch)
             csv_row += ["", "", "", "", ""]  # 5 columns
 
-            # Fields we may update in main catalog (column_name, csv_index)
+            # Build (field, column_index) mapping dynamically to remain robust if header order changes
             updatable_catalog_fields = [
-                ("title", 5),  # expected title column still index 5
-                ("layer_group", 12),
-                ("category", 13),
-                ("sys_raw_folder", 14),
-                ("table_name", 15),
-                ("fields_obj_transform", 16),
+                (fld, header_catalog.index(fld))
+                for fld in (
+                    "title",
+                    "layer_group",
+                    "layer_subgroup",
+                    "category",
+                    "sys_raw_folder",
+                    "table_name",
+                    "fields_obj_transform",
+                )
             ]
 
             for field_name, csv_idx in updatable_catalog_fields:
@@ -958,6 +967,7 @@ class LayerStandardizer:
             "download",
             "resource",
             "layer_group",
+            "layer_subgroup",
             "category",
             "sys_raw_folder",
             "table_name",
@@ -1154,6 +1164,7 @@ class LayerStandardizer:
             "county": county.title(),
             "city": city.title(),
             "layer_group": layer_group,
+            "layer_subgroup": self.cfg.layer,
             "category": category,
             "table_name": table_name,
             "sys_raw_folder": sys_raw_folder,
@@ -1223,6 +1234,7 @@ class LayerStandardizer:
                     safe_catalog_val(row.get("download")),
                     safe_catalog_val(row.get("resource")),
                     safe_catalog_val(row.get("layer_group")),
+                    safe_catalog_val(row.get("layer_subgroup")),
                     safe_catalog_val(row.get("category")),
                     safe_catalog_val(row.get("sys_raw_folder")),
                     safe_catalog_val(row.get("table_name")),
@@ -1277,6 +1289,7 @@ class LayerStandardizer:
                     "**MISSING**",  # download
                     "**MISSING**",  # resource
                     "**MISSING**",  # layer_group
+                    "**MISSING**",  # layer_subgroup
                     "**MISSING**",  # category
                     "**MISSING**",  # sys_raw_folder
                     "**MISSING**",  # table_name
