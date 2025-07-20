@@ -197,7 +197,7 @@
         "ogrinfo",
         ["python3", "/srv/tools/python/lib/update_zoning2.py", "hillsborough", "plant_city"],
         ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE support.zoning_transform SET shp_name = '{shp}', srs_epsg = '{epsg}', data_date = '{data_date}', update_date = '{update_date}' WHERE county = 'HILLSBOROUGH' and city_name = 'PLANT_CITY'"],
-        ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE m_gis_data_catalog_main SET data_date = '{data_date}' AND update_date = '{update_date}' AND epsg = '{epsg}' AND sys_raw_file = '{shp}' AND field_names = '{field_names}' AND sys_raw_file_zip = '{raw_zip}' WHERE layer_subgroup = 'zoning' AND county = 'hillsborough' AND city = 'Plant City'"]
+        ["psql", "-d", "gisdev", "-U", "postgres", "-c", "UPDATE m_gis_data_catalog_main SET data_date = '{data_date}', publish_date = '{update_date}', srs_epsg = '{epsg}', sys_raw_file = '{shp}', field_names = '{field_names}' WHERE layer_subgroup = 'zoning' AND county = 'hillsborough' AND city = 'Plant City'"]
       ],
       "hillsborough_tampa": [
         ["python3", "/srv/tools/python/lib/ags_extract_data2.py", "zoning_tampa", "delete", "15"],
