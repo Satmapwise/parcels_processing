@@ -1712,9 +1712,8 @@ def generate_entity_commands(layer: str, entity: str, county: str, city: str):
             'python',
             os.path.join(os.path.dirname(__file__), 'download_tools', 'ags_extract_data2.py'),
             table_name,
-            'DELETE',
-            '15',
-            '*'
+            'delete',
+            '15'
         ])
     else:
         if not resource:
