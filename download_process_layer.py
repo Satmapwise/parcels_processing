@@ -22,6 +22,8 @@ import csv
 import json
 import re
 import fnmatch  # at top with other imports
+import psycopg2
+import psycopg2.extras
 
 # ---------------------------------------------------------------------------
 # Load the layer/entity manifest so the script is entirely data-driven.
@@ -31,9 +33,10 @@ MANIFEST_FILE = os.path.join(os.path.dirname(__file__), 'layer_manifest.json')
 try:
     with open(MANIFEST_FILE, 'r') as _mf:
         LAYER_CFG = json.load(_mf)
-except FileNotFoundError as _e:
-    raise RuntimeError(f"Manifest file not found: {MANIFEST_FILE}. "
-                       "Please create the JSON manifest before running.") from _e
+except FileNotFoundError:
+    # Allow running without a manifest file – command generation will fall back
+    # to database-driven logic.
+    LAYER_CFG = {}
 
 # Initial supported layers come straight from the manifest.  We may re-assign
 # later in the file after legacy blocks have executed to ensure the manifest
@@ -266,13 +269,17 @@ def set_queue(layer, entities):
     """
     logging.info(f"Setting queue for layer '{layer}' and entities '{entities or 'all'}'")
 
-    if layer not in layers:
+    # If a manifest is present we validate layer against it; otherwise we accept any layer.
+    if layers and layer not in layers:
         raise ValueError(f"Invalid layer specified: '{layer}'. Must be one of {layers}")
 
-    try:
+    if layer in LAYER_CFG:
         layer_entities = set(LAYER_CFG[layer]['entities'].keys())
-    except KeyError:
-        raise ValueError(f"Layer '{layer}' not found in manifest.")
+    else:
+        # No manifest entry – fallback: assume CLI-specified entities list is authoritative.
+        if not entities:
+            raise ValueError("No manifest entry found and no entities supplied – cannot determine processing queue.")
+        layer_entities = set(entities)
 
     # -----------------------------------
     # No entities supplied → process ALL
@@ -687,10 +694,11 @@ def download_process_layer(layer, queue):
             # Manifest-driven command execution (generic for all layers).
             # ------------------------------------------------------------------
             
-            manifest_entry = LAYER_CFG[layer]['entities'].get(entity)
-            if manifest_entry is None:
+            try:
+                manifest_entry = generate_entity_commands(layer, entity, county, city)
+            except Exception as e:
                 raise ProcessingError(
-                    f"Manifest is missing entry for {layer}/{entity}", layer, entity
+                    f"Command generation failed: {e}", layer, entity
                 )
 
             # -------------------------
@@ -1635,6 +1643,121 @@ def _substitute_placeholders(cmd_list, placeholder_map, logger):
         logger.error(f"Missing values for placeholders: {missing_keys}")
         raise UploadError(f"Missing placeholder values for: {', '.join(sorted(missing_keys))}")
     return substituted
+
+
+# ---------------------------------------------------------------------------
+# Database connection string (temporary hard-coded; consider env variable)
+# ---------------------------------------------------------------------------
+PG_CONNECTION = 'host=localhost port=5432 dbname=gisdev user=postgres password=galactic529'
+
+# ---------------------------------------------------------------------------
+# Database-driven command generation helpers
+# ---------------------------------------------------------------------------
+
+
+def _fetch_catalog_row(layer: str, county: str, city: str):
+    """Return catalog row for the given layer/county/city or None if missing."""
+    conn = psycopg2.connect(PG_CONNECTION)
+    cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+    try:
+        sql = (
+            "SELECT * FROM m_gis_data_catalog_main "
+            "WHERE lower(layer_subgroup) = %s "
+            "AND lower(county) = %s "
+            "AND lower(city) = %s LIMIT 1"
+        )
+        cur.execute(sql, (layer.lower(), county.lower().replace('_', ' '), city.lower().replace('_', ' ')))
+        row = cur.fetchone()
+        return dict(row) if row else None
+    finally:
+        cur.close()
+        conn.close()
+
+
+def _parse_processing_comments(text):
+    """Parse the *processing_comments* field into a list of command strings."""
+    if not text:
+        return []
+    # Try JSON array first
+    try:
+        data = json.loads(text)
+        if isinstance(data, list):
+            return [str(cmd).strip() for cmd in data if str(cmd).strip()]
+    except Exception:
+        pass
+    # Fallback – split on newlines/semicolons
+    commands = []
+    for piece in re.split(r'[\n;]+', text):
+        piece = piece.strip()
+        if piece:
+            commands.append(piece)
+    return commands
+
+
+def generate_entity_commands(layer: str, entity: str, county: str, city: str):
+    """Return the command list to process *entity* based on catalog row."""
+    row = _fetch_catalog_row(layer, county, city)
+    if row is None:
+        raise RuntimeError(f"Catalog row not found for {layer}/{entity}")
+
+    commands = []
+
+    fmt = (row.get('format') or '').lower()
+    resource = row.get('resource') or row.get('src_url_file')
+    table_name = row.get('table_name')
+
+    # 1) Download command
+    if fmt in {'ags', 'arcgis', 'esri', 'ags_extract'}:
+        commands.append([
+            'python',
+            os.path.join(os.path.dirname(__file__), 'download_tools', 'ags_extract_data2.py'),
+            table_name,
+            'DELETE',
+            '15',
+            '*'
+        ])
+    else:
+        if not resource:
+            raise RuntimeError('Missing resource/url for download_data.py')
+        commands.append([
+            'python',
+            os.path.join(os.path.dirname(__file__), 'download_tools', 'download_data.py'),
+            resource
+        ])
+
+    # 2) Optional preprocessing
+    commands.extend(_parse_processing_comments(row.get('processing_comments')))
+
+    # 3) Metadata extraction placeholder
+    commands.append('ogrinfo')
+
+    # 4) Update script (layer-specific)
+    proc_dir = os.path.join(os.path.dirname(__file__), 'processing_tools')
+    if layer == 'zoning' and os.path.exists(os.path.join(proc_dir, 'update_zoning2.py')):
+        commands.append(['python', os.path.join(proc_dir, 'update_zoning2.py'), county, city])
+    else:
+        cand = os.path.join(proc_dir, f'update_{layer}.py')
+        if os.path.exists(cand):
+            commands.append(['python', cand, county, city])
+
+    # 5) Upload (psql UPDATE) command
+    sql_update = (
+        "UPDATE m_gis_data_catalog_main SET "
+        "data_date = '{data_date}', "
+        "publish_date = '{update_date}', "
+        "srs_epsg = '{epsg}', "
+        "sys_raw_file = '{shp}', "
+        "sys_raw_file_zip = '{raw_zip}', "
+        "field_names = '{field_names}' "
+        "WHERE layer_subgroup = '{layer}' "
+        "AND county = '{county}' "
+        "AND city = '{city}';"
+    )
+    commands.append([
+        'psql', '-d', 'gisdev', '-U', 'postgres', '-c', sql_update
+    ])
+
+    return commands
 
 
 if __name__ == "__main__":
