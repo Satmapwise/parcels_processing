@@ -1740,18 +1740,34 @@ def generate_entity_commands(layer: str, entity: str, county: str, city: str):
             commands.append(['python', cand, county, city])
 
     # 5) Upload (psql UPDATE) command
-    sql_update = (
-        "UPDATE m_gis_data_catalog_main SET "
-        "data_date = '{data_date}', "
-        "publish_date = '{update_date}', "
-        "srs_epsg = '{epsg}', "
-        "sys_raw_file = '{shp}', "
-        "sys_raw_file_zip = '{raw_zip}', "
-        "field_names = '{field_names}' "
-        "WHERE layer_subgroup = '{layer}' "
-        "AND county = '{county}' "
-        "AND city = '{city}';"
-    )
+    # Build SQL based on download type
+    if fmt in {'ags', 'arcgis', 'esri', 'ags_extract'}:
+        # AGS entities don't have zip files
+        sql_update = (
+            "UPDATE m_gis_data_catalog_main SET "
+            "data_date = '{data_date}', "
+            "publish_date = '{update_date}', "
+            "srs_epsg = '{epsg}', "
+            "sys_raw_file = '{shp}', "
+            "field_names = '{field_names}' "
+            "WHERE layer_subgroup = '{layer}' "
+            "AND county = '{county}' "
+            "AND city = '{city}';"
+        )
+    else:
+        # Zip download entities may have zip files
+        sql_update = (
+            "UPDATE m_gis_data_catalog_main SET "
+            "data_date = '{data_date}', "
+            "publish_date = '{update_date}', "
+            "srs_epsg = '{epsg}', "
+            "sys_raw_file = '{shp}', "
+            "sys_raw_file_zip = '{raw_zip}', "
+            "field_names = '{field_names}' "
+            "WHERE layer_subgroup = '{layer}' "
+            "AND county = '{county}' "
+            "AND city = '{city}';"
+        )
     commands.append([
         'psql', '-d', 'gisdev', '-U', 'postgres', '-c', sql_update
     ])
