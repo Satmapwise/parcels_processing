@@ -1632,6 +1632,9 @@ def _substitute_placeholders(cmd_list, placeholder_map, logger):
         new_tok = token
         for key, val in placeholder_map.items():
             placeholder = f'{{{key}}}'
+            if placeholder == '{city}':
+                val = title_case(val)
+
             if placeholder in new_tok:
                 new_tok = new_tok.replace(placeholder, str(val))
         # detect unreplaced placeholders
@@ -1666,7 +1669,7 @@ def _fetch_catalog_row(layer: str, county: str, city: str):
             "AND lower(county) = %s "
             "AND lower(city) = %s LIMIT 1"
         )
-        cur.execute(sql, (layer.lower(), county.lower().replace('_', ' '), city.lower().replace('_', ' ')))
+        cur.execute(sql, (layer.lower(), county.lower().replace('_', ' '), title_case(city)))
         row = cur.fetchone()
         return dict(row) if row else None
     finally:
@@ -1773,6 +1776,38 @@ def generate_entity_commands(layer: str, entity: str, county: str, city: str):
     ])
 
     return commands
+
+
+def title_case(s: str) -> str:
+    """Return a human-friendly title-case string.
+
+    • Replaces underscores with spaces so words are separated correctly.
+    • Capitalises each word except short stop-words ('of', 'and', etc.) unless the word
+      is the first in the string.
+    """
+    cleaned = " ".join(part for part in s.replace("_", " ").split())
+
+    words = cleaned.split()
+
+    def cap_token(tok: str, is_first: bool) -> str:
+        """Capitalize a token, preserving stop-words and hyphenated sub-parts."""
+        # Handle hyphenated names like "miami-dade" or "howey-in-the-hills"
+        parts = tok.split("-")
+        new_parts: list[str] = []
+        stop_words = {"of", "and", "in", "the"}
+        abbrev_map = {"st": "St", "ft": "Ft", "mt": "Mt"}
+        for j, p in enumerate(parts):
+            first_in_phrase = is_first and j == 0
+            plow = p.lower()
+            if plow in abbrev_map:
+                new_parts.append(abbrev_map[plow])
+            elif first_in_phrase or (plow not in stop_words and len(p) > 2):
+                new_parts.append(p.capitalize())
+            else:
+                new_parts.append(p.lower())
+        return "-".join(new_parts)
+
+    return " ".join(cap_token(w, i == 0) for i, w in enumerate(words))
 
 
 if __name__ == "__main__":
