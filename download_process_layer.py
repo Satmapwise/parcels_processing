@@ -1215,9 +1215,12 @@ def extract_shp_metadata(shp_path, logger):
 
         High-trust sources are always accepted.  Medium/low trust dates that
         equal *today* (likely auto-generated) are rejected so lower rungs can
-        attempt a better value.
+        attempt a better value.  Future dates are always rejected.
         """
         if candidate is None:
+            return False
+        if candidate > today:
+            logger.debug(f"Rejecting future date {candidate} (today is {today})")
             return False
         if trust in ("medium", "low") and candidate == today:
             return False
