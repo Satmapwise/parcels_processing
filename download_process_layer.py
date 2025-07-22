@@ -1667,10 +1667,14 @@ def _fetch_catalog_row(layer: str, county: str, city: str):
             "SELECT * FROM m_gis_data_catalog_main "
             "WHERE lower(layer_subgroup) = %s "
             "AND lower(county) = %s "
-            "AND lower(city) = %s LIMIT 1"
+            "AND city = %s LIMIT 1"
         )
+        logging.debug(f"City: {title_case(city)}")
+        logging.debug(f"County: {county.lower().replace('_', ' ')}")
+        logging.debug(f"SQL query: {sql}")
         cur.execute(sql, (layer.lower(), county.lower().replace('_', ' '), title_case(city)))
         row = cur.fetchone()
+        logging.debug(f"row: {row}")
         return dict(row) if row else None
     finally:
         cur.close()
