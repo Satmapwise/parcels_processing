@@ -293,6 +293,11 @@ def set_queue(layer, entities):
         if isinstance(entities, str):
             entities = [entities]
 
+        # NEW: If manifest lacks entities (empty) fall back to DB
+        if not layer_entities:
+            logging.debug("Layer entities empty – pulling list from DB")
+            layer_entities = set(_fetch_entities_from_db(layer))
+
         invalid = [e for e in entities if '*' not in e and '?' not in e and e not in layer_entities and e not in counties]
         if invalid:
             raise ValueError(f"Invalid entity/ies specified: {invalid}")
@@ -301,13 +306,19 @@ def set_queue(layer, entities):
         # Expand wildcard patterns (alachua_* etc.)
         # -------------------------------------------------
         expanded = []
+        # Pre-compute db entity list for wildcard matching
+        db_entity_list: list[str] | None = None
         for pattern in entities:
             if '*' in pattern or '?' in pattern:
-                matches = fnmatch.filter(layer_entities, pattern)
+                # Pull entity universe (manifest + DB) once
+                if db_entity_list is None:
+                    universe = set(layer_entities) | set(_fetch_entities_from_db(layer))
+                    db_entity_list = sorted(universe)
+                matches = fnmatch.filter(db_entity_list, pattern)
                 if not matches:
-                    logging.warning(f"Pattern '{pattern}' matched no entities in manifest; skipping.")
+                    logging.warning(f"Pattern '{pattern}' matched no entities in DB/manifest; skipping.")
                 else:
-                    logging.info(f"Pattern '{pattern}' expanded to {len(matches)} entities: {matches}")
+                    logging.info(f"Pattern '{pattern}' expanded to {len(matches)} entities (DB/manifest): {matches}")
                     expanded.extend(matches)
             else:
                 expanded.append(pattern)
@@ -1840,6 +1851,51 @@ def title_case(s: str) -> str:
         return "-".join(new_parts)
 
     return " ".join(cap_token(w, i == 0) for i, w in enumerate(words))
+
+
+# ---------------------------------------------------------------------------
+# NEW: Helpers for DB-driven entity discovery
+# ---------------------------------------------------------------------------
+
+def _norm_name(s: str) -> str:
+    """Return lowercase + underscore version of *s* suitable for entity ids."""
+    return re.sub(r"[^a-z0-9]+", "_", s.lower()).strip("_") if s else ""
+
+
+def _entity_from_parts(county: str, city: str | None) -> str:
+    """Return manifest-style entity id from raw DB county/city values."""
+    county_norm = _norm_name(county)
+    city_norm = _norm_name(city) if city else ""
+    if not city_norm:
+        return county_norm
+    return f"{county_norm}_{city_norm}"
+
+
+def _fetch_entities_from_db(layer: str) -> list[str]:
+    """Return list of entity strings for *layer* from m_gis_data_catalog_main."""
+    entities: list[str] = []
+    conn = psycopg2.connect(PG_CONNECTION)
+    cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+    try:
+        sql = (
+            "SELECT county, city FROM m_gis_data_catalog_main "
+            "WHERE status IS DISTINCT FROM 'DELETE' "
+            "AND lower(layer_subgroup) = %s"
+        )
+        logging.debug(f"Executing SQL: {sql} with layer={layer.lower()}")
+        cur.execute(sql, (layer.lower(),))
+        rows = cur.fetchall()
+        logging.debug(f"Found {len(rows)} rows in database")
+        for row in rows:
+            entity = _entity_from_parts(row['county'], row['city'])
+            logging.debug(f"Generated entity: {entity} from county={row['county']}, city={row['city']}")
+            entities.append(entity)
+    except Exception as exc:
+        logging.error(f"DB entity fetch failed: {exc}")
+    finally:
+        cur.close(); conn.close()
+    logging.debug(f"Returning {len(entities)} entities: {entities}")
+    return list(dict.fromkeys(entities))  # de-dupe preserving order
 
 
 if __name__ == "__main__":
