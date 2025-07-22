@@ -740,6 +740,13 @@ def download_process_layer(layer, queue):
                         if shp_to_process:
                             metadata = extract_shp_metadata(shp_to_process, entity_logger)
                             entity_logger.debug(f"Metadata extracted from: {os.path.basename(shp_to_process)}")
+                            
+                            # Normalize data_date to ensure it's not later than today
+                            if metadata.get('data_date'):
+                                today = datetime.now().strftime('%Y-%m-%d')
+                                if metadata['data_date'] > today:
+                                    entity_logger.warning(f"Data date {metadata['data_date']} is later than today {today}, setting data_date to today")
+                                    metadata['data_date'] = today
                         else:
                             entity_logger.warning("ogrinfo placeholder encountered but no shapefile found to process.")
                     else:
@@ -817,17 +824,23 @@ def download_process_layer(layer, queue):
                                 entity_logger.info('Skipping upload command (disabled via --no-upload)')
                                 continue
 
+                            # Set publish_date to today
+                            publish_date = datetime.now().strftime('%Y-%m-%d')
+                            
                             placeholders = {
                                 'layer': layer,
                                 'county': county,
                                 'city': city,
-                                'data_date': metadata.get('data_date', datetime.now().strftime('%Y-%m-%d')),
-                                'publish_date': datetime.now().strftime('%Y-%m-%d'),
+                                'data_date': metadata.get('data_date', publish_date),
+                                'publish_date': publish_date,
+                                'update_date': publish_date,  # Alias for manifest compatibility
                                 'epsg': metadata.get('epsg', ''),
                                 'shp': metadata.get('shp', ''),
                                 'raw_zip': raw_zip_name or '',
                                 'field_names': metadata.get('field_names', ''),
                             }
+                            
+                            entity_logger.debug(f"Final placeholders - data_date: {metadata.get('data_date', publish_date)}, publish_date: {publish_date}")
 
                             if '{raw_zip}' in ' '.join(cmd_list) and not raw_zip_name:
                                 raise UploadError('Upload command expects {raw_zip} placeholder but no ZIP file detected', layer, entity)
@@ -1628,26 +1641,35 @@ def _substitute_placeholders(cmd_list, placeholder_map, logger):
     in *placeholder_map* (except {field_names} which may be blank for now)."""
     substituted = []
     missing_keys = set()
+    logger.debug(f"Substituting placeholders. Input cmd_list: {cmd_list}")
+    logger.debug(f"Placeholder map: {placeholder_map}")
+    
     for token in cmd_list:
         if not isinstance(token, str):
             substituted.append(token)
             continue
         new_tok = token
+        logger.debug(f"Processing token: {new_tok}")
         for key, val in placeholder_map.items():
             placeholder = f'{{{key}}}'
             if placeholder == '{city}':
                 val = title_case(val)
 
             if placeholder in new_tok:
+                logger.debug(f"Replacing {placeholder} with {val}")
                 new_tok = new_tok.replace(placeholder, str(val))
         # detect unreplaced placeholders
         for m in re.findall(r'\{([^}]+)\}', new_tok):
             if m not in placeholder_map:
                 missing_keys.add(m)
         substituted.append(new_tok)
+        logger.debug(f"Final token: {new_tok}")
+    
     if missing_keys:
         logger.error(f"Missing values for placeholders: {missing_keys}")
         raise UploadError(f"Missing placeholder values for: {', '.join(sorted(missing_keys))}")
+    
+    logger.debug(f"Final substituted command: {substituted}")
     return substituted
 
 
