@@ -1719,7 +1719,7 @@ def generate_entity_commands(layer: str, entity: str, county: str, city: str):
     # 1) Download command
     if fmt in {'ags', 'arcgis', 'esri', 'ags_extract'}:
         commands.append([
-            'python',
+            'python3',
             os.path.join(os.path.dirname(__file__), 'download_tools', 'ags_extract_data2.py'),
             table_name,
             'delete',
@@ -1729,7 +1729,7 @@ def generate_entity_commands(layer: str, entity: str, county: str, city: str):
         if not resource:
             raise RuntimeError('Missing resource/url for download_data.py')
         commands.append([
-            'python',
+            'python3',
             os.path.join(os.path.dirname(__file__), 'download_tools', 'download_data.py'),
             resource
         ])
@@ -1743,11 +1743,11 @@ def generate_entity_commands(layer: str, entity: str, county: str, city: str):
     # 4) Update script (layer-specific)
     proc_dir = os.path.join(os.path.dirname(__file__), 'processing_tools')
     if layer == 'zoning' and os.path.exists(os.path.join(proc_dir, 'update_zoning2.py')):
-        commands.append(['python', os.path.join(proc_dir, 'update_zoning2.py'), county, city])
+        commands.append(['python3', os.path.join(proc_dir, 'update_zoning2.py'), county, city])
     else:
         cand = os.path.join(proc_dir, f'update_{layer}.py')
         if os.path.exists(cand):
-            commands.append(['python', cand, county, city])
+            commands.append(['python3', cand, county, city])
 
     # 5) Upload (psql UPDATE) command
     # Build SQL based on download type
