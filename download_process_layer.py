@@ -805,6 +805,9 @@ def download_process_layer(layer, queue):
                         if _looks_like_update(cmd_list):
                             logging.debug(f"Running update script for {layer}/{entity}")
                             update_script_output = _run_command(cmd_list, work_dir, entity_logger)
+                        elif _looks_like_upload(cmd_list):
+                            # Skip regular execution - upload commands are handled specially below
+                            pass
                         else:
                             stdout = _run_command(cmd_list, work_dir, entity_logger) # Runs all other commands
 
