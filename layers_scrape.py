@@ -32,7 +32,7 @@ import psycopg2.extras
 # ---------------------------------------------------------------------------
 
 # Database connection
-PG_CONNECTION = 'host=localhost port=5432 dbname=gisdev user=postgres password=galactic529'
+PG_CONNECTION = os.getenv("PG_CONNECTION")
 
 # Entities to skip (blacklist)
 SKIP_ENTITIES = {

@@ -33,8 +33,8 @@ import psycopg2.extras
 # Configuration and Constants
 # ---------------------------------------------------------------------------
 
-# Database connection - should match layers_scrape.py
-PG_CONNECTION = "host=gisdb.manatee.org port=5433 dbname=gis user=smay sslmode=require"
+# Database connection - should match layers_scrape.py  
+PG_CONNECTION = os.getenv("PG_CONNECTION")
 
 # Output directories
 REPORTS_DIR = Path("reports")
@@ -167,8 +167,14 @@ class DB:
     """Thin wrapper around psycopg2 connection with dict cursors."""
 
     def __init__(self, conn_str: str):
-        self.conn = psycopg2.connect(conn_str)
-        self.cur = self.conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+        print(f"[DEBUG] Attempting to connect to database...")
+        try:
+            self.conn = psycopg2.connect(conn_str, connect_timeout=10)
+            print(f"[DEBUG] Database connection successful")
+            self.cur = self.conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+        except Exception as e:
+            print(f"[ERROR] Database connection failed: {e}")
+            raise
 
     def fetchone(self, sql: str, params: Tuple[Any, ...] | None = None):
         self.cur.execute(sql, params)
@@ -453,8 +459,14 @@ class LayersPrescrape:
         handler.setFormatter(logging.Formatter("[%(levelname)s] %(message)s"))
         self.logger.addHandler(handler)
         
+        print(f"[DEBUG] Initializing LayersPrescrape for layer '{cfg.layer}' in mode '{cfg.mode}'")
+        
         # Database connection
-        self.db = DB(PG_CONNECTION)
+        try:
+            self.db = DB(PG_CONNECTION)
+        except Exception as e:
+            print(f"[ERROR] Failed to initialize database connection: {e}")
+            sys.exit(1)
         
         # Track missing fields across entities
         self.missing_fields: Dict[str, Dict[str, str]] = defaultdict(dict)
