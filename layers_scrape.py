@@ -310,6 +310,13 @@ def _fetch_catalog_row(layer: str, county: str, city: str):
         cur.close()
         conn.close()
 
+def _debug_main(message: str, logger):
+    """Log main function debug messages to console when --debug is enabled, otherwise to entity logger."""
+    if CONFIG.debug:
+        logging.info(message)
+    else:
+        logger.debug(message)
+
 def _fetch_entities_from_db(layer: str) -> list[str]:
     """Return list of entity strings for layer from database."""
     entities = []
@@ -389,7 +396,7 @@ def layer_download(layer: str, entity: str, county: str, city: str, catalog_row:
             'delete',
             '15'
         ]
-        logger.debug(f"[DOWNLOAD] Running AGS download for {layer}/{entity} (table: {table_name})")
+        _debug_main(f"[DOWNLOAD] Running AGS download for {layer}/{entity} (table: {table_name})", logger)
     else:
         if not resource:
             raise DownloadError('Missing resource/url for download_data.py', layer, entity)
@@ -398,7 +405,7 @@ def layer_download(layer: str, entity: str, county: str, city: str, catalog_row:
             os.path.join(os.path.dirname(__file__), 'download_tools', 'download_data.py'),
             resource
         ]
-        logger.debug(f"[DOWNLOAD] Running file download for {layer}/{entity} (url: {resource})")
+        _debug_main(f"[DOWNLOAD] Running file download for {layer}/{entity} (url: {resource})", logger)
 
     logger.debug(f"Running download for {layer}/{entity}")
     
@@ -416,7 +423,7 @@ def layer_download(layer: str, entity: str, county: str, city: str, catalog_row:
     if not CONFIG.test_mode:
         try:
             _validate_download(work_dir, logger, before_state)
-            logger.debug(f"[DOWNLOAD] Download validation passed for {layer}/{entity}")
+            _debug_main(f"[DOWNLOAD] Download validation passed for {layer}/{entity}", logger)
             _update_csv_status(layer, entity, 'download', 'SUCCESS')
         except DownloadError as de:
             _update_csv_status(layer, entity, 'download', 'FAILED', str(de))
@@ -426,7 +433,7 @@ def layer_download(layer: str, entity: str, county: str, city: str, catalog_row:
         try:
             zip_file = _find_latest_zip(work_dir, logger)
             if zip_file:
-                logger.debug(f"[DOWNLOAD] Found zip file: {zip_file}")
+                _debug_main(f"[DOWNLOAD] Found zip file: {zip_file}", logger)
             return zip_file
         except Exception as z_err:
             logger.debug(f"Zip detection failed: {z_err}")
@@ -442,7 +449,7 @@ def layer_metadata(layer: str, entity: str, county: str, city: str, catalog_row:
         logger.debug(f"[METADATA] Skipping metadata extraction for {layer}/{entity} (disabled in config)")
         return {}
 
-    logger.debug(f"[METADATA] Extracting metadata for {layer}/{entity}")
+    _debug_main(f"[METADATA] Extracting metadata for {layer}/{entity}", logger)
 
     # Find shapefile to process
     shp_to_process = None
@@ -460,7 +467,7 @@ def layer_metadata(layer: str, entity: str, county: str, city: str, catalog_row:
         epsg = metadata.get('epsg', 'Unknown')
         data_date = metadata.get('data_date', 'Unknown')
         field_count = len(json.loads(metadata.get('field_names', '[]')))
-        logger.debug(f"[METADATA] Extracted: EPSG:{epsg}, data_date:{data_date}, {field_count} fields")
+        _debug_main(f"[METADATA] Extracted: EPSG:{epsg}, data_date:{data_date}, {field_count} fields", logger)
         
         # Normalize data_date to ensure it's not later than today
         if metadata.get('data_date'):
@@ -480,7 +487,7 @@ def layer_processing(layer: str, entity: str, county: str, city: str, catalog_ro
         logger.debug(f"[PROCESSING] Skipping processing for {layer}/{entity} (disabled in config)")
         return
 
-    logger.debug(f"[PROCESSING] Starting processing for {layer}/{entity}")
+    _debug_main(f"[PROCESSING] Starting processing for {layer}/{entity}", logger)
     logger.debug(f"Running processing for {layer}/{entity}")
 
     # 1. Run pre-processing commands from database
@@ -506,12 +513,12 @@ def layer_processing(layer: str, entity: str, county: str, city: str, catalog_ro
             logger.warning(f"No update script found for layer {layer}")
             return
 
-    logger.debug(f"[PROCESSING] Running update script: {script_name}")
+            _debug_main(f"[PROCESSING] Running update script: {script_name}", logger)
     logger.debug(f"Running update script for {layer}/{entity}")
     try:
         _run_command(command, work_dir, logger)
         _update_csv_status(layer, entity, 'processing', 'SUCCESS')
-        logger.debug(f"[PROCESSING] Processing completed for {layer}/{entity}")
+        _debug_main(f"[PROCESSING] Processing completed for {layer}/{entity}", logger)
     except Exception as e:
         _update_csv_status(layer, entity, 'processing', 'FAILED', str(e))
         raise ProcessingError(f"Processing failed: {e}", layer, entity) from e
@@ -522,7 +529,7 @@ def layer_upload(layer: str, entity: str, county: str, city: str, catalog_row: d
         logger.debug(f"[UPLOAD] Skipping upload for {layer}/{entity} (disabled in config)")
         return
 
-    logger.debug(f"[UPLOAD] Updating catalog metadata for {layer}/{entity}")
+    _debug_main(f"[UPLOAD] Updating catalog metadata for {layer}/{entity}", logger)
 
     fmt = (catalog_row.get('format') or '').lower()
     
@@ -588,7 +595,7 @@ def layer_upload(layer: str, entity: str, county: str, city: str, catalog_row: d
         _run_command(command, work_dir, logger)
         data_date = metadata.get('data_date', publish_date)
         _update_csv_status(layer, entity, 'upload', 'SUCCESS', data_date=data_date)
-        logger.debug(f"[UPLOAD] Catalog metadata updated successfully for {layer}/{entity}")
+        _debug_main(f"[UPLOAD] Catalog metadata updated successfully for {layer}/{entity}", logger)
     except Exception as e:
         _update_csv_status(layer, entity, 'upload', 'FAILED', str(e))
         raise UploadError(f"Upload failed: {e}", layer, entity) from e
