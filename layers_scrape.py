@@ -976,7 +976,7 @@ def generate_summary(results):
     script_dir = os.path.dirname(os.path.abspath(__file__))
     summary_filepath = os.path.join(script_dir, summary_filename)
     
-    headers = ['layer', 'county', 'city', 'data_date', 'download_status', 'processing_status', 
+    headers = ['county', 'city', 'data_date', 'download_status', 'processing_status', 
                'upload_status', 'error_message', 'timestamp']
     
     try:
@@ -1003,13 +1003,12 @@ def generate_summary(results):
                 row = existing_data[entity_key]
             else:
                 row = {h: '' for h in headers}
-                row['layer'] = layer
                 row['county'] = county
                 row['city'] = city
             
             # Update based on result status
             status = result.get('status', 'failure')
-            error_msg = result.get('error', '')
+            error_msg = result.get('error', '') or result.get('warning', '')
             
             if status == 'skipped' and 'No new data available' in str(error_msg):
                 # No new data case
@@ -1053,10 +1052,9 @@ def generate_summary(results):
         total_runtime = (end_time - CONFIG.start_time).total_seconds()
         runtime_str = _format_runtime_detailed(total_runtime)
         
-        # Create summary row
+        # Create summary row with merged county/city/data_date containing timestamp, runtime in timestamp column
         summary_row = {
-            'layer': f"LAST UPDATED: {datetime.now().strftime('%m/%d/%y %I:%M %p')}",
-            'county': '',
+            'county': f"LAST UPDATED: {datetime.now().strftime('%m/%d/%y %I:%M %p')} | {layer.upper()} SUMMARY",
             'city': '',
             'data_date': '',
             'download_status': f"{download_success}/{download_total}" if download_total > 0 else "0/0",
@@ -1127,7 +1125,7 @@ def _initialize_csv_status(layer, queue):
     script_dir = os.path.dirname(os.path.abspath(__file__))
     summary_filepath = os.path.join(script_dir, summary_filename)
     
-    headers = ['layer', 'county', 'city', 'data_date', 'download_status', 'processing_status', 
+    headers = ['county', 'city', 'data_date', 'download_status', 'processing_status', 
                'upload_status', 'error_message', 'timestamp']
     
     try:
@@ -1138,7 +1136,7 @@ def _initialize_csv_status(layer, queue):
                 reader = csv.DictReader(csvfile)
                 for row in reader:
                     # Skip summary rows
-                    if row.get('layer', '').startswith('LAST UPDATED:'):
+                    if row.get('county', '').startswith('LAST UPDATED:'):
                         continue
                     entity_key = f"{row.get('county', '')}_{row.get('city', '')}"
                     existing_data[entity_key] = row
@@ -1152,7 +1150,6 @@ def _initialize_csv_status(layer, queue):
                 row = existing_data[entity_key]
             else:
                 row = {h: '' for h in headers}
-                row['layer'] = layer
                 row['county'] = county
                 row['city'] = city
             
@@ -1179,7 +1176,7 @@ def _update_csv_status(layer, entity, stage, status, error_msg='', data_date='')
     script_dir = os.path.dirname(os.path.abspath(__file__))
     summary_filepath = os.path.join(script_dir, summary_filename)
     
-    headers = ['layer', 'county', 'city', 'data_date', 'download_status', 'processing_status', 
+    headers = ['county', 'city', 'data_date', 'download_status', 'processing_status', 
                'upload_status', 'error_message', 'timestamp']
     
     try:
@@ -1190,7 +1187,7 @@ def _update_csv_status(layer, entity, stage, status, error_msg='', data_date='')
                 reader = csv.DictReader(csvfile)
                 for row in reader:
                     # Skip summary rows
-                    if row.get('layer', '').startswith('LAST UPDATED:'):
+                    if row.get('county', '').startswith('LAST UPDATED:'):
                         continue
                     entity_key = f"{row.get('county', '')}_{row.get('city', '')}"
                     existing_data[entity_key] = row
@@ -1242,9 +1239,10 @@ def _write_csv_file(filepath, headers, data_dict):
         writer = csv.DictWriter(csvfile, fieldnames=headers)
         writer.writeheader()
         
-        # Write data rows
+        # Write data rows (filter to only include valid header fields)
         for row in sorted_data:
-            writer.writerow(row)
+            filtered_row = {k: v for k, v in row.items() if k in headers}
+            writer.writerow(filtered_row)
 
 # ---------------------------------------------------------------------------
 # Main Function
