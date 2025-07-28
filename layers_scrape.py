@@ -317,6 +317,31 @@ def _debug_main(message: str, logger):
     else:
         logger.debug(message)
 
+def _get_existing_data_date(layer: str, entity: str) -> str:
+    """Get the existing data_date for an entity from the CSV file."""
+    summary_filename = f"{layer}_summary.csv"
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    summary_filepath = os.path.join(script_dir, summary_filename)
+    
+    if not os.path.exists(summary_filepath):
+        return None
+    
+    try:
+        county, city = split_entity(entity)
+        entity_key = f"{county}_{city}"
+        
+        with open(summary_filepath, 'r', newline='') as csvfile:
+            reader = csv.DictReader(csvfile)
+            for row in reader:
+                # Skip summary rows
+                if row.get('county', '').startswith('LAST UPDATED:'):
+                    continue
+                if f"{row.get('county', '')}_{row.get('city', '')}" == entity_key:
+                    return row.get('data_date', '')
+        return None
+    except Exception:
+        return None
+
 def _fetch_entities_from_db(layer: str) -> list[str]:
     """Return list of entity strings for layer from database."""
     entities = []
@@ -415,8 +440,8 @@ def layer_download(layer: str, entity: str, county: str, city: str, catalog_row:
     try:
         _run_command(command, work_dir, logger)
     except SkipEntityError as e:
-        # Handle "no new data" case
-        _update_csv_status(layer, entity, 'download', 'NND')
+        # Handle "no new data" case - from download command
+        _update_csv_status(layer, entity, 'download', 'NND', error_msg='Download command: no new data')
         raise  # Re-raise skip errors
     
     # Validate download occurred (only in non-test mode)
@@ -475,6 +500,14 @@ def layer_metadata(layer: str, entity: str, county: str, city: str, catalog_row:
             if metadata['data_date'] > today:
                 logger.warning(f"Data date {metadata['data_date']} is later than today {today}, setting data_date to today")
                 metadata['data_date'] = today
+        
+        # Check if data_date matches existing CSV data (NND detection)
+        try:
+            existing_data_date = _get_existing_data_date(layer, entity)
+            if existing_data_date and metadata.get('data_date') == existing_data_date:
+                raise SkipEntityError("No new data available (data date unchanged)", layer=layer, entity=entity)
+        except Exception as e:
+            logger.debug(f"Could not check existing data date: {e}")
         
         return metadata
     else:
@@ -909,7 +942,13 @@ def process_layer(layer, queue):
                 raise  # Re-raise to skip entire entity
 
             # Stage 2: Metadata
-            metadata = layer_metadata(layer, entity, county, city, catalog_row, work_dir, entity_logger)
+            try:
+                metadata = layer_metadata(layer, entity, county, city, catalog_row, work_dir, entity_logger)
+            except SkipEntityError as e:
+                # Handle metadata-based NND (data date unchanged)
+                if "data date unchanged" in str(e):
+                    _update_csv_status(layer, entity, 'download', 'NND', error_msg='Metadata check: data date unchanged')
+                raise  # Re-raise to skip entire entity
 
             # Stage 3: Processing
             layer_processing(layer, entity, county, city, catalog_row, work_dir, entity_logger)
@@ -1015,7 +1054,7 @@ def generate_summary(results):
                 row['download_status'] = 'NND'
                 row['processing_status'] = ''
                 row['upload_status'] = ''
-                row['error_message'] = ''
+                # Don't clear error_message - preserve the source information set by _update_csv_status
             elif status == 'success':
                 # Full success
                 row['download_status'] = 'SUCCESS'
@@ -1220,7 +1259,7 @@ def _update_csv_status(layer, entity, stage, status, error_msg='', data_date='')
                 if status == 'NND':  # No new data
                     row['processing_status'] = ''
                     row['upload_status'] = ''
-                    row['error_message'] = ''
+                    # Don't clear error_message here - will be set below based on error_msg parameter
             elif stage == 'processing':
                 row['processing_status'] = status
             elif stage == 'upload':
@@ -1228,10 +1267,13 @@ def _update_csv_status(layer, entity, stage, status, error_msg='', data_date='')
                 if status == 'SUCCESS' and data_date:
                     row['data_date'] = data_date
             
-            # Set error message if failed
+            # Set error message based on status
             if status == 'FAILED' and error_msg:
                 row['error_message'] = str(error_msg)
-            elif status in ['SUCCESS', 'NND']:
+            elif status == 'NND' and error_msg:
+                # Keep error message for NND to show source of detection
+                row['error_message'] = str(error_msg)
+            elif status == 'SUCCESS':
                 row['error_message'] = ''
             
             # Update timestamp
