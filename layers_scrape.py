@@ -40,6 +40,17 @@ SKIP_ENTITIES = {
     "charlotte_punta_gorda"
 }
 
+layers = {
+    "zoning",
+    "flu",
+    "flood_zones",
+    "parcel_geo",
+    "streets",
+    "addr_pnts",
+    "subdiv",
+    "bldg_ftpr"
+}
+
 # Florida counties set
 counties = {
     "miami_dade", "broward", "palm_beach", "hillsborough", "orange", "pinellas", 
