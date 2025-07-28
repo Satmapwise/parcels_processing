@@ -1052,17 +1052,32 @@ def generate_summary(results):
         total_runtime = (end_time - CONFIG.start_time).total_seconds()
         runtime_str = _format_runtime_detailed(total_runtime)
         
-        # Create summary row with merged county/city/data_date containing timestamp, runtime in timestamp column
-        summary_row = {
-            'county': f"LAST UPDATED: {datetime.now().strftime('%m/%d/%y %I:%M %p')} | {layer.upper()} SUMMARY",
-            'city': '',
-            'data_date': '',
-            'download_status': f"{download_success}/{download_total}" if download_total > 0 else "0/0",
-            'processing_status': f"{processing_success}/{processing_total}" if processing_total > 0 else "0/0",
-            'upload_status': f"{upload_success}/{upload_total}" if upload_total > 0 else "0/0",
-            'error_message': '',
-            'timestamp': runtime_str
-        }
+        # Create summary row with timestamp spread across columns
+        now = datetime.now()
+        if layer.lower() in ['flu', 'zoning']:
+            # Spread across 3 columns: county, city, data_date
+            summary_row = {
+                'county': 'LAST UPDATED:',
+                'city': now.strftime('%m/%d/%y'),
+                'data_date': now.strftime('%I:%M %p'),
+                'download_status': f"{download_success}/{download_total}" if download_total > 0 else "0/0",
+                'processing_status': f"{processing_success}/{processing_total}" if processing_total > 0 else "0/0",
+                'upload_status': f"{upload_success}/{upload_total}" if upload_total > 0 else "0/0",
+                'error_message': '',
+                'timestamp': runtime_str
+            }
+        else:
+            # Use 2 columns: county, data_date
+            summary_row = {
+                'county': 'LAST UPDATED:',
+                'city': '',
+                'data_date': now.strftime('%m/%d/%y %I:%M %p'),
+                'download_status': f"{download_success}/{download_total}" if download_total > 0 else "0/0",
+                'processing_status': f"{processing_success}/{processing_total}" if processing_total > 0 else "0/0",
+                'upload_status': f"{upload_success}/{upload_total}" if upload_total > 0 else "0/0",
+                'error_message': '',
+                'timestamp': runtime_str
+            }
         
         # Write the CSV file
         with open(summary_filepath, 'w', newline='') as csvfile:
