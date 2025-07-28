@@ -432,10 +432,10 @@ class Config:
     entities: List[str] | None = None
     mode: str = "detect"  # detect | fill | create
     debug: bool = False
-    test_mode: bool = False
     generate_csv: bool = True
     apply_changes: bool = False  # For fill mode
     manual_file: str = "missing_fields.json"
+    detect_malformed_only: bool = False  # For detect mode
 
 # ---------------------------------------------------------------------------
 # Main Processing Class
@@ -478,20 +478,19 @@ class LayersPrescrape:
         
         # Commit or rollback database changes
         if self.db:
-            if not self.cfg.test_mode and self.cfg.mode in {"fill", "create"} and self.cfg.apply_changes:
+            if self.cfg.mode in {"fill", "create"} and self.cfg.apply_changes:
                 self.db.commit()
                 self.logger.info("Database changes committed.")
             else:
                 self.db.conn.rollback()
-                if self.cfg.test_mode:
-                    self.logger.info("Test mode - no database changes made.")
-                elif not self.cfg.apply_changes:
+                if not self.cfg.apply_changes and self.cfg.mode in {"fill", "create"}:
                     self.logger.info("Apply flag not set - no database changes made.")
             self.db.close()
     
     def _run_detect_mode(self):
         """Detect malformed records and output CSV + missing fields JSON."""
-        self.logger.info("Running DETECT mode - finding malformed records and missing fields.")
+        mode_desc = "malformed records only" if self.cfg.detect_malformed_only else "all records"
+        self.logger.info(f"Running DETECT mode - finding {mode_desc} and missing fields.")
         
         # Discover entities from database records
         entities = self._discover_entities_from_db()
@@ -535,6 +534,7 @@ class LayersPrescrape:
                     "resource_or_table_name": "MANUAL_REQUIRED"
                 }
                 entities_with_issues += 1
+                has_issues = True
             else:
                 # Validate existing record
                 issues = validate_record_for_layers_scrape(record)
@@ -602,30 +602,48 @@ class LayersPrescrape:
                     "; ".join(suggested_fixes) if suggested_fixes else "None"
                 ]
                 
-                if issues or missing_fields:
+                has_issues = bool(issues or missing_fields)
+                if has_issues:
                     entities_with_issues += 1
                 else:
                     valid_entities += 1
             
-            csv_rows.append(csv_row)
+            # Add row to CSV (filter based on detect_malformed_only flag)
+            if self.cfg.detect_malformed_only:
+                # Only include records with issues
+                if has_issues:
+                    csv_rows.append(csv_row)
+            else:
+                # Include all records
+                csv_rows.append(csv_row)
         
         # Add summary row
         csv_rows.append([])
-        csv_rows.append([
-            "SUMMARY", f"{valid_entities}/{total_entities} valid", 
-            f"{entities_with_issues} with issues", "", "", "", "", "", "", "", "", "", ""
-        ])
+        if self.cfg.detect_malformed_only:
+            csv_rows.append([
+                "SUMMARY", f"{entities_with_issues} malformed records found", 
+                f"out of {total_entities} total", "", "", "", "", "", "", "", "", "", ""
+            ])
+        else:
+            csv_rows.append([
+                "SUMMARY", f"{valid_entities}/{total_entities} valid", 
+                f"{entities_with_issues} with issues", "", "", "", "", "", "", "", "", "", ""
+            ])
         
         # Write CSV report
         if self.cfg.generate_csv:
-            csv_path = REPORTS_DIR / f"{self.cfg.layer}_prescrape_detect_{get_today_str()}.csv"
+            suffix = "malformed" if self.cfg.detect_malformed_only else "detect"
+            csv_path = REPORTS_DIR / f"{self.cfg.layer}_prescrape_{suffix}_{get_today_str()}.csv"
             with open(csv_path, 'w', newline='', encoding='utf-8') as f:
                 writer = csv.writer(f)
                 writer.writerows(csv_rows)
             self.logger.info(f"Detection report written → {csv_path}")
         
         # Log summary
-        self.logger.info(f"Detection complete: {valid_entities}/{total_entities} valid, {entities_with_issues} with issues")
+        if self.cfg.detect_malformed_only:
+            self.logger.info(f"Detection complete: {entities_with_issues} malformed records found out of {total_entities} total")
+        else:
+            self.logger.info(f"Detection complete: {valid_entities}/{total_entities} valid, {entities_with_issues} with issues")
     
     def _run_fill_mode(self):
         """Apply manual corrections and auto-derivable fields from JSON."""
@@ -675,8 +693,8 @@ class LayersPrescrape:
                     'record_id': record.get('gid') or record.get('id')
                 })
                 
-                # Apply updates if not in test mode and apply flag is set
-                if self.cfg.apply_changes and not self.cfg.test_mode:
+                # Apply updates if apply flag is set
+                if self.cfg.apply_changes:
                     self._update_record(record, updates)
                     self.logger.info(f"Applied {len(updates)} updates to {entity}")
                 else:
@@ -695,7 +713,7 @@ class LayersPrescrape:
                     old_val = old_val.strip().strip("'")
                     new_val = new_val.strip().strip("'")
                     
-                    status = "APPLIED" if self.cfg.apply_changes and not self.cfg.test_mode else "PENDING"
+                    status = "APPLIED" if self.cfg.apply_changes else "PENDING"
                     csv_rows.append([entity, field.strip(), old_val, new_val, status])
             
             csv_path = REPORTS_DIR / f"{self.cfg.layer}_prescrape_fill_{get_today_str()}.csv"
@@ -762,7 +780,7 @@ class LayersPrescrape:
                 continue
             
             # Create the record
-            if self.cfg.apply_changes and not self.cfg.test_mode:
+            if self.cfg.apply_changes:
                 self._create_record(expected)
                 self.logger.info(f"Created record for {entity}")
             else:
@@ -781,7 +799,7 @@ class LayersPrescrape:
             for creation in created_records:
                 entity = creation['entity']
                 record = creation['record']
-                status = "CREATED" if self.cfg.apply_changes and not self.cfg.test_mode else "PENDING"
+                status = "CREATED" if self.cfg.apply_changes else "PENDING"
                 
                 for field, value in record.items():
                     csv_rows.append([entity, field, str(value), status])
@@ -927,8 +945,8 @@ def build_arg_parser() -> argparse.ArgumentParser:
     parser.add_argument("--manual-file", default="missing_fields.json",
                        help="Path to manual fields JSON file")
     parser.add_argument("--debug", action="store_true", help="Enable debug logging")
-    parser.add_argument("--test-mode", action="store_true", 
-                       help="Show what would be done without making changes")
+    parser.add_argument("--detect-malformed", action="store_true",
+                       help="In DETECT mode, show only malformed records")
     parser.add_argument("--no-csv", dest="generate_csv", action="store_false",
                        help="Skip CSV report generation")
     
@@ -952,10 +970,10 @@ def main():
         entities=[e.lower() for e in args.entities] if args.entities else None,
         mode=mode,
         debug=args.debug,
-        test_mode=args.test_mode,
         generate_csv=args.generate_csv,
         apply_changes=args.apply,
-        manual_file=args.manual_file
+        manual_file=args.manual_file,
+        detect_malformed_only=args.detect_malformed
     )
     
     # Run the processor
