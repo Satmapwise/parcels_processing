@@ -1,0 +1,1000 @@
+#!/usr/bin/env python3
+"""
+Geospatial data processing pipeline with clean 4-stage architecture.
+
+Usage: python layers_scrape.py <layer> [entities...] [options]
+
+This script processes geospatial data layers through 4 main stages:
+1. Download (layer_download)
+2. Metadata Extraction (layer_metadata) 
+3. Processing (layer_processing)
+4. Upload (layer_upload)
+
+Each stage reads configuration from the database and generates commands dynamically.
+"""
+
+import sys
+import logging
+import argparse
+import subprocess
+import shapefile  # pyshp
+from datetime import datetime, timedelta
+import os
+import csv
+import json
+import re
+import fnmatch
+import psycopg2
+import psycopg2.extras
+
+# ---------------------------------------------------------------------------
+# Configuration and Constants
+# ---------------------------------------------------------------------------
+
+# Database connection
+PG_CONNECTION = 'host=localhost port=5432 dbname=gisdev user=postgres password=galactic529'
+
+# Entities to skip (blacklist)
+SKIP_ENTITIES = {
+    "hillsborough_temple_terrace",
+    "charlotte_punta_gorda"
+}
+
+# Florida counties set
+counties = {
+    "miami_dade", "broward", "palm_beach", "hillsborough", "orange", "pinellas", 
+    "duval", "lee", "polk", "brevard", "volusia", "pasco", "seminole", "sarasota",
+    "manatee", "collier", "osceola", "marion", "lake", "st_lucie", "escambia",
+    "leon", "alachua", "st_johns", "clay", "okaloosa", "hernando", "bay",
+    "charlotte", "santa_rosa", "martin", "indian_river", "citrus", "sumter",
+    "flagler", "highlands", "nassau", "monroe", "putnam", "walton", "columbia",
+    "gadsden", "suwannee", "jackson", "hendry", "okeechobee", "levy", "desoto",
+    "wakulla", "baker", "bradford", "hardee", "washington", "taylor", "gilchrist",
+    "gulf", "union", "hamilton", "jefferson", "lafayette", "liberty", "madison",
+    "glades", "calhoun", "dixie", "franklin"
+}
+
+# Work directory patterns
+WORK_DIR_PATTERNS = {
+    'zoning': os.path.join(
+        '/srv/datascrub', '08_Land_Use_and_Zoning', 'zoning', 'florida', 
+        'county', '{county}', 'current', 'source_data', '{city}'
+    ),
+    'flu': os.path.join(
+        '/srv/datascrub', '08_Land_Use_and_Zoning', 'future_land_use', 'florida',
+        'county', '{county}', 'current', 'source_data', '{city}'
+    ),
+}
+
+# ---------------------------------------------------------------------------
+# Configuration Class
+# ---------------------------------------------------------------------------
+
+class Config:
+    def __init__(self, 
+                 test_mode: bool = False,
+                 debug: bool = False,
+                 isolate_logs: bool = True,
+                 run_download: bool = True,
+                 run_metadata: bool = True,
+                 run_processing: bool = True,
+                 run_upload: bool = True,
+                 generate_summary: bool = True,
+                 process_anyway: bool = False):
+        self.test_mode = test_mode
+        self.debug = debug
+        self.isolate_logs = isolate_logs
+        self.start_time = datetime.now()
+        
+        # Phase toggles
+        self.run_download = run_download
+        self.run_metadata = run_metadata
+        self.run_processing = run_processing
+        self.run_upload = run_upload
+        
+        # Misc behavior flags
+        self.generate_summary = generate_summary
+        self.process_anyway = process_anyway
+
+# Global config object
+CONFIG = Config()
+
+# ---------------------------------------------------------------------------
+# Exception Classes
+# ---------------------------------------------------------------------------
+
+class LayerProcessingError(Exception):
+    """Base exception for all processing errors."""
+    def __init__(self, message, layer=None, entity=None):
+        super().__init__(message)
+        self.layer = layer
+        self.entity = entity
+
+    def __str__(self):
+        return f"[{self.layer}/{self.entity}] {super().__str__()}"
+
+class DownloadError(LayerProcessingError):
+    """Exception for download failures."""
+    pass
+
+class ProcessingError(LayerProcessingError):
+    """Exception for processing failures."""
+    pass
+
+class UploadError(LayerProcessingError):
+    """Exception for upload failures."""
+    pass
+
+class SkipEntityError(LayerProcessingError):
+    """Exception for when an entity should be skipped."""
+    pass
+
+# ---------------------------------------------------------------------------
+# Utility Functions (Reused from original)
+# ---------------------------------------------------------------------------
+
+def initialize_logging(debug=False):
+    """Initialize the logging system."""
+    level = logging.DEBUG if debug else logging.INFO
+    logging.basicConfig(level=level, format='%(asctime)s - %(levelname)s - %(message)s', stream=sys.stdout)
+    logging.info("Logging initialized.")
+
+def setup_entity_logger(layer, entity, work_dir):
+    """Set up a dedicated logger for an entity."""
+    log_file_path = os.path.join(work_dir, f"{entity}.log")
+    
+    logger = logging.getLogger(f"{layer}.{entity}")
+    logger.propagate = False
+    logger.setLevel(logging.DEBUG)
+
+    if logger.hasHandlers():
+        logger.handlers.clear()
+
+    if CONFIG.isolate_logs:
+        os.makedirs(work_dir, exist_ok=True)
+        file_handler = logging.FileHandler(log_file_path, mode='w')
+        file_formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+        file_handler.setFormatter(file_formatter)
+        file_handler.setLevel(logging.DEBUG)
+        logger.addHandler(file_handler)
+
+    if not CONFIG.isolate_logs:
+        console_handler = logging.StreamHandler(sys.stdout)
+        console_level = logging.DEBUG if CONFIG.debug else logging.INFO
+        console_handler.setLevel(console_level)
+        console_formatter = logging.Formatter('%(message)s')
+        console_handler.setFormatter(console_formatter)
+        logger.addHandler(console_handler)
+        
+    return logger
+
+def split_entity(entity: str):
+    """Return (county, city) parts for an entity identifier."""
+    for county in sorted(counties, key=len, reverse=True):
+        if entity == county:
+            return county, ''
+        prefix = f"{county}_"
+        if entity.startswith(prefix):
+            city = entity[len(prefix):]
+            return county, city
+    raise ValueError(f"Unable to parse county/city from entity '{entity}'.")
+
+def resolve_work_dir(layer: str, entity: str):
+    """Return (work_dir, county, city) for layer/entity."""
+    # Handle special cases
+    if layer == 'zoning' and entity == 'duval_unified':
+        county, city = 'duval', 'jacksonville'
+        work_dir = '/srv/datascrub/08_Land_Use_and_Zoning/zoning/florida/county/duval/current/source_data/jacksonville'
+        return work_dir, county, city
+    
+    if layer == 'zoning' and entity == 'miami_dade_incorporated':
+        county, city = 'miami_dade', 'incorporated'
+        work_dir = '/srv/datascrub/08_Land_Use_and_Zoning/zoning/florida/county/miami-dade/current/source_data/incorporated'
+        return work_dir, county, city
+    
+    if layer == 'zoning' and entity == 'miami_dade_unincorporated':
+        county, city = 'miami_dade', 'unincorporated'
+        work_dir = '/srv/datascrub/08_Land_Use_and_Zoning/zoning/florida/county/miami-dade/current/source_data/unincorporated'
+        return work_dir, county, city
+    
+    if layer == 'zoning' and entity == 'broward_unified':
+        county, city = 'broward', 'county_unified'
+        work_dir = '/srv/datascrub/08_Land_Use_And_Zoning/zoning/florida/county/broward/current/source_data/county_unified'
+        return work_dir, county, city
+
+    # General case
+    template = WORK_DIR_PATTERNS.get(layer, os.path.join('/srv/datascrub', '{layer}', '{county}', '{city}'))
+    needs_city = '{city}' in template
+    
+    if needs_city:
+        county, city = split_entity(entity)
+    else:
+        county, city = entity, ''
+
+    work_dir = template.format(layer=layer, county=county, city=city)
+    return work_dir, county, city
+
+def title_case(s: str) -> str:
+    """Return a human-friendly title-case string."""
+    cleaned = " ".join(part for part in s.replace("_", " ").split())
+    words = cleaned.split()
+
+    def cap_token(tok: str, is_first: bool) -> str:
+        parts = tok.split("-")
+        new_parts = []
+        stop_words = {"of", "and", "in", "the"}
+        abbrev_map = {"st": "St", "ft": "Ft", "mt": "Mt"}
+        for j, p in enumerate(parts):
+            first_in_phrase = is_first and j == 0
+            plow = p.lower()
+            if plow in abbrev_map:
+                new_parts.append(abbrev_map[plow])
+            elif first_in_phrase or (plow not in stop_words and len(p) > 2):
+                new_parts.append(p.capitalize())
+            else:
+                new_parts.append(p.lower())
+        return "-".join(new_parts)
+
+    return " ".join(cap_token(w, i == 0) for i, w in enumerate(words))
+
+def _run_command(command, work_dir, logger):
+    """Run a shell command in a specified directory."""
+    if CONFIG.test_mode:
+        logger.info(f"[TEST MODE] COMMAND SKIPPED IN {work_dir}: {' '.join(command)}")
+        return
+    
+    logger.debug(f"Running command in {work_dir}: {' '.join(command)}")
+    
+    process = subprocess.run(command, cwd=work_dir, capture_output=True, text=True)
+
+    # Handle download_data.py no-new-data conditions
+    if len(command) > 1 and 'download_data.py' in command[1]:
+        if process.returncode == 1:
+            if CONFIG.process_anyway:
+                logger.warning("download_data.py returned exit code 1 - no new data available, but continuing due to process_anyway=True")
+                return process.stdout
+            else:
+                logger.info("download_data.py returned exit code 1 - no new data available - skipping entity")
+                raise SkipEntityError("No new data available from server", layer=None, entity=None)
+        elif process.returncode == 0:
+            stdout_lower = process.stdout.lower()
+            if any(phrase in stdout_lower for phrase in [
+                '304 not modified', 'not modified on server', 'omitting download', 
+                'no new data available from server'
+            ]):
+                if CONFIG.process_anyway:
+                    logger.warning("download_data.py indicates no new data available, but continuing due to process_anyway=True")
+                else:
+                    logger.info("download_data.py indicates no new data available - skipping entity")
+                    raise SkipEntityError("No new data available from server", layer=None, entity=None)
+
+    if process.returncode != 0:
+        logger.error(f"Error executing command: {' '.join(command)}")
+        logger.error(f"STDOUT: {process.stdout}")
+        logger.error(f"STDERR: {process.stderr}")
+        raise ProcessingError(f"Command failed with exit code {process.returncode}: {' '.join(command)}")
+    
+    logger.debug(f"Command output: {process.stdout}")
+    return process.stdout
+
+# ---------------------------------------------------------------------------
+# Database Functions
+# ---------------------------------------------------------------------------
+
+def _fetch_catalog_row(layer: str, county: str, city: str):
+    """Return catalog row for the given layer/county/city or None if missing."""
+    conn = psycopg2.connect(PG_CONNECTION)
+    cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+    try:
+        sql = (
+            "SELECT * FROM m_gis_data_catalog_main "
+            "WHERE lower(layer_subgroup) = %s "
+            "AND lower(county) = %s "
+            "AND city = %s LIMIT 1"
+        )
+        cur.execute(sql, (layer.lower(), county.lower().replace('_', ' '), title_case(city)))
+        row = cur.fetchone()
+        return dict(row) if row else None
+    finally:
+        cur.close()
+        conn.close()
+
+def _fetch_entities_from_db(layer: str) -> list[str]:
+    """Return list of entity strings for layer from database."""
+    entities = []
+    conn = psycopg2.connect(PG_CONNECTION)
+    cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+    try:
+        sql = (
+            "SELECT county, city FROM m_gis_data_catalog_main "
+            "WHERE status IS DISTINCT FROM 'DELETE' "
+            "AND lower(layer_subgroup) = %s"
+        )
+        cur.execute(sql, (layer.lower(),))
+        rows = cur.fetchall()
+        for row in rows:
+            entity = _entity_from_parts(row['county'], row['city'])
+            entities.append(entity)
+    except Exception as exc:
+        logging.error(f"DB entity fetch failed: {exc}")
+    finally:
+        cur.close()
+        conn.close()
+    return list(dict.fromkeys(entities))  # de-dupe preserving order
+
+def _norm_name(s: str) -> str:
+    """Return lowercase + underscore version of string."""
+    return re.sub(r"[^a-z0-9]+", "_", s.lower()).strip("_") if s else ""
+
+def _entity_from_parts(county: str, city: str | None) -> str:
+    """Return entity id from raw DB county/city values."""
+    county_norm = _norm_name(county)
+    city_norm = _norm_name(city) if city else ""
+    if not city_norm:
+        return county_norm
+    return f"{county_norm}_{city_norm}"
+
+def _parse_processing_comments(text):
+    """Parse the processing_comments field into a list of command strings."""
+    if not text:
+        return []
+    # Try JSON array first
+    try:
+        data = json.loads(text)
+        if isinstance(data, list):
+            return [str(cmd).strip() for cmd in data if str(cmd).strip()]
+    except Exception:
+        pass
+    # Fallback – split on newlines/semicolons
+    commands = []
+    for piece in re.split(r'[\n;]+', text):
+        piece = piece.strip()
+        if piece:
+            commands.append(piece)
+    return commands
+
+# ---------------------------------------------------------------------------
+# Main Pipeline Functions
+# ---------------------------------------------------------------------------
+
+def layer_download(layer: str, entity: str, county: str, city: str, catalog_row: dict, work_dir: str, logger):
+    """Handle the download phase for an entity."""
+    if not CONFIG.run_download:
+        logger.info(f"Skipping download for {layer}/{entity} (disabled in config)")
+        return None
+
+    fmt = (catalog_row.get('format') or '').lower()
+    resource = catalog_row.get('resource') or catalog_row.get('src_url_file')
+    table_name = catalog_row.get('table_name')
+
+    # Generate download command based on format
+    if fmt in {'ags', 'arcgis', 'esri', 'ags_extract'}:
+        if not table_name:
+            raise DownloadError('Missing table_name for AGS download', layer, entity)
+        command = [
+            'python3',
+            os.path.join(os.path.dirname(__file__), 'download_tools', 'ags_extract_data2.py'),
+            table_name,
+            'delete',
+            '15'
+        ]
+    else:
+        if not resource:
+            raise DownloadError('Missing resource/url for download_data.py', layer, entity)
+        command = [
+            'python3',
+            os.path.join(os.path.dirname(__file__), 'download_tools', 'download_data.py'),
+            resource
+        ]
+
+    logger.debug(f"Running download for {layer}/{entity}")
+    
+    # Capture directory state before download for validation
+    before_state = _get_directory_state(work_dir)
+    
+    try:
+        _run_command(command, work_dir, logger)
+    except SkipEntityError:
+        raise  # Re-raise skip errors
+    
+    # Validate download occurred (only in non-test mode)
+    if not CONFIG.test_mode:
+        try:
+            _validate_download(work_dir, logger, before_state)
+        except DownloadError as de:
+            raise DownloadError(str(de), layer, entity) from de
+        
+        # Find and return newest zip file if any
+        try:
+            return _find_latest_zip(work_dir, logger)
+        except Exception as z_err:
+            logger.debug(f"Zip detection failed: {z_err}")
+            return None
+    else:
+        logger.info(f"[TEST MODE] Skipping download validation for {layer}/{entity}")
+        return None
+
+def layer_metadata(layer: str, entity: str, county: str, city: str, catalog_row: dict, work_dir: str, logger):
+    """Handle the metadata extraction phase for an entity."""
+    if not CONFIG.run_metadata:
+        logger.info(f"Skipping metadata extraction for {layer}/{entity} (disabled in config)")
+        return {}
+
+    # Find shapefile to process
+    shp_to_process = None
+    try:
+        shp_to_process = _find_shapefile(work_dir, logger)
+    except DownloadError:
+        logger.warning("No shapefile found for metadata extraction")
+        return {}
+
+    if shp_to_process:
+        metadata = extract_shp_metadata(shp_to_process, logger)
+        logger.debug(f"Metadata extracted from: {os.path.basename(shp_to_process)}")
+        
+        # Normalize data_date to ensure it's not later than today
+        if metadata.get('data_date'):
+            today = datetime.now().strftime('%Y-%m-%d')
+            if metadata['data_date'] > today:
+                logger.warning(f"Data date {metadata['data_date']} is later than today {today}, setting data_date to today")
+                metadata['data_date'] = today
+        
+        return metadata
+    else:
+        logger.warning("No shapefile found to process for metadata extraction")
+        return {}
+
+def layer_processing(layer: str, entity: str, county: str, city: str, catalog_row: dict, work_dir: str, logger):
+    """Handle the processing phase for an entity."""
+    if not CONFIG.run_processing:
+        logger.info(f"Skipping processing for {layer}/{entity} (disabled in config)")
+        return
+
+    logger.debug(f"Running processing for {layer}/{entity}")
+
+    # 1. Run pre-processing commands from database
+    processing_commands = _parse_processing_comments(catalog_row.get('processing_comments'))
+    for cmd_str in processing_commands:
+        command = cmd_str.split() if isinstance(cmd_str, str) else cmd_str
+        _run_command(command, work_dir, logger)
+
+    # 2. Run layer-specific update script
+    proc_dir = os.path.join(os.path.dirname(__file__), 'processing_tools')
+    
+    if layer == 'zoning' and os.path.exists(os.path.join(proc_dir, 'update_zoning2.py')):
+        command = ['python3', os.path.join(proc_dir, 'update_zoning2.py'), county, city]
+    else:
+        update_script = os.path.join(proc_dir, f'update_{layer}.py')
+        if os.path.exists(update_script):
+            command = ['python3', update_script, county, city]
+        else:
+            logger.warning(f"No update script found for layer {layer}")
+            return
+
+    logger.debug(f"Running update script for {layer}/{entity}")
+    _run_command(command, work_dir, logger)
+
+def layer_upload(layer: str, entity: str, county: str, city: str, catalog_row: dict, work_dir: str, logger, metadata: dict, raw_zip_name: str = None):
+    """Handle the upload phase for an entity."""
+    if not CONFIG.run_upload:
+        logger.info(f"Skipping upload for {layer}/{entity} (disabled in config)")
+        return
+
+    fmt = (catalog_row.get('format') or '').lower()
+    
+    # Set publish_date to today
+    publish_date = datetime.now().strftime('%Y-%m-%d')
+    
+    # Build SQL based on download type
+    if fmt in {'ags', 'arcgis', 'esri', 'ags_extract'}:
+        # AGS entities don't have zip files
+        sql_update = (
+            "UPDATE m_gis_data_catalog_main SET "
+            "data_date = '{data_date}', "
+            "publish_date = '{update_date}', "
+            "srs_epsg = '{epsg}', "
+            "sys_raw_file = '{shp}', "
+            "field_names = '{field_names}' "
+            "WHERE layer_subgroup = '{layer}' "
+            "AND county = '{county}' "
+            "AND city = '{city}';"
+        )
+    else:
+        # Zip download entities may have zip files
+        sql_update = (
+            "UPDATE m_gis_data_catalog_main SET "
+            "data_date = '{data_date}', "
+            "publish_date = '{update_date}', "
+            "srs_epsg = '{epsg}', "
+            "sys_raw_file = '{shp}', "
+            "sys_raw_file_zip = '{raw_zip}', "
+            "field_names = '{field_names}' "
+            "WHERE layer_subgroup = '{layer}' "
+            "AND county = '{county}' "
+            "AND city = '{city}';"
+        )
+    
+    # Prepare placeholders
+    placeholders = {
+        'layer': layer,
+        'county': county.lower().replace('_', ' '),
+        'city': title_case(city),
+        'data_date': metadata.get('data_date', publish_date),
+        'publish_date': publish_date,
+        'update_date': publish_date,
+        'epsg': metadata.get('epsg', ''),
+        'shp': metadata.get('shp', ''),
+        'raw_zip': raw_zip_name or '',
+        'field_names': metadata.get('field_names', ''),
+    }
+    
+    logger.debug(f"Upload placeholders - data_date: {metadata.get('data_date', publish_date)}, publish_date: {publish_date}")
+
+    # Check for required placeholders
+    if '{raw_zip}' in sql_update and not raw_zip_name:
+        raise UploadError('Upload command expects raw_zip but no ZIP file detected', layer, entity)
+
+    # Substitute placeholders
+    final_sql = sql_update.format(**placeholders)
+    
+    command = ['psql', '-d', 'gisdev', '-U', 'postgres', '-c', final_sql]
+    
+    logger.debug(f"Running upload command for {layer}/{entity}")
+    _run_command(command, work_dir, logger)
+
+# ---------------------------------------------------------------------------
+# Helper Functions (from original script)
+# ---------------------------------------------------------------------------
+
+def _get_directory_state(work_dir):
+    """Get snapshot of directory state (filenames and modification times)."""
+    state = {}
+    try:
+        for filename in os.listdir(work_dir):
+            file_path = os.path.join(work_dir, filename)
+            try:
+                mtime = os.path.getmtime(file_path)
+                state[filename] = mtime
+            except OSError:
+                continue
+    except OSError:
+        pass
+    return state
+
+def _validate_download(work_dir, logger, before_state=None):
+    """Validate that a download occurred by comparing directory state."""
+    if before_state is not None:
+        current_state = _get_directory_state(work_dir)
+        changed_files = []
+        
+        for filename, current_mtime in current_state.items():
+            if filename not in before_state:
+                changed_files.append(f"{filename} (new)")
+            elif current_mtime != before_state[filename]:
+                changed_files.append(f"{filename} (modified)")
+        
+        if not changed_files:
+            if CONFIG.process_anyway:
+                logger.warning("No files changed during download, but continuing due to process_anyway=True")
+                return True
+            raise DownloadError("No files changed during download", layer=None, entity=None)
+        
+        changed_files_str = ", ".join(changed_files[:3])
+        if len(changed_files) > 3:
+            changed_files_str += f" and {len(changed_files) - 3} more"
+        
+        logger.debug(f"Download validation passed - found changed files: {changed_files_str}")
+        return True
+    else:
+        # Fallback to 24-hour check
+        now = datetime.now()
+        day_ago = now - timedelta(days=1)
+
+        recent_downloads = []
+        for filename in os.listdir(work_dir):
+            file_path = os.path.join(work_dir, filename)
+            try:
+                mtime = os.path.getmtime(file_path)
+                mod_time = datetime.fromtimestamp(mtime)
+                if mod_time >= day_ago:
+                    recent_downloads.append((mod_time, filename))
+            except OSError:
+                continue
+
+        if not recent_downloads:
+            if CONFIG.process_anyway:
+                logger.warning("No files found modified within the last 24 hours, but continuing due to process_anyway=True")
+                return True
+            raise DownloadError("No files found modified within the last 24 hours", layer=None, entity=None)
+
+        if recent_downloads:
+            recent_files_str = ", ".join([f[1] for f in sorted(recent_downloads, key=lambda x: x[0], reverse=True)[:3]])
+            logger.debug(f"Download validation passed – found recent files: {recent_files_str}")
+        
+        return True
+
+def _find_shapefile(work_dir, logger):
+    """Find the most recent shapefile in work_dir."""
+    candidate_files = []
+    for filename in os.listdir(work_dir):
+        if filename.lower().endswith(".shp"):
+            logger.debug(f"Found shapefile: {filename}")
+            file_path = os.path.join(work_dir, filename)
+            try:
+                mtime = os.path.getmtime(file_path)
+                mod_time = datetime.fromtimestamp(mtime)
+                candidate_files.append((mod_time, file_path))
+            except OSError:
+                continue
+
+    if not candidate_files:
+        raise DownloadError("No shapefile found in directory.", layer=None, entity=None)
+
+    candidate_files.sort(key=lambda x: x[0], reverse=True)
+    newest_shp_path = candidate_files[0][1]
+
+    logger.debug(f"Using shapefile: {os.path.basename(newest_shp_path)} from {candidate_files[0][0].strftime('%Y-%m-%d %H:%M')}")
+    return newest_shp_path
+
+def _find_latest_zip(work_dir, logger):
+    """Return the basename of the newest *.zip file in work_dir or None if none exist."""
+    zips = []
+    for fname in os.listdir(work_dir):
+        if fname.lower().endswith('.zip'):
+            path = os.path.join(work_dir, fname)
+            try:
+                mtime = os.path.getmtime(path)
+                zips.append((mtime, fname))
+            except OSError:
+                continue
+    if not zips:
+        return None
+    zips.sort(key=lambda t: t[0], reverse=True)
+    newest = zips[0][1]
+    logger.debug(f"Detected newest zip file: {newest}")
+    return newest
+
+def extract_shp_metadata(shp_path, logger):
+    """Return metadata for a shapefile including EPSG code, data date, and field names."""
+    metadata = {}
+
+    # Resolve the actual shapefile path
+    resolved_path = None
+    if os.path.isdir(shp_path):
+        candidates = [f for f in os.listdir(shp_path) if f.lower().endswith(".shp")]
+        if candidates:
+            resolved_path = os.path.join(shp_path, candidates[0])
+    elif os.path.isfile(shp_path):
+        resolved_path = shp_path
+    else:
+        parent = os.path.dirname(shp_path) or "."
+        if os.path.isdir(parent):
+            candidates = [f for f in os.listdir(parent) if f.lower().endswith(".shp")]
+            if candidates:
+                resolved_path = os.path.join(parent, candidates[0])
+
+    if resolved_path is None or not os.path.exists(resolved_path):
+        logger.warning(f"Shapefile not found for metadata extraction: {shp_path}")
+        return metadata
+
+    metadata["shp"] = os.path.basename(resolved_path)
+
+    try:
+        result = subprocess.run(
+            ["ogrinfo", "-ro", "-al", "-so", resolved_path],
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+        logger.debug(f"OGRINFO output: {result.stdout}")
+    except (subprocess.CalledProcessError, FileNotFoundError) as e:
+        logger.warning(f"ogrinfo failed while reading {resolved_path}: {e}")
+        return metadata
+
+    # Extract EPSG code from WKT
+    projcs_match = re.search(
+        r'^(?:\s*)(PROJCS|GEOGCS|PROJCRS|GEOGCRS)\["([^\"]+)"',
+        result.stdout,
+        re.MULTILINE,
+    )
+    if projcs_match:
+        srs_type, srs_name = projcs_match.groups()
+        canonical_name = re.sub(r'[^a-z0-9]+', '_', srs_name.lower()).strip('_')
+
+        name_to_epsg = {
+            "gcs_wgs_1984": "4326",
+            "wgs_84": "4326",
+            "wgs_84_pseudo_mercator": "3857",
+            "nad_1983_stateplane_florida_east_fips_0901_feet": "2236",
+            "nad_1983_stateplane_florida_west_fips_0902_feet": "2237",
+            "nad_1983_stateplane_florida_north_fips_0903_feet": "2238",
+            "nad83_harn_florida_east_ftus": "2881",
+            "nad83_harn_florida_west_ftus": "2882",
+            "nad_1983_2011_stateplane_florida_west_fips_0902_ft_us": "6443",
+            "nad83_florida_east_ftus": "2236",
+            "nad83_florida_west_ftus": "2237",
+            "nad83_florida_north_ftus": "2238",
+        }
+
+        if canonical_name in name_to_epsg:
+            metadata["epsg"] = name_to_epsg[canonical_name]
+            logger.debug(f"Mapped {srs_type} name '{srs_name}' to EPSG:{metadata['epsg']}")
+        else:
+            logger.debug(f"SRS name '{srs_name}' not in lookup table; unable to map to EPSG.")
+
+    # Extract data date (simplified version - could expand with full logic from original)
+    today = datetime.now().date()
+    data_date = today  # Default fallback
+    
+    # Try DBF_DATE_LAST_UPDATE
+    m = re.search(r"DBF_DATE_LAST_UPDATE=([0-9]{4}-[0-9]{2}-[0-9]{2})", result.stdout)
+    if m:
+        try:
+            candidate_date = datetime.strptime(m.group(1), "%Y-%m-%d").date()
+            if candidate_date <= today:
+                data_date = candidate_date
+        except ValueError:
+            pass
+
+    metadata["data_date"] = data_date.strftime("%Y-%m-%d")
+    metadata["update_date"] = datetime.now().date().strftime("%Y-%m-%d")
+
+    # Extract field names
+    field_names = []
+    try:
+        sf = shapefile.Reader(resolved_path)
+        field_names = [f[0] for f in sf.fields[1:]]  # skip deletion flag
+        logger.debug(f"Extracted {len(field_names)} field names via pyshp: {field_names}")
+    except Exception as e:
+        logger.debug(f"pyshp field extraction failed ({e})")
+
+    metadata["field_names"] = json.dumps(field_names) if field_names else "[]"
+
+    return metadata
+
+# ---------------------------------------------------------------------------
+# Queue Management Functions
+# ---------------------------------------------------------------------------
+
+def set_queue(layer, entities):
+    """Validate layer and entity list and return a queue of entities to process."""
+    logging.info(f"Setting queue for layer '{layer}' and entities '{entities or 'all'}'")
+
+    # Get entities from database
+    layer_entities = set(_fetch_entities_from_db(layer))
+    
+    if not layer_entities and not entities:
+        raise ValueError("No entities found in database and no entities supplied – cannot determine processing queue.")
+
+    # No entities supplied → process ALL from database
+    if not entities:
+        logging.info(f"No entities specified, queuing all {len(layer_entities)} entities for layer '{layer}'")
+        queue = sorted(layer_entities)
+    else:
+        # Process specific entities
+        if isinstance(entities, str):
+            entities = [entities]
+
+        invalid = [e for e in entities if '*' not in e and '?' not in e and e not in layer_entities and e not in counties]
+        if invalid:
+            raise ValueError(f"Invalid entity/ies specified: {invalid}")
+
+        # Expand wildcard patterns
+        expanded = []
+        for pattern in entities:
+            if '*' in pattern or '?' in pattern:
+                matches = fnmatch.filter(sorted(layer_entities), pattern)
+                if not matches:
+                    logging.warning(f"Pattern '{pattern}' matched no entities; skipping.")
+                else:
+                    logging.info(f"Pattern '{pattern}' expanded to {len(matches)} entities: {matches}")
+                    expanded.extend(matches)
+            else:
+                expanded.append(pattern)
+
+        # Deduplicate while preserving order
+        seen = set()
+        queue = []
+        for e in expanded:
+            if e not in seen:
+                queue.append(e)
+                seen.add(e)
+
+    # Filter out blacklisted entities
+    if SKIP_ENTITIES:
+        original_count = len(queue)
+        skipped_entities = [e for e in queue if e in SKIP_ENTITIES]
+        queue = [e for e in queue if e not in SKIP_ENTITIES]
+        skipped_count = original_count - len(queue)
+        if skipped_count > 0:
+            logging.info(f"Skipped {skipped_count} blacklisted entities: {sorted(skipped_entities)}")
+
+    return queue
+
+# ---------------------------------------------------------------------------
+# Main Processing Function
+# ---------------------------------------------------------------------------
+
+def process_layer(layer, queue):
+    """Process a layer for entities in the queue using the 4-stage pipeline."""
+    if CONFIG.run_download:
+        logging.info(f"Starting processing for layer '{layer}' with {len(queue)} entities")
+    else:
+        logging.info(f"Starting processing for layer '{layer}' (download disabled)")
+    
+    results = []
+    for entity in queue:
+        entity_start_time = datetime.now()
+        try:
+            # Setup
+            work_dir, county, city = resolve_work_dir(layer, entity)
+            entity_logger = setup_entity_logger(layer, entity, work_dir)
+            
+            logging.info(f"--- Processing entity: {entity} ---")
+            
+            # Get catalog row
+            catalog_row = _fetch_catalog_row(layer, county, city)
+            if catalog_row is None:
+                raise RuntimeError(f"Catalog row not found for {layer}/{entity}")
+
+            # Initialize variables
+            raw_zip_name = None
+            metadata = {}
+
+            # Stage 1: Download
+            try:
+                raw_zip_name = layer_download(layer, entity, county, city, catalog_row, work_dir, entity_logger)
+            except SkipEntityError as e:
+                raise  # Re-raise to skip entire entity
+
+            # Stage 2: Metadata
+            metadata = layer_metadata(layer, entity, county, city, catalog_row, work_dir, entity_logger)
+
+            # Stage 3: Processing
+            layer_processing(layer, entity, county, city, catalog_row, work_dir, entity_logger)
+
+            # Stage 4: Upload
+            layer_upload(layer, entity, county, city, catalog_row, work_dir, entity_logger, metadata, raw_zip_name)
+
+            # Record success
+            entity_end_time = datetime.now()
+            entity_runtime = round((entity_end_time - entity_start_time).total_seconds())
+            result_entry = {
+                'layer': layer,
+                'entity': entity,
+                'status': 'success',
+                'data_date': metadata.get('data_date') or datetime.now().date(),
+                'runtime_seconds': f'{entity_runtime}s',
+            }
+            if metadata.get('epsg'):
+                result_entry['epsg'] = metadata['epsg']
+            if metadata.get('shp'):
+                result_entry['shp_name'] = metadata['shp']
+            if metadata.get('_defaulted_today'):
+                warning_msg = 'data_date defaulted to current day'
+                entity_logger.warning(warning_msg)
+                result_entry['warning'] = warning_msg
+
+            results.append(result_entry)
+            logging.info(f"--- Successfully processed entity: {entity} ---")
+
+        except SkipEntityError as e:
+            logging.info(f"Skipping entity {entity} for layer {layer}: {e}")
+            entity_end_time = datetime.now()
+            entity_runtime = (entity_end_time - entity_start_time).total_seconds()
+            results.append({
+                'layer': layer, 'entity': entity, 'status': 'skipped', 
+                'warning': str(e), 'data_date': None, 'runtime_seconds': entity_runtime
+            })
+        except LayerProcessingError as e:
+            logging.error(f"Failed to process entity {entity} for layer {layer}: {e}")
+            entity_end_time = datetime.now()
+            entity_runtime = (entity_end_time - entity_start_time).total_seconds()
+            results.append({
+                'layer': layer, 'entity': entity, 'status': 'failure', 
+                'error': str(e), 'data_date': None, 'runtime_seconds': entity_runtime
+            })
+
+    # Calculate stats
+    total_entities = len(results)
+    successful_entities = len([r for r in results if r.get('status') == 'success'])
+    logging.info(f"{successful_entities}/{total_entities} entities processed successfully")
+    return results
+
+# ---------------------------------------------------------------------------
+# Summary Generation (simplified from original)
+# ---------------------------------------------------------------------------
+
+def generate_summary(results):
+    """Generate a CSV summary of the processing run."""
+    if not results or not CONFIG.generate_summary:
+        return
+
+    layer = results[0]['layer']
+    summary_filename = f"{layer}_summary_{CONFIG.start_time.strftime('%Y-%m-%d')}.csv"
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    summary_filepath = os.path.join(script_dir, summary_filename)
+    
+    headers = ['layer', 'entity', 'status', 'runtime_seconds', 'data_date', 'warning', 'error']
+    
+    try:
+        with open(summary_filepath, 'w', newline='') as csvfile:
+            writer = csv.DictWriter(csvfile, fieldnames=headers)
+            writer.writeheader()
+            
+            sorted_results = sorted(results, key=lambda result: result['entity'])
+            for result in sorted_results:
+                row = {h: result.get(h, '') for h in headers}
+                writer.writerow(row)
+        
+        logging.info(f"Summary file generated: {summary_filepath}")
+    except IOError as e:
+        logging.error(f"Could not write summary file: {e}")
+
+# ---------------------------------------------------------------------------
+# Main Function
+# ---------------------------------------------------------------------------
+
+def main():
+    """Main script execution."""
+    parser = argparse.ArgumentParser(description="Clean 4-stage geospatial data processing pipeline.")
+    parser.add_argument("layer", help="The layer to process.")
+    parser.add_argument("entities", nargs='*', help="Optional entity IDs. If omitted, all entities for the layer will be processed.")
+    parser.add_argument("--test-mode", action="store_true", help="Run in test mode, skipping actual execution.")
+    parser.add_argument("--debug", action="store_true", help="Enable debug logging.")
+    parser.add_argument("--no-log-isolation", dest='isolate_logs', action='store_false', help="Show all logs in console.")
+    parser.add_argument("--no-download", action="store_true", help="Skip the download phase.")
+    parser.add_argument("--no-metadata", action="store_true", help="Skip the metadata extraction phase.")
+    parser.add_argument("--no-processing", action="store_true", help="Skip the processing phase.")
+    parser.add_argument("--no-upload", action="store_true", help="Skip the upload phase.")
+    parser.add_argument("--no-summary", action="store_true", help="Skip the summary generation.")
+    parser.add_argument("--process-anyway", action="store_true", help="Continue processing even when download returns 'no new data'.")
+    
+    args = parser.parse_args()
+
+    # Initialize config
+    global CONFIG
+    CONFIG = Config(
+        test_mode=args.test_mode,
+        debug=args.debug,
+        isolate_logs=args.isolate_logs,
+        run_download=not args.no_download,
+        run_metadata=not args.no_metadata,
+        run_processing=not args.no_processing,
+        run_upload=not args.no_upload,
+        generate_summary=not args.no_summary,
+        process_anyway=args.process_anyway
+    )
+    
+    initialize_logging(CONFIG.debug)
+
+    logging.info(f"Script started at {CONFIG.start_time.strftime('%Y-%m-%d %H:%M:%S')}")
+    if CONFIG.test_mode:
+        logging.warning("--- RUNNING IN TEST MODE ---")
+
+    results = []
+    try:
+        # Set the queue of entities to process
+        queue = set_queue(args.layer, args.entities)
+
+        if not queue:
+            logging.info("No entities to process.")
+            return
+
+        # Process the layer using 4-stage pipeline
+        results = process_layer(args.layer, queue)
+
+    except (ValueError, NotImplementedError) as e:
+        logging.critical(f"A critical error occurred: {e}")
+        sys.exit(1)
+    except Exception as e:
+        logging.critical(f"An unexpected error occurred: {e}", exc_info=True)
+        sys.exit(1)
+    finally:
+        # Generate summary
+        generate_summary(results)
+        end_time = datetime.now()
+        logging.info(f"Script finished at {end_time.strftime('%Y-%m-%d %H:%M:%S')}. Total runtime: {end_time - CONFIG.start_time}")
+
+if __name__ == "__main__":
+    main() 
