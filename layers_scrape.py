@@ -504,8 +504,11 @@ def layer_metadata(layer: str, entity: str, county: str, city: str, catalog_row:
         # Check if data_date matches existing CSV data (NND detection)
         try:
             existing_data_date = _get_existing_data_date(layer, entity)
-            if existing_data_date and metadata.get('data_date') == existing_data_date:
+            new_data_date = metadata.get('data_date')
+            if existing_data_date and new_data_date == existing_data_date:
                 raise SkipEntityError("No new data available (data date unchanged)", layer=layer, entity=entity)
+        except SkipEntityError:
+            raise  # Re-raise SkipEntityError
         except Exception as e:
             logger.debug(f"Could not check existing data date: {e}")
         
