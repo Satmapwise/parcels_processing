@@ -407,7 +407,9 @@ def layer_download(layer: str, entity: str, county: str, city: str, catalog_row:
     
     try:
         _run_command(command, work_dir, logger)
-    except SkipEntityError:
+    except SkipEntityError as e:
+        # Handle "no new data" case
+        _update_csv_status(layer, entity, 'download', 'NND')
         raise  # Re-raise skip errors
     
     # Validate download occurred (only in non-test mode)
@@ -415,7 +417,9 @@ def layer_download(layer: str, entity: str, county: str, city: str, catalog_row:
         try:
             _validate_download(work_dir, logger, before_state)
             logger.debug(f"[DOWNLOAD] Download validation passed for {layer}/{entity}")
+            _update_csv_status(layer, entity, 'download', 'SUCCESS')
         except DownloadError as de:
+            _update_csv_status(layer, entity, 'download', 'FAILED', str(de))
             raise DownloadError(str(de), layer, entity) from de
         
         # Find and return newest zip file if any
@@ -429,6 +433,7 @@ def layer_download(layer: str, entity: str, county: str, city: str, catalog_row:
             return None
     else:
         logger.info(f"[TEST MODE] Skipping download validation for {layer}/{entity}")
+        _update_csv_status(layer, entity, 'download', 'SUCCESS')  # Assume success in test mode
         return None
 
 def layer_metadata(layer: str, entity: str, county: str, city: str, catalog_row: dict, work_dir: str, logger):
@@ -503,8 +508,13 @@ def layer_processing(layer: str, entity: str, county: str, city: str, catalog_ro
 
     logger.debug(f"[PROCESSING] Running update script: {script_name}")
     logger.debug(f"Running update script for {layer}/{entity}")
-    _run_command(command, work_dir, logger)
-    logger.debug(f"[PROCESSING] Processing completed for {layer}/{entity}")
+    try:
+        _run_command(command, work_dir, logger)
+        _update_csv_status(layer, entity, 'processing', 'SUCCESS')
+        logger.debug(f"[PROCESSING] Processing completed for {layer}/{entity}")
+    except Exception as e:
+        _update_csv_status(layer, entity, 'processing', 'FAILED', str(e))
+        raise ProcessingError(f"Processing failed: {e}", layer, entity) from e
 
 def layer_upload(layer: str, entity: str, county: str, city: str, catalog_row: dict, work_dir: str, logger, metadata: dict, raw_zip_name: str = None):
     """Handle the upload phase for an entity."""
@@ -574,8 +584,14 @@ def layer_upload(layer: str, entity: str, county: str, city: str, catalog_row: d
     command = ['psql', '-d', 'gisdev', '-U', 'postgres', '-c', final_sql]
     
     logger.debug(f"Running upload command for {layer}/{entity}")
-    _run_command(command, work_dir, logger)
-    logger.debug(f"[UPLOAD] Catalog metadata updated successfully for {layer}/{entity}")
+    try:
+        _run_command(command, work_dir, logger)
+        data_date = metadata.get('data_date', publish_date)
+        _update_csv_status(layer, entity, 'upload', 'SUCCESS', data_date=data_date)
+        logger.debug(f"[UPLOAD] Catalog metadata updated successfully for {layer}/{entity}")
+    except Exception as e:
+        _update_csv_status(layer, entity, 'upload', 'FAILED', str(e))
+        raise UploadError(f"Upload failed: {e}", layer, entity) from e
 
 # ---------------------------------------------------------------------------
 # Helper Functions (from original script)
@@ -857,6 +873,9 @@ def process_layer(layer, queue):
     else:
         logging.info(f"Starting processing for layer '{layer}' (download disabled)")
     
+    # Initialize CSV status tracking for entities in queue
+    _initialize_csv_status(layer, queue)
+    
     results = []
     for entity in queue:
         entity_start_time = datetime.now()
@@ -937,34 +956,288 @@ def process_layer(layer, queue):
     return results
 
 # ---------------------------------------------------------------------------
-# Summary Generation (simplified from original)
+# Enhanced CSV Summary Generation
 # ---------------------------------------------------------------------------
 
 def generate_summary(results):
-    """Generate a CSV summary of the processing run."""
+    """Generate/update a living CSV summary document organized by county."""
     if not results or not CONFIG.generate_summary:
         return
 
     layer = results[0]['layer']
-    summary_filename = f"{layer}_summary_{CONFIG.start_time.strftime('%Y-%m-%d')}.csv"
+    summary_filename = f"{layer}_summary.csv"  # No date in filename - living document
     script_dir = os.path.dirname(os.path.abspath(__file__))
     summary_filepath = os.path.join(script_dir, summary_filename)
     
-    headers = ['layer', 'entity', 'status', 'runtime_seconds', 'data_date', 'warning', 'error']
+    headers = ['layer', 'county', 'city', 'data_date', 'download_status', 'processing_status', 
+               'upload_status', 'error_message', 'timestamp']
     
     try:
+        # Read existing CSV data if it exists
+        existing_data = {}
+        if os.path.exists(summary_filepath):
+            with open(summary_filepath, 'r', newline='') as csvfile:
+                reader = csv.DictReader(csvfile)
+                for row in reader:
+                    # Skip summary rows
+                    if row.get('layer', '').startswith('LAST UPDATED:'):
+                        continue
+                    entity_key = f"{row.get('county', '')}_{row.get('city', '')}"
+                    existing_data[entity_key] = row
+        
+        # Process results and update data
+        for result in results:
+            entity = result['entity']
+            county, city = split_entity(entity)
+            entity_key = f"{county}_{city}"
+            
+            # Get existing row or create new one
+            if entity_key in existing_data:
+                row = existing_data[entity_key]
+            else:
+                row = {h: '' for h in headers}
+                row['layer'] = layer
+                row['county'] = county
+                row['city'] = city
+            
+            # Update based on result status
+            status = result.get('status', 'failure')
+            error_msg = result.get('error', '')
+            
+            if status == 'skipped' and 'No new data available' in str(error_msg):
+                # No new data case
+                row['download_status'] = 'NND'
+                row['processing_status'] = ''
+                row['upload_status'] = ''
+                row['error_message'] = ''
+            elif status == 'success':
+                # Full success
+                row['download_status'] = 'SUCCESS'
+                row['processing_status'] = 'SUCCESS'
+                row['upload_status'] = 'SUCCESS'
+                row['error_message'] = ''
+                row['data_date'] = result.get('data_date', '')
+            else:
+                # Failure - need to determine which stage failed
+                download_status, processing_status, upload_status = _determine_failure_stage(result)
+                row['download_status'] = download_status
+                row['processing_status'] = processing_status
+                row['upload_status'] = upload_status
+                row['error_message'] = str(error_msg)
+            
+            # Set timestamp
+            row['timestamp'] = datetime.now().strftime('%m/%d/%y %I:%M %p')
+            existing_data[entity_key] = row
+        
+        # Sort data by county, then city
+        sorted_data = sorted(existing_data.values(), key=lambda x: (x['county'], x['city']))
+        
+        # Calculate summary statistics
+        total_entities = len(sorted_data)
+        download_success = len([r for r in sorted_data if r['download_status'] == 'SUCCESS'])
+        download_total = len([r for r in sorted_data if r['download_status'] in ['SUCCESS', 'FAILED']])
+        processing_success = len([r for r in sorted_data if r['processing_status'] == 'SUCCESS'])
+        processing_total = len([r for r in sorted_data if r['processing_status'] in ['SUCCESS', 'FAILED']])
+        upload_success = len([r for r in sorted_data if r['upload_status'] == 'SUCCESS'])
+        upload_total = len([r for r in sorted_data if r['upload_status'] in ['SUCCESS', 'FAILED']])
+        
+        # Format runtime
+        end_time = datetime.now()
+        total_runtime = (end_time - CONFIG.start_time).total_seconds()
+        runtime_str = _format_runtime_detailed(total_runtime)
+        
+        # Create summary row
+        summary_row = {
+            'layer': f"LAST UPDATED: {datetime.now().strftime('%m/%d/%y %I:%M %p')}",
+            'county': '',
+            'city': '',
+            'data_date': '',
+            'download_status': f"{download_success}/{download_total}" if download_total > 0 else "0/0",
+            'processing_status': f"{processing_success}/{processing_total}" if processing_total > 0 else "0/0",
+            'upload_status': f"{upload_success}/{upload_total}" if upload_total > 0 else "0/0",
+            'error_message': '',
+            'timestamp': runtime_str
+        }
+        
+        # Write the CSV file
         with open(summary_filepath, 'w', newline='') as csvfile:
             writer = csv.DictWriter(csvfile, fieldnames=headers)
             writer.writeheader()
             
-            sorted_results = sorted(results, key=lambda result: result['entity'])
-            for result in sorted_results:
-                row = {h: result.get(h, '') for h in headers}
+            # Write data rows sorted by county/city
+            for row in sorted_data:
                 writer.writerow(row)
+            
+            # Write summary row
+            writer.writerow(summary_row)
         
-        logging.info(f"Summary file generated: {summary_filepath}")
+        logging.info(f"Summary file updated: {summary_filepath} ({len(sorted_data)} entities)")
+        
     except IOError as e:
         logging.error(f"Could not write summary file: {e}")
+
+def _determine_failure_stage(result):
+    """Determine which stage failed based on the error message."""
+    error_msg = str(result.get('error', '')).lower()
+    
+    # Check for download-related errors
+    if any(term in error_msg for term in ['download', 'ags_extract', 'download_data', 'connection', 'url', 'http']):
+        return 'FAILED', '', ''
+    
+    # Check for processing-related errors  
+    if any(term in error_msg for term in ['processing', 'update_', 'ogr2ogr', 'shapefile', 'geometry']):
+        return 'SUCCESS', 'FAILED', ''
+    
+    # Check for upload-related errors
+    if any(term in error_msg for term in ['upload', 'psql', 'database', 'catalog']):
+        return 'SUCCESS', 'SUCCESS', 'FAILED'
+    
+    # Default: assume download failed if we can't determine
+    return 'FAILED', '', ''
+
+def _format_runtime_detailed(seconds):
+    """Format runtime as 'Xhr Ymin Zsec'."""
+    if seconds < 60:
+        return f"{int(seconds)}sec"
+    
+    minutes = int(seconds // 60)
+    remaining_seconds = int(seconds % 60)
+    
+    if minutes < 60:
+        return f"{minutes}min {remaining_seconds}sec"
+    
+    hours = int(minutes // 60)
+    remaining_minutes = int(minutes % 60)
+    
+    return f"{hours}hr {remaining_minutes}min {remaining_seconds}sec"
+
+def _initialize_csv_status(layer, queue):
+    """Initialize CSV status columns to null for entities in the processing queue."""
+    if not CONFIG.generate_summary:
+        return
+        
+    summary_filename = f"{layer}_summary.csv"
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    summary_filepath = os.path.join(script_dir, summary_filename)
+    
+    headers = ['layer', 'county', 'city', 'data_date', 'download_status', 'processing_status', 
+               'upload_status', 'error_message', 'timestamp']
+    
+    try:
+        # Read existing CSV data if it exists
+        existing_data = {}
+        if os.path.exists(summary_filepath):
+            with open(summary_filepath, 'r', newline='') as csvfile:
+                reader = csv.DictReader(csvfile)
+                for row in reader:
+                    # Skip summary rows
+                    if row.get('layer', '').startswith('LAST UPDATED:'):
+                        continue
+                    entity_key = f"{row.get('county', '')}_{row.get('city', '')}"
+                    existing_data[entity_key] = row
+        
+        # Initialize status columns for entities in queue
+        for entity in queue:
+            county, city = split_entity(entity)
+            entity_key = f"{county}_{city}"
+            
+            if entity_key in existing_data:
+                row = existing_data[entity_key]
+            else:
+                row = {h: '' for h in headers}
+                row['layer'] = layer
+                row['county'] = county
+                row['city'] = city
+            
+            # Clear status columns for this run
+            row['download_status'] = ''
+            row['processing_status'] = ''
+            row['upload_status'] = ''
+            row['error_message'] = ''
+            
+            existing_data[entity_key] = row
+        
+        # Write back the initialized CSV
+        _write_csv_file(summary_filepath, headers, existing_data)
+        
+    except IOError as e:
+        logging.error(f"Could not initialize CSV status: {e}")
+
+def _update_csv_status(layer, entity, stage, status, error_msg='', data_date=''):
+    """Update CSV status for a specific entity and stage."""
+    if not CONFIG.generate_summary:
+        return
+        
+    summary_filename = f"{layer}_summary.csv"
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    summary_filepath = os.path.join(script_dir, summary_filename)
+    
+    headers = ['layer', 'county', 'city', 'data_date', 'download_status', 'processing_status', 
+               'upload_status', 'error_message', 'timestamp']
+    
+    try:
+        # Read existing CSV data
+        existing_data = {}
+        if os.path.exists(summary_filepath):
+            with open(summary_filepath, 'r', newline='') as csvfile:
+                reader = csv.DictReader(csvfile)
+                for row in reader:
+                    # Skip summary rows
+                    if row.get('layer', '').startswith('LAST UPDATED:'):
+                        continue
+                    entity_key = f"{row.get('county', '')}_{row.get('city', '')}"
+                    existing_data[entity_key] = row
+        
+        # Update the specific entity
+        county, city = split_entity(entity)
+        entity_key = f"{county}_{city}"
+        
+        if entity_key in existing_data:
+            row = existing_data[entity_key]
+            
+            # Update the specific stage status
+            if stage == 'download':
+                row['download_status'] = status
+                if status == 'NND':  # No new data
+                    row['processing_status'] = ''
+                    row['upload_status'] = ''
+                    row['error_message'] = ''
+            elif stage == 'processing':
+                row['processing_status'] = status
+            elif stage == 'upload':
+                row['upload_status'] = status
+                if status == 'SUCCESS' and data_date:
+                    row['data_date'] = data_date
+            
+            # Set error message if failed
+            if status == 'FAILED' and error_msg:
+                row['error_message'] = str(error_msg)
+            elif status in ['SUCCESS', 'NND']:
+                row['error_message'] = ''
+            
+            # Update timestamp
+            row['timestamp'] = datetime.now().strftime('%m/%d/%y %I:%M %p')
+            
+            existing_data[entity_key] = row
+            
+            # Write back the updated CSV
+            _write_csv_file(summary_filepath, headers, existing_data)
+        
+    except IOError as e:
+        logging.error(f"Could not update CSV status: {e}")
+
+def _write_csv_file(filepath, headers, data_dict):
+    """Write CSV file with sorted data."""
+    # Sort data by county, then city
+    sorted_data = sorted(data_dict.values(), key=lambda x: (x['county'], x['city']))
+    
+    with open(filepath, 'w', newline='') as csvfile:
+        writer = csv.DictWriter(csvfile, fieldnames=headers)
+        writer.writeheader()
+        
+        # Write data rows
+        for row in sorted_data:
+            writer.writerow(row)
 
 # ---------------------------------------------------------------------------
 # Main Function
