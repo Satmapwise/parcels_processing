@@ -45,6 +45,152 @@ except ImportError:
                     os.environ[key.strip()] = value.strip().strip('\'"')
 
 # ---------------------------------------------------------------------------
+# Name Formatting Utilities
+# ---------------------------------------------------------------------------
+
+def format_name(name: str, name_type: str, external: bool = False) -> str:
+    """Convert between internal and external name formats.
+    
+    Args:
+        name: The name to format
+        name_type: Type of name - 'layer', 'county', or 'city'
+        external: If True, convert to external (human-readable) format.
+                 If False, convert to internal (code-friendly) format.
+    
+    Internal format: lowercase, underscores, abbreviations (miami_dade, st_lucie, flu)
+    External format: title case, spaces/hyphens, periods for abbreviations (Miami-Dade, St. Lucie, Future Land Use)
+    
+    Examples:
+        format_name("miami_dade", "county", external=True) -> "Miami-Dade"
+        format_name("Miami-Dade", "county", external=False) -> "miami_dade"
+        format_name("st_lucie", "county", external=True) -> "St. Lucie"
+        format_name("howey_in_the_hills", "city", external=True) -> "Howey-in-the-Hills"
+        format_name("flu", "layer", external=True) -> "Future Land Use"
+    """
+    if not name or not name.strip():
+        return ""
+    
+    name = name.strip()
+    
+    # Special mappings for layers
+    layer_mappings = {
+        # internal -> external
+        'flu': 'Future Land Use',
+        'addr_pnts': 'Address Points',
+        'bldg_ftpr': 'Building Footprints',
+        'parcel_geo': 'Parcel Geometry',
+        'flood_zones': 'Flood Zones',
+        'subdiv': 'Subdivisions',
+        'streets': 'Streets',
+        'zoning': 'Zoning'
+    }
+    
+    # Reverse mapping for external -> internal
+    layer_mappings_reverse = {v.lower(): k for k, v in layer_mappings.items()}
+    
+    # Special county mappings (internal -> external)
+    county_special = {
+        'miami_dade': 'Miami-Dade',
+        'desoto': 'DeSoto',
+        'st_johns': 'St. Johns',
+        'st_lucie': 'St. Lucie',
+        'santa_rosa': 'Santa Rosa',
+        'indian_river': 'Indian River',
+        'palm_beach': 'Palm Beach'
+    }
+    
+    # Reverse mapping for counties (external -> internal)
+    county_special_reverse = {v.lower(): k for k, v in county_special.items()}
+    
+    if external:
+        # Convert to external format
+        if name_type == 'layer':
+            return layer_mappings.get(name.lower(), name.title())
+        
+        elif name_type == 'county':
+            name_lower = name.lower()
+            # Check special cases first
+            if name_lower in county_special:
+                return county_special[name_lower]
+            # Handle regular cases
+            return _to_external_format(name)
+        
+        elif name_type == 'city':
+            # Handle special city cases
+            if name.lower() in ['unincorporated', 'incorporated', 'unified', 'countywide']:
+                return name.title()
+            # Handle hyphenated city names
+            return _to_external_format(name)
+    
+    else:
+        # Convert to internal format
+        if name_type == 'layer':
+            name_lower = name.lower()
+            return layer_mappings_reverse.get(name_lower, name_lower.replace(' ', '_').replace('-', '_'))
+        
+        elif name_type == 'county':
+            name_lower = name.lower()
+            # Check special reverse mappings first
+            if name_lower in county_special_reverse:
+                return county_special_reverse[name_lower]
+            # Handle regular cases
+            return _to_internal_format(name)
+        
+        elif name_type == 'city':
+            return _to_internal_format(name)
+    
+    return name
+
+def _to_external_format(name: str) -> str:
+    """Convert internal format to external format."""
+    # Replace underscores with spaces/hyphens
+    # First handle special abbreviations
+    result = name.replace('_', ' ')
+    
+    # Split into words and apply title case rules
+    words = result.split()
+    formatted_words = []
+    
+    stop_words = {'of', 'and', 'in', 'the', 'on', 'at', 'by', 'for', 'with'}
+    abbrev_map = {'st': 'St.', 'ft': 'Ft.', 'mt': 'Mt.'}
+    
+    for i, word in enumerate(words):
+        word_lower = word.lower()
+        is_first = i == 0
+        
+        if word_lower in abbrev_map:
+            formatted_words.append(abbrev_map[word_lower])
+        elif is_first or word_lower not in stop_words:
+            formatted_words.append(word.capitalize())
+        else:
+            formatted_words.append(word_lower)
+    
+    result = ' '.join(formatted_words)
+    
+    # Handle hyphenated multi-word place names
+    if any(phrase in result.lower() for phrase in ['in the', 'on the', 'by the']):
+        # Convert spaces to hyphens for compound place names like "howey in the hills"
+        result = result.replace(' ', '-')
+    
+    return result
+
+def _to_internal_format(name: str) -> str:
+    """Convert external format to internal format."""
+    # Remove periods and convert to lowercase
+    result = name.lower()
+    
+    # Handle special abbreviations
+    result = result.replace('st.', 'st').replace('ft.', 'ft').replace('mt.', 'mt')
+    
+    # Convert spaces and hyphens to underscores
+    result = re.sub(r'[^a-z0-9]+', '_', result)
+    
+    # Remove leading/trailing underscores and collapse multiple underscores
+    result = re.sub(r'_+', '_', result).strip('_')
+    
+    return result
+
+# ---------------------------------------------------------------------------
 # Configuration and Constants
 # ---------------------------------------------------------------------------
 
@@ -85,51 +231,6 @@ LAYER_CONFIGS = {
 # ---------------------------------------------------------------------------
 # Utility Functions (preserved from layer_standardize_database.py)
 # ---------------------------------------------------------------------------
-
-def title_case(s: str) -> str:
-    """Return a human-friendly title-case string.
-    
-    • Replaces underscores with spaces so words are separated correctly.
-    • Capitalises each word except short stop-words ('of', 'and', etc.) unless the word
-      is the first in the string.
-    """
-    cleaned = " ".join(part for part in s.replace("_", " ").split())
-    words = cleaned.split()
-
-    def cap_token(tok: str, is_first: bool) -> str:
-        """Capitalize a token, preserving stop-words and hyphenated sub-parts."""
-        # Handle hyphenated names like "miami-dade" or "howey-in-the-hills"
-        parts = tok.split("-")
-        new_parts: list[str] = []
-        stop_words = {"of", "and", "in", "the"}
-        abbrev_map = {"st": "St", "ft": "Ft", "mt": "Mt"}
-        for j, p in enumerate(parts):
-            first_in_phrase = is_first and j == 0
-            plow = p.lower()
-            if plow in abbrev_map:
-                new_parts.append(abbrev_map[plow])
-            elif first_in_phrase or (plow not in stop_words and len(p) > 2):
-                new_parts.append(p.capitalize())
-            else:
-                new_parts.append(p.lower())
-        return "-".join(new_parts)
-
-    return " ".join(cap_token(w, i == 0) for i, w in enumerate(words))
-
-def norm_city(city: Optional[str]) -> str:
-    """Normalise a city string to lowercase+underscores (non-alnum → _ , collapse). Accepts None."""
-    if not city:
-        return ""
-    cleaned = re.sub(r"[^a-z0-9]+", "_", city.lower())
-    return cleaned.strip("_")
-
-def norm_county(county: Optional[str]) -> str:
-    """Normalise county name by converting non-alnum to underscores and removing the word 'county'."""
-    if not county:
-        return ""
-    county_lc = county.lower().replace("county", "")
-    cleaned = re.sub(r"[^a-z0-9]+", "_", county_lc)
-    return cleaned.strip("_")
 
 def safe_catalog_val(val: Any) -> str:
     """Return value or **MISSING** if val is falsy/None."""
@@ -230,9 +331,13 @@ def parse_title_to_entity(title: str) -> Tuple[Optional[str], Optional[str], Opt
     except ValueError:
         return (None, None, None, None)
 
-    # Normalise layer name
-    layer_norm = layer_part.strip().lower()
-    layer_norm = layer_norm.replace("future land use", "flu")  # Preferred short name
+    # Normalize layer name using format_name
+    layer_norm = format_name(layer_part.strip(), 'layer', external=False)
+    
+    # If format_name didn't recognize it, try basic normalization
+    if not layer_norm or layer_norm == layer_part.strip().lower():
+        layer_norm = layer_part.strip().lower()
+        layer_norm = layer_norm.replace("future land use", "flu")  # Preferred short name
 
     # The remainder may contain multiple " - " separated pieces
     rest_parts = rest.split(" - ")
@@ -247,23 +352,23 @@ def parse_title_to_entity(title: str) -> Tuple[Optional[str], Optional[str], Opt
 
     # Regex patterns for different entity types
     city_re = re.compile(r"^(?:city|town|village) of\s+(.+)$", re.I)
-    county_suffix_re = re.compile(r"^([A-Za-z\s\-]+?)\s+(unincorporated|incorporated|unified|countywide)$", re.I)
-    county_only_re = re.compile(r"^([A-Za-z\s\-]+?)\s+county$", re.I)
+    county_suffix_re = re.compile(r"^([A-Za-z\s\-\.]+?)\s+(unincorporated|incorporated|unified|countywide)$", re.I)
+    county_only_re = re.compile(r"^([A-Za-z\s\-\.]+?)\s+county$", re.I)
 
     m_city = city_re.match(rest_main)
     if m_city:
-        city = m_city.group(1).strip().lower()
+        city = format_name(m_city.group(1).strip(), 'city', external=False)
         return (layer_norm, None, city, "city")
 
     m_cnty = county_suffix_re.match(rest_main)
     if m_cnty:
-        county = m_cnty.group(1).strip().lower()
+        county = format_name(m_cnty.group(1).strip(), 'county', external=False)
         suffix = m_cnty.group(2).strip().lower()
         return (layer_norm, county, suffix, suffix)
 
     m_cnty_only = county_only_re.match(rest_main)
     if m_cnty_only:
-        county = m_cnty_only.group(1).strip().lower()
+        county = format_name(m_cnty_only.group(1).strip(), 'county', external=False)
         return (layer_norm, county, None, None)
 
     # Fallback: cannot parse
@@ -272,17 +377,17 @@ def parse_title_to_entity(title: str) -> Tuple[Optional[str], Optional[str], Opt
 def entity_from_title_parse(layer: str, county_from_title: str, city_from_title: str, entity_type: str) -> str:
     """Convert parsed title components to entity name format (county_city)."""
     if county_from_title and city_from_title:
-        # Normalize county and city names to match entity format
-        county_norm = norm_county(county_from_title)
+        # Normalize county and city names to match entity format (internal format)
+        county_internal = format_name(county_from_title, 'county', external=False)
         if entity_type in {"unincorporated", "unified", "countywide"}:
-            entity = f"{county_norm}_{entity_type}"
+            entity = f"{county_internal}_{entity_type}"
         else:
-            city_norm = norm_city(city_from_title)
-            entity = f"{county_norm}_{city_norm}"
+            city_internal = format_name(city_from_title, 'city', external=False)
+            entity = f"{county_internal}_{city_internal}"
     elif county_from_title and not city_from_title:
         # County-only title (e.g., "Zoning - Walton County") -> treat as unincorporated
-        county_norm = norm_county(county_from_title)
-        entity = f"{county_norm}_unincorporated"
+        county_internal = format_name(county_from_title, 'county', external=False)
+        entity = f"{county_internal}_unincorporated"
     else:
         raise ValueError(f"Cannot construct entity from title components: layer={layer}, county={county_from_title}, city={city_from_title}, type={entity_type}")
     
@@ -406,37 +511,41 @@ def generate_expected_values(layer: str, county: str, city: str, entity_type: st
     else:
         city_std = city
     
-    # Generate title
-    layer_title = layer.capitalize() if layer.islower() else layer
-    county_tc = title_case(county)
-    city_tc = title_case(city_std)
+    # Generate title using format_name for proper external format
+    layer_external = format_name(layer, 'layer', external=True)
+    county_external = format_name(county, 'county', external=True)
+    city_external = format_name(city_std, 'city', external=True)
     
     if entity_type == "city":
-        title = f"{layer_title} - City of {city_tc}"
+        title = f"{layer_external} - City of {city_external}"
     elif entity_type == "unincorporated":
-        title = f"{layer_title} - {county_tc} Unincorporated"
+        title = f"{layer_external} - {county_external} Unincorporated"
     elif entity_type == "unified":
-        title = f"{layer_title} - {county_tc} Unified"
+        title = f"{layer_external} - {county_external} Unified"
     elif entity_type == "incorporated":
-        title = f"{layer_title} - {county_tc} Incorporated"
+        title = f"{layer_external} - {county_external} Incorporated"
     else:
-        title = f"{layer_title} - {city_tc}"
+        title = f"{layer_external} - {city_external}"
     
-    # Generate table name
+    # Generate table name (internal format)
+    layer_internal = format_name(layer, 'layer', external=False)
+    city_internal = format_name(city_std, 'city', external=False)
+    county_internal = format_name(county, 'county', external=False)
+    
     if entity_type == "city":
-        table_name = f"{layer}_{city_std}"
+        table_name = f"{layer_internal}_{city_internal}"
     else:
-        table_name = f"{layer}_{county}_{entity_type}"
+        table_name = f"{layer_internal}_{county_internal}_{entity_type}"
     
-    # Generate sys_raw_folder
+    # Generate sys_raw_folder (internal format for paths)
     category = config.get('category', '08_Land_Use_and_Zoning')
-    sys_raw_folder = f"/srv/datascrub/{category}/{layer}/florida/county/{county.lower()}/current/source_data/{city_std.lower()}"
+    sys_raw_folder = f"/srv/datascrub/{category}/{layer_internal}/florida/county/{county_internal}/current/source_data/{city_internal}"
     
     return {
         'title': title,
-        'county': county.lower().replace('_', ' '),  # layers_scrape expects lowercase with spaces
-        'city': title_case(city_std),  # layers_scrape expects title case
-        'layer_subgroup': layer,
+        'county': format_name(county, 'county', external=True),  # external format for database
+        'city': format_name(city_std, 'city', external=True),   # external format for database
+        'layer_subgroup': layer_internal,
         'layer_group': config.get('layer_group', 'flu_zoning'),
         'category': category,
         'table_name': table_name,
@@ -556,7 +665,7 @@ class LayersPrescrape:
                 self.missing_fields[entity] = {
                     "layer_subgroup": self.cfg.layer,
                     "county": county.lower().replace('_', ' '),
-                    "city": title_case(city),
+                    "city": format_name(city, 'city', external=True),
                     "format": "MANUAL_REQUIRED",
                     "resource_or_table_name": "MANUAL_REQUIRED"
                 }
@@ -868,12 +977,12 @@ class LayersPrescrape:
                     city_db = row.get('city', '')
                     
                     if county_db and city_db:
-                        county_norm = norm_county(county_db)
-                        city_norm = norm_city(city_db)
-                        if city_norm in {"unincorporated", "unified", "incorporated", "countywide"}:
-                            entity = f"{county_norm}_{city_norm}"
+                        county_internal = format_name(county_db, 'county', external=False)
+                        city_internal = format_name(city_db, 'city', external=False)
+                        if city_internal in {"unincorporated", "unified", "incorporated", "countywide"}:
+                            entity = f"{county_internal}_{city_internal}"
                         else:
-                            entity = f"{county_norm}_{city_norm}"
+                            entity = f"{county_internal}_{city_internal}"
                         entities.add(entity)
         
         return sorted(entities)
