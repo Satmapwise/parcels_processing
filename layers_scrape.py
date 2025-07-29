@@ -210,6 +210,8 @@ layers = {
     "addr_pnts",
     "subdiv",
     "bldg_ftpr"
+    "fdot_tc",
+    "sunbiz"
 }
 
 # Florida counties set
