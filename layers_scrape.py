@@ -29,6 +29,152 @@ import psycopg2.extras
 from pathlib import Path
 
 # ---------------------------------------------------------------------------
+# Name Formatting Utilities
+# ---------------------------------------------------------------------------
+
+def format_name(name: str, name_type: str, external: bool = False) -> str:
+    """Convert between internal and external name formats.
+    
+    Args:
+        name: The name to format
+        name_type: Type of name - 'layer', 'county', or 'city'
+        external: If True, convert to external (human-readable) format.
+                 If False, convert to internal (code-friendly) format.
+    
+    Internal format: lowercase, underscores, abbreviations (miami_dade, st_lucie, flu)
+    External format: title case, spaces/hyphens, periods for abbreviations (Miami-Dade, St. Lucie, Future Land Use)
+    
+    Examples:
+        format_name("miami_dade", "county", external=True) -> "Miami-Dade"
+        format_name("Miami-Dade", "county", external=False) -> "miami_dade"
+        format_name("st_lucie", "county", external=True) -> "St. Lucie"
+        format_name("howey_in_the_hills", "city", external=True) -> "Howey-in-the-Hills"
+        format_name("flu", "layer", external=True) -> "Future Land Use"
+    """
+    if not name or not name.strip():
+        return ""
+    
+    name = name.strip()
+    
+    # Special mappings for layers
+    layer_mappings = {
+        # internal -> external
+        'flu': 'Future Land Use',
+        'addr_pnts': 'Address Points',
+        'bldg_ftpr': 'Building Footprints',
+        'parcel_geo': 'Parcel Geometry',
+        'flood_zones': 'Flood Zones',
+        'subdiv': 'Subdivisions',
+        'streets': 'Streets',
+        'zoning': 'Zoning'
+    }
+    
+    # Reverse mapping for external -> internal
+    layer_mappings_reverse = {v.lower(): k for k, v in layer_mappings.items()}
+    
+    # Special county mappings (internal -> external)
+    county_special = {
+        'miami_dade': 'Miami-Dade',
+        'desoto': 'DeSoto',
+        'st_johns': 'St. Johns',
+        'st_lucie': 'St. Lucie',
+        'santa_rosa': 'Santa Rosa',
+        'indian_river': 'Indian River',
+        'palm_beach': 'Palm Beach'
+    }
+    
+    # Reverse mapping for counties (external -> internal)
+    county_special_reverse = {v.lower(): k for k, v in county_special.items()}
+    
+    if external:
+        # Convert to external format
+        if name_type == 'layer':
+            return layer_mappings.get(name.lower(), name.title())
+        
+        elif name_type == 'county':
+            name_lower = name.lower()
+            # Check special cases first
+            if name_lower in county_special:
+                return county_special[name_lower]
+            # Handle regular cases
+            return _to_external_format(name)
+        
+        elif name_type == 'city':
+            # Handle special city cases
+            if name.lower() in ['unincorporated', 'incorporated', 'unified', 'countywide']:
+                return name.title()
+            # Handle hyphenated city names
+            return _to_external_format(name)
+    
+    else:
+        # Convert to internal format
+        if name_type == 'layer':
+            name_lower = name.lower()
+            return layer_mappings_reverse.get(name_lower, name_lower.replace(' ', '_').replace('-', '_'))
+        
+        elif name_type == 'county':
+            name_lower = name.lower()
+            # Check special reverse mappings first
+            if name_lower in county_special_reverse:
+                return county_special_reverse[name_lower]
+            # Handle regular cases
+            return _to_internal_format(name)
+        
+        elif name_type == 'city':
+            return _to_internal_format(name)
+    
+    return name
+
+def _to_external_format(name: str) -> str:
+    """Convert internal format to external format."""
+    # Replace underscores with spaces/hyphens
+    # First handle special abbreviations
+    result = name.replace('_', ' ')
+    
+    # Split into words and apply title case rules
+    words = result.split()
+    formatted_words = []
+    
+    stop_words = {'of', 'and', 'in', 'the', 'on', 'at', 'by', 'for', 'with'}
+    abbrev_map = {'st': 'St.', 'ft': 'Ft.', 'mt': 'Mt.'}
+    
+    for i, word in enumerate(words):
+        word_lower = word.lower()
+        is_first = i == 0
+        
+        if word_lower in abbrev_map:
+            formatted_words.append(abbrev_map[word_lower])
+        elif is_first or word_lower not in stop_words:
+            formatted_words.append(word.capitalize())
+        else:
+            formatted_words.append(word_lower)
+    
+    result = ' '.join(formatted_words)
+    
+    # Handle hyphenated multi-word place names
+    if any(phrase in result.lower() for phrase in ['in the', 'on the', 'by the']):
+        # Convert spaces to hyphens for compound place names like "howey in the hills"
+        result = result.replace(' ', '-')
+    
+    return result
+
+def _to_internal_format(name: str) -> str:
+    """Convert external format to internal format."""
+    # Remove periods and convert to lowercase
+    result = name.lower()
+    
+    # Handle special abbreviations
+    result = result.replace('st.', 'st').replace('ft.', 'ft').replace('mt.', 'mt')
+    
+    # Convert spaces and hyphens to underscores
+    result = re.sub(r'[^a-z0-9]+', '_', result)
+    
+    # Remove leading/trailing underscores and collapse multiple underscores
+    result = re.sub(r'_+', '_', result).strip('_')
+    
+    return result
+
+# ---------------------------------------------------------------------------
 # Configuration and Constants
 # ---------------------------------------------------------------------------
 
@@ -240,29 +386,6 @@ def resolve_work_dir(layer: str, entity: str):
     work_dir = template.format(layer=layer, county=county, city=city)
     return work_dir, county, city
 
-def title_case(s: str) -> str:
-    """Return a human-friendly title-case string."""
-    cleaned = " ".join(part for part in s.replace("_", " ").split())
-    words = cleaned.split()
-
-    def cap_token(tok: str, is_first: bool) -> str:
-        parts = tok.split("-")
-        new_parts = []
-        stop_words = {"of", "and", "in", "the"}
-        abbrev_map = {"st": "St", "ft": "Ft", "mt": "Mt"}
-        for j, p in enumerate(parts):
-            first_in_phrase = is_first and j == 0
-            plow = p.lower()
-            if plow in abbrev_map:
-                new_parts.append(abbrev_map[plow])
-            elif first_in_phrase or (plow not in stop_words and len(p) > 2):
-                new_parts.append(p.capitalize())
-            else:
-                new_parts.append(p.lower())
-        return "-".join(new_parts)
-
-    return " ".join(cap_token(w, i == 0) for i, w in enumerate(words))
-
 def _run_command(command, work_dir, logger):
     """Run a shell command in a specified directory."""
     if CONFIG.test_mode:
@@ -312,13 +435,18 @@ def _fetch_catalog_row(layer: str, county: str, city: str):
     conn = psycopg2.connect(PG_CONNECTION)
     cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
     try:
+        # Convert internal format names to external format for database query
+        layer_external = format_name(layer, 'layer', external=True)
+        county_external = format_name(county, 'county', external=True)
+        city_external = format_name(city, 'city', external=True)
+        
         sql = (
             "SELECT * FROM m_gis_data_catalog_main "
             "WHERE lower(layer_subgroup) = %s "
             "AND lower(county) = %s "
             "AND city = %s LIMIT 1"
         )
-        cur.execute(sql, (layer.lower(), county.lower().replace('_', ' '), title_case(city)))
+        cur.execute(sql, (layer_external.lower(), county_external.lower(), city_external))
         row = cur.fetchone()
         return dict(row) if row else None
     finally:
@@ -380,17 +508,15 @@ def _fetch_entities_from_db(layer: str) -> list[str]:
         conn.close()
     return list(dict.fromkeys(entities))  # de-dupe preserving order
 
-def _norm_name(s: str) -> str:
-    """Return lowercase + underscore version of string."""
-    return re.sub(r"[^a-z0-9]+", "_", s.lower()).strip("_") if s else ""
-
 def _entity_from_parts(county: str, city: str | None) -> str:
     """Return entity id from raw DB county/city values."""
-    county_norm = _norm_name(county)
-    city_norm = _norm_name(city) if city else ""
-    if not city_norm:
-        return county_norm
-    return f"{county_norm}_{city_norm}"
+    # Convert external DB values to internal format
+    county_internal = format_name(county, 'county', external=False)
+    city_internal = format_name(city, 'city', external=False) if city else ""
+    
+    if not city_internal:
+        return county_internal
+    return f"{county_internal}_{city_internal}"
 
 def _parse_processing_comments(text):
     """Parse the processing_comments field into a list of command strings."""
@@ -620,7 +746,7 @@ def layer_upload(layer: str, entity: str, county: str, city: str, catalog_row: d
     placeholders = {
         'layer': layer,
         'county': county.lower().replace('_', ' '),
-        'city': title_case(city),
+        'city': format_name(city, 'city', external=True), # Use format_name for city
         'data_date': metadata.get('data_date', publish_date),
         'publish_date': publish_date,
         'update_date': publish_date,
