@@ -1119,8 +1119,8 @@ class LayersPrescrape:
         
         elif field == "sys_raw_folder":
             # Check sys_raw_folder matches pattern and create directory
-            layer_group = LAYER_GROUP_MAP.get(self.cfg.layer, 'flu_zoning')
-            expected = f"/srv/datascrub/{layer_group}/{layer_internal}/florida/county/{county_internal}/current/source_data/{city_internal}"
+            category = CATEGORY_MAP.get(self.cfg.layer, '08_Land_Use_and_Zoning')
+            expected = f"/srv/datascrub/{category}/{layer_internal}/florida/county/{county_internal}/current/source_data/{city_internal}"
             
             # Create directory if it doesn't exist
             try:
