@@ -455,46 +455,7 @@ def extract_preprocessing_commands(layer: str, entity: str) -> str:
 # Validation Logic for layers_scrape.py Compatibility
 # ---------------------------------------------------------------------------
 
-def validate_record_for_layers_scrape(record: dict) -> List[str]:
-    """Validate that a database record meets layers_scrape.py requirements.
-    
-    Returns list of validation issues (empty list means valid).
-    """
-    issues = []
-    
-    # Required identification fields
-    if not record.get('layer_subgroup'):
-        issues.append("Missing layer_subgroup")
-    if not record.get('county'):
-        issues.append("Missing county")
-    if not record.get('city'):
-        issues.append("Missing city")
-    
-    # Format-specific requirements
-    fmt = (record.get('format') or '').lower()
-    if not fmt:
-        issues.append("Missing format")
-    elif fmt in ['ags', 'arcgis', 'esri', 'ags_extract']:
-        # AGS downloads need table_name
-        if not record.get('table_name'):
-            issues.append("AGS format missing table_name")
-    else:
-        # Direct downloads need resource or src_url_file
-        if not (record.get('resource') or record.get('src_url_file')):
-            issues.append("Direct download missing resource/src_url_file")
-    
-    # Check for common field formatting issues
-    if record.get('county'):
-        county_val = str(record['county']).lower()
-        if not county_val.replace(' ', '').replace('_', '').isalnum():
-            issues.append("County contains invalid characters")
-            
-    if record.get('city'):
-        city_val = str(record['city'])
-        if not city_val.replace(' ', '').replace('_', '').replace('-', '').isalnum():
-            issues.append("City contains invalid characters")
-    
-    return issues
+# Validation functions removed - moved to fill mode only
 
 def generate_expected_values(layer: str, county: str, city: str, entity_type: str) -> Dict[str, Any]:
     """Generate expected values for a database record based on layer/county/city."""
@@ -565,7 +526,6 @@ class Config:
     generate_csv: bool = True
     apply_changes: bool = False  # For fill mode
     manual_file: str = "missing_fields.json"
-    detect_malformed_only: bool = False  # For detect mode
 
 # ---------------------------------------------------------------------------
 # Main Processing Class
@@ -606,8 +566,8 @@ class LayersPrescrape:
         else:
             raise ValueError(f"Unknown mode: {self.cfg.mode}")
         
-        # Write missing fields JSON if any issues found
-        if self.missing_fields and self.cfg.mode in {"detect", "fill"}:
+        # Write missing fields JSON if any issues found (fill mode only)
+        if self.missing_fields and self.cfg.mode == "fill":
             self.logger.info(f"Writing missing field report → {self.cfg.manual_file}")
             with open(self.cfg.manual_file, "w", encoding="utf-8") as fh:
                 json.dump(self.missing_fields, fh, indent=2)
@@ -624,162 +584,74 @@ class LayersPrescrape:
             self.db.close()
     
     def _run_detect_mode(self):
-        """Detect malformed records and output CSV + missing fields JSON."""
-        mode_desc = "malformed records only" if self.cfg.detect_malformed_only else "all records"
-        self.logger.info(f"Running DETECT mode - finding {mode_desc} and missing fields.")
+        """Find all records containing the layer and output their data in CSV format."""
+        self.logger.info(f"Running DETECT mode - finding all records for layer '{self.cfg.layer}'.")
         
-        # Discover entities from database records
-        entities = self._discover_entities_from_db()
+        # Find all records containing the layer (check both internal and external formats)
+        layer_internal = format_name(self.cfg.layer, 'layer', external=False)
+        layer_external = format_name(self.cfg.layer, 'layer', external=True)
         
-        if not entities:
-            self.logger.warning(f"No entities found for layer '{self.cfg.layer}'")
+        sql = """
+            SELECT * FROM m_gis_data_catalog_main 
+            WHERE status IS DISTINCT FROM 'DELETE' 
+            AND (lower(title) LIKE %s OR lower(title) LIKE %s)
+            ORDER BY title
+        """
+        
+        records = self.db.fetchall(sql, (f'%{layer_internal}%', f'%{layer_external.lower()}%'))
+        
+        if not records:
+            self.logger.warning(f"No records found for layer '{self.cfg.layer}'")
             return
         
-        self.logger.info(f"Found {len(entities)} entities for layer '{self.cfg.layer}'")
+        self.logger.info(f"Found {len(records)} records for layer '{self.cfg.layer}'")
         
-        # CSV headers
+        # CSV headers - specific fields requested by user
         headers = [
-            "entity", "title", "county", "city", "layer_subgroup", "format",
-            "resource", "src_url_file", "table_name", "processing_comments",
-            "validation_issues", "missing_fields", "suggested_fixes"
+            "entity", "title", "county", "city", "source_org", "src_url_file", 
+            "format", "format_subtype", "download", "resource", "layer_group", 
+            "layer_subgroup", "category", "sub_category", "sys_raw_folder", 
+            "table_name", "fields_obj_transform"
         ]
         
         csv_rows = [headers]
-        total_entities = 0
-        valid_entities = 0
-        entities_with_issues = 0
+        field_counts = {field: 0 for field in headers[1:]}  # Skip 'entity' for counting
+        total_records = len(records)
         
-        for entity in sorted(entities):
-            total_entities += 1
-            county, city = split_entity(entity)
+        for record in records:
+            # Generate entity from title
+            entity = self._generate_entity_from_record(record)
             
-            # Find database record by title matching
-            record = self._find_record_by_entity(entity)
-            
-            if not record:
-                # No record found
-                csv_row = [
-                    entity, "**NO RECORD FOUND**", county, city, "", "", "", "", "", "",
-                    "No database record found", "All fields missing", "Create new record"
-                ]
-                self.missing_fields[entity] = {
-                    "layer_subgroup": self.cfg.layer,
-                    "county": county.lower().replace('_', ' '),
-                    "city": format_name(city, 'city', external=True),
-                    "format": "MANUAL_REQUIRED",
-                    "resource_or_table_name": "MANUAL_REQUIRED"
-                }
-                entities_with_issues += 1
-                has_issues = True
-            else:
-                # Validate existing record
-                issues = validate_record_for_layers_scrape(record)
-                
-                # Check for preprocessing commands
-                current_processing = record.get('processing_comments', '') or ''
-                expected_processing = extract_preprocessing_commands(self.cfg.layer, entity)
-                
-                missing_fields = []
-                suggested_fixes = []
-                
-                # Check required fields
-                if not record.get('layer_subgroup'):
-                    missing_fields.append("layer_subgroup")
-                    self.missing_fields[entity]["layer_subgroup"] = self.cfg.layer
-                
-                if not record.get('format'):
-                    missing_fields.append("format")
-                    self.missing_fields[entity]["format"] = "MANUAL_REQUIRED"
-                
-                fmt = (record.get('format') or '').lower()
-                if fmt in ['ags', 'arcgis', 'esri', 'ags_extract']:
-                    if not record.get('table_name'):
-                        missing_fields.append("table_name")
-                        self.missing_fields[entity]["table_name"] = "MANUAL_REQUIRED"
+            # Extract field values
+            row_values = [entity]
+            for field in headers[1:]:
+                value = record.get(field)
+                if value is not None and str(value).strip() and str(value).strip().upper() not in ('NULL', 'NONE'):
+                    field_counts[field] += 1
+                    row_values.append(str(value))
                 else:
-                    if not (record.get('resource') or record.get('src_url_file')):
-                        missing_fields.append("resource")
-                        self.missing_fields[entity]["resource"] = "MANUAL_REQUIRED"
-                
-                # Check preprocessing commands
-                if expected_processing and current_processing != expected_processing:
-                    if not current_processing:
-                        missing_fields.append("processing_comments")
-                    self.missing_fields[entity]["processing_comments"] = expected_processing
-                    suggested_fixes.append(f"Set processing_comments to: {expected_processing}")
-                
-                # Generate expected values for comparison
-                try:
-                    layer_parsed, county_parsed, city_parsed, entity_type = parse_title_to_entity(record.get('title', ''))
-                    if layer_parsed == self.cfg.layer:
-                        expected = generate_expected_values(self.cfg.layer, county, city, entity_type)
-                        
-                        # Check for auto-correctable fields
-                        for field, expected_val in expected.items():
-                            if field in record and record[field] != expected_val:
-                                suggested_fixes.append(f"Update {field}: '{record[field]}' → '{expected_val}'")
-                                self.missing_fields[entity][field] = expected_val
-                except Exception:
-                    suggested_fixes.append("Title parsing failed - manual review needed")
-                
-                csv_row = [
-                    entity,
-                    safe_catalog_val(record.get('title')),
-                    safe_catalog_val(record.get('county')),
-                    safe_catalog_val(record.get('city')),
-                    safe_catalog_val(record.get('layer_subgroup')),
-                    safe_catalog_val(record.get('format')),
-                    safe_catalog_val(record.get('resource')),
-                    safe_catalog_val(record.get('src_url_file')),
-                    safe_catalog_val(record.get('table_name')),
-                    safe_catalog_val(record.get('processing_comments')),
-                    "; ".join(issues) if issues else "None",
-                    "; ".join(missing_fields) if missing_fields else "None",
-                    "; ".join(suggested_fixes) if suggested_fixes else "None"
-                ]
-                
-                has_issues = bool(issues or missing_fields)
-                if has_issues:
-                    entities_with_issues += 1
-                else:
-                    valid_entities += 1
+                    row_values.append("")
             
-            # Add row to CSV (filter based on detect_malformed_only flag)
-            if self.cfg.detect_malformed_only:
-                # Only include records with issues
-                if has_issues:
-                    csv_rows.append(csv_row)
-            else:
-                # Include all records
-                csv_rows.append(csv_row)
+            csv_rows.append(row_values)
         
-        # Add summary row
+        # Add summary row showing field completion rates
         csv_rows.append([])
-        if self.cfg.detect_malformed_only:
-            csv_rows.append([
-                "SUMMARY", f"{entities_with_issues} malformed records found", 
-                f"out of {total_entities} total", "", "", "", "", "", "", "", "", "", ""
-            ])
-        else:
-            csv_rows.append([
-                "SUMMARY", f"{valid_entities}/{total_entities} valid", 
-                f"{entities_with_issues} with issues", "", "", "", "", "", "", "", "", "", ""
-            ])
+        summary_row = ["SUMMARY"]
+        for field in headers[1:]:
+            count = field_counts[field]
+            summary_row.append(f"{count}/{total_records}")
+        csv_rows.append(summary_row)
         
         # Write CSV report
         if self.cfg.generate_csv:
-            suffix = "malformed" if self.cfg.detect_malformed_only else "detect"
-            csv_path = REPORTS_DIR / f"{self.cfg.layer}_prescrape_{suffix}_{get_today_str()}.csv"
+            csv_path = REPORTS_DIR / f"{self.cfg.layer}_prescrape_detect_{get_today_str()}.csv"
             with open(csv_path, 'w', newline='', encoding='utf-8') as f:
                 writer = csv.writer(f)
                 writer.writerows(csv_rows)
             self.logger.info(f"Detection report written → {csv_path}")
         
         # Log summary
-        if self.cfg.detect_malformed_only:
-            self.logger.info(f"Detection complete: {entities_with_issues} malformed records found out of {total_entities} total")
-        else:
-            self.logger.info(f"Detection complete: {valid_entities}/{total_entities} valid, {entities_with_issues} with issues")
+        self.logger.info(f"Detection complete: {total_records} records found")
     
     def _run_fill_mode(self):
         """Apply manual corrections and auto-derivable fields from JSON."""
@@ -950,6 +822,59 @@ class LayersPrescrape:
     
     # Helper methods
     
+    def _generate_entity_from_record(self, record: Dict[str, Any]) -> str:
+        """Generate entity name from database record title and fields.
+        
+        For flu/zoning: returns county_city format
+        For other layers: returns just county name
+        If parsing fails: returns "ERROR"
+        """
+        title = record.get('title', '')
+        
+        # Try to parse the title first
+        layer_parsed, county_parsed, city_parsed, entity_type = parse_title_to_entity(title)
+        
+        if layer_parsed and county_parsed:
+            try:
+                # Successfully parsed title
+                if city_parsed:
+                    entity = entity_from_title_parse(layer_parsed, county_parsed, city_parsed, entity_type)
+                else:
+                    # County-only record, treat as unincorporated for flu/zoning
+                    if self.cfg.layer.lower() in ['flu', 'zoning']:
+                        county_internal = format_name(county_parsed, 'county', external=False)
+                        entity = f"{county_internal}_unincorporated"
+                    else:
+                        entity = format_name(county_parsed, 'county', external=False)
+                return entity
+            except (ValueError, TypeError):
+                pass
+        
+        # Title parsing failed, try fallback with county/city fields
+        county_db = record.get('county', '')
+        city_db = record.get('city', '')
+        
+        if county_db:
+            county_internal = format_name(county_db, 'county', external=False)
+            
+            if city_db and self.cfg.layer.lower() in ['flu', 'zoning']:
+                city_internal = format_name(city_db, 'city', external=False)
+                if city_internal in {"unincorporated", "unified", "incorporated", "countywide"}:
+                    entity = f"{county_internal}_{city_internal}"
+                else:
+                    entity = f"{county_internal}_{city_internal}"
+            else:
+                # No city or not flu/zoning layer
+                if self.cfg.layer.lower() in ['flu', 'zoning']:
+                    entity = f"{county_internal}_unincorporated"
+                else:
+                    entity = county_internal
+            
+            return entity
+        
+        # Complete failure
+        return "ERROR"
+    
     def _discover_entities_from_db(self) -> List[str]:
         """Discover entities for the layer by examining database titles."""
         sql = """
@@ -1081,8 +1006,6 @@ def build_arg_parser() -> argparse.ArgumentParser:
     parser.add_argument("--manual-file", default="missing_fields.json",
                        help="Path to manual fields JSON file")
     parser.add_argument("--debug", action="store_true", help="Enable debug logging")
-    parser.add_argument("--detect-malformed", action="store_true",
-                       help="In DETECT mode, show only malformed records")
     parser.add_argument("--no-csv", dest="generate_csv", action="store_false",
                        help="Skip CSV report generation")
     
@@ -1108,8 +1031,7 @@ def main():
         debug=args.debug,
         generate_csv=args.generate_csv,
         apply_changes=args.apply,
-        manual_file=args.manual_file,
-        detect_malformed_only=args.detect_malformed
+        manual_file=args.manual_file
     )
     
     # Run the processor
