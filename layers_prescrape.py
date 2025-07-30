@@ -795,11 +795,13 @@ class LayersPrescrape:
             summary_row.append(f"{count}/{total_records}")
         csv_rows.append(summary_row)
         
-        # Add entity count summary
+        # Add entity count summary (split across multiple rows for readability)
         csv_rows.append([])
-        csv_rows.append([
-            f"UNIQUE ENTITIES: {unique_entities}, DUPLICATE ENTITIES: {duplicate_entities}, ERROR RECORDS: {error_entities}, TOTAL RECORDS: {total_records}"
-        ] + [""] * (len(headers) - 1))
+        csv_rows.append(["=== ENTITY SUMMARY ==="] + [""] * (len(headers) - 1))
+        csv_rows.append([f"UNIQUE ENTITIES: {unique_entities}"] + [""] * (len(headers) - 1))
+        csv_rows.append([f"DUPLICATE ENTITIES: {duplicate_entities}"] + [""] * (len(headers) - 1))
+        csv_rows.append([f"ERROR RECORDS: {error_entities}"] + [""] * (len(headers) - 1))
+        csv_rows.append([f"TOTAL RECORDS: {total_records}"] + [""] * (len(headers) - 1))
         
         # Add ERROR section if any exist
         if error_records:
