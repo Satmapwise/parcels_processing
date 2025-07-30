@@ -692,7 +692,7 @@ class LayersPrescrape:
             "entity", "title", "county", "city", "source_org", "src_url_file", 
             "format", "format_subtype", "download", "resource", "layer_group", 
             "layer_subgroup", "category", "sub_category", "sys_raw_folder", 
-            "table_name", "fields_obj_transform"
+            "table_name", "fields_obj_transform", "source_comments", "processing_comments"
         ]
         
         # Group records by entity to detect duplicates
