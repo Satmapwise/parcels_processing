@@ -433,6 +433,40 @@ def entity_from_title_parse(layer: str, county_from_title: str, city_from_title:
 # Placeholder Helper Functions for Fill Mode
 # ---------------------------------------------------------------------------
 
+def validate_url_batch(urls: list[str], max_workers: int = 10) -> dict[str, tuple[bool, str]]:
+    """Validate multiple URLs concurrently for better performance.
+    
+    Args:
+        urls: List of URLs to validate
+        max_workers: Maximum number of concurrent validation threads
+        
+    Returns:
+        dict: {url: (is_valid, status_reason)} for each URL
+    """
+    import concurrent.futures
+    
+    if not urls:
+        return {}
+    
+    results = {}
+    
+    # Use ThreadPoolExecutor for concurrent URL validation
+    with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
+        # Submit all validation tasks
+        future_to_url = {executor.submit(validate_url, url): url for url in urls}
+        
+        # Collect results as they complete
+        for future in concurrent.futures.as_completed(future_to_url):
+            url = future_to_url[future]
+            try:
+                is_valid, reason = future.result(timeout=15)  # 15 second timeout per URL
+                results[url] = (is_valid, reason)
+            except Exception as e:
+                # If validation fails completely, mark as deprecated
+                results[url] = (False, "DEPRECATED")
+    
+    return results
+
 def validate_url(url: str) -> tuple[bool, str]:
     """Check if URL still serves accessible, fresh geospatial data.
     
@@ -474,7 +508,7 @@ def validate_url(url: str) -> tuple[bool, str]:
                 metadata_req = urllib.request.Request(metadata_url)
                 metadata_req.add_header('User-Agent', 'Mozilla/5.0 (compatible; LayersPrescrape/1.0)')
                 
-                with urllib.request.urlopen(metadata_req, timeout=8) as response:
+                with urllib.request.urlopen(metadata_req, timeout=5) as response:
                     if response.getcode() == 200:
                         content = response.read(2048).decode('utf-8', errors='ignore')
                         try:
@@ -511,7 +545,7 @@ def validate_url(url: str) -> tuple[bool, str]:
         # For non-ArcGIS URLs or if ArcGIS metadata failed, check basic accessibility
         req.get_method = lambda: 'HEAD'
         
-        with urllib.request.urlopen(req, timeout=8) as response:
+        with urllib.request.urlopen(req, timeout=5) as response:
             status_code = response.getcode()
             
             if status_code == 200:
@@ -766,9 +800,12 @@ class LayersPrescrape:
         
         self.logger = logging.getLogger("LayersPrescrape")
         self.logger.setLevel(logging.DEBUG if cfg.debug else logging.INFO)
-        handler = logging.StreamHandler(sys.stdout)
-        handler.setFormatter(logging.Formatter("[%(levelname)s] %(message)s"))
-        self.logger.addHandler(handler)
+        
+        # Only add handler if logger doesn't already have one (prevents duplicates)
+        if not self.logger.handlers:
+            handler = logging.StreamHandler(sys.stdout)
+            handler.setFormatter(logging.Formatter("[%(levelname)s] %(message)s"))
+            self.logger.addHandler(handler)
         
         print(f"[DEBUG] Initializing LayersPrescrape for layer '{cfg.layer}' in mode '{cfg.mode}'")
         
@@ -784,6 +821,9 @@ class LayersPrescrape:
         
         # Track distrib_comments updates for preservation logic
         self.distrib_comments_updates: Dict[str, str] = {}
+        
+        # URL validation cache for performance
+        self.url_validation_cache: Dict[str, tuple[bool, str]] = {}
     
     def run(self):
         """Execute the configured mode."""
@@ -1052,6 +1092,9 @@ class LayersPrescrape:
         
         headers = core_headers + optional_headers
         
+        # Pre-validate all URLs in batch for better performance
+        self._batch_validate_urls(valid_records)
+        
         # Process each valid record
         csv_rows = [headers]
         healthy_counts = {field: 0 for field in headers[1:]}  # Skip 'entity' 
@@ -1187,6 +1230,27 @@ class LayersPrescrape:
     
     # Helper methods
     
+    def _batch_validate_urls(self, valid_records: list[tuple[str, dict]]) -> None:
+        """Pre-validate all URLs in batch for better performance."""
+        # Collect all unique URLs from records
+        urls_to_validate = set()
+        for entity, record in valid_records:
+            url = record.get('src_url_file')
+            if url and url.strip() and url not in self.url_validation_cache:
+                urls_to_validate.add(url.strip())
+        
+        if urls_to_validate:
+            self.logger.info(f"Batch validating {len(urls_to_validate)} URLs...")
+            # Validate all URLs concurrently
+            # Use conservative thread count (max 4 on smaller systems, 8 on larger)
+            import os
+            cpu_count = os.cpu_count() or 4
+            max_workers = min(8, max(2, cpu_count // 2))  # Use half of available cores, max 8
+            results = validate_url_batch(list(urls_to_validate), max_workers=max_workers)
+            # Cache the results
+            self.url_validation_cache.update(results)
+            self.logger.info(f"URL validation complete")
+    
     def _should_include_entity(self, entity: str) -> bool:
         """Check if entity should be included based on include/exclude filters."""
         entity_lower = entity.lower()
@@ -1284,12 +1348,18 @@ class LayersPrescrape:
             return expected if current_value != expected else ""
         
         elif field == "src_url_file":
-            # Check URL exists and is valid
+            # Check URL exists and is valid using cached results
             if not current_value:
                 self.missing_fields[entity]["src_url_file"] = "MANUAL_REQUIRED"
                 return "***MISSING***"
             
-            is_valid, status_reason = validate_url(current_value)
+            # Use cached validation result if available, otherwise validate on-demand
+            if current_value in self.url_validation_cache:
+                is_valid, status_reason = self.url_validation_cache[current_value]
+            else:
+                is_valid, status_reason = validate_url(current_value)
+                self.url_validation_cache[current_value] = (is_valid, status_reason)
+            
             if not is_valid:
                 if status_reason == "MISSING":
                     self.missing_fields[entity]["src_url_file"] = "MANUAL_REQUIRED"
