@@ -431,13 +431,17 @@ def _run_command(command, work_dir, logger):
 def _run_source_comments(source_comments: str, work_dir: str, logger):
     """Run source_comments commands (pre-metadata processing from manifest).
     
-    source_comments format: "command1|command2|command3"
+    source_comments format: "[command1] [command2] [command3]"
     """
     if not source_comments or not source_comments.strip():
         return
     
-    # Split commands by pipe separator
-    commands = [cmd.strip() for cmd in source_comments.split('|') if cmd.strip()]
+    # Split commands by bracketed format: [cmd1] [cmd2] -> ['cmd1', 'cmd2']
+    import re
+    commands = re.findall(r'\[([^\]]+)\]', source_comments.strip())
+    if not commands:
+        # Fallback to old pipe format for backwards compatibility
+        commands = [cmd.strip() for cmd in source_comments.split('|') if cmd.strip()]
     
     for i, cmd_str in enumerate(commands):
         logger.debug(f"Running source comment command {i+1}/{len(commands)}: {cmd_str}")
@@ -563,16 +567,29 @@ def _entity_from_parts(county: str, city: str | None) -> str:
     return f"{county_internal}_{city_internal}"
 
 def _parse_processing_comments(text):
-    """Parse the processing_comments field into a list of command strings."""
+    """Parse the processing_comments field into a list of command strings.
+    
+    Supports formats:
+    1. Bracketed: "[command1] [command2] [command3]"
+    2. JSON array: ["command1", "command2", "command3"]
+    3. Legacy: newlines/semicolons
+    """
     if not text:
         return []
-    # Try JSON array first
+    
+    # Try bracketed format first: [cmd1] [cmd2] -> ['cmd1', 'cmd2']
+    bracketed_commands = re.findall(r'\[([^\]]+)\]', text.strip())
+    if bracketed_commands:
+        return [cmd.strip() for cmd in bracketed_commands if cmd.strip()]
+    
+    # Try JSON array format
     try:
         data = json.loads(text)
         if isinstance(data, list):
             return [str(cmd).strip() for cmd in data if str(cmd).strip()]
     except Exception:
         pass
+    
     # Fallback – split on newlines/semicolons
     commands = []
     for piece in re.split(r'[\n;]+', text):

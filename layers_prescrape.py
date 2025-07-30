@@ -514,8 +514,9 @@ def extract_manifest_commands(layer: str, entity: str) -> tuple[str, str]:
                 else:
                     post_metadata.append(str(cmd))
         
-        source_comments = "|".join(pre_metadata)
-        processing_comments = "|".join(post_metadata)
+        # Format commands in bracketed format for readability
+        source_comments = " ".join(f"[{cmd}]" for cmd in pre_metadata) if pre_metadata else ""
+        processing_comments = " ".join(f"[{cmd}]" for cmd in post_metadata) if post_metadata else ""
         
         return source_comments, processing_comments
         
@@ -1150,17 +1151,19 @@ class LayersPrescrape:
             return expected if current_value != expected else ""
         
         elif field == "source_comments":
-            # Check source_comments from manifest (pre-metadata commands)
+            # Always overwrite source_comments from manifest (pre-metadata commands)
             if self.cfg.layer.lower() in ['zoning', 'flu']:
                 expected_source, _ = extract_manifest_commands(self.cfg.layer, entity)
-                return expected_source if current_value != expected_source else ""
+                # Always return manifest value, even if current value matches
+                return expected_source
             return ""
         
         elif field == "processing_comments":
-            # Check processing_comments from manifest (post-metadata commands)
+            # Always overwrite processing_comments from manifest (post-metadata commands)
             if self.cfg.layer.lower() in ['zoning', 'flu']:
                 _, expected_processing = extract_manifest_commands(self.cfg.layer, entity)
-                return expected_processing if current_value != expected_processing else ""
+                # Always return manifest value, even if current value matches
+                return expected_processing
             return ""
         
         # Optional conditions (only checked with --fill-all)
