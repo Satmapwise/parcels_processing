@@ -616,22 +616,122 @@ def validate_url(url: str) -> tuple[bool, str]:
         return False, "DEPRECATED"
 
 def get_format_from_url(url: str) -> str:
-    """Placeholder function to determine format from URL.
+    """Determine format from URL patterns and file extensions.
     
-    TODO: Implement actual format detection logic
+    Args:
+        url: Source URL to analyze
+        
+    Returns:
+        Detected format string (AGS, SHP, CSV, etc.) or empty string if unknown
     """
     if not url:
         return ""
     
     url_lower = url.lower()
-    if 'arcgis' in url_lower or 'featureserver' in url_lower or 'mapserver' in url_lower:
+    
+    # ArcGIS Services (highest priority - most reliable indicator)
+    if any(pattern in url_lower for pattern in [
+        '/mapserver/', '/featureserver/', '/imageserver/', '/geoprocessingserver/',
+        'arcgis/rest/services', 'server/rest/services'
+    ]):
         return "AGS"
-    elif url_lower.endswith('.zip') or url_lower.endswith('.shp'):
+    
+    # File extension patterns (direct downloads)
+    if url_lower.endswith('.zip'):
+        return "SHP"  # ZIP files typically contain shapefiles
+    elif url_lower.endswith('.csv'):
+        return "CSV"
+    elif url_lower.endswith('.kml') or url_lower.endswith('.kmz'):
+        return "KML"
+    elif url_lower.endswith('.geojson') or url_lower.endswith('.json'):
+        return "GeoJSON"
+    elif url_lower.endswith('.gdb') or '/geodatabase' in url_lower:
+        return "FGDB"
+    elif url_lower.endswith('.mdb') or url_lower.endswith('.accdb'):
+        return "ACCDB" if url_lower.endswith('.accdb') else "MDB"
+    elif url_lower.endswith('.shp'):
         return "SHP"
-    elif url_lower.endswith('.gdb'):
-        return "GDB"
-    else:
-        return "SHP"  # Default assumption
+    elif url_lower.endswith('.dbf'):
+        return "DBF"
+    elif url_lower.endswith('.tif') or url_lower.endswith('.tiff'):
+        return "GeoTIFF"
+    elif url_lower.endswith('.pdf'):
+        return "PDF"
+    elif url_lower.endswith('.xls') or url_lower.endswith('.xlsx'):
+        return "XLS"
+    elif url_lower.endswith('.txt'):
+        return "TXT"
+    
+    # WMS/WMTS Services
+    if any(pattern in url_lower for pattern in ['wms', 'wmts', 'getcapabilities']):
+        if 'wmts' in url_lower:
+            return "WMTS"
+        else:
+            return "WMS"
+    
+    # Collection/Multiple format indicators
+    if any(pattern in url_lower for pattern in ['collection', 'multiple', 'various']):
+        return "COLLECTION"
+    
+    # Default fallback based on common patterns
+    if 'ftp://' in url_lower or 'download' in url_lower:
+        return "SHP"  # Most downloads are shapefiles
+    
+    return ""  # Unknown format
+
+def get_format_from_files(work_dir: str) -> str:
+    """Determine format from files in a directory.
+    
+    Args:
+        work_dir: Directory path to analyze
+        
+    Returns:
+        Detected format string based on files present
+    """
+    if not os.path.exists(work_dir):
+        return ""
+    
+    try:
+        files = os.listdir(work_dir)
+        if not files:
+            return ""
+        
+        file_extensions = set()
+        for file in files:
+            if '.' in file:
+                ext = file.split('.')[-1].lower()
+                file_extensions.add(ext)
+        
+        # Priority-based detection
+        if 'geojson' in file_extensions:
+            return "AGS"  # GeoJSON typically comes from AGS extractions
+        elif all(ext in file_extensions for ext in ['shp', 'dbf', 'shx']):
+            return "SHP"  # Complete shapefile set
+        elif 'shp' in file_extensions:
+            return "SHP"  # At least shapefile present
+        elif 'gdb' in file_extensions:
+            return "FGDB"
+        elif 'csv' in file_extensions:
+            return "CSV"
+        elif 'kml' in file_extensions:
+            return "KML"
+        elif 'pdf' in file_extensions:
+            return "PDF"
+        elif any(ext in file_extensions for ext in ['mdb', 'accdb']):
+            return "ACCDB" if 'accdb' in file_extensions else "MDB"
+        elif any(ext in file_extensions for ext in ['tif', 'tiff']):
+            return "GeoTIFF"
+        elif 'zip' in file_extensions:
+            return "SHP"  # ZIP likely contains shapefile
+        elif any(ext in file_extensions for ext in ['xls', 'xlsx']):
+            return "XLS"
+        elif 'txt' in file_extensions:
+            return "TXT"
+        else:
+            return "COLLECTION"  # Multiple unknown files
+            
+    except Exception:
+        return ""
 
 # ---------------------------------------------------------------------------
 # Minimal Manifest Integration (for preprocessing commands only)
