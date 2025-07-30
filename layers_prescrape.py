@@ -883,23 +883,27 @@ class LayersPrescrape:
         # Try to parse the title first
         layer_parsed, county_parsed, city_parsed, entity_type = parse_title_to_entity(title)
         
-        if layer_parsed and county_parsed:
+        if layer_parsed and county_parsed and city_parsed:
             try:
-                # Successfully parsed title
-                if city_parsed:
-                    entity = entity_from_title_parse(layer_parsed, county_parsed, city_parsed, entity_type)
-                else:
-                    # County-only record, treat as unincorporated for flu/zoning
-                    if self.cfg.layer.lower() in ['flu', 'zoning']:
-                        county_internal = format_name(county_parsed, 'county', external=False)
-                        entity = f"{county_internal}_unincorporated"
-                    else:
-                        entity = format_name(county_parsed, 'county', external=False)
+                # Successfully parsed both county and city from title
+                entity = entity_from_title_parse(layer_parsed, county_parsed, city_parsed, entity_type)
                 return entity
             except (ValueError, TypeError):
                 pass
         
-        # Title parsing failed, try fallback with county/city fields
+        # Partial title parsing success - try hybrid approach
+        if layer_parsed and city_parsed and entity_type:
+            # We got city from title but not county - use county from database
+            county_db = record.get('county', '')
+            if county_db:
+                try:
+                    county_internal = format_name(county_db, 'county', external=False)
+                    entity = entity_from_title_parse(layer_parsed, county_internal, city_parsed, entity_type)
+                    return entity
+                except (ValueError, TypeError):
+                    pass
+        
+        # Title parsing failed or incomplete, try fallback with county/city fields
         county_db = record.get('county', '')
         city_db = record.get('city', '')
         
