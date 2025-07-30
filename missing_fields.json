@@ -40,23 +40,19 @@
   },
   "pinellas_bellair_beach": {
     "src_url_file": "MANUAL_REQUIRED",
-    "fields_obj_transform": "MANUAL_REQUIRED",
-    "source_org": "MANUAL_REQUIRED"
+    "fields_obj_transform": "MANUAL_REQUIRED"
   },
   "pinellas_bellair_bluffs": {
     "src_url_file": "MANUAL_REQUIRED",
-    "fields_obj_transform": "MANUAL_REQUIRED",
-    "source_org": "MANUAL_REQUIRED"
+    "fields_obj_transform": "MANUAL_REQUIRED"
   },
   "pinellas_bellair_shore": {
     "src_url_file": "MANUAL_REQUIRED",
-    "fields_obj_transform": "MANUAL_REQUIRED",
-    "source_org": "MANUAL_REQUIRED"
+    "fields_obj_transform": "MANUAL_REQUIRED"
   },
   "orange_belle_isle": {
     "src_url_file": "MANUAL_REQUIRED",
-    "fields_obj_transform": "MANUAL_REQUIRED",
-    "source_org": "MANUAL_REQUIRED"
+    "fields_obj_transform": "MANUAL_REQUIRED"
   },
   "manatee_bradenton": {
     "fields_obj_transform": "MANUAL_REQUIRED"
@@ -85,8 +81,7 @@
   },
   "volusia_deltona": {
     "src_url_file": "MANUAL_REQUIRED",
-    "fields_obj_transform": "MANUAL_REQUIRED",
-    "source_org": "MANUAL_REQUIRED"
+    "fields_obj_transform": "MANUAL_REQUIRED"
   },
   "pinellas_dunedin": {
     "fields_obj_transform": "MANUAL_REQUIRED"
@@ -96,8 +91,7 @@
   },
   "orange_edgewood": {
     "src_url_file": "MANUAL_REQUIRED",
-    "fields_obj_transform": "MANUAL_REQUIRED",
-    "source_org": "MANUAL_REQUIRED"
+    "fields_obj_transform": "MANUAL_REQUIRED"
   },
   "lake_eustis": {
     "src_url_file": "MANUAL_REQUIRED",
@@ -108,8 +102,7 @@
   },
   "lee_fort_myers_beach": {
     "src_url_file": "MANUAL_REQUIRED",
-    "fields_obj_transform": "MANUAL_REQUIRED",
-    "source_org": "MANUAL_REQUIRED"
+    "fields_obj_transform": "MANUAL_REQUIRED"
   },
   "lake_fruitland_park": {
     "fields_obj_transform": "MANUAL_REQUIRED"
@@ -149,16 +142,14 @@
   },
   "pinellas_largo": {
     "src_url_file": "MANUAL_REQUIRED",
-    "fields_obj_transform": "MANUAL_REQUIRED",
-    "source_org": "MANUAL_REQUIRED"
+    "fields_obj_transform": "MANUAL_REQUIRED"
   },
   "lake_leesburg": {
     "fields_obj_transform": "MANUAL_REQUIRED"
   },
   "sarasota_longboat_key": {
     "src_url_file": "MANUAL_REQUIRED",
-    "fields_obj_transform": "MANUAL_REQUIRED",
-    "source_org": "MANUAL_REQUIRED"
+    "fields_obj_transform": "MANUAL_REQUIRED"
   },
   "seminole_longwood": {
     "fields_obj_transform": "MANUAL_REQUIRED"
@@ -168,8 +159,7 @@
   },
   "orange_maitland": {
     "src_url_file": "MANUAL_REQUIRED",
-    "fields_obj_transform": "MANUAL_REQUIRED",
-    "source_org": "MANUAL_REQUIRED"
+    "fields_obj_transform": "MANUAL_REQUIRED"
   },
   "collier_marco_island": {
     "fields_obj_transform": "MANUAL_REQUIRED"
@@ -197,8 +187,7 @@
   },
   "pasco_new_port_richey": {
     "src_url_file": "MANUAL_REQUIRED",
-    "fields_obj_transform": "MANUAL_REQUIRED",
-    "source_org": "MANUAL_REQUIRED"
+    "fields_obj_transform": "MANUAL_REQUIRED"
   },
   "sarasota_north_port": {
     "fields_obj_transform": "MANUAL_REQUIRED"
@@ -216,8 +205,7 @@
     "fields_obj_transform": "MANUAL_REQUIRED"
   },
   "seminole_oviedo": {
-    "fields_obj_transform": "MANUAL_REQUIRED",
-    "source_org": "MANUAL_REQUIRED"
+    "fields_obj_transform": "MANUAL_REQUIRED"
   },
   "brevard_palm_bay": {
     "fields_obj_transform": "MANUAL_REQUIRED"
@@ -226,8 +214,7 @@
     "fields_obj_transform": "MANUAL_REQUIRED"
   },
   "hillsborough_plant_city": {
-    "fields_obj_transform": "MANUAL_REQUIRED",
-    "source_org": "MANUAL_REQUIRED"
+    "fields_obj_transform": "MANUAL_REQUIRED"
   },
   "pasco_port_richey": {
     "src_url_file": "MANUAL_REQUIRED",
@@ -245,8 +232,7 @@
   },
   "pinellas_safety_harbor": {
     "src_url_file": "MANUAL_REQUIRED",
-    "fields_obj_transform": "MANUAL_REQUIRED",
-    "source_org": "MANUAL_REQUIRED"
+    "fields_obj_transform": "MANUAL_REQUIRED"
   },
   "pasco_san_antonio": {
     "src_url_file": "MANUAL_REQUIRED",
@@ -269,8 +255,7 @@
   },
   "pinellas_st_pete_beach": {
     "src_url_file": "MANUAL_REQUIRED",
-    "fields_obj_transform": "MANUAL_REQUIRED",
-    "source_org": "MANUAL_REQUIRED"
+    "fields_obj_transform": "MANUAL_REQUIRED"
   },
   "pinellas_st_petersburg": {
     "fields_obj_transform": "MANUAL_REQUIRED"
@@ -283,8 +268,7 @@
   },
   "pinellas_tarpon_springs": {
     "src_url_file": "MANUAL_REQUIRED",
-    "fields_obj_transform": "MANUAL_REQUIRED",
-    "source_org": "MANUAL_REQUIRED"
+    "fields_obj_transform": "MANUAL_REQUIRED"
   },
   "lake_tavares": {
     "fields_obj_transform": "MANUAL_REQUIRED"
@@ -313,18 +297,15 @@
   },
   "orange_windermere": {
     "src_url_file": "MANUAL_REQUIRED",
-    "fields_obj_transform": "MANUAL_REQUIRED",
-    "source_org": "MANUAL_REQUIRED"
+    "fields_obj_transform": "MANUAL_REQUIRED"
   },
   "orange_winter_garden": {
     "src_url_file": "MANUAL_REQUIRED",
-    "fields_obj_transform": "MANUAL_REQUIRED",
-    "source_org": "MANUAL_REQUIRED"
+    "fields_obj_transform": "MANUAL_REQUIRED"
   },
   "orange_winter_park": {
     "src_url_file": "MANUAL_REQUIRED",
-    "fields_obj_transform": "MANUAL_REQUIRED",
-    "source_org": "MANUAL_REQUIRED"
+    "fields_obj_transform": "MANUAL_REQUIRED"
   },
   "seminole_winter_springs": {
     "fields_obj_transform": "MANUAL_REQUIRED"

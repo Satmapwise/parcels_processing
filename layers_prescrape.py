@@ -820,7 +820,7 @@ class LayersPrescrape:
         
         # Define CSV headers - core conditions + optional conditions
         core_headers = [
-            "entity", "title", "county", "city", "src_url_file", "format", "download", 
+            "entity", "og_title", "new_title", "county", "city", "src_url_file", "format", "download", 
             "resource", "layer_group", "category", "sys_raw_folder", "table_name", 
             "fields_obj_transform", "layer_subgroup"
         ]
@@ -841,12 +841,18 @@ class LayersPrescrape:
             row_values = [entity]
             
             for field in headers[1:]:
-                correction = self._check_field_health(record, entity, field)
-                row_values.append(correction)
-                
-                # Count as healthy if no correction needed (empty cell)
-                if not correction:
+                if field == "og_title":
+                    # Show original title from database
+                    row_values.append(record.get('title') or '')
+                    # og_title is always "healthy" since it's just showing original data
                     healthy_counts[field] += 1
+                else:
+                    correction = self._check_field_health(record, entity, field)
+                    row_values.append(correction)
+                    
+                    # Count as healthy if no correction needed (empty cell)
+                    if not correction:
+                        healthy_counts[field] += 1
             
             csv_rows.append(row_values)
         
@@ -997,8 +1003,11 @@ class LayersPrescrape:
             return ""
         
         # Field-specific health checks
-        if field == "title":
+        if field == "new_title":
             # Check title format: "<layer> - City/Town/Village of <city>" or "<layer> - <county> Unincorporated/Unified"
+            # Get the actual title value from the database for comparison
+            actual_title = record.get('title') or ''
+            
             if entity_type == "city":
                 expected = f"{layer_external} - City of {city_external}"
             elif entity_type == "unincorporated":
@@ -1008,7 +1017,7 @@ class LayersPrescrape:
             else:
                 expected = f"{layer_external} - {city_external}"
             
-            return expected if current_value != expected else ""
+            return expected if actual_title != expected else ""
         
         elif field == "county":
             # Check county field contains proper county in external format
