@@ -675,7 +675,7 @@ def get_format_from_files(work_dir: str) -> str:
     Returns:
         Detected format string - AGS if GeoJSON present, otherwise SHP for most cases
     """
-    if not os.path.exists(work_dir):
+    if not work_dir or not os.path.exists(work_dir):
         return ""
     
     try:
@@ -1564,7 +1564,7 @@ class LayersPrescrape:
             
             # Validate current format makes sense using intelligent format detection
             url = record.get('src_url_file') or ''
-            expected = _get_best_format_detection(url, record.get('sys_raw_folder', ''))
+            expected = _get_best_format_detection(url, record.get('sys_raw_folder') or '')
             if expected and str(current_value).upper() != expected.upper():
                 return expected
             return ""
