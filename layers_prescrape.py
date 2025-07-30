@@ -228,36 +228,36 @@ LAYER_CONFIGS = {
         'layer_group': 'flu_zoning',
     },
     'flood_zones': {
-        'category': '09_Environment_and_Natural_Resources',
-        'layer_group': 'flood_zones',
+        'category': '12_Hazards',
+        'layer_group': 'hazards',
     },
     'parcel_geo': {
-        'category': '01_Property_and_Ownership',
-        'layer_group': 'parcel_geo',
+        'category': '05_Parcels',
+        'layer_group': 'parcels',
     },
     'streets': {
-        'category': '06_Transportation_Networks',
-        'layer_group': 'streets',
+        'category': '03_Transportation',
+        'layer_group': 'base_map_overlay',
     },
     'addr_pnts': {
-        'category': '05_Address_and_Location',
-        'layer_group': 'addr_pnts',
+        'category': '05_Parcels',
+        'layer_group': 'parcels',
     },
     'subdiv': {
-        'category': '01_Property_and_Ownership',
-        'layer_group': 'subdiv',
+        'category': '05_Parcels',
+        'layer_group': 'parcels',
     },
     'bldg_ftpr': {
-        'category': '02_Buildings_and_Structures',
-        'layer_group': 'bldg_ftpr',
+        'category': '05_Parcels',
+        'layer_group': 'parcels',
     },
     'fdot_tc': {
-        'category': '06_Transportation_Networks',
-        'layer_group': 'fdot_tc',
+        'category': '03_Transportation',
+        'layer_group': 'base_map_overlay',
     },
     'sunbiz': {
-        'category': '03_Business_and_Economic',
-        'layer_group': 'sunbiz',
+        'category': '21_Misc',
+        'layer_group': 'parcels',
     }
 }
 
