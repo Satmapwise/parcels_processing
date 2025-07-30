@@ -226,20 +226,43 @@ LAYER_CONFIGS = {
     'flu': {
         'category': '08_Land_Use_and_Zoning', 
         'layer_group': 'flu_zoning',
+    },
+    'flood_zones': {
+        'category': '09_Environment_and_Natural_Resources',
+        'layer_group': 'flood_zones',
+    },
+    'parcel_geo': {
+        'category': '01_Property_and_Ownership',
+        'layer_group': 'parcel_geo',
+    },
+    'streets': {
+        'category': '06_Transportation_Networks',
+        'layer_group': 'streets',
+    },
+    'addr_pnts': {
+        'category': '05_Address_and_Location',
+        'layer_group': 'addr_pnts',
+    },
+    'subdiv': {
+        'category': '01_Property_and_Ownership',
+        'layer_group': 'subdiv',
+    },
+    'bldg_ftpr': {
+        'category': '02_Buildings_and_Structures',
+        'layer_group': 'bldg_ftpr',
+    },
+    'fdot_tc': {
+        'category': '06_Transportation_Networks',
+        'layer_group': 'fdot_tc',
+    },
+    'sunbiz': {
+        'category': '03_Business_and_Economic',
+        'layer_group': 'sunbiz',
     }
 }
 
-# Layer to layer_group mapping
-LAYER_GROUP_MAP = {
-    'flu': 'flu_zoning',
-    'zoning': 'flu_zoning'
-}
-
-# Layer to category mapping  
-CATEGORY_MAP = {
-    'flu': '08_Land_Use_and_Zoning',
-    'zoning': '08_Land_Use_and_Zoning'
-}
+# Note: Layer configurations are now centralized in LAYER_CONFIGS above
+# No need for separate LAYER_GROUP_MAP and CATEGORY_MAP dictionaries
 
 # ---------------------------------------------------------------------------
 # Utility Functions (preserved from layer_standardize_database.py)
@@ -1146,17 +1169,20 @@ class LayersPrescrape:
         
         elif field == "layer_group":
             # Check layer_group is correct using mapping
-            expected = LAYER_GROUP_MAP.get(self.cfg.layer, '')
+            config = LAYER_CONFIGS.get(self.cfg.layer, {})
+            expected = config.get('layer_group', '')
             return expected if current_value != expected else ""
         
         elif field == "category":
             # Check category is correct using mapping
-            expected = CATEGORY_MAP.get(self.cfg.layer, '')
+            config = LAYER_CONFIGS.get(self.cfg.layer, {})
+            expected = config.get('category', '')
             return expected if current_value != expected else ""
         
         elif field == "sys_raw_folder":
             # Check sys_raw_folder matches pattern and create directory
-            category = CATEGORY_MAP.get(self.cfg.layer, '08_Land_Use_and_Zoning')
+            config = LAYER_CONFIGS.get(self.cfg.layer, {})
+            category = config.get('category', '08_Land_Use_and_Zoning')
             expected = f"/srv/datascrub/{category}/{layer_internal}/florida/county/{county_internal}/current/source_data/{city_internal}"
             
             # Create directory if it doesn't exist
@@ -1294,6 +1320,7 @@ class LayersPrescrape:
                 if self.cfg.layer.lower() in ['flu', 'zoning']:
                     entity = f"{county_internal}_unincorporated"
                 else:
+                    # Most other layers are county-level only
                     entity = county_internal
             
             return entity
