@@ -614,7 +614,8 @@ class LayersPrescrape:
             "table_name", "fields_obj_transform"
         ]
         
-        csv_rows = [headers]
+        # Group records by entity to detect duplicates
+        entity_groups = defaultdict(list)
         field_counts = {field: 0 for field in headers[1:]}  # Skip 'entity' for counting
         total_records = len(records)
         
@@ -632,15 +633,60 @@ class LayersPrescrape:
                 else:
                     row_values.append("")
             
-            csv_rows.append(row_values)
+            entity_groups[entity].append(row_values)
         
-        # Add summary row showing field completion rates
+        # Separate unique records from duplicates
+        csv_rows = [headers]
+        duplicate_groups = []
+        unique_entities = 0
+        duplicate_entities = 0
+        
+        for entity in sorted(entity_groups.keys()):
+            records_for_entity = entity_groups[entity]
+            
+            if len(records_for_entity) == 1:
+                # Single record for this entity
+                csv_rows.append(records_for_entity[0])
+                unique_entities += 1
+            else:
+                # Multiple records (duplicates)
+                duplicate_row = [entity] + ["DUPLICATE"] * (len(headers) - 1)
+                csv_rows.append(duplicate_row)
+                duplicate_groups.append((entity, records_for_entity))
+                duplicate_entities += 1
+        
+        # Add summary row showing field completion rates and duplicate info
         csv_rows.append([])
         summary_row = ["SUMMARY"]
         for field in headers[1:]:
             count = field_counts[field]
             summary_row.append(f"{count}/{total_records}")
         csv_rows.append(summary_row)
+        
+        # Add duplicate info summary
+        csv_rows.append([])
+        csv_rows.append([
+            f"UNIQUE ENTITIES: {unique_entities}, DUPLICATE ENTITIES: {duplicate_entities}, TOTAL RECORDS: {total_records}"
+        ] + [""] * (len(headers) - 1))
+        
+        # Add duplicates section if any exist
+        if duplicate_groups:
+            csv_rows.append([])
+            csv_rows.append(["=== DUPLICATES SECTION ==="] + [""] * (len(headers) - 1))
+            csv_rows.append([])
+            
+            for entity, duplicate_records in duplicate_groups:
+                # Add separator for each duplicate group
+                csv_rows.append([f"DUPLICATES FOR: {entity}"] + [""] * (len(headers) - 1))
+                csv_rows.append(headers)  # Header row for this duplicate group
+                
+                # Sort duplicate records alphabetically by title
+                duplicate_records.sort(key=lambda row: row[1])  # Sort by title column
+                
+                for record_row in duplicate_records:
+                    csv_rows.append(record_row)
+                
+                csv_rows.append([])  # Empty row between duplicate groups
         
         # Write CSV report
         if self.cfg.generate_csv:
@@ -651,7 +697,10 @@ class LayersPrescrape:
             self.logger.info(f"Detection report written → {csv_path}")
         
         # Log summary
-        self.logger.info(f"Detection complete: {total_records} records found")
+        if duplicate_entities > 0:
+            self.logger.info(f"Detection complete: {total_records} records found, {unique_entities} unique entities, {duplicate_entities} duplicate entities")
+        else:
+            self.logger.info(f"Detection complete: {total_records} records found, all entities unique")
     
     def _run_fill_mode(self):
         """Apply manual corrections and auto-derivable fields from JSON."""
