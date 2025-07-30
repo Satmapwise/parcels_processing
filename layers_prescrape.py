@@ -510,28 +510,45 @@ def validate_url(url: str) -> tuple[bool, str]:
                 
                 with urllib.request.urlopen(metadata_req, timeout=5) as response:
                     if response.getcode() == 200:
-                        content = response.read(2048).decode('utf-8', errors='ignore')
-                        try:
-                            # Parse as JSON to check for service errors
-                            metadata = json.loads(content)
-                            
-                            # Check for common ArcGIS error patterns
-                            if 'error' in metadata:
-                                return False, "DEPRECATED"  # Service returns error
-                            
-                            # Check for authentication requirements
-                            if 'authentication' in content.lower() or 'login' in content.lower():
-                                return False, "DEPRECATED"  # Now requires auth
-                            
-                            # Check if service has valid geospatial metadata
-                            if any(key in metadata for key in ['name', 'type', 'geometryType', 'fields', 'extent']):
-                                return True, "OK"  # Looks like healthy service
-                            else:
-                                return False, "DEPRECATED"  # Malformed service response
+                        # Read more content for ArcGIS services (they can be large)
+                        content = response.read(20480).decode('utf-8', errors='ignore')  # 20KB should be enough
+                        
+                        # Quick check for obvious issues before JSON parsing
+                        content_lower = content.lower()
+                        if 'authentication' in content_lower or 'login required' in content_lower:
+                            return False, "DEPRECATED"  # Now requires auth
+                        
+                        # Check for error patterns in raw content (handles truncated JSON)
+                        if '"error"' in content and 'code' in content:
+                            return False, "DEPRECATED"  # Service returns error
+                        
+                        # Look for positive indicators that suggest a working service
+                        positive_indicators = [
+                            '"name":', '"type":', '"geometryType":', '"fields":', 
+                            '"currentVersion":', '"serviceItemId":', '"defaultVisibility":'
+                        ]
+                        
+                        if any(indicator in content for indicator in positive_indicators):
+                            try:
+                                # Try to parse JSON if it looks promising
+                                metadata = json.loads(content)
                                 
-                        except json.JSONDecodeError:
-                            # Not valid JSON - service might be broken
-                            return False, "DEPRECATED"
+                                # Double-check for errors in parsed JSON
+                                if 'error' in metadata:
+                                    return False, "DEPRECATED"  # Service returns error
+                                
+                                # Check if service has valid geospatial metadata  
+                                if any(key in metadata for key in ['name', 'type', 'geometryType', 'fields', 'extent']):
+                                    return True, "OK"  # Looks like healthy service
+                                else:
+                                    return False, "DEPRECATED"  # Missing expected metadata
+                                    
+                            except json.JSONDecodeError:
+                                # JSON truncated or malformed, but has positive indicators
+                                # This is likely a valid service with large metadata
+                                return True, "OK"
+                        else:
+                            return False, "DEPRECATED"  # No positive indicators found
                     else:
                         return False, "DEPRECATED"
             except HTTPError as e:
