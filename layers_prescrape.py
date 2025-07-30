@@ -635,16 +635,22 @@ class LayersPrescrape:
             
             entity_groups[entity].append(row_values)
         
-        # Separate unique records from duplicates
+        # Separate unique records, duplicates, and errors
         csv_rows = [headers]
         duplicate_groups = []
+        error_records = []
         unique_entities = 0
         duplicate_entities = 0
+        error_entities = 0
         
         for entity in sorted(entity_groups.keys()):
             records_for_entity = entity_groups[entity]
             
-            if len(records_for_entity) == 1:
+            if entity == "ERROR":
+                # Handle ERROR entities separately
+                error_records = records_for_entity
+                error_entities = len(records_for_entity)
+            elif len(records_for_entity) == 1:
                 # Single record for this entity
                 csv_rows.append(records_for_entity[0])
                 unique_entities += 1
@@ -663,11 +669,27 @@ class LayersPrescrape:
             summary_row.append(f"{count}/{total_records}")
         csv_rows.append(summary_row)
         
-        # Add duplicate info summary
+        # Add entity count summary
         csv_rows.append([])
         csv_rows.append([
-            f"UNIQUE ENTITIES: {unique_entities}, DUPLICATE ENTITIES: {duplicate_entities}, TOTAL RECORDS: {total_records}"
+            f"UNIQUE ENTITIES: {unique_entities}, DUPLICATE ENTITIES: {duplicate_entities}, ERROR RECORDS: {error_entities}, TOTAL RECORDS: {total_records}"
         ] + [""] * (len(headers) - 1))
+        
+        # Add ERROR section if any exist
+        if error_records:
+            csv_rows.append([])
+            csv_rows.append(["=== ERROR SECTION ==="] + [""] * (len(headers) - 1))
+            csv_rows.append([])
+            csv_rows.append(["UNPARSEABLE RECORDS:"] + [""] * (len(headers) - 1))
+            csv_rows.append(headers)  # Header row for error records
+            
+            # Sort error records alphabetically by title
+            error_records.sort(key=lambda row: row[1])  # Sort by title column
+            
+            for record_row in error_records:
+                csv_rows.append(record_row)
+            
+            csv_rows.append([])  # Empty row after error section
         
         # Add duplicates section if any exist
         if duplicate_groups:
@@ -697,10 +719,13 @@ class LayersPrescrape:
             self.logger.info(f"Detection report written → {csv_path}")
         
         # Log summary
+        summary_parts = [f"{total_records} records found", f"{unique_entities} unique entities"]
         if duplicate_entities > 0:
-            self.logger.info(f"Detection complete: {total_records} records found, {unique_entities} unique entities, {duplicate_entities} duplicate entities")
-        else:
-            self.logger.info(f"Detection complete: {total_records} records found, all entities unique")
+            summary_parts.append(f"{duplicate_entities} duplicate entities")
+        if error_entities > 0:
+            summary_parts.append(f"{error_entities} error records")
+        
+        self.logger.info(f"Detection complete: {', '.join(summary_parts)}")
     
     def _run_fill_mode(self):
         """Apply manual corrections and auto-derivable fields from JSON."""
