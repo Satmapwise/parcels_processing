@@ -635,6 +635,9 @@ class LayersPrescrape:
         
         # Track missing fields across entities
         self.missing_fields: Dict[str, Dict[str, str]] = defaultdict(dict)
+        
+        # Track distrib_comments updates for preservation logic
+        self.distrib_comments_updates: Dict[str, str] = {}
     
     def run(self):
         """Execute the configured mode."""
@@ -858,7 +861,7 @@ class LayersPrescrape:
         core_headers = [
             "entity", "og_title", "new_title", "county", "city", "src_url_file", "format", "download", 
             "resource", "layer_group", "category", "sys_raw_folder", "table_name", 
-            "fields_obj_transform", "layer_subgroup", "source_comments", "processing_comments"
+            "fields_obj_transform", "layer_subgroup", "source_comments", "processing_comments", "distrib_comments"
         ]
         
         optional_headers = []
@@ -1151,20 +1154,30 @@ class LayersPrescrape:
             return expected if current_value != expected else ""
         
         elif field == "source_comments":
-            # Always overwrite source_comments from manifest (pre-metadata commands)
+            # Always overwrite source_comments from manifest, preserving existing values to distrib_comments
             if self.cfg.layer.lower() in ['zoning', 'flu']:
                 expected_source, _ = extract_manifest_commands(self.cfg.layer, entity)
-                # Always return manifest value, even if current value matches
+                # Preserve existing value to distrib_comments if it exists
+                if current_value and current_value.strip():
+                    self._preserve_to_distrib_comments(record, entity, 'SOURCE COMMENTS', current_value)
+                # Always return manifest value
                 return expected_source
             return ""
         
         elif field == "processing_comments":
-            # Always overwrite processing_comments from manifest (post-metadata commands)
+            # Always overwrite processing_comments from manifest, preserving existing values to distrib_comments
             if self.cfg.layer.lower() in ['zoning', 'flu']:
                 _, expected_processing = extract_manifest_commands(self.cfg.layer, entity)
-                # Always return manifest value, even if current value matches
+                # Preserve existing value to distrib_comments if it exists
+                if current_value and current_value.strip():
+                    self._preserve_to_distrib_comments(record, entity, 'PROCESSING COMMENTS', current_value)
+                # Always return manifest value
                 return expected_processing
             return ""
+        
+        elif field == "distrib_comments":
+            # Show the updated distrib_comments with preserved values
+            return self._get_updated_distrib_comments(record, entity)
         
         # Optional conditions (only checked with --fill-all)
         elif field == "sub_category":
@@ -1334,6 +1347,35 @@ class LayersPrescrape:
             params += (str(record.get("title", "")).lower(),)
         
         self.db.execute(sql, params)
+    
+    def _preserve_to_distrib_comments(self, record: Dict[str, Any], entity: str, comment_type: str, value: str):
+        """Preserve existing source/processing comments to distrib_comments field."""
+        # Start with existing distrib_comments from database (only once per entity)
+        if entity not in self.distrib_comments_updates:
+            # First time for this entity - initialize with existing distrib_comments
+            self.distrib_comments_updates[entity] = record.get('distrib_comments', '') or ''
+        
+        current_distrib = self.distrib_comments_updates[entity]
+        
+        # Add the new preserved comment
+        if current_distrib and current_distrib.strip():
+            # Existing content - add newline separator
+            new_distrib = f"{current_distrib}\n\n{comment_type}:\n{value}"
+        else:
+            # No existing content - start fresh
+            new_distrib = f"{comment_type}:\n{value}"
+        
+        # Store the updated distrib_comments for this entity
+        self.distrib_comments_updates[entity] = new_distrib
+    
+    def _get_updated_distrib_comments(self, record: Dict[str, Any], entity: str) -> str:
+        """Get the updated distrib_comments with any preserved values."""
+        # Check if we have preserved comments for this entity
+        if entity in self.distrib_comments_updates:
+            return self.distrib_comments_updates[entity]
+        
+        # No preserved comments - return empty (no changes needed)
+        return ""
     
     def _create_record(self, record_data: Dict[str, Any]):
         """Create new database record."""
