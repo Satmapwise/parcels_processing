@@ -624,7 +624,8 @@ def generate_expected_values(layer: str, county: str, city: str, entity_type: st
 @dataclass
 class Config:
     layer: str
-    entities: List[str] | None = None
+    include_entities: List[str] | None = None
+    exclude_entities: List[str] | None = None
     mode: str = "detect"  # detect | fill | create
     debug: bool = False
     generate_csv: bool = True
@@ -714,22 +715,21 @@ class LayersPrescrape:
         
         self.logger.info(f"Found {len(records)} total records for layer '{self.cfg.layer}'")
         
-        # Filter by specific entities if provided
-        if self.cfg.entities:
-            # Convert entity arguments to lowercase for comparison
-            target_entities = {entity.lower() for entity in self.cfg.entities}
+        # Filter by include/exclude entities if provided
+        if self.cfg.include_entities or self.cfg.exclude_entities:
             filtered_records = []
             
             for record in records:
                 entity = self._generate_entity_from_record(record)
-                if entity.lower() in target_entities:
+                if self._should_include_entity(entity):
                     filtered_records.append(record)
             
+            filter_desc = self._get_entity_filter_description()
             records = filtered_records
-            self.logger.info(f"Filtered to {len(records)} records matching specified entities: {', '.join(self.cfg.entities)}")
+            self.logger.info(f"Filtered to {len(records)} records matching entity filters {filter_desc}")
             
             if not records:
-                self.logger.warning(f"No records found matching specified entities: {', '.join(self.cfg.entities)}")
+                self.logger.warning(f"No records found matching entity filters {filter_desc}")
                 return
         
         # CSV headers - specific fields requested by user
@@ -879,22 +879,21 @@ class LayersPrescrape:
         
         self.logger.info(f"Found {len(records)} total records for layer '{self.cfg.layer}'")
         
-        # Filter by specific entities if provided
-        if self.cfg.entities:
-            # Convert entity arguments to lowercase for comparison
-            target_entities = {entity.lower() for entity in self.cfg.entities}
+        # Filter by include/exclude entities if provided
+        if self.cfg.include_entities or self.cfg.exclude_entities:
             filtered_records = []
             
             for record in records:
                 entity = self._generate_entity_from_record(record)
-                if entity.lower() in target_entities:
+                if self._should_include_entity(entity):
                     filtered_records.append(record)
             
+            filter_desc = self._get_entity_filter_description()
             records = filtered_records
-            self.logger.info(f"Filtered to {len(records)} records matching specified entities: {', '.join(self.cfg.entities)}")
+            self.logger.info(f"Filtered to {len(records)} records matching entity filters {filter_desc}")
             
             if not records:
-                self.logger.warning(f"No records found matching specified entities: {', '.join(self.cfg.entities)}")
+                self.logger.warning(f"No records found matching entity filters {filter_desc}")
                 return
         
         # Group records by entity and filter out duplicates/errors
@@ -981,8 +980,8 @@ class LayersPrescrape:
         """Create new records based on layer/county/city + manual info."""
         self.logger.info("Running CREATE mode - creating new database records.")
         
-        if not self.cfg.entities:
-            self.logger.error("CREATE mode requires entity specification")
+        if not self.cfg.include_entities:
+            self.logger.error("CREATE mode requires --include entities to be specified")
             return
         
         # Load manual data if available
@@ -993,7 +992,7 @@ class LayersPrescrape:
         
         created_records = []
         
-        for entity in self.cfg.entities:
+        for entity in self.cfg.include_entities:
             try:
                 county, city = split_entity(entity)
             except ValueError as e:
@@ -1066,6 +1065,33 @@ class LayersPrescrape:
         self.logger.info(f"Create complete: {len(created_records)} records processed")
     
     # Helper methods
+    
+    def _should_include_entity(self, entity: str) -> bool:
+        """Check if entity should be included based on include/exclude filters."""
+        entity_lower = entity.lower()
+        
+        # If include filters are specified, entity must match at least one
+        if self.cfg.include_entities:
+            include_match = any(pattern.lower() in entity_lower for pattern in self.cfg.include_entities)
+            if not include_match:
+                return False
+        
+        # If exclude filters are specified, entity must not match any
+        if self.cfg.exclude_entities:
+            exclude_match = any(pattern.lower() in entity_lower for pattern in self.cfg.exclude_entities)
+            if exclude_match:
+                return False
+        
+        return True
+    
+    def _get_entity_filter_description(self) -> str:
+        """Get description of current entity filters for logging."""
+        parts = []
+        if self.cfg.include_entities:
+            parts.append(f"include: {', '.join(self.cfg.include_entities)}")
+        if self.cfg.exclude_entities:
+            parts.append(f"exclude: {', '.join(self.cfg.exclude_entities)}")
+        return f"({'; '.join(parts)})" if parts else ""
     
     def _check_field_health(self, record: Dict[str, Any], entity: str, field: str) -> str:
         """Check field health and return correction value or empty string if healthy.
@@ -1472,8 +1498,12 @@ def build_arg_parser() -> argparse.ArgumentParser:
     )
     
     parser.add_argument("layer", help="Layer name (zoning, flu, flood_zones, parcel_geo, streets, addr_pnts, subdiv, bldg_ftpr, fdot_tc, sunbiz, all)")
-    parser.add_argument("entities", nargs="*", 
-                       help="Specific entities to filter/process (required for CREATE mode, optional for DETECT/FILL modes)")
+    
+    # Entity filtering options
+    parser.add_argument("--include", nargs="*", metavar="ENTITY", 
+                       help="Include only entities matching these patterns (required for CREATE mode)")
+    parser.add_argument("--exclude", nargs="*", metavar="ENTITY",
+                       help="Exclude entities matching these patterns")
     
     # Mode selection
     mode_group = parser.add_mutually_exclusive_group()
@@ -1509,6 +1539,11 @@ def main():
     else:
         mode = "detect"  # default
     
+    # Validate CREATE mode requirements
+    if mode == "create" and not args.include:
+        print("[ERROR] CREATE mode requires --include entities to be specified")
+        sys.exit(1)
+    
     # Validate layer argument
     layer_input = args.layer.lower()
     if layer_input == "all":
@@ -1522,7 +1557,8 @@ def main():
             # Create config for this layer
             cfg = Config(
                 layer=layer,
-                entities=[e.lower() for e in args.entities] if args.entities else None,
+                include_entities=[e.lower() for e in args.include] if args.include else None,
+                exclude_entities=[e.lower() for e in args.exclude] if args.exclude else None,
                 mode=mode,
                 debug=args.debug,
                 generate_csv=args.generate_csv,
@@ -1547,7 +1583,8 @@ def main():
         # Create config for single layer
         cfg = Config(
             layer=layer_input,
-            entities=[e.lower() for e in args.entities] if args.entities else None,
+            include_entities=[e.lower() for e in args.include] if args.include else None,
+            exclude_entities=[e.lower() for e in args.exclude] if args.exclude else None,
             mode=mode,
             debug=args.debug,
             generate_csv=args.generate_csv,
