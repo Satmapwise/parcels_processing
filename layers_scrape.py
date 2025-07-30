@@ -355,25 +355,11 @@ def split_entity(entity: str):
 
 def resolve_work_dir(layer: str, entity: str):
     """Return (work_dir, county, city) for layer/entity."""
-    # Handle special cases
+    # Handle special business logic cases
     if layer == 'zoning' and entity == 'duval_unified':
+        # Duval Unified refers to Jacksonville city-county government
         county, city = 'duval', 'jacksonville'
         work_dir = '/srv/datascrub/08_Land_Use_and_Zoning/zoning/florida/county/duval/current/source_data/jacksonville'
-        return work_dir, county, city
-    
-    if layer == 'zoning' and entity == 'miami_dade_incorporated':
-        county, city = 'miami_dade', 'incorporated'
-        work_dir = '/srv/datascrub/08_Land_Use_and_Zoning/zoning/florida/county/miami-dade/current/source_data/incorporated'
-        return work_dir, county, city
-    
-    if layer == 'zoning' and entity == 'miami_dade_unincorporated':
-        county, city = 'miami_dade', 'unincorporated'
-        work_dir = '/srv/datascrub/08_Land_Use_and_Zoning/zoning/florida/county/miami-dade/current/source_data/unincorporated'
-        return work_dir, county, city
-    
-    if layer == 'zoning' and entity == 'broward_unified':
-        county, city = 'broward', 'county_unified'
-        work_dir = '/srv/datascrub/08_Land_Use_And_Zoning/zoning/florida/county/broward/current/source_data/county_unified'
         return work_dir, county, city
 
     # General case
@@ -492,9 +478,10 @@ def _fetch_catalog_row(layer: str, county: str, city: str):
             "SELECT * FROM m_gis_data_catalog_main "
             "WHERE lower(layer_subgroup) = %s "
             "AND lower(county) = %s "
-            "AND city = %s LIMIT 1"
+            "AND lower(city) = %s LIMIT 1"
         )
-        cur.execute(sql, (layer_external.lower(), county_external.lower(), city_external))
+        params = (layer_external.lower(), county_external.lower(), city_external.lower())
+        cur.execute(sql, params)
         row = cur.fetchone()
         return dict(row) if row else None
     finally:
