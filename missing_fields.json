@@ -1,5 +1,6 @@
 {
-  "palm_beach_unified": {
+  "pinellas_indian_rocks_beach": {
+    "src_url_file": "URL_DEPRECATED",
     "fields_obj_transform": "MANUAL_REQUIRED"
   }
 }

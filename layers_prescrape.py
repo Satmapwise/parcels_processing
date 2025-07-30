@@ -616,13 +616,13 @@ def validate_url(url: str) -> tuple[bool, str]:
         return False, "DEPRECATED"
 
 def get_format_from_url(url: str) -> str:
-    """Determine format from URL patterns and file extensions.
+    """Determine format from URL patterns, focusing on AGS vs non-AGS distinction.
     
     Args:
         url: Source URL to analyze
         
     Returns:
-        Detected format string (AGS, SHP, CSV, etc.) or empty string if unknown
+        Detected format string - prioritizes AGS detection, defaults to SHP for most downloads
     """
     if not url:
         return ""
@@ -630,63 +630,50 @@ def get_format_from_url(url: str) -> str:
     url_lower = url.lower()
     
     # ArcGIS Services (highest priority - most reliable indicator)
+    # This is the critical distinction for layers_scrape.py tool selection
     if any(pattern in url_lower for pattern in [
         '/mapserver/', '/featureserver/', '/imageserver/', '/geoprocessingserver/',
         'arcgis/rest/services', 'server/rest/services'
     ]):
         return "AGS"
     
-    # File extension patterns (direct downloads)
-    if url_lower.endswith('.zip'):
-        return "SHP"  # ZIP files typically contain shapefiles
-    elif url_lower.endswith('.csv'):
-        return "CSV"
-    elif url_lower.endswith('.kml') or url_lower.endswith('.kmz'):
-        return "KML"
-    elif url_lower.endswith('.geojson') or url_lower.endswith('.json'):
-        return "GeoJSON"
-    elif url_lower.endswith('.gdb') or '/geodatabase' in url_lower:
-        return "FGDB"
-    elif url_lower.endswith('.mdb') or url_lower.endswith('.accdb'):
-        return "ACCDB" if url_lower.endswith('.accdb') else "MDB"
-    elif url_lower.endswith('.shp'):
-        return "SHP"
-    elif url_lower.endswith('.dbf'):
-        return "DBF"
-    elif url_lower.endswith('.tif') or url_lower.endswith('.tiff'):
-        return "GeoTIFF"
-    elif url_lower.endswith('.pdf'):
-        return "PDF"
-    elif url_lower.endswith('.xls') or url_lower.endswith('.xlsx'):
-        return "XLS"
-    elif url_lower.endswith('.txt'):
-        return "TXT"
-    
-    # WMS/WMTS Services
+    # WMS/WMTS Services (also web services, not file downloads)
     if any(pattern in url_lower for pattern in ['wms', 'wmts', 'getcapabilities']):
         if 'wmts' in url_lower:
             return "WMTS"
         else:
             return "WMS"
     
-    # Collection/Multiple format indicators
-    if any(pattern in url_lower for pattern in ['collection', 'multiple', 'various']):
-        return "COLLECTION"
+    # Specific file formats that are clearly identifiable
+    if url_lower.endswith('.csv'):
+        return "CSV"
+    elif url_lower.endswith('.kml') or url_lower.endswith('.kmz'):
+        return "KML"
+    elif url_lower.endswith('.pdf'):
+        return "PDF"
+    elif url_lower.endswith('.mdb') or url_lower.endswith('.accdb'):
+        return "ACCDB" if url_lower.endswith('.accdb') else "MDB"
+    elif url_lower.endswith('.xls') or url_lower.endswith('.xlsx'):
+        return "XLS"
+    elif url_lower.endswith('.txt'):
+        return "TXT"
+    elif url_lower.endswith('.tif') or url_lower.endswith('.tiff'):
+        return "GeoTIFF"
     
-    # Default fallback based on common patterns
-    if 'ftp://' in url_lower or 'download' in url_lower:
-        return "SHP"  # Most downloads are shapefiles
-    
-    return ""  # Unknown format
+    # Everything else (ZIP files, direct SHP, GDB, etc.) defaults to SHP
+    # Most geospatial downloads are shapefiles, often delivered via ZIP
+    # This ensures layers_scrape.py uses download_data.py (not ags_extract_data2.py)
+    else:
+        return "SHP"
 
 def get_format_from_files(work_dir: str) -> str:
-    """Determine format from files in a directory.
+    """Determine format from files in a directory, focusing on AGS vs non-AGS distinction.
     
     Args:
         work_dir: Directory path to analyze
         
     Returns:
-        Detected format string based on files present
+        Detected format string - AGS if GeoJSON present, otherwise SHP for most cases
     """
     if not os.path.exists(work_dir):
         return ""
@@ -702,15 +689,11 @@ def get_format_from_files(work_dir: str) -> str:
                 ext = file.split('.')[-1].lower()
                 file_extensions.add(ext)
         
-        # Priority-based detection
+        # AGS detection: GeoJSON files indicate AGS extraction
         if 'geojson' in file_extensions:
-            return "AGS"  # GeoJSON typically comes from AGS extractions
-        elif all(ext in file_extensions for ext in ['shp', 'dbf', 'shx']):
-            return "SHP"  # Complete shapefile set
-        elif 'shp' in file_extensions:
-            return "SHP"  # At least shapefile present
-        elif 'gdb' in file_extensions:
-            return "FGDB"
+            return "AGS"
+        
+        # Specific identifiable formats
         elif 'csv' in file_extensions:
             return "CSV"
         elif 'kml' in file_extensions:
@@ -719,78 +702,52 @@ def get_format_from_files(work_dir: str) -> str:
             return "PDF"
         elif any(ext in file_extensions for ext in ['mdb', 'accdb']):
             return "ACCDB" if 'accdb' in file_extensions else "MDB"
-        elif any(ext in file_extensions for ext in ['tif', 'tiff']):
-            return "GeoTIFF"
-        elif 'zip' in file_extensions:
-            return "SHP"  # ZIP likely contains shapefile
         elif any(ext in file_extensions for ext in ['xls', 'xlsx']):
             return "XLS"
+        elif any(ext in file_extensions for ext in ['tif', 'tiff']):
+            return "GeoTIFF"
         elif 'txt' in file_extensions:
             return "TXT"
+        
+        # Everything else defaults to SHP (shapefiles, ZIP files, GDB, etc.)
+        # This covers the majority of geospatial downloads
         else:
-            return "COLLECTION"  # Multiple unknown files
+            return "SHP"
             
     except Exception:
         return ""
 
 def _get_best_format_detection(url: str, work_dir: str) -> str:
-    """Intelligently determine the best format using both URL and file analysis.
+    """Determine the best format with focus on AGS vs non-AGS distinction.
     
-    Handles conflicts between URL-based and file-based detection by prioritizing
-    the most reliable source based on the situation.
+    Simplified logic that prioritizes the critical AGS detection needed for
+    layers_scrape.py tool selection (ags_extract_data2.py vs download_data.py).
     
     Args:
         url: Source URL to analyze
         work_dir: Directory containing downloaded files
         
     Returns:
-        Best format detection result with conflict resolution
+        Best format detection - AGS for services, SHP for most downloads, specific formats when clear
     """
     url_format = get_format_from_url(url)
     file_format = get_format_from_files(work_dir)
     
-    # If no files exist yet, use URL detection
-    if not file_format:
-        return url_format
-    
-    # If formats agree, use either one
-    if url_format == file_format:
-        return url_format
-    
-    # Conflict resolution rules (prioritize most reliable source)
-    
-    # Rule 1: AGS services that create GeoJSON files
-    # URL says AGS, files show AGS (GeoJSON) -> AGS is correct
-    if url_format == "AGS" and file_format == "AGS":
+    # Critical rule: AGS URLs are authoritative
+    # If URL indicates AGS service, it should use ags_extract_data2.py
+    if url_format == "AGS":
         return "AGS"
     
-    # Rule 2: File-based detection is more reliable for actual content
-    # Files show specific format, URL shows generic -> trust files
-    if file_format in ["CSV", "KML", "PDF", "GeoTIFF", "TXT"] and url_format in ["SHP", ""]:
+    # If files exist and show AGS (GeoJSON), trust that
+    if file_format == "AGS":
+        return "AGS"
+    
+    # For specific file formats, prefer file-based detection
+    if file_format in ["CSV", "KML", "PDF", "GeoTIFF", "TXT", "MDB", "ACCDB", "XLS"]:
         return file_format
     
-    # Rule 3: AGS URLs are very reliable indicators
-    # URL shows AGS service, files show something else -> likely URL is correct
-    if url_format == "AGS":
-        return url_format
-    
-    # Rule 4: ZIP URLs can contain various formats
-    # URL says SHP (from .zip), but files show specific format -> trust files  
-    if url_format == "SHP" and file_format in ["FGDB", "CSV", "KML"]:
-        return file_format
-    
-    # Rule 5: Complete shapefile sets are reliable
-    # URL unclear, files show complete SHP set -> trust files
-    if file_format == "SHP":
-        return file_format
-    
-    # Rule 6: Database formats are reliable when detected from files
-    # URL unclear, files show database format -> trust files
-    if file_format in ["MDB", "ACCDB", "FGDB"]:
-        return file_format
-    
-    # Default: prefer URL detection for most cases
-    return url_format if url_format else file_format
+    # Default to URL detection, or SHP if URL detection fails
+    return url_format if url_format else "SHP"
 
 # ---------------------------------------------------------------------------
 # Minimal Manifest Integration (for preprocessing commands only)

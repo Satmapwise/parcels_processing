@@ -621,8 +621,9 @@ def layer_download(layer: str, entity: str, county: str, city: str, catalog_row:
     resource = catalog_row.get('resource') or catalog_row.get('src_url_file')
     table_name = catalog_row.get('table_name')
 
-    # Generate download command based on format
-    if fmt in {'ags', 'arcgis', 'esri', 'ags_extract'}:
+    # Simple AGS vs non-AGS distinction for tool selection
+    if fmt == 'ags':
+        # Use ags_extract_data2.py for ArcGIS Server services
         if not table_name:
             raise DownloadError('Missing table_name for AGS download', layer, entity)
         command = [
@@ -634,6 +635,8 @@ def layer_download(layer: str, entity: str, county: str, city: str, catalog_row:
         ]
         _debug_main(f"[DOWNLOAD] Running AGS download for {layer}/{entity} (table: {table_name})", logger)
     else:
+        # Use download_data.py for all other formats (SHP, CSV, PDF, etc.)
+        # Most non-AGS downloads are ZIP files containing shapefiles
         if not resource:
             raise DownloadError('Missing resource/url for download_data.py', layer, entity)
         command = [
@@ -641,7 +644,7 @@ def layer_download(layer: str, entity: str, county: str, city: str, catalog_row:
             os.path.join(os.path.dirname(__file__), 'download_tools', 'download_data.py'),
             resource
         ]
-        _debug_main(f"[DOWNLOAD] Running file download for {layer}/{entity} (url: {resource})", logger)
+        _debug_main(f"[DOWNLOAD] Running file download for {layer}/{entity} (format: {fmt}, url: {resource})", logger)
 
     logger.debug(f"Running download for {layer}/{entity}")
     
