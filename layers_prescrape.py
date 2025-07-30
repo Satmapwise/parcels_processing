@@ -433,15 +433,136 @@ def entity_from_title_parse(layer: str, county_from_title: str, city_from_title:
 # Placeholder Helper Functions for Fill Mode
 # ---------------------------------------------------------------------------
 
-def validate_url(url: str) -> bool:
-    """Placeholder function to validate if URL is still valid.
+def validate_url(url: str) -> tuple[bool, str]:
+    """Check if URL still serves accessible, fresh geospatial data.
     
-    TODO: Implement actual URL validation logic
+    Focus on real-world issues that affect data freshness/accessibility:
+    - Authentication now required (401/403)
+    - Data moved/redirected (301/302 chains)
+    - Site abandoned/dead (404/410)
+    - Service discontinued (error responses)
+    - ArcGIS services returning error metadata
+    
+    Returns:
+        tuple[bool, str]: (is_valid, status_reason)
+        - (True, "OK") if URL serves accessible data
+        - (False, "MISSING") if URL is empty/None
+        - (False, "DEPRECATED") if URL has accessibility/freshness issues
     """
+    import urllib.parse
+    import urllib.request
+    import json
+    import socket
+    import ssl
+    from urllib.error import HTTPError, URLError
+    
     if not url or not url.strip():
-        return False
-    # Placeholder: assume all non-empty URLs are valid for now
-    return True
+        return False, "MISSING"
+    
+    url = url.strip()
+    
+    try:
+        # Create request with reasonable timeout and proper user agent
+        req = urllib.request.Request(url)
+        req.add_header('User-Agent', 'Mozilla/5.0 (compatible; LayersPrescrape/1.0; +http://gis-data-scraper)')
+        
+        # For ArcGIS services, check metadata endpoint for service health
+        if any(x in url.lower() for x in ['arcgis', 'featureserver', 'mapserver']):
+            # Try to get service metadata to check if service is healthy
+            metadata_url = url.rstrip('/') + '?f=json'
+            try:
+                metadata_req = urllib.request.Request(metadata_url)
+                metadata_req.add_header('User-Agent', 'Mozilla/5.0 (compatible; LayersPrescrape/1.0)')
+                
+                with urllib.request.urlopen(metadata_req, timeout=8) as response:
+                    if response.getcode() == 200:
+                        content = response.read(2048).decode('utf-8', errors='ignore')
+                        try:
+                            # Parse as JSON to check for service errors
+                            metadata = json.loads(content)
+                            
+                            # Check for common ArcGIS error patterns
+                            if 'error' in metadata:
+                                return False, "DEPRECATED"  # Service returns error
+                            
+                            # Check for authentication requirements
+                            if 'authentication' in content.lower() or 'login' in content.lower():
+                                return False, "DEPRECATED"  # Now requires auth
+                            
+                            # Check if service has valid geospatial metadata
+                            if any(key in metadata for key in ['name', 'type', 'geometryType', 'fields', 'extent']):
+                                return True, "OK"  # Looks like healthy service
+                            else:
+                                return False, "DEPRECATED"  # Malformed service response
+                                
+                        except json.JSONDecodeError:
+                            # Not valid JSON - service might be broken
+                            return False, "DEPRECATED"
+                    else:
+                        return False, "DEPRECATED"
+            except HTTPError as e:
+                if e.code in [401, 403]:
+                    return False, "DEPRECATED"  # Authentication required
+                else:
+                    pass  # Fall through to regular request
+            except:
+                pass  # Fall through to regular HEAD request
+        
+        # For non-ArcGIS URLs or if ArcGIS metadata failed, check basic accessibility
+        req.get_method = lambda: 'HEAD'
+        
+        with urllib.request.urlopen(req, timeout=8) as response:
+            status_code = response.getcode()
+            
+            if status_code == 200:
+                # Check for reasonable file size (avoid tiny error pages)
+                content_length = response.headers.get('content-length')
+                if content_length and int(content_length) < 50:
+                    return False, "DEPRECATED"  # Suspiciously small file
+                
+                # Check last-modified to detect stale data (optional)
+                last_modified = response.headers.get('last-modified')
+                # TODO: Could add staleness detection here if needed
+                
+                return True, "OK"
+            
+            elif status_code in [301, 302, 303, 307, 308]:
+                # Data has moved - follow redirect once to check final destination
+                location = response.headers.get('location')
+                if location and location != url:  # Avoid infinite loops
+                    return validate_url(location)
+                else:
+                    return False, "DEPRECATED"  # Redirect without location
+            
+            elif status_code in [404, 410]:
+                return False, "DEPRECATED"  # Resource not found/gone
+            
+            elif status_code in [401, 403]:
+                return False, "DEPRECATED"  # Authentication/authorization required
+            
+            else:
+                return False, "DEPRECATED"  # Other HTTP errors
+    
+    except HTTPError as e:
+        # Handle specific HTTP errors that indicate accessibility issues
+        if e.code == 401:
+            return False, "DEPRECATED"  # Authentication required
+        elif e.code == 403:
+            return False, "DEPRECATED"  # Access denied (new restrictions)
+        elif e.code in [404, 410]:
+            return False, "DEPRECATED"  # Resource not found/gone
+        elif e.code == 429:
+            return False, "DEPRECATED"  # Rate limited (might be blocked)
+        else:
+            return False, "DEPRECATED"  # Other server errors
+    
+    except (URLError, socket.timeout, ssl.SSLError, ConnectionError) as e:
+        # Network/connectivity issues - likely service problems
+        return False, "DEPRECATED"
+    
+    except Exception as e:
+        # Any other error - treat as deprecated
+        return False, "DEPRECATED"
 
 def get_format_from_url(url: str) -> str:
     """Placeholder function to determine format from URL.
@@ -1163,10 +1284,19 @@ class LayersPrescrape:
             return expected if current_value != expected else ""
         
         elif field == "src_url_file":
-            # Check URL exists and is valid (MANUAL)
-            if not current_value or not validate_url(current_value):
+            # Check URL exists and is valid
+            if not current_value:
                 self.missing_fields[entity]["src_url_file"] = "MANUAL_REQUIRED"
                 return "***MISSING***"
+            
+            is_valid, status_reason = validate_url(current_value)
+            if not is_valid:
+                if status_reason == "MISSING":
+                    self.missing_fields[entity]["src_url_file"] = "MANUAL_REQUIRED"
+                    return "***MISSING***"
+                elif status_reason == "DEPRECATED":
+                    self.missing_fields[entity]["src_url_file"] = "URL_DEPRECATED"
+                    return "***DEPRECATED***"
             return ""
         
         elif field == "format":
