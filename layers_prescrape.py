@@ -1471,7 +1471,7 @@ def build_arg_parser() -> argparse.ArgumentParser:
         description="Prepare database for layers_scrape.py by detecting and fixing malformed records"
     )
     
-    parser.add_argument("layer", help="Layer name (zoning, flu)")
+    parser.add_argument("layer", help="Layer name (zoning, flu, flood_zones, parcel_geo, streets, addr_pnts, subdiv, bldg_ftpr, fdot_tc, sunbiz, all)")
     parser.add_argument("entities", nargs="*", 
                        help="Specific entities to filter/process (required for CREATE mode, optional for DETECT/FILL modes)")
     
@@ -1509,21 +1509,56 @@ def main():
     else:
         mode = "detect"  # default
     
-    # Create config
-    cfg = Config(
-        layer=args.layer.lower(),
-        entities=[e.lower() for e in args.entities] if args.entities else None,
-        mode=mode,
-        debug=args.debug,
-        generate_csv=args.generate_csv,
-        apply_changes=args.apply,
-        manual_file=args.manual_file,
-        fill_all=args.fill_all
-    )
-    
-    # Run the processor
-    processor = LayersPrescrape(cfg)
-    processor.run()
+    # Validate layer argument
+    layer_input = args.layer.lower()
+    if layer_input == "all":
+        # Process all configured layers
+        valid_layers = list(LAYER_CONFIGS.keys())
+        print(f"[INFO] Processing all layers: {', '.join(valid_layers)}")
+        
+        for layer in valid_layers:
+            print(f"\n[INFO] ==================== Processing layer: {layer.upper()} ====================")
+            
+            # Create config for this layer
+            cfg = Config(
+                layer=layer,
+                entities=[e.lower() for e in args.entities] if args.entities else None,
+                mode=mode,
+                debug=args.debug,
+                generate_csv=args.generate_csv,
+                apply_changes=args.apply,
+                manual_file=args.manual_file,
+                fill_all=args.fill_all
+            )
+            
+            # Run the processor for this layer
+            processor = LayersPrescrape(cfg)
+            processor.run()
+        
+        print(f"\n[INFO] ==================== Completed processing all {len(valid_layers)} layers ====================")
+        
+    else:
+        # Single layer - validate it exists
+        if layer_input not in LAYER_CONFIGS:
+            valid_layers = ', '.join(sorted(LAYER_CONFIGS.keys()))
+            print(f"[ERROR] Invalid layer '{layer_input}'. Valid layers are: {valid_layers}, all")
+            sys.exit(1)
+        
+        # Create config for single layer
+        cfg = Config(
+            layer=layer_input,
+            entities=[e.lower() for e in args.entities] if args.entities else None,
+            mode=mode,
+            debug=args.debug,
+            generate_csv=args.generate_csv,
+            apply_changes=args.apply,
+            manual_file=args.manual_file,
+            fill_all=args.fill_all
+        )
+        
+        # Run the processor
+        processor = LayersPrescrape(cfg)
+        processor.run()
 
 if __name__ == "__main__":
     main()
