@@ -391,7 +391,7 @@ def entity_from_title_parse(layer: str, county_from_title: str, city_from_title:
     if county_from_title and city_from_title:
         # Normalize county and city names to match entity format (internal format)
         county_internal = format_name(county_from_title, 'county', external=False)
-        if entity_type in {"unincorporated", "unified", "countywide"}:
+        if entity_type in {"unincorporated", "unified", "incorporated", "countywide"}:
             entity = f"{county_internal}_{entity_type}"
         else:
             city_internal = format_name(city_from_title, 'city', external=False)
@@ -522,13 +522,10 @@ def generate_expected_values(layer: str, county: str, city: str, entity_type: st
     city_external = format_name(city_std, 'city', external=True)
     
     if entity_type == "city":
+        # Default to "City of" but this will be refined in health check based on original title
         title = f"{layer_external} - City of {city_external}"
-    elif entity_type == "unincorporated":
-        title = f"{layer_external} - {county_external} Unincorporated"
-    elif entity_type == "unified":
-        title = f"{layer_external} - {county_external} Unified"
-    elif entity_type == "incorporated":
-        title = f"{layer_external} - {county_external} Incorporated"
+    elif entity_type in ["unincorporated", "unified", "incorporated"]:
+        title = f"{layer_external} - {county_external} {entity_type.capitalize()}"
     else:
         title = f"{layer_external} - {city_external}"
     
@@ -539,8 +536,10 @@ def generate_expected_values(layer: str, county: str, city: str, entity_type: st
     
     if entity_type == "city":
         table_name = f"{layer_internal}_{city_internal}"
-    else:
+    elif entity_type in ["unincorporated", "unified", "incorporated"]:
         table_name = f"{layer_internal}_{county_internal}_{entity_type}"
+    else:
+        table_name = f"{layer_internal}_{city_internal}"
     
     # Generate sys_raw_folder (internal format for paths)
     category = config.get('category', '08_Land_Use_and_Zoning')
@@ -1004,16 +1003,22 @@ class LayersPrescrape:
         
         # Field-specific health checks
         if field == "new_title":
-            # Check title format: "<layer> - City/Town/Village of <city>" or "<layer> - <county> Unincorporated/Unified"
+            # Check title format: "<layer> - City/Town/Village of <city>" or "<layer> - <county> Unincorporated/Unified/Incorporated"
             # Get the actual title value from the database for comparison
             actual_title = record.get('title') or ''
             
             if entity_type == "city":
-                expected = f"{layer_external} - City of {city_external}"
-            elif entity_type == "unincorporated":
-                expected = f"{layer_external} - {county_external} Unincorporated"
-            elif entity_type == "unified":
-                expected = f"{layer_external} - {county_external} Unified"
+                # Determine the correct prefix (City/Town/Village) from the original title
+                title_prefix = "City"
+                if actual_title:
+                    if "Town of" in actual_title:
+                        title_prefix = "Town"
+                    elif "Village of" in actual_title:
+                        title_prefix = "Village"
+                
+                expected = f"{layer_external} - {title_prefix} of {city_external}"
+            elif entity_type in ["unincorporated", "unified", "incorporated"]:
+                expected = f"{layer_external} - {county_external} {entity_type.capitalize()}"
             else:
                 expected = f"{layer_external} - {city_external}"
             
@@ -1089,8 +1094,10 @@ class LayersPrescrape:
             # Check table_name matches pattern
             if entity_type == "city":
                 expected = f"{layer_internal}_{city_internal}"
-            else:
+            elif entity_type in ["unincorporated", "unified", "incorporated"]:
                 expected = f"{layer_internal}_{county_internal}_{entity_type}"
+            else:
+                expected = f"{layer_internal}_{city_internal}"
             
             return expected if current_value != expected else ""
         
