@@ -733,6 +733,65 @@ def get_format_from_files(work_dir: str) -> str:
     except Exception:
         return ""
 
+def _get_best_format_detection(url: str, work_dir: str) -> str:
+    """Intelligently determine the best format using both URL and file analysis.
+    
+    Handles conflicts between URL-based and file-based detection by prioritizing
+    the most reliable source based on the situation.
+    
+    Args:
+        url: Source URL to analyze
+        work_dir: Directory containing downloaded files
+        
+    Returns:
+        Best format detection result with conflict resolution
+    """
+    url_format = get_format_from_url(url)
+    file_format = get_format_from_files(work_dir)
+    
+    # If no files exist yet, use URL detection
+    if not file_format:
+        return url_format
+    
+    # If formats agree, use either one
+    if url_format == file_format:
+        return url_format
+    
+    # Conflict resolution rules (prioritize most reliable source)
+    
+    # Rule 1: AGS services that create GeoJSON files
+    # URL says AGS, files show AGS (GeoJSON) -> AGS is correct
+    if url_format == "AGS" and file_format == "AGS":
+        return "AGS"
+    
+    # Rule 2: File-based detection is more reliable for actual content
+    # Files show specific format, URL shows generic -> trust files
+    if file_format in ["CSV", "KML", "PDF", "GeoTIFF", "TXT"] and url_format in ["SHP", ""]:
+        return file_format
+    
+    # Rule 3: AGS URLs are very reliable indicators
+    # URL shows AGS service, files show something else -> likely URL is correct
+    if url_format == "AGS":
+        return url_format
+    
+    # Rule 4: ZIP URLs can contain various formats
+    # URL says SHP (from .zip), but files show specific format -> trust files  
+    if url_format == "SHP" and file_format in ["FGDB", "CSV", "KML"]:
+        return file_format
+    
+    # Rule 5: Complete shapefile sets are reliable
+    # URL unclear, files show complete SHP set -> trust files
+    if file_format == "SHP":
+        return file_format
+    
+    # Rule 6: Database formats are reliable when detected from files
+    # URL unclear, files show database format -> trust files
+    if file_format in ["MDB", "ACCDB", "FGDB"]:
+        return file_format
+    
+    # Default: prefer URL detection for most cases
+    return url_format if url_format else file_format
+
 # ---------------------------------------------------------------------------
 # Minimal Manifest Integration (for preprocessing commands only)
 # ---------------------------------------------------------------------------
@@ -1541,14 +1600,14 @@ class LayersPrescrape:
             return ""
         
         elif field == "format":
-            # Check format is correct using URL analysis
+            # Check format is correct using URL analysis and file analysis
             if not current_value:
                 expected = get_format_from_url(record.get('src_url_file') or '')
                 return expected if expected else "***MISSING***"
             
-            # Validate current format makes sense
+            # Validate current format makes sense using intelligent format detection
             url = record.get('src_url_file') or ''
-            expected = get_format_from_url(url)
+            expected = _get_best_format_detection(url, record.get('sys_raw_folder', ''))
             if expected and str(current_value).upper() != expected.upper():
                 return expected
             return ""
