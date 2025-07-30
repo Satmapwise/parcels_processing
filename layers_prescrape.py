@@ -9,6 +9,7 @@ for layers_scrape.py. It operates on existing database records and provides tool
 2. FILL mode: Apply manual corrections and auto-derivable fields from JSON
 3. CREATE mode: Create new records based on layer/county/city + manual info
 
+All modes support entity filtering - specify entity names to focus on specific records.
 The script relies on title-based matching to find corresponding records and uses minimal
 manifest integration only for extracting preprocessing commands.
 """
@@ -688,7 +689,25 @@ class LayersPrescrape:
             self.logger.warning(f"No records found for layer '{self.cfg.layer}'")
             return
         
-        self.logger.info(f"Found {len(records)} records for layer '{self.cfg.layer}'")
+        self.logger.info(f"Found {len(records)} total records for layer '{self.cfg.layer}'")
+        
+        # Filter by specific entities if provided
+        if self.cfg.entities:
+            # Convert entity arguments to lowercase for comparison
+            target_entities = {entity.lower() for entity in self.cfg.entities}
+            filtered_records = []
+            
+            for record in records:
+                entity = self._generate_entity_from_record(record)
+                if entity.lower() in target_entities:
+                    filtered_records.append(record)
+            
+            records = filtered_records
+            self.logger.info(f"Filtered to {len(records)} records matching specified entities: {', '.join(self.cfg.entities)}")
+            
+            if not records:
+                self.logger.warning(f"No records found matching specified entities: {', '.join(self.cfg.entities)}")
+                return
         
         # CSV headers - specific fields requested by user
         headers = [
@@ -833,7 +852,25 @@ class LayersPrescrape:
             self.logger.warning(f"No records found for layer '{self.cfg.layer}'")
             return
         
-        self.logger.info(f"Found {len(records)} records for layer '{self.cfg.layer}'")
+        self.logger.info(f"Found {len(records)} total records for layer '{self.cfg.layer}'")
+        
+        # Filter by specific entities if provided
+        if self.cfg.entities:
+            # Convert entity arguments to lowercase for comparison
+            target_entities = {entity.lower() for entity in self.cfg.entities}
+            filtered_records = []
+            
+            for record in records:
+                entity = self._generate_entity_from_record(record)
+                if entity.lower() in target_entities:
+                    filtered_records.append(record)
+            
+            records = filtered_records
+            self.logger.info(f"Filtered to {len(records)} records matching specified entities: {', '.join(self.cfg.entities)}")
+            
+            if not records:
+                self.logger.warning(f"No records found matching specified entities: {', '.join(self.cfg.entities)}")
+                return
         
         # Group records by entity and filter out duplicates/errors
         entity_groups = defaultdict(list)
@@ -1407,7 +1444,7 @@ def build_arg_parser() -> argparse.ArgumentParser:
     
     parser.add_argument("layer", help="Layer name (zoning, flu)")
     parser.add_argument("entities", nargs="*", 
-                       help="Specific entities to process (for CREATE mode) or 'all' for all entities")
+                       help="Specific entities to filter/process (required for CREATE mode, optional for DETECT/FILL modes)")
     
     # Mode selection
     mode_group = parser.add_mutually_exclusive_group()
