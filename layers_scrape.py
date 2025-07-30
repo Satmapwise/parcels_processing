@@ -428,6 +428,48 @@ def _run_command(command, work_dir, logger):
     logger.debug(f"Command output: {process.stdout}")
     return process.stdout
 
+def _run_source_comments(source_comments: str, work_dir: str, logger):
+    """Run source_comments commands (pre-metadata processing from manifest).
+    
+    source_comments format: "command1|command2|command3"
+    """
+    if not source_comments or not source_comments.strip():
+        return
+    
+    # Split commands by pipe separator
+    commands = [cmd.strip() for cmd in source_comments.split('|') if cmd.strip()]
+    
+    for i, cmd_str in enumerate(commands):
+        logger.debug(f"Running source comment command {i+1}/{len(commands)}: {cmd_str}")
+        
+        if CONFIG.test_mode:
+            logger.info(f"[TEST MODE] SOURCE COMMAND SKIPPED IN {work_dir}: {cmd_str}")
+            continue
+        
+        # Handle different command types
+        if cmd_str.endswith('.py'):
+            # Python script - run with python3
+            command = ['python3', cmd_str]
+        else:
+            # Shell command - run through shell
+            command = ['bash', '-c', cmd_str]
+        
+        try:
+            process = subprocess.run(command, cwd=work_dir, capture_output=True, text=True)
+            
+            if process.returncode != 0:
+                logger.warning(f"Source comment command failed: {cmd_str}")
+                logger.warning(f"STDERR: {process.stderr}")
+                # Continue with other commands rather than failing completely
+            else:
+                logger.debug(f"Source comment command succeeded: {cmd_str}")
+                if process.stdout:
+                    logger.debug(f"Command output: {process.stdout}")
+                    
+        except Exception as e:
+            logger.warning(f"Failed to execute source comment command '{cmd_str}': {e}")
+            # Continue with other commands
+
 # ---------------------------------------------------------------------------
 # Database Functions
 # ---------------------------------------------------------------------------
@@ -586,6 +628,16 @@ def layer_download(layer: str, entity: str, county: str, city: str, catalog_row:
         # Handle "no new data" case - from download command
         _update_csv_status(layer, entity, 'download', 'NND', error_msg='Download command: no new data')
         raise  # Re-raise skip errors
+    
+    # Run source_comments commands (pre-metadata processing)
+    source_comments = catalog_row.get('source_comments', '')
+    if source_comments and source_comments.strip():
+        _debug_main(f"[DOWNLOAD] Running source_comments for {layer}/{entity}: {source_comments}", logger)
+        try:
+            _run_source_comments(source_comments, work_dir, logger)
+        except Exception as sc_err:
+            logger.warning(f"Source comments failed for {layer}/{entity}: {sc_err}")
+            # Don't fail the entire download for source comments errors
     
     # Validate download occurred (only in non-test mode)
     if not CONFIG.test_mode:

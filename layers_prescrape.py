@@ -203,7 +203,7 @@ REPORTS_DIR.mkdir(exist_ok=True)
 
 # File paths
 MISSING_FIELDS_JSON = Path("missing_fields.json")
-MANIFEST_PATH = Path("layer_manifest.json")
+MANIFEST_PATH = Path("test/layer_manifest.json")
 
 # Florida counties for entity parsing (from original script)
 FL_COUNTIES = {
@@ -441,59 +441,95 @@ def get_format_from_url(url: str) -> str:
 # Minimal Manifest Integration (for preprocessing commands only)
 # ---------------------------------------------------------------------------
 
-def extract_preprocessing_commands(layer: str, entity: str) -> str:
-    """Extract preprocessing commands from manifest (between download and ogrinfo commands).
+def extract_manifest_commands(layer: str, entity: str) -> tuple[str, str]:
+    """Extract pre-metadata and post-metadata commands from manifest.
     
-    Returns empty string if manifest is missing/invalid or no preprocessing found.
+    Returns:
+        tuple[str, str]: (source_comments, processing_comments)
+        - source_comments: commands between download and ogrinfo 
+        - processing_comments: commands between ogrinfo and update
     """
     try:
         if not MANIFEST_PATH.exists():
-            return ""
+            return "", ""
             
         with open(MANIFEST_PATH, 'r') as f:
             manifest_data = json.load(f)
             
         if layer not in manifest_data or 'entities' not in manifest_data[layer]:
-            return ""
+            return "", ""
             
         if entity not in manifest_data[layer]['entities']:
-            return ""
+            return "", ""
             
         commands = manifest_data[layer]['entities'][entity]
         if not isinstance(commands, list):
-            return ""
+            return "", ""
             
-        # Find commands between download and ogrinfo
-        preprocessing = []
-        in_preprocessing = False
+        # Find commands in different phases
+        pre_metadata = []  # Between download_data.py and ogrinfo (source_comments)
+        post_metadata = []  # Between ogrinfo and update_zoning2.py (processing_comments)
+        
+        phase = "before_download"
         
         for cmd in commands:
+            # Handle both list commands and string commands
             if isinstance(cmd, list) and len(cmd) > 0:
                 cmd_str = ' '.join(str(x) for x in cmd)
+            elif isinstance(cmd, str):
+                cmd_str = cmd
+            else:
+                continue  # Skip invalid commands
                 
-                # Start preprocessing after download command
-                if any(x in cmd_str for x in ['ags_extract_data2.py', 'download_data.py']):
-                    in_preprocessing = True
-                    continue
-                    
-                # Stop preprocessing at ogrinfo command
-                if 'ogrinfo' in cmd_str:
-                    in_preprocessing = False
-                    break
-                    
-                # Collect preprocessing commands
-                if in_preprocessing:
-                    # Extract just the script name for processing_comments
-                    if cmd[0] == 'python3' and len(cmd) > 1:
-                        script_name = Path(cmd[1]).name
-                        preprocessing.append(script_name)
-                    else:
-                        preprocessing.append(cmd_str)
+            # Track phases based on command types
+            if any(x in cmd_str for x in ['ags_extract_data2.py', 'download_data.py']):
+                phase = "source_comments"  # Commands after download, before ogrinfo
+                continue
+            elif cmd == "ogrinfo" or 'ogrinfo' in cmd_str:
+                phase = "processing_comments"  # Commands after ogrinfo, before update
+                continue
+            elif any(x in cmd_str for x in ['update_zoning2.py', 'update_data_catalog', 'psql']):
+                phase = "after_update"
+                break
+                
+            # Collect commands based on current phase
+            if phase == "source_comments":
+                # Extract command for source_comments (pre-metadata processing)
+                if isinstance(cmd, list) and cmd[0] == 'python3' and len(cmd) > 1:
+                    script_name = Path(cmd[1]).name
+                    pre_metadata.append(script_name)
+                elif isinstance(cmd, list):
+                    # Non-python command - join as shell command
+                    pre_metadata.append(' '.join(str(x) for x in cmd))
+                else:
+                    pre_metadata.append(str(cmd))
+            elif phase == "processing_comments":
+                # Extract command for processing_comments (post-metadata processing)
+                if isinstance(cmd, list) and cmd[0] == 'python3' and len(cmd) > 1:
+                    script_name = Path(cmd[1]).name
+                    post_metadata.append(script_name)
+                elif isinstance(cmd, list):
+                    # Non-python command - join as shell command
+                    post_metadata.append(' '.join(str(x) for x in cmd))
+                else:
+                    post_metadata.append(str(cmd))
         
-        return "|".join(preprocessing)
+        source_comments = "|".join(pre_metadata)
+        processing_comments = "|".join(post_metadata)
+        
+        return source_comments, processing_comments
         
     except Exception:
-        return ""  # If any error occurs, return empty string
+        return "", ""  # If any error occurs, return empty strings
+
+def extract_preprocessing_commands(layer: str, entity: str) -> str:
+    """Extract preprocessing commands from manifest (between download and ogrinfo commands).
+    
+    DEPRECATED: Use extract_manifest_commands instead.
+    Returns empty string if manifest is missing/invalid or no preprocessing found.
+    """
+    _, processing_comments = extract_manifest_commands(layer, entity)
+    return processing_comments
 
 # ---------------------------------------------------------------------------
 # Validation Logic for layers_scrape.py Compatibility
@@ -821,7 +857,7 @@ class LayersPrescrape:
         core_headers = [
             "entity", "og_title", "new_title", "county", "city", "src_url_file", "format", "download", 
             "resource", "layer_group", "category", "sys_raw_folder", "table_name", 
-            "fields_obj_transform", "layer_subgroup"
+            "fields_obj_transform", "layer_subgroup", "source_comments", "processing_comments"
         ]
         
         optional_headers = []
@@ -1112,6 +1148,20 @@ class LayersPrescrape:
             # Check layer_subgroup has layer in internal format
             expected = layer_internal
             return expected if current_value != expected else ""
+        
+        elif field == "source_comments":
+            # Check source_comments from manifest (pre-metadata commands)
+            if self.cfg.layer.lower() in ['zoning', 'flu']:
+                expected_source, _ = extract_manifest_commands(self.cfg.layer, entity)
+                return expected_source if current_value != expected_source else ""
+            return ""
+        
+        elif field == "processing_comments":
+            # Check processing_comments from manifest (post-metadata commands)
+            if self.cfg.layer.lower() in ['zoning', 'flu']:
+                _, expected_processing = extract_manifest_commands(self.cfg.layer, entity)
+                return expected_processing if current_value != expected_processing else ""
+            return ""
         
         # Optional conditions (only checked with --fill-all)
         elif field == "sub_category":
