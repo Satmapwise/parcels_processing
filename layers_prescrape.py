@@ -840,7 +840,7 @@ class LayersPrescrape:
         
         # Write CSV report
         if self.cfg.generate_csv:
-            csv_path = REPORTS_DIR / f"{self.cfg.layer}_prescrape_detect_{get_today_str()}.csv"
+            csv_path = REPORTS_DIR / f"{self.cfg.layer}_prescrape_detect.csv"
             with open(csv_path, 'w', newline='', encoding='utf-8') as f:
                 writer = csv.writer(f)
                 writer.writerows(csv_rows)
@@ -967,7 +967,7 @@ class LayersPrescrape:
         
         # Write CSV report
         if self.cfg.generate_csv:
-            csv_path = REPORTS_DIR / f"{self.cfg.layer}_prescrape_fill_{get_today_str()}.csv"
+            csv_path = REPORTS_DIR / f"{self.cfg.layer}_prescrape_fill.csv"
             with open(csv_path, 'w', newline='', encoding='utf-8') as f:
                 writer = csv.writer(f)
                 writer.writerows(csv_rows)
@@ -1057,7 +1057,7 @@ class LayersPrescrape:
                 for field, value in record.items():
                     csv_rows.append([entity, field, str(value), status])
             
-            csv_path = REPORTS_DIR / f"{self.cfg.layer}_prescrape_create_{get_today_str()}.csv"
+            csv_path = REPORTS_DIR / f"{self.cfg.layer}_prescrape_create.csv"
             with open(csv_path, 'w', newline='', encoding='utf-8') as f:
                 writer = csv.writer(f)
                 writer.writerows(csv_rows)
