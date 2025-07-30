@@ -801,7 +801,8 @@ class Config:
     mode: str = "detect"  # detect | fill | create
     debug: bool = False
     generate_csv: bool = True
-    apply_changes: bool = False  # For fill mode
+    apply_changes: bool = False  # Apply auto-generated changes
+    apply_manual: bool = False  # Apply manual field changes  
     manual_file: str = "missing_fields.json"
     fill_all: bool = False  # Include optional conditions in fill mode
 
@@ -861,13 +862,13 @@ class LayersPrescrape:
         
         # Commit or rollback database changes
         if self.db:
-            if self.cfg.mode in {"fill", "create"} and self.cfg.apply_changes:
+            if self.cfg.mode in {"fill", "create"} and (self.cfg.apply_changes or self.cfg.apply_manual):
                 self.db.commit()
                 self.logger.info("Database changes committed.")
             else:
                 self.db.conn.rollback()
-                if not self.cfg.apply_changes and self.cfg.mode in {"fill", "create"}:
-                    self.logger.info("Apply flag not set - no database changes made.")
+                if not (self.cfg.apply_changes or self.cfg.apply_manual) and self.cfg.mode in {"fill", "create"}:
+                    self.logger.info("Apply flags not set - no database changes made.")
             self.db.close()
     
     def _run_detect_mode(self):
@@ -1153,6 +1154,50 @@ class LayersPrescrape:
                 writer.writerows(csv_rows)
             self.logger.info(f"Fill report written → {csv_path}")
         
+        # Apply database changes if requested
+        if self.cfg.apply_changes or self.cfg.apply_manual:
+            self.logger.info("Applying database changes...")
+            applied_auto = 0
+            applied_manual = 0
+            skipped_auto = 0
+            skipped_manual = 0
+            
+            for entity, record in valid_records:
+                updates = {}
+                
+                for field in headers[1:]:
+                    if field == "og_title":  # Skip the original title display field
+                        continue
+                        
+                    correction = self._check_field_health(record, entity, field)
+                    if correction and not correction.startswith("***"):  # Has correction and not a manual marker
+                        is_manual = self._is_manual_field(field)
+                        
+                        if is_manual and self.cfg.apply_manual:
+                            updates[field] = correction
+                            applied_manual += 1
+                        elif not is_manual and self.cfg.apply_changes:
+                            updates[field] = correction  
+                            applied_auto += 1
+                        elif is_manual and not self.cfg.apply_manual:
+                            skipped_manual += 1
+                        elif not is_manual and not self.cfg.apply_changes:
+                            skipped_auto += 1
+                
+                # Apply updates to this record
+                if updates:
+                    self._update_record(record, updates)
+            
+            # Log what was applied
+            if self.cfg.apply_changes:
+                self.logger.info(f"Applied {applied_auto} auto-generated changes")
+                if skipped_manual > 0:
+                    self.logger.info(f"Skipped {skipped_manual} manual changes (use --apply-manual to apply)")
+            if self.cfg.apply_manual:
+                self.logger.info(f"Applied {applied_manual} manual field changes")
+                if skipped_auto > 0:
+                    self.logger.info(f"Skipped {skipped_auto} auto changes (use --apply to apply)")
+        
         # Log summary
         total_issues = sum(total_records - healthy_counts[field] for field in headers[1:])
         self.logger.info(f"Fill complete: {len(valid_records)} records checked, {total_issues} total issues found")
@@ -1213,7 +1258,7 @@ class LayersPrescrape:
                 continue
             
             # Create the record
-            if self.cfg.apply_changes:
+            if self.cfg.apply_changes or self.cfg.apply_manual:
                 self._create_record(expected)
                 self.logger.info(f"Created record for {entity}")
             else:
@@ -1232,7 +1277,7 @@ class LayersPrescrape:
             for creation in created_records:
                 entity = creation['entity']
                 record = creation['record']
-                status = "CREATED" if self.cfg.apply_changes else "PENDING"
+                status = "CREATED" if (self.cfg.apply_changes or self.cfg.apply_manual) else "PENDING"
                 
                 for field, value in record.items():
                     csv_rows.append([entity, field, str(value), status])
@@ -1294,6 +1339,15 @@ class LayersPrescrape:
         if self.cfg.exclude_entities:
             parts.append(f"exclude: {', '.join(self.cfg.exclude_entities)}")
         return f"({'; '.join(parts)})" if parts else ""
+
+    def _is_manual_field(self, field: str) -> bool:
+        """Check if a field requires manual input."""
+        manual_fields = {
+            'src_url_file',      # URL validation can mark as MANUAL_REQUIRED or URL_DEPRECATED
+            'fields_obj_transform',  # Always manual
+            'source_org',        # Always manual (optional)
+        }
+        return field in manual_fields
     
     def _check_field_health(self, record: Dict[str, Any], entity: str, field: str) -> str:
         """Check field health and return correction value or empty string if healthy.
@@ -1733,7 +1787,9 @@ def build_arg_parser() -> argparse.ArgumentParser:
     
     # Options
     parser.add_argument("--apply", action="store_true", 
-                       help="Apply changes to database (for FILL/CREATE modes)")
+                       help="Apply auto-generated changes to database (for FILL/CREATE modes)")
+    parser.add_argument("--apply-manual", action="store_true", 
+                       help="Apply manual field changes to database (for FILL/CREATE modes)")
     parser.add_argument("--manual-file", default="missing_fields.json",
                        help="Path to manual fields JSON file")
     parser.add_argument("--debug", action="store_true", help="Enable debug logging")
@@ -1780,6 +1836,7 @@ def main():
                 debug=args.debug,
                 generate_csv=args.generate_csv,
                 apply_changes=args.apply,
+                apply_manual=args.apply_manual,
                 manual_file=args.manual_file,
                 fill_all=args.fill_all
             )
@@ -1806,6 +1863,7 @@ def main():
             debug=args.debug,
             generate_csv=args.generate_csv,
             apply_changes=args.apply,
+            apply_manual=args.apply_manual,
             manual_file=args.manual_file,
             fill_all=args.fill_all
         )
