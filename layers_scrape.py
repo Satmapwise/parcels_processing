@@ -406,6 +406,28 @@ def _run_command(command, work_dir, logger):
                     raise SkipEntityError("No new data available from server", layer=None, entity=None)
 
     if process.returncode != 0:
+        # Check for deprecated URL/service errors before general failure
+        error_output = f"{process.stdout}\n{process.stderr}".lower()
+        
+        # Detect deprecated/dead service URLs
+        deprecated_patterns = [
+            'service not started',
+            'could not retrieve layer metadata', 
+            'esridownloaderror',
+            'authentication required',
+            'login required',
+            'service unavailable',
+            'service disabled',
+            'access denied',
+            'unauthorized'
+        ]
+        
+        if any(pattern in error_output for pattern in deprecated_patterns):
+            logger.error(f"Deprecated/inaccessible URL detected for command: {' '.join(command)}")
+            logger.error(f"Error indicators: {process.stderr}")
+            raise DownloadError(f"URL appears to be deprecated or inaccessible: {process.stderr.strip()}", layer=None, entity=None)
+        
+        # General command failure
         logger.error(f"Error executing command: {' '.join(command)}")
         logger.error(f"STDOUT: {process.stdout}")
         logger.error(f"STDERR: {process.stderr}")
@@ -647,6 +669,11 @@ def layer_download(layer: str, entity: str, county: str, city: str, catalog_row:
     if not CONFIG.test_mode:
         try:
             _validate_download(work_dir, logger, before_state)
+            
+            # Additional validation for AGS downloads - check for empty/corrupt files
+            if fmt in {'ags', 'arcgis', 'esri', 'ags_extract'}:
+                _validate_ags_download(work_dir, table_name, logger)
+            
             _debug_main(f"[DOWNLOAD] Download validation passed for {layer}/{entity}", logger)
             _update_csv_status(layer, entity, 'download', 'SUCCESS')
         except DownloadError as de:
@@ -853,6 +880,44 @@ def _get_directory_state(work_dir):
     except OSError:
         pass
     return state
+
+def _validate_ags_download(work_dir, table_name, logger):
+    """Validate AGS download by checking GeoJSON file content."""
+    geojson_file = os.path.join(work_dir, f"{table_name}.geojson")
+    
+    if not os.path.exists(geojson_file):
+        raise DownloadError(f"Expected GeoJSON file not found: {table_name}.geojson", layer=None, entity=None)
+    
+    try:
+        # Check file size (empty or very small files are likely corrupted)
+        file_size = os.path.getsize(geojson_file)
+        if file_size < 100:  # Less than 100 bytes is likely just headers
+            raise DownloadError(f"GeoJSON file appears empty or corrupted (size: {file_size} bytes)", layer=None, entity=None)
+        
+        # Check if it's valid JSON and has features
+        with open(geojson_file, 'r') as f:
+            try:
+                data = json.load(f)
+                
+                # Check basic GeoJSON structure
+                if not isinstance(data, dict) or data.get('type') != 'FeatureCollection':
+                    raise DownloadError("GeoJSON file has invalid structure (not a FeatureCollection)", layer=None, entity=None)
+                
+                # Check if features array exists and has content
+                features = data.get('features', [])
+                if not isinstance(features, list):
+                    raise DownloadError("GeoJSON file has invalid features array", layer=None, entity=None)
+                
+                if len(features) == 0:
+                    raise DownloadError("GeoJSON file contains no features (likely deprecated/inaccessible URL)", layer=None, entity=None)
+                
+                logger.debug(f"AGS validation passed: {len(features)} features found in {table_name}.geojson")
+                
+            except json.JSONDecodeError as e:
+                raise DownloadError(f"GeoJSON file is corrupted (JSON decode error): {e}", layer=None, entity=None)
+                
+    except (OSError, IOError) as e:
+        raise DownloadError(f"Could not read GeoJSON file: {e}", layer=None, entity=None)
 
 def _validate_download(work_dir, logger, before_state=None):
     """Validate that a download occurred by comparing directory state."""
