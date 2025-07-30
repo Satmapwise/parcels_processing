@@ -228,6 +228,18 @@ LAYER_CONFIGS = {
     }
 }
 
+# Layer to layer_group mapping
+LAYER_GROUP_MAP = {
+    'flu': 'flu_zoning',
+    'zoning': 'flu_zoning'
+}
+
+# Layer to category mapping  
+CATEGORY_MAP = {
+    'flu': '08_Land_Use_and_Zoning',
+    'zoning': '08_Land_Use_and_Zoning'
+}
+
 # ---------------------------------------------------------------------------
 # Utility Functions (preserved from layer_standardize_database.py)
 # ---------------------------------------------------------------------------
@@ -394,6 +406,38 @@ def entity_from_title_parse(layer: str, county_from_title: str, city_from_title:
     return entity
 
 # ---------------------------------------------------------------------------
+# Placeholder Helper Functions for Fill Mode
+# ---------------------------------------------------------------------------
+
+def validate_url(url: str) -> bool:
+    """Placeholder function to validate if URL is still valid.
+    
+    TODO: Implement actual URL validation logic
+    """
+    if not url or not url.strip():
+        return False
+    # Placeholder: assume all non-empty URLs are valid for now
+    return True
+
+def get_format_from_url(url: str) -> str:
+    """Placeholder function to determine format from URL.
+    
+    TODO: Implement actual format detection logic
+    """
+    if not url:
+        return ""
+    
+    url_lower = url.lower()
+    if 'arcgis' in url_lower or 'featureserver' in url_lower or 'mapserver' in url_lower:
+        return "AGS"
+    elif url_lower.endswith('.zip') or url_lower.endswith('.shp'):
+        return "SHP"
+    elif url_lower.endswith('.gdb'):
+        return "GDB"
+    else:
+        return "SHP"  # Default assumption
+
+# ---------------------------------------------------------------------------
 # Minimal Manifest Integration (for preprocessing commands only)
 # ---------------------------------------------------------------------------
 
@@ -526,6 +570,7 @@ class Config:
     generate_csv: bool = True
     apply_changes: bool = False  # For fill mode
     manual_file: str = "missing_fields.json"
+    fill_all: bool = False  # Include optional conditions in fill mode
 
 # ---------------------------------------------------------------------------
 # Main Processing Class
@@ -567,7 +612,7 @@ class LayersPrescrape:
             raise ValueError(f"Unknown mode: {self.cfg.mode}")
         
         # Write missing fields JSON if any issues found (fill mode only)
-        if self.missing_fields and self.cfg.mode == "fill":
+        if self.missing_fields and self.cfg.mode in {"fill", "create"}:
             self.logger.info(f"Writing missing field report → {self.cfg.manual_file}")
             with open(self.cfg.manual_file, "w", encoding="utf-8") as fh:
                 json.dump(self.missing_fields, fh, indent=2)
@@ -728,83 +773,102 @@ class LayersPrescrape:
         self.logger.info(f"Detection complete: {', '.join(summary_parts)}")
     
     def _run_fill_mode(self):
-        """Apply manual corrections and auto-derivable fields from JSON."""
-        self.logger.info("Running FILL mode - applying corrections from manual fields file.")
+        """Conduct health checks on records and generate corrections."""
+        mode_desc = "with optional conditions" if self.cfg.fill_all else "core conditions only"
+        self.logger.info(f"Running FILL mode - health checking all records ({mode_desc}).")
         
-        # Load manual corrections
-        if not Path(self.cfg.manual_file).exists():
-            self.logger.error(f"Manual file not found: {self.cfg.manual_file}")
+        # Find all records using same logic as detect mode
+        layer_internal = format_name(self.cfg.layer, 'layer', external=False)
+        layer_external = format_name(self.cfg.layer, 'layer', external=True)
+        
+        sql = """
+            SELECT * FROM m_gis_data_catalog_main 
+            WHERE status IS DISTINCT FROM 'DELETE' 
+            AND (lower(title) LIKE %s OR lower(title) LIKE %s)
+            ORDER BY title
+        """
+        
+        records = self.db.fetchall(sql, (f'%{layer_internal}%', f'%{layer_external.lower()}%'))
+        
+        if not records:
+            self.logger.warning(f"No records found for layer '{self.cfg.layer}'")
             return
         
-        with open(self.cfg.manual_file, 'r') as f:
-            manual_data = json.load(f)
+        self.logger.info(f"Found {len(records)} records for layer '{self.cfg.layer}'")
         
-        if not manual_data:
-            self.logger.warning("No manual data found in file.")
-            return
+        # Group records by entity and filter out duplicates/errors
+        entity_groups = defaultdict(list)
+        for record in records:
+            entity = self._generate_entity_from_record(record)
+            entity_groups[entity].append(record)
         
-        # Process each entity in manual data
-        changes_summary = []
+        # Filter out duplicates and errors
+        valid_records = []
+        skipped_count = 0
         
-        for entity, corrections in manual_data.items():
-            self.logger.debug(f"Processing corrections for {entity}")
+        for entity, records_for_entity in entity_groups.items():
+            if entity == "ERROR":
+                self.logger.debug(f"Skipping ERROR entity with {len(records_for_entity)} unparseable records")
+                skipped_count += len(records_for_entity)
+            elif len(records_for_entity) > 1:
+                self.logger.debug(f"Skipping duplicate entity '{entity}' with {len(records_for_entity)} records")
+                skipped_count += len(records_for_entity)
+            else:
+                valid_records.append((entity, records_for_entity[0]))
+        
+        self.logger.info(f"Processing {len(valid_records)} valid records, skipped {skipped_count} (duplicates/errors)")
+        
+        # Define CSV headers - core conditions + optional conditions
+        core_headers = [
+            "entity", "title", "county", "city", "src_url_file", "format", "download", 
+            "resource", "layer_group", "category", "sys_raw_folder", "table_name", 
+            "fields_obj_transform", "layer_subgroup"
+        ]
+        
+        optional_headers = []
+        if self.cfg.fill_all:
+            optional_headers = ["sub_category", "source_org", "format_subtype"]
+        
+        headers = core_headers + optional_headers
+        
+        # Process each valid record
+        csv_rows = [headers]
+        healthy_counts = {field: 0 for field in headers[1:]}  # Skip 'entity' 
+        total_records = len(valid_records)
+        
+        for entity, record in valid_records:
+            # Conduct health checks and generate corrections
+            row_values = [entity]
             
-            # Find existing record
-            record = self._find_record_by_entity(entity)
-            
-            if not record:
-                self.logger.warning(f"No database record found for {entity} - skipping")
-                continue
-            
-            # Apply corrections
-            updates = {}
-            change_log = []
-            
-            for field, new_value in corrections.items():
-                if new_value and str(new_value) != "MANUAL_REQUIRED":
-                    current_value = record.get(field)
-                    if current_value != new_value:
-                        updates[field] = new_value
-                        change_log.append(f"{field}: '{current_value}' → '{new_value}'")
-            
-            if updates:
-                changes_summary.append({
-                    'entity': entity,
-                    'changes': change_log,
-                    'updates': updates,
-                    'record_id': record.get('gid') or record.get('id')
-                })
+            for field in headers[1:]:
+                correction = self._check_field_health(record, entity, field)
+                row_values.append(correction)
                 
-                # Apply updates if apply flag is set
-                if self.cfg.apply_changes:
-                    self._update_record(record, updates)
-                    self.logger.info(f"Applied {len(updates)} updates to {entity}")
-                else:
-                    self.logger.info(f"Would apply {len(updates)} updates to {entity}")
+                # Count as healthy if no correction needed (empty cell)
+                if not correction:
+                    healthy_counts[field] += 1
+            
+            csv_rows.append(row_values)
         
-        # Generate CSV report of changes
-        if self.cfg.generate_csv and changes_summary:
-            headers = ["entity", "field", "old_value", "new_value", "status"]
-            csv_rows = [headers]
-            
-            for change in changes_summary:
-                entity = change['entity']
-                for change_desc in change['changes']:
-                    field, change_text = change_desc.split(':', 1)
-                    old_val, new_val = change_text.split(' → ', 1)
-                    old_val = old_val.strip().strip("'")
-                    new_val = new_val.strip().strip("'")
-                    
-                    status = "APPLIED" if self.cfg.apply_changes else "PENDING"
-                    csv_rows.append([entity, field.strip(), old_val, new_val, status])
-            
+        # Add summary row
+        csv_rows.append([])
+        summary_row = ["SUMMARY"]
+        for field in headers[1:]:
+            healthy = healthy_counts[field]
+            summary_row.append(f"{healthy}/{total_records}")
+        csv_rows.append(summary_row)
+        
+        # Write CSV report
+        if self.cfg.generate_csv:
             csv_path = REPORTS_DIR / f"{self.cfg.layer}_prescrape_fill_{get_today_str()}.csv"
             with open(csv_path, 'w', newline='', encoding='utf-8') as f:
                 writer = csv.writer(f)
                 writer.writerows(csv_rows)
             self.logger.info(f"Fill report written → {csv_path}")
         
-        self.logger.info(f"Fill complete: {len(changes_summary)} entities processed")
+        # Log summary
+        total_issues = sum(total_records - healthy_counts[field] for field in headers[1:])
+        self.logger.info(f"Fill complete: {len(valid_records)} records checked, {total_issues} total issues found")
     
     def _run_create_mode(self):
         """Create new records based on layer/county/city + manual info."""
@@ -895,6 +959,171 @@ class LayersPrescrape:
         self.logger.info(f"Create complete: {len(created_records)} records processed")
     
     # Helper methods
+    
+    def _check_field_health(self, record: Dict[str, Any], entity: str, field: str) -> str:
+        """Check field health and return correction value or empty string if healthy.
+        
+        Returns:
+            - Empty string if field is healthy
+            - Correction value if field needs fixing (auto-correctable)
+            - "***MISSING***" if field requires manual input
+        """
+        current_value = record.get(field) or ''
+        
+        try:
+            # Parse entity components
+            county, city = split_entity(entity)
+            entity_type = "city" if city not in {"unincorporated", "unified", "incorporated", "countywide"} else city
+            
+            # Handle countywide alias
+            if entity_type == "countywide":
+                entity_type = "unified"
+                city_std = "unified"
+            else:
+                city_std = city
+            
+            # Generate expected values
+            layer_internal = format_name(self.cfg.layer, 'layer', external=False)
+            layer_external = format_name(self.cfg.layer, 'layer', external=True)
+            county_external = format_name(county, 'county', external=True)
+            county_internal = format_name(county, 'county', external=False)
+            city_external = format_name(city_std, 'city', external=True)
+            city_internal = format_name(city_std, 'city', external=False)
+            
+        except ValueError:
+            # If entity parsing fails, can't validate most fields
+            if field in ["src_url_file", "fields_obj_transform", "source_org"]:
+                return "***MISSING***" if not current_value else ""
+            return ""
+        
+        # Field-specific health checks
+        if field == "title":
+            # Check title format: "<layer> - City/Town/Village of <city>" or "<layer> - <county> Unincorporated/Unified"
+            if entity_type == "city":
+                expected = f"{layer_external} - City of {city_external}"
+            elif entity_type == "unincorporated":
+                expected = f"{layer_external} - {county_external} Unincorporated"
+            elif entity_type == "unified":
+                expected = f"{layer_external} - {county_external} Unified"
+            else:
+                expected = f"{layer_external} - {city_external}"
+            
+            return expected if current_value != expected else ""
+        
+        elif field == "county":
+            # Check county field contains proper county in external format
+            expected = county_external
+            return expected if current_value != expected else ""
+        
+        elif field == "city":
+            # Check city field contains proper city in external format
+            expected = city_external
+            return expected if current_value != expected else ""
+        
+        elif field == "src_url_file":
+            # Check URL exists and is valid (MANUAL)
+            if not current_value or not validate_url(current_value):
+                self.missing_fields[entity]["src_url_file"] = "MANUAL_REQUIRED"
+                return "***MISSING***"
+            return ""
+        
+        elif field == "format":
+            # Check format is correct using URL analysis
+            if not current_value:
+                expected = get_format_from_url(record.get('src_url_file') or '')
+                return expected if expected else "***MISSING***"
+            
+            # Validate current format makes sense
+            url = record.get('src_url_file') or ''
+            expected = get_format_from_url(url)
+            if expected and str(current_value).upper() != expected.upper():
+                return expected
+            return ""
+        
+        elif field == "download":
+            # Check download is set to "AUTO"
+            expected = "AUTO"
+            return expected if current_value != expected else ""
+        
+        elif field == "resource":
+            # For non-AGS, check resource matches pattern "/data/<layer>/<county>/<city>"
+            fmt = record.get('format') or ''
+            if str(fmt).upper() != 'AGS':
+                expected = f"/data/{layer_internal}/{county_internal}/{city_internal}"
+                return expected if current_value != expected else ""
+            return ""  # AGS doesn't need resource field
+        
+        elif field == "layer_group":
+            # Check layer_group is correct using mapping
+            expected = LAYER_GROUP_MAP.get(self.cfg.layer, '')
+            return expected if current_value != expected else ""
+        
+        elif field == "category":
+            # Check category is correct using mapping
+            expected = CATEGORY_MAP.get(self.cfg.layer, '')
+            return expected if current_value != expected else ""
+        
+        elif field == "sys_raw_folder":
+            # Check sys_raw_folder matches pattern and create directory
+            layer_group = LAYER_GROUP_MAP.get(self.cfg.layer, 'flu_zoning')
+            expected = f"/srv/datascrub/{layer_group}/{layer_internal}/florida/county/{county_internal}/current/source_data/{city_internal}"
+            
+            # Create directory if it doesn't exist
+            try:
+                Path(expected).mkdir(parents=True, exist_ok=True)
+            except Exception as e:
+                self.logger.debug(f"Could not create directory {expected}: {e}")
+            
+            return expected if current_value != expected else ""
+        
+        elif field == "table_name":
+            # Check table_name matches pattern
+            if entity_type == "city":
+                expected = f"{layer_internal}_{city_internal}"
+            else:
+                expected = f"{layer_internal}_{county_internal}_{entity_type}"
+            
+            return expected if current_value != expected else ""
+        
+        elif field == "fields_obj_transform":
+            # Check fields_obj_transform exists and matches pattern (MANUAL)
+            if not current_value or not self._is_valid_transform_pattern(current_value):
+                self.missing_fields[entity]["fields_obj_transform"] = "MANUAL_REQUIRED"
+                return "***MISSING***"
+            return ""
+        
+        elif field == "layer_subgroup":
+            # Check layer_subgroup has layer in internal format
+            expected = layer_internal
+            return expected if current_value != expected else ""
+        
+        # Optional conditions (only checked with --fill-all)
+        elif field == "sub_category":
+            # TODO: Implement sub_category pattern checking
+            return ""  # Placeholder
+        
+        elif field == "source_org":
+            # Check source_org has value (MANUAL)
+            if not current_value:
+                self.missing_fields[entity]["source_org"] = "MANUAL_REQUIRED"
+                return "***MISSING***"
+            return ""
+        
+        elif field == "format_subtype":
+            # TODO: Implement format_subtype pattern checking
+            return ""  # Placeholder
+        
+        else:
+            # Unknown field
+            return ""
+    
+    def _is_valid_transform_pattern(self, value: str) -> bool:
+        """Check if fields_obj_transform matches expected pattern: '<key>: <value>'"""
+        if not value or not value.strip():
+            return False
+        
+        # Simple pattern check: should contain at least one colon
+        return ':' in value
     
     def _generate_entity_from_record(self, record: Dict[str, Any]) -> str:
         """Generate entity name from database record title and fields.
@@ -1084,6 +1313,8 @@ def build_arg_parser() -> argparse.ArgumentParser:
     parser.add_argument("--manual-file", default="missing_fields.json",
                        help="Path to manual fields JSON file")
     parser.add_argument("--debug", action="store_true", help="Enable debug logging")
+    parser.add_argument("--fill-all", action="store_true",
+                       help="Include optional conditions in FILL mode")
     parser.add_argument("--no-csv", dest="generate_csv", action="store_false",
                        help="Skip CSV report generation")
     
@@ -1109,7 +1340,8 @@ def main():
         debug=args.debug,
         generate_csv=args.generate_csv,
         apply_changes=args.apply,
-        manual_file=args.manual_file
+        manual_file=args.manual_file,
+        fill_all=args.fill_all
     )
     
     # Run the processor

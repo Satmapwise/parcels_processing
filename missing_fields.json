@@ -1,532 +1,456 @@
 {
-  "alachua_alachua": {
-    "county": "Alachua"
-  },
-  "alachua_archer": {
-    "county": "Alachua"
-  },
-  "alachua_gainesville": {
-    "county": "Alachua"
-  },
-  "alachua_hawthorne": {
-    "county": "Alachua"
-  },
-  "alachua_high_springs": {
-    "county": "Alachua"
-  },
-  "alachua_lacrosse": {
-    "county": "Alachua"
-  },
-  "alachua_micanopy": {
-    "county": "Alachua"
-  },
-  "alachua_newberry": {
-    "county": "Alachua"
-  },
   "alachua_unincorporated": {
-    "county": "Alachua"
-  },
-  "alachua_waldo": {
-    "county": "Alachua"
+    "fields_obj_transform": "MANUAL_REQUIRED"
   },
   "baker_unincorporated": {
-    "county": "Baker",
-    "city": "Unincorporated"
+    "fields_obj_transform": "MANUAL_REQUIRED"
   },
   "bay_unincorporated": {
-    "county": "Bay"
-  },
-  "brevard_melbourne": {
-    "county": "Brevard"
-  },
-  "brevard_palm_bay": {
-    "county": "Brevard"
-  },
-  "brevard_titusville": {
-    "county": "Brevard"
+    "fields_obj_transform": "MANUAL_REQUIRED"
   },
   "brevard_unincorporated": {
-    "county": "Brevard"
+    "fields_obj_transform": "MANUAL_REQUIRED"
   },
   "broward_unified": {
-    "county": "Broward",
-    "city": "Unified"
-  },
-  "broward_unincorporated": {
-    "layer_subgroup": "zoning",
-    "county": "broward",
-    "city": "Unincorporated",
-    "format": "MANUAL_REQUIRED",
-    "resource_or_table_name": "MANUAL_REQUIRED"
+    "fields_obj_transform": "MANUAL_REQUIRED"
   },
   "charlotte_unincorporated": {
-    "county": "Charlotte"
+    "fields_obj_transform": "MANUAL_REQUIRED"
   },
   "citrus_unincorporated": {
-    "layer_subgroup": "zoning",
-    "county": "citrus",
-    "city": "Unincorporated",
-    "format": "MANUAL_REQUIRED",
-    "resource_or_table_name": "MANUAL_REQUIRED"
+    "fields_obj_transform": "MANUAL_REQUIRED"
   },
-  "clay_unincorporated": {
-    "county": "Clay"
-  },
-  "collier_marco_island": {
-    "county": "Collier"
-  },
-  "collier_naples": {
-    "county": "Collier"
-  },
-  "collier_unincorporated": {
-    "county": "Collier"
-  },
-  "columbia_unincorporated": {
-    "layer_subgroup": "zoning",
-    "county": "columbia",
-    "city": "Unincorporated",
-    "format": "MANUAL_REQUIRED",
-    "resource_or_table_name": "MANUAL_REQUIRED"
-  },
-  "duval_unified": {
-    "county": "Duval",
-    "city": "Unified"
-  },
-  "escambia_unincorporated": {
-    "layer_subgroup": "zoning",
-    "county": "escambia",
-    "city": "Unincorporated",
-    "format": "MANUAL_REQUIRED",
-    "resource_or_table_name": "MANUAL_REQUIRED"
-  },
-  "flagler_unincorporated": {
-    "county": "Flagler"
-  },
-  "hernando_brooksville": {
-    "county": "Hernando"
-  },
-  "hernando_unincorporated": {
-    "county": "Hernando"
-  },
-  "highlands_unincorporated": {
-    "county": "Highlands"
-  },
-  "hillsborough_plant_city": {
-    "county": "Hillsborough"
-  },
-  "hillsborough_tampa": {
-    "county": "Hillsborough"
-  },
-  "hillsborough_temple_terrace": {
-    "format": "MANUAL_REQUIRED",
-    "county": "Hillsborough"
-  },
-  "hillsborough_unincorporated": {
-    "county": "Hillsborough"
-  },
-  "indian_river_unincorporated": {
-    "county": "Indian River"
-  },
-  "indian_river_vero_beach": {
-    "county": "Indian River"
-  },
-  "lake_astatula": {
-    "county": "Lake"
-  },
-  "lake_clermont": {
-    "county": "Lake"
-  },
-  "lake_eustis": {
-    "layer_subgroup": "zoning",
-    "format": "MANUAL_REQUIRED",
-    "county": "Lake"
-  },
-  "lake_fruitland_park": {
-    "county": "Lake"
-  },
-  "lake_groveland": {
-    "county": "Lake"
-  },
-  "lake_howey_in_the_hills": {
-    "layer_subgroup": "zoning",
-    "county": "lake",
-    "city": "Howey-in-the-Hills",
-    "format": "MANUAL_REQUIRED",
-    "resource_or_table_name": "MANUAL_REQUIRED"
-  },
-  "lake_lady_lake": {
-    "layer_subgroup": "zoning",
-    "county": "lake",
-    "city": "Lady Lake",
-    "format": "MANUAL_REQUIRED",
-    "resource_or_table_name": "MANUAL_REQUIRED"
-  },
-  "lake_leesburg": {
-    "county": "Lake"
-  },
-  "lake_mascotte": {
-    "county": "Lake"
-  },
-  "lake_minneola": {
-    "county": "Lake"
-  },
-  "lake_montverde": {
-    "layer_subgroup": "zoning",
-    "county": "lake",
-    "city": "Montverde",
-    "format": "MANUAL_REQUIRED",
-    "resource_or_table_name": "MANUAL_REQUIRED"
-  },
-  "lake_mount_dora": {
-    "county": "Lake"
-  },
-  "lake_tavares": {
-    "county": "Lake"
-  },
-  "lake_umatilla": {
-    "county": "Lake"
-  },
-  "lake_unincorporated": {
-    "county": "Lake"
-  },
-  "lee_cape_coral": {
-    "county": "Lee"
-  },
-  "lee_fort_myers": {
-    "county": "Lee"
-  },
-  "lee_fort_myers_beach": {
-    "layer_subgroup": "zoning",
-    "format": "MANUAL_REQUIRED",
-    "county": "Lee",
-    "table_name": "zoning_fort_myers_beach"
-  },
-  "lee_unincorporated": {
-    "county": "Lee"
-  },
-  "leon_unified": {
-    "county": "Leon"
-  },
-  "manatee_unincorporated": {
-    "county": "Manatee"
-  },
-  "marion_ocala": {
-    "format": "MANUAL_REQUIRED",
-    "county": "Marion"
-  },
-  "marion_unincorporated": {
-    "county": "Marion"
-  },
-  "martin_stuart": {
-    "county": "Martin"
-  },
-  "martin_unincorporated": {
-    "county": "Martin"
-  },
-  "miami_dade_incorporated": {
-    "layer_subgroup": "zoning",
-    "county": "Miami-Dade",
-    "city": "Incorporated",
-    "sys_raw_folder": "/srv/datascrub/08_Land_Use_and_Zoning/zoning/florida/county/miami_dade/current/source_data/incorporated"
-  },
-  "miami_dade_unincorporated": {
-    "county": "Miami-Dade"
-  },
-  "nassau_unincorporated": {
-    "county": "Nassau"
-  },
-  "okaloosa_unincorporated": {
-    "county": "Okaloosa"
-  },
-  "orange_apopka": {
-    "county": "Orange"
-  },
-  "orange_belle_isle": {
-    "layer_subgroup": "zoning",
-    "county": "Orange",
-    "table_name": "zoning_belle_isle"
-  },
-  "orange_eatonville": {
-    "county": "Orange"
-  },
-  "orange_edgewood": {
-    "layer_subgroup": "zoning",
-    "county": "Orange"
-  },
-  "orange_maitland": {
-    "layer_subgroup": "zoning",
-    "county": "Orange"
-  },
-  "orange_ocoee": {
-    "county": "Orange"
-  },
-  "orange_orlando": {
-    "county": "Orange"
-  },
-  "orange_unincorporated": {
-    "county": "Orange"
-  },
-  "orange_windermere": {
-    "layer_subgroup": "zoning",
-    "county": "Orange"
-  },
-  "orange_winter_garden": {
-    "layer_subgroup": "zoning",
-    "county": "Orange",
-    "table_name": "zoning_winter_garden"
-  },
-  "orange_winter_park": {
-    "layer_subgroup": "zoning",
-    "county": "Orange",
-    "table_name": "zoning_winter_park"
-  },
-  "osceola_kissimmee": {
-    "county": "Osceola"
-  },
-  "osceola_st_cloud": {
-    "layer_subgroup": "zoning",
-    "county": "osceola",
-    "city": "St. Cloud",
-    "format": "MANUAL_REQUIRED",
-    "resource_or_table_name": "MANUAL_REQUIRED"
-  },
-  "osceola_unincorporated": {
-    "county": "Osceola"
-  },
-  "palm_beach_unified": {
-    "county": "Palm Beach"
-  },
-  "pasco_dade_city": {
-    "layer_subgroup": "zoning",
-    "format": "MANUAL_REQUIRED",
-    "county": "Pasco",
-    "table_name": "zoning_dade_city"
-  },
-  "pasco_new_port_richey": {
-    "layer_subgroup": "zoning",
-    "format": "MANUAL_REQUIRED",
-    "county": "Pasco",
-    "table_name": "zoning_new_port_richey"
-  },
-  "pasco_port_richey": {
-    "layer_subgroup": "zoning",
-    "format": "MANUAL_REQUIRED",
-    "county": "Pasco",
-    "table_name": "zoning_port_richey"
-  },
-  "pasco_saint_leo": {
-    "layer_subgroup": "zoning",
-    "county": "pasco",
-    "city": "Saint Leo",
-    "format": "MANUAL_REQUIRED",
-    "resource_or_table_name": "MANUAL_REQUIRED"
-  },
-  "pasco_san_antonio": {
-    "layer_subgroup": "zoning",
-    "format": "MANUAL_REQUIRED",
-    "county": "Pasco",
-    "table_name": "zoning_san_antonio",
-    "sys_raw_folder": "/srv/datascrub/08_Land_Use_and_Zoning/zoning/florida/county/pasco/current/source_data/san_antonio"
-  },
-  "pasco_unincorporated": {
-    "county": "Pasco"
-  },
-  "pasco_zephyrhills": {
-    "layer_subgroup": "zoning",
-    "format": "MANUAL_REQUIRED",
-    "county": "Pasco"
-  },
-  "pinellas_bellair": {
-    "county": "Pinellas"
-  },
-  "pinellas_bellair_beach": {
-    "layer_subgroup": "zoning",
-    "county": "Pinellas",
-    "table_name": "zoning_bellair_beach"
-  },
-  "pinellas_bellair_bluffs": {
-    "layer_subgroup": "zoning",
-    "county": "Pinellas",
-    "table_name": "zoning_bellair_bluffs"
-  },
-  "pinellas_bellair_shore": {
-    "layer_subgroup": "zoning",
-    "county": "Pinellas",
-    "table_name": "zoning_bellair_shore"
-  },
-  "pinellas_clearwater": {
-    "county": "Pinellas"
-  },
-  "pinellas_dunedin": {
-    "county": "Pinellas"
-  },
-  "pinellas_indian_rocks_beach": {
-    "county": "Pinellas"
-  },
-  "pinellas_indian_shores": {
-    "county": "Pinellas"
-  },
-  "pinellas_kenneth_city": {
-    "county": "Pinellas"
-  },
-  "pinellas_largo": {
-    "layer_subgroup": "zoning",
-    "county": "Pinellas"
-  },
-  "pinellas_madeira_beach": {
-    "county": "Pinellas"
-  },
-  "pinellas_north_redington_beach": {
-    "county": "Pinellas"
-  },
-  "pinellas_pinellas_park": {
-    "county": "Pinellas"
-  },
-  "pinellas_redington_shores": {
-    "county": "Pinellas"
-  },
-  "pinellas_safety_harbor": {
-    "layer_subgroup": "zoning",
-    "county": "Pinellas",
-    "table_name": "zoning_safety_harbor"
-  },
-  "pinellas_seminole": {
-    "county": "Pinellas"
-  },
-  "pinellas_south_pasadena": {
-    "county": "Pinellas"
-  },
-  "pinellas_st_pete_beach": {
-    "layer_subgroup": "zoning",
-    "county": "pinellas",
-    "city": "St. Pete Beach",
-    "format": "MANUAL_REQUIRED",
-    "resource_or_table_name": "MANUAL_REQUIRED"
-  },
-  "pinellas_st_petersburg": {
-    "layer_subgroup": "zoning",
-    "county": "pinellas",
-    "city": "St. Petersburg",
-    "format": "MANUAL_REQUIRED",
-    "resource_or_table_name": "MANUAL_REQUIRED"
-  },
-  "pinellas_tarpon_springs": {
-    "layer_subgroup": "zoning",
-    "county": "Pinellas",
-    "table_name": "zoning_tarpon_springs"
-  },
-  "pinellas_treasure_island": {
-    "county": "Pinellas"
-  },
-  "pinellas_unincorporated": {
-    "county": "Pinellas"
-  },
-  "polk_lakeland": {
-    "county": "Polk"
-  },
-  "putnam_unincorporated": {
-    "county": "Putnam"
-  },
-  "santa_rosa_unincorporated": {
-    "county": "Santa Rosa"
-  },
-  "sarasota_longboat_key": {
-    "layer_subgroup": "zoning",
-    "format": "MANUAL_REQUIRED",
-    "county": "Sarasota",
-    "table_name": "zoning_longboat_key"
-  },
-  "sarasota_north_port": {
-    "county": "Sarasota"
-  },
-  "sarasota_sarasota": {
-    "county": "Sarasota"
-  },
-  "sarasota_unincorporated": {
-    "county": "Sarasota"
-  },
-  "sarasota_venice": {
-    "county": "Sarasota"
+  "alachua_alachua": {
+    "fields_obj_transform": "MANUAL_REQUIRED"
   },
   "seminole_altamonte_springs": {
-    "county": "Seminole"
+    "fields_obj_transform": "MANUAL_REQUIRED"
+  },
+  "orange_apopka": {
+    "fields_obj_transform": "MANUAL_REQUIRED"
+  },
+  "alachua_archer": {
+    "fields_obj_transform": "MANUAL_REQUIRED"
+  },
+  "lake_astatula": {
+    "fields_obj_transform": "MANUAL_REQUIRED"
+  },
+  "pinellas_bellair": {
+    "fields_obj_transform": "MANUAL_REQUIRED"
+  },
+  "pinellas_bellair_beach": {
+    "src_url_file": "MANUAL_REQUIRED",
+    "fields_obj_transform": "MANUAL_REQUIRED",
+    "source_org": "MANUAL_REQUIRED"
+  },
+  "pinellas_bellair_bluffs": {
+    "src_url_file": "MANUAL_REQUIRED",
+    "fields_obj_transform": "MANUAL_REQUIRED",
+    "source_org": "MANUAL_REQUIRED"
+  },
+  "pinellas_bellair_shore": {
+    "src_url_file": "MANUAL_REQUIRED",
+    "fields_obj_transform": "MANUAL_REQUIRED",
+    "source_org": "MANUAL_REQUIRED"
+  },
+  "orange_belle_isle": {
+    "src_url_file": "MANUAL_REQUIRED",
+    "fields_obj_transform": "MANUAL_REQUIRED",
+    "source_org": "MANUAL_REQUIRED"
+  },
+  "manatee_bradenton": {
+    "fields_obj_transform": "MANUAL_REQUIRED"
+  },
+  "hernando_brooksville": {
+    "fields_obj_transform": "MANUAL_REQUIRED"
+  },
+  "lee_cape_coral": {
+    "fields_obj_transform": "MANUAL_REQUIRED"
   },
   "seminole_casselberry": {
-    "county": "Seminole"
+    "fields_obj_transform": "MANUAL_REQUIRED"
   },
-  "seminole_lake_mary": {
-    "county": "Seminole"
+  "pinellas_clearwater": {
+    "fields_obj_transform": "MANUAL_REQUIRED"
   },
-  "seminole_longwood": {
-    "county": "Seminole"
+  "lake_clermont": {
+    "fields_obj_transform": "MANUAL_REQUIRED"
   },
-  "seminole_oviedo": {
-    "county": "Seminole"
-  },
-  "seminole_sanford": {
-    "county": "Seminole"
-  },
-  "seminole_unincorporated": {
-    "county": "Seminole"
-  },
-  "seminole_winter_springs": {
-    "county": "Seminole"
-  },
-  "st_johns_unincorporated": {
-    "layer_subgroup": "zoning",
-    "county": "st johns",
-    "city": "Unincorporated",
-    "format": "MANUAL_REQUIRED",
-    "resource_or_table_name": "MANUAL_REQUIRED"
-  },
-  "st_lucie_port_st_lucie": {
-    "layer_subgroup": "zoning",
-    "county": "st lucie",
-    "city": "Port St. Lucie",
-    "format": "MANUAL_REQUIRED",
-    "resource_or_table_name": "MANUAL_REQUIRED"
-  },
-  "st_lucie_unincorporated": {
-    "layer_subgroup": "zoning",
-    "county": "st lucie",
-    "city": "Unincorporated",
-    "format": "MANUAL_REQUIRED",
-    "resource_or_table_name": "MANUAL_REQUIRED"
-  },
-  "sumter_unincorporated": {
-    "county": "Sumter"
-  },
-  "volusia_countywide": {
-    "layer_subgroup": "zoning",
-    "county": "volusia",
-    "city": "Countywide",
-    "format": "MANUAL_REQUIRED",
-    "resource_or_table_name": "MANUAL_REQUIRED"
+  "pasco_dade_city": {
+    "src_url_file": "MANUAL_REQUIRED",
+    "fields_obj_transform": "MANUAL_REQUIRED"
   },
   "volusia_daytona_beach": {
-    "county": "Volusia"
+    "fields_obj_transform": "MANUAL_REQUIRED"
   },
   "volusia_deltona": {
-    "layer_subgroup": "zoning",
-    "format": "MANUAL_REQUIRED",
-    "county": "Volusia"
+    "src_url_file": "MANUAL_REQUIRED",
+    "fields_obj_transform": "MANUAL_REQUIRED",
+    "source_org": "MANUAL_REQUIRED"
   },
-  "volusia_port_orange": {
-    "layer_subgroup": "zoning",
-    "county": "volusia",
-    "city": "Port Orange",
-    "format": "MANUAL_REQUIRED",
-    "resource_or_table_name": "MANUAL_REQUIRED"
+  "pinellas_dunedin": {
+    "fields_obj_transform": "MANUAL_REQUIRED"
+  },
+  "orange_eatonville": {
+    "fields_obj_transform": "MANUAL_REQUIRED"
+  },
+  "orange_edgewood": {
+    "src_url_file": "MANUAL_REQUIRED",
+    "fields_obj_transform": "MANUAL_REQUIRED",
+    "source_org": "MANUAL_REQUIRED"
+  },
+  "lake_eustis": {
+    "src_url_file": "MANUAL_REQUIRED",
+    "fields_obj_transform": "MANUAL_REQUIRED"
+  },
+  "lee_fort_myers": {
+    "fields_obj_transform": "MANUAL_REQUIRED"
+  },
+  "lee_fort_myers_beach": {
+    "src_url_file": "MANUAL_REQUIRED",
+    "fields_obj_transform": "MANUAL_REQUIRED",
+    "source_org": "MANUAL_REQUIRED"
+  },
+  "lake_fruitland_park": {
+    "fields_obj_transform": "MANUAL_REQUIRED"
+  },
+  "alachua_gainesville": {
+    "fields_obj_transform": "MANUAL_REQUIRED"
+  },
+  "lake_groveland": {
+    "fields_obj_transform": "MANUAL_REQUIRED"
+  },
+  "alachua_hawthorne": {
+    "fields_obj_transform": "MANUAL_REQUIRED"
+  },
+  "alachua_high_springs": {
+    "fields_obj_transform": "MANUAL_REQUIRED"
+  },
+  "pinellas_indian_rocks_beach": {
+    "fields_obj_transform": "MANUAL_REQUIRED"
+  },
+  "pinellas_indian_shores": {
+    "fields_obj_transform": "MANUAL_REQUIRED"
+  },
+  "pinellas_kenneth_city": {
+    "fields_obj_transform": "MANUAL_REQUIRED"
+  },
+  "osceola_kissimmee": {
+    "fields_obj_transform": "MANUAL_REQUIRED"
+  },
+  "alachua_lacrosse": {
+    "fields_obj_transform": "MANUAL_REQUIRED"
+  },
+  "polk_lakeland": {
+    "fields_obj_transform": "MANUAL_REQUIRED"
+  },
+  "seminole_lake_mary": {
+    "fields_obj_transform": "MANUAL_REQUIRED"
+  },
+  "pinellas_largo": {
+    "src_url_file": "MANUAL_REQUIRED",
+    "fields_obj_transform": "MANUAL_REQUIRED",
+    "source_org": "MANUAL_REQUIRED"
+  },
+  "lake_leesburg": {
+    "fields_obj_transform": "MANUAL_REQUIRED"
+  },
+  "sarasota_longboat_key": {
+    "src_url_file": "MANUAL_REQUIRED",
+    "fields_obj_transform": "MANUAL_REQUIRED",
+    "source_org": "MANUAL_REQUIRED"
+  },
+  "seminole_longwood": {
+    "fields_obj_transform": "MANUAL_REQUIRED"
+  },
+  "pinellas_madeira_beach": {
+    "fields_obj_transform": "MANUAL_REQUIRED"
+  },
+  "orange_maitland": {
+    "src_url_file": "MANUAL_REQUIRED",
+    "fields_obj_transform": "MANUAL_REQUIRED",
+    "source_org": "MANUAL_REQUIRED"
+  },
+  "collier_marco_island": {
+    "fields_obj_transform": "MANUAL_REQUIRED"
+  },
+  "lake_mascotte": {
+    "fields_obj_transform": "MANUAL_REQUIRED"
+  },
+  "brevard_melbourne": {
+    "fields_obj_transform": "MANUAL_REQUIRED"
+  },
+  "alachua_micanopy": {
+    "fields_obj_transform": "MANUAL_REQUIRED"
+  },
+  "lake_minneola": {
+    "fields_obj_transform": "MANUAL_REQUIRED"
+  },
+  "lake_mount_dora": {
+    "fields_obj_transform": "MANUAL_REQUIRED"
+  },
+  "collier_naples": {
+    "fields_obj_transform": "MANUAL_REQUIRED"
+  },
+  "alachua_newberry": {
+    "fields_obj_transform": "MANUAL_REQUIRED"
+  },
+  "pasco_new_port_richey": {
+    "src_url_file": "MANUAL_REQUIRED",
+    "fields_obj_transform": "MANUAL_REQUIRED",
+    "source_org": "MANUAL_REQUIRED"
+  },
+  "sarasota_north_port": {
+    "fields_obj_transform": "MANUAL_REQUIRED"
+  },
+  "pinellas_north_redington_beach": {
+    "fields_obj_transform": "MANUAL_REQUIRED"
+  },
+  "marion_ocala": {
+    "fields_obj_transform": "MANUAL_REQUIRED"
+  },
+  "orange_ocoee": {
+    "fields_obj_transform": "MANUAL_REQUIRED"
+  },
+  "orange_orlando": {
+    "fields_obj_transform": "MANUAL_REQUIRED"
+  },
+  "seminole_oviedo": {
+    "fields_obj_transform": "MANUAL_REQUIRED",
+    "source_org": "MANUAL_REQUIRED"
+  },
+  "brevard_palm_bay": {
+    "fields_obj_transform": "MANUAL_REQUIRED"
+  },
+  "pinellas_pinellas_park": {
+    "fields_obj_transform": "MANUAL_REQUIRED"
+  },
+  "hillsborough_plant_city": {
+    "fields_obj_transform": "MANUAL_REQUIRED",
+    "source_org": "MANUAL_REQUIRED"
+  },
+  "pasco_port_richey": {
+    "src_url_file": "MANUAL_REQUIRED",
+    "fields_obj_transform": "MANUAL_REQUIRED"
+  },
+  "st_lucie_port_st_lucie": {
+    "fields_obj_transform": "MANUAL_REQUIRED"
+  },
+  "charlotte_punta_gorda": {
+    "src_url_file": "MANUAL_REQUIRED",
+    "fields_obj_transform": "MANUAL_REQUIRED"
+  },
+  "pinellas_redington_shores": {
+    "fields_obj_transform": "MANUAL_REQUIRED"
+  },
+  "pinellas_safety_harbor": {
+    "src_url_file": "MANUAL_REQUIRED",
+    "fields_obj_transform": "MANUAL_REQUIRED",
+    "source_org": "MANUAL_REQUIRED"
+  },
+  "pasco_san_antonio": {
+    "src_url_file": "MANUAL_REQUIRED",
+    "fields_obj_transform": "MANUAL_REQUIRED"
+  },
+  "seminole_sanford": {
+    "fields_obj_transform": "MANUAL_REQUIRED"
+  },
+  "sarasota_sarasota": {
+    "fields_obj_transform": "MANUAL_REQUIRED"
+  },
+  "pinellas_seminole": {
+    "fields_obj_transform": "MANUAL_REQUIRED"
+  },
+  "pinellas_south_pasadena": {
+    "fields_obj_transform": "MANUAL_REQUIRED"
+  },
+  "osceola_st_cloud": {
+    "fields_obj_transform": "MANUAL_REQUIRED"
+  },
+  "pinellas_st_pete_beach": {
+    "src_url_file": "MANUAL_REQUIRED",
+    "fields_obj_transform": "MANUAL_REQUIRED",
+    "source_org": "MANUAL_REQUIRED"
+  },
+  "pinellas_st_petersburg": {
+    "fields_obj_transform": "MANUAL_REQUIRED"
+  },
+  "martin_stuart": {
+    "fields_obj_transform": "MANUAL_REQUIRED"
+  },
+  "hillsborough_tampa": {
+    "fields_obj_transform": "MANUAL_REQUIRED"
+  },
+  "pinellas_tarpon_springs": {
+    "src_url_file": "MANUAL_REQUIRED",
+    "fields_obj_transform": "MANUAL_REQUIRED",
+    "source_org": "MANUAL_REQUIRED"
+  },
+  "lake_tavares": {
+    "fields_obj_transform": "MANUAL_REQUIRED"
+  },
+  "hillsborough_temple_terrace": {
+    "src_url_file": "MANUAL_REQUIRED",
+    "fields_obj_transform": "MANUAL_REQUIRED"
+  },
+  "brevard_titusville": {
+    "fields_obj_transform": "MANUAL_REQUIRED"
+  },
+  "pinellas_treasure_island": {
+    "fields_obj_transform": "MANUAL_REQUIRED"
+  },
+  "lake_umatilla": {
+    "fields_obj_transform": "MANUAL_REQUIRED"
+  },
+  "sarasota_venice": {
+    "fields_obj_transform": "MANUAL_REQUIRED"
+  },
+  "indian_river_vero_beach": {
+    "fields_obj_transform": "MANUAL_REQUIRED"
+  },
+  "alachua_waldo": {
+    "fields_obj_transform": "MANUAL_REQUIRED"
+  },
+  "orange_windermere": {
+    "src_url_file": "MANUAL_REQUIRED",
+    "fields_obj_transform": "MANUAL_REQUIRED",
+    "source_org": "MANUAL_REQUIRED"
+  },
+  "orange_winter_garden": {
+    "src_url_file": "MANUAL_REQUIRED",
+    "fields_obj_transform": "MANUAL_REQUIRED",
+    "source_org": "MANUAL_REQUIRED"
+  },
+  "orange_winter_park": {
+    "src_url_file": "MANUAL_REQUIRED",
+    "fields_obj_transform": "MANUAL_REQUIRED",
+    "source_org": "MANUAL_REQUIRED"
+  },
+  "seminole_winter_springs": {
+    "fields_obj_transform": "MANUAL_REQUIRED"
+  },
+  "pasco_zephyrhills": {
+    "src_url_file": "MANUAL_REQUIRED",
+    "fields_obj_transform": "MANUAL_REQUIRED"
+  },
+  "clay_unincorporated": {
+    "fields_obj_transform": "MANUAL_REQUIRED"
+  },
+  "collier_unincorporated": {
+    "fields_obj_transform": "MANUAL_REQUIRED"
+  },
+  "columbia_unincorporated": {
+    "src_url_file": "MANUAL_REQUIRED",
+    "fields_obj_transform": "MANUAL_REQUIRED"
+  },
+  "duval_unified": {
+    "fields_obj_transform": "MANUAL_REQUIRED"
+  },
+  "escambia_unincorporated": {
+    "fields_obj_transform": "MANUAL_REQUIRED"
+  },
+  "flagler_unincorporated": {
+    "fields_obj_transform": "MANUAL_REQUIRED"
+  },
+  "hernando_unincorporated": {
+    "fields_obj_transform": "MANUAL_REQUIRED"
+  },
+  "highlands_unincorporated": {
+    "fields_obj_transform": "MANUAL_REQUIRED"
+  },
+  "hillsborough_unincorporated": {
+    "fields_obj_transform": "MANUAL_REQUIRED"
+  },
+  "indian_river_unincorporated": {
+    "fields_obj_transform": "MANUAL_REQUIRED"
+  },
+  "lake_unincorporated": {
+    "fields_obj_transform": "MANUAL_REQUIRED"
+  },
+  "lee_unincorporated": {
+    "fields_obj_transform": "MANUAL_REQUIRED"
+  },
+  "leon_unified": {
+    "fields_obj_transform": "MANUAL_REQUIRED"
+  },
+  "manatee_unincorporated": {
+    "fields_obj_transform": "MANUAL_REQUIRED"
+  },
+  "marion_unincorporated": {
+    "fields_obj_transform": "MANUAL_REQUIRED"
+  },
+  "martin_unincorporated": {
+    "fields_obj_transform": "MANUAL_REQUIRED"
+  },
+  "miami_dade_incorporated": {
+    "fields_obj_transform": "MANUAL_REQUIRED"
+  },
+  "miami_dade_unincorporated": {
+    "fields_obj_transform": "MANUAL_REQUIRED"
+  },
+  "nassau_unincorporated": {
+    "fields_obj_transform": "MANUAL_REQUIRED"
+  },
+  "okaloosa_unincorporated": {
+    "fields_obj_transform": "MANUAL_REQUIRED"
+  },
+  "orange_unincorporated": {
+    "fields_obj_transform": "MANUAL_REQUIRED"
+  },
+  "osceola_unincorporated": {
+    "fields_obj_transform": "MANUAL_REQUIRED"
+  },
+  "palm_beach_unified": {
+    "fields_obj_transform": "MANUAL_REQUIRED"
+  },
+  "pasco_unincorporated": {
+    "fields_obj_transform": "MANUAL_REQUIRED"
+  },
+  "pinellas_unincorporated": {
+    "fields_obj_transform": "MANUAL_REQUIRED"
+  },
+  "putnam_unincorporated": {
+    "fields_obj_transform": "MANUAL_REQUIRED"
+  },
+  "santa_rosa_unincorporated": {
+    "fields_obj_transform": "MANUAL_REQUIRED"
+  },
+  "sarasota_unincorporated": {
+    "fields_obj_transform": "MANUAL_REQUIRED"
+  },
+  "seminole_unincorporated": {
+    "fields_obj_transform": "MANUAL_REQUIRED"
+  },
+  "st_johns_unincorporated": {
+    "fields_obj_transform": "MANUAL_REQUIRED"
+  },
+  "st_lucie_unincorporated": {
+    "fields_obj_transform": "MANUAL_REQUIRED"
+  },
+  "sumter_unincorporated": {
+    "fields_obj_transform": "MANUAL_REQUIRED"
+  },
+  "lake_howey_in_the_hills": {
+    "fields_obj_transform": "MANUAL_REQUIRED"
+  },
+  "lake_lady_lake": {
+    "src_url_file": "MANUAL_REQUIRED",
+    "fields_obj_transform": "MANUAL_REQUIRED"
+  },
+  "lake_montverde": {
+    "fields_obj_transform": "MANUAL_REQUIRED"
+  },
+  "pasco_saint_leo": {
+    "src_url_file": "MANUAL_REQUIRED",
+    "fields_obj_transform": "MANUAL_REQUIRED"
+  },
+  "volusia_countywide": {
+    "fields_obj_transform": "MANUAL_REQUIRED"
   },
   "volusia_unincorporated": {
-    "layer_subgroup": "zoning",
-    "county": "Volusia"
+    "fields_obj_transform": "MANUAL_REQUIRED"
   },
   "walton_unincorporated": {
-    "layer_subgroup": "zoning",
-    "county": "walton",
-    "city": "Unincorporated",
-    "format": "MANUAL_REQUIRED",
-    "resource_or_table_name": "MANUAL_REQUIRED"
+    "fields_obj_transform": "MANUAL_REQUIRED"
   }
 }
