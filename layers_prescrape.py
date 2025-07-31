@@ -217,6 +217,28 @@ FL_COUNTIES = {
     "st_lucie","sumter","suwannee","taylor","union","volusia","wakulla","walton","washington",
 }
 
+# Valid state abbreviations for multi-state support
+VALID_STATES = {
+    'fl': 'FL',  # Florida (primary)
+    'ga': 'GA',  # Georgia (future)
+    'de': 'DE',  # Delaware (future)
+}
+
+def validate_state_abbreviation(state_value: str) -> Optional[str]:
+    """Validate and normalize state abbreviation.
+    
+    Args:
+        state_value: State value from database (can be None, empty, or abbreviation)
+        
+    Returns:
+        External format state (e.g., 'FL') if valid, None if invalid/missing
+    """
+    if not state_value or str(state_value).strip().upper() in ('NULL', 'NONE', ''):
+        return None
+    
+    state_internal = str(state_value).strip().lower()
+    return VALID_STATES.get(state_internal)
+
 # Layer configurations
 LAYER_CONFIGS = {
     'zoning': {
@@ -287,39 +309,67 @@ def safe_catalog_val(val: Any) -> str:
 def get_today_str() -> str:
     return datetime.utcnow().strftime("%Y-%m-%d")
 
-def split_entity(entity: str) -> Tuple[str, str]:
-    """Split manifest entity into (county, city).
+def split_entity(entity: str) -> Tuple[str, str, str]:
+    """Split entity into (state, county, city).
     
-    Handles multi-word counties like 'miami_dade_unincorporated' or 'st_lucie_port_st_lucie'.
+    Handles both old 2-part (county_city) and new 3-part (state_county_city) formats.
+    For multi-word counties like 'fl_miami_dade_unincorporated' or 'fl_st_lucie_port_st_lucie'.
+    
     Strategy:
-    1. If the last token is a known suffix (unincorporated/unified/incorporated/countywide) treat it as the city.
-    2. Otherwise, iterate from longest possible county prefix to shortest until we find a match in FL_COUNTIES.
-       The remainder is considered the city. Fallback is original heuristic (first token as county).
+    1. Check if first token is a valid state - if so, use 3-part format
+    2. If not, assume old 2-part format and default state to 'fl'
+    3. For county detection, use known suffixes and FL_COUNTIES lookup
     """
     tokens = entity.split("_")
     if len(tokens) < 2:
         raise ValueError(f"Invalid entity format: {entity}")
 
+    # Check if first token is a valid state
+    first_token = tokens[0].lower()
+    if first_token in VALID_STATES:
+        # New 3-part format: state_county_city
+        if len(tokens) < 3:
+            raise ValueError(f"Invalid 3-part entity format: {entity}")
+        
+        state = first_token
+        county_city_tokens = tokens[1:]
+    else:
+        # Old 2-part format: county_city (infer state from county)
+        county_city_tokens = tokens
+
+    # Parse county_city portion
     suffixes = {"unincorporated", "incorporated", "unified", "countywide"}
-    if tokens[-1] in suffixes:
-        county = "_".join(tokens[:-1])
-        city = tokens[-1]
-        return county, city
+    if county_city_tokens[-1] in suffixes:
+        county = "_".join(county_city_tokens[:-1])
+        city = county_city_tokens[-1]
+    else:
+        # Try to recognize multi-word counties by longest-prefix match
+        county = None
+        city = None
+        for i in range(len(county_city_tokens), 1, -1):  # from longest possible down to 2 tokens
+            candidate_county = "_".join(county_city_tokens[:i])
+            if candidate_county in FL_COUNTIES:
+                county = candidate_county
+                city = "_".join(county_city_tokens[i:])
+                if not city:  # edge case – entity only county
+                    raise ValueError(f"Could not determine city part in entity: {entity}")
+                break
+        
+        # Fallback to simple split if no FL county match
+        if county is None:
+            if len(county_city_tokens) < 2:
+                raise ValueError(f"Could not parse county_city from entity: {entity}")
+            county = county_city_tokens[0]
+            city = "_".join(county_city_tokens[1:])
 
-    # Try to recognise multi-word counties by longest-prefix match
-    for i in range(len(tokens), 1, -1):  # from longest possible down to 2 tokens
-        candidate_county = "_".join(tokens[:i])
-        if candidate_county in FL_COUNTIES:
-            county = candidate_county
-            city = "_".join(tokens[i:])
-            if not city:  # edge case – entity only county
-                raise ValueError(f"Could not determine city part in entity: {entity}")
-            return county, city
-
-    # Fallback to original simple split
-    county = tokens[0]
-    city = "_".join(tokens[1:])
-    return county, city
+    # Infer state from county if not already determined
+    if 'state' not in locals():
+        if county in FL_COUNTIES:
+            state = 'fl'
+        else:
+            raise ValueError(f"County '{county}' not found in FL_COUNTIES. Cannot determine state for entity: {entity}")
+    
+    return state, county, city
 
 # ---------------------------------------------------------------------------
 # Database Utilities
@@ -420,20 +470,20 @@ def parse_title_to_entity(title: str) -> Tuple[Optional[str], Optional[str], Opt
     # Fallback: cannot parse
     return (None, None, None, None)
 
-def entity_from_title_parse(layer: str, county_from_title: str, city_from_title: str, entity_type: str) -> str:
-    """Convert parsed title components to entity name format (county_city)."""
+def entity_from_title_parse(layer: str, county_from_title: str, city_from_title: str, entity_type: str, state: str = 'fl') -> str:
+    """Convert parsed title components to entity name format (state_county_city)."""
     if county_from_title and city_from_title:
         # Normalize county and city names to match entity format (internal format)
         county_internal = format_name(county_from_title, 'county', external=False)
         if entity_type in {"unincorporated", "unified", "incorporated", "countywide"}:
-            entity = f"{county_internal}_{entity_type}"
+            entity = f"{state}_{county_internal}_{entity_type}"
         else:
             city_internal = format_name(city_from_title, 'city', external=False)
-            entity = f"{county_internal}_{city_internal}"
+            entity = f"{state}_{county_internal}_{city_internal}"
     elif county_from_title and not city_from_title:
         # County-only title (e.g., "Zoning - Walton County") -> treat as unincorporated
         county_internal = format_name(county_from_title, 'county', external=False)
-        entity = f"{county_internal}_unincorporated"
+        entity = f"{state}_{county_internal}_unincorporated"
     else:
         raise ValueError(f"Cannot construct entity from title components: layer={layer}, county={county_from_title}, city={city_from_title}, type={entity_type}")
     
@@ -771,6 +821,10 @@ def _get_best_format_detection(url: str, work_dir: str) -> str:
 def extract_manifest_commands(layer: str, entity: str) -> tuple[str, str]:
     """Extract pre-metadata and post-metadata commands from manifest.
     
+    Args:
+        layer: Layer name (e.g., 'zoning', 'flu')
+        entity: Entity in new format (layer_state_county_city) or old format (county_city)
+    
     Returns:
         tuple[str, str]: (source_comments, processing_comments)
         - source_comments: commands between download and ogrinfo 
@@ -785,11 +839,30 @@ def extract_manifest_commands(layer: str, entity: str) -> tuple[str, str]:
             
         if layer not in manifest_data or 'entities' not in manifest_data[layer]:
             return "", ""
-            
-        if entity not in manifest_data[layer]['entities']:
+        
+        # Convert new entity format to old format for manifest lookup
+        manifest_entity = entity
+        if entity.startswith(f"{layer}_"):
+            # New format: layer_state_county_city -> convert to county_city
+            parts = entity.split("_")
+            if len(parts) >= 4:  # layer_state_county_city
+                # Extract state_county_city part
+                state_county_city = "_".join(parts[1:])
+                try:
+                    state, county, city = split_entity(state_county_city)
+                    # For backwards compatibility, manifest uses county_city format
+                    manifest_entity = f"{county}_{city}"
+                except ValueError:
+                    # If parsing fails, try as-is
+                    pass
+            elif len(parts) >= 3:  # Assume layer_county_city (old 3-part)
+                # Extract county_city part
+                manifest_entity = "_".join(parts[1:])
+        
+        if manifest_entity not in manifest_data[layer]['entities']:
             return "", ""
             
-        commands = manifest_data[layer]['entities'][entity]
+        commands = manifest_data[layer]['entities'][manifest_entity]
         if not isinstance(commands, list):
             return "", ""
             
@@ -866,8 +939,8 @@ def extract_preprocessing_commands(layer: str, entity: str) -> str:
 
 # Validation functions removed - moved to fill mode only
 
-def generate_expected_values(layer: str, county: str, city: str, entity_type: str) -> Dict[str, Any]:
-    """Generate expected values for a database record based on layer/county/city."""
+def generate_expected_values(layer: str, state: str, county: str, city: str, entity_type: str) -> Dict[str, Any]:
+    """Generate expected values for a database record based on layer/state/county/city."""
     config = LAYER_CONFIGS.get(layer, {})
     
     # Determine entity type if not provided
@@ -898,6 +971,7 @@ def generate_expected_values(layer: str, county: str, city: str, entity_type: st
     layer_internal = format_name(layer, 'layer', external=False)
     city_internal = format_name(city_std, 'city', external=False)
     county_internal = format_name(county, 'county', external=False)
+    state_internal = state.lower()
     
     if entity_type == "city":
         table_name = f"{layer_internal}_{city_internal}"
@@ -906,12 +980,14 @@ def generate_expected_values(layer: str, county: str, city: str, entity_type: st
     else:
         table_name = f"{layer_internal}_{city_internal}"
     
-    # Generate sys_raw_folder (internal format for paths)
+    # Generate sys_raw_folder with state support (internal format for paths)
     category = config.get('category', '08_Land_Use_and_Zoning')
-    sys_raw_folder = f"/srv/datascrub/{category}/{layer_internal}/florida/county/{county_internal}/current/source_data/{city_internal}"
+    state_name = 'florida' if state_internal == 'fl' else state_internal
+    sys_raw_folder = f"/srv/datascrub/{category}/{layer_internal}/{state_name}/county/{county_internal}/current/source_data/{city_internal}"
     
     return {
         'title': title,
+        'state': validate_state_abbreviation(state) or 'FL',  # external format for database
         'county': format_name(county, 'county', external=True),  # external format for database
         'city': format_name(city_std, 'city', external=True),   # external format for database
         'layer_subgroup': layer_internal,
@@ -1045,7 +1121,7 @@ class LayersPrescrape:
         
         # CSV headers - specific fields requested by user
         headers = [
-            "entity", "title", "county", "city", "source_org", "src_url_file", 
+            "entity", "title", "state", "county", "city", "source_org", "src_url_file", 
             "format", "format_subtype", "download", "resource", "layer_group", 
             "layer_subgroup", "category", "sub_category", "sys_raw_folder", 
             "table_name", "fields_obj_transform", "source_comments", "processing_comments"
@@ -1231,7 +1307,7 @@ class LayersPrescrape:
         
         # Define CSV headers - core conditions + optional conditions
         core_headers = [
-            "entity", "og_title", "new_title", "county", "city", "src_url_file", "format", "download", 
+            "entity", "og_title", "new_title", "state", "county", "city", "src_url_file", "format", "download", 
             "resource", "layer_group", "category", "sys_raw_folder", "table_name", 
             "fields_obj_transform", "layer_subgroup", "source_comments", "processing_comments", "distrib_comments"
         ]
@@ -1352,7 +1428,7 @@ class LayersPrescrape:
         
         for entity in self.cfg.include_entities:
             try:
-                county, city = split_entity(entity)
+                state, county, city = split_entity(entity)
             except ValueError as e:
                 self.logger.error(f"Invalid entity format '{entity}': {e}")
                 continue
@@ -1365,7 +1441,7 @@ class LayersPrescrape:
             
             # Generate base record
             entity_type = "city" if city not in {"unincorporated", "unified", "incorporated", "countywide"} else city
-            expected = generate_expected_values(self.cfg.layer, county, city, entity_type)
+            expected = generate_expected_values(self.cfg.layer, state, county, city, entity_type)
             
             # Apply manual overrides
             if entity in manual_data:
@@ -1493,7 +1569,7 @@ class LayersPrescrape:
         
         try:
             # Parse entity components
-            county, city = split_entity(entity)
+            state, county, city = split_entity(entity)
             entity_type = "city" if city not in {"unincorporated", "unified", "incorporated", "countywide"} else city
             
             # Handle countywide alias
@@ -1539,6 +1615,16 @@ class LayersPrescrape:
                 expected = f"{layer_external} - {city_external}"
             
             return expected if actual_title != expected else ""
+        
+        elif field == "state":
+            # Check state field and validate/convert abbreviation
+            expected_state = validate_state_abbreviation(state)
+            if expected_state:
+                return expected_state if current_value != expected_state else ""
+            else:
+                # Invalid state - mark as manual field
+                self.missing_fields[entity]["state"] = "MANUAL_REQUIRED"
+                return "***MISSING***"
         
         elif field == "county":
             # Check county field contains proper county in external format
@@ -1614,7 +1700,8 @@ class LayersPrescrape:
             # Check sys_raw_folder matches pattern and create directory
             config = LAYER_CONFIGS.get(self.cfg.layer, {})
             category = config.get('category', '08_Land_Use_and_Zoning')
-            expected = f"/srv/datascrub/{category}/{layer_internal}/florida/county/{county_internal}/current/source_data/{city_internal}"
+            state_name = 'florida' if state.lower() == 'fl' else state.lower()
+            expected = f"/srv/datascrub/{category}/{layer_internal}/{state_name}/county/{county_internal}/current/source_data/{city_internal}"
             
             # Create directory if it doesn't exist
             try:
@@ -1704,11 +1791,27 @@ class LayersPrescrape:
     def _generate_entity_from_record(self, record: Dict[str, Any]) -> str:
         """Generate entity name from database record title and fields.
         
-        For flu/zoning: returns county_city format
-        For other layers: returns just county name
+        Returns layer_state_county_city format (e.g., zoning_fl_alachua_gainesville)
         If parsing fails: returns "ERROR"
         """
         title = record.get('title', '')
+        
+        # Get state from record, or infer from county if missing
+        state_db = record.get('state')
+        if state_db and str(state_db).strip() and str(state_db).strip().upper() not in ('NULL', 'NONE'):
+            state_internal = str(state_db).strip().lower()
+        else:
+            # Infer state from county
+            county_db = record.get('county', '')
+            if county_db:
+                county_internal = format_name(county_db, 'county', external=False)
+                if county_internal in FL_COUNTIES:
+                    state_internal = 'fl'
+                else:
+                    # Could add other state county lists here in the future
+                    state_internal = 'fl'  # Fallback for now
+            else:
+                state_internal = 'fl'  # Ultimate fallback
         
         # Try to parse the title first
         layer_parsed, county_parsed, city_parsed, entity_type = parse_title_to_entity(title)
@@ -1716,7 +1819,9 @@ class LayersPrescrape:
         if layer_parsed and county_parsed and city_parsed:
             try:
                 # Successfully parsed both county and city from title
-                entity = entity_from_title_parse(layer_parsed, county_parsed, city_parsed, entity_type)
+                entity = entity_from_title_parse(layer_parsed, county_parsed, city_parsed, entity_type, state_internal)
+                # Convert from state_county_city to layer_state_county_city
+                entity = f"{layer_parsed}_{entity}"
                 return entity
             except (ValueError, TypeError):
                 pass
@@ -1728,7 +1833,9 @@ class LayersPrescrape:
             if county_db:
                 try:
                     county_internal = format_name(county_db, 'county', external=False)
-                    entity = entity_from_title_parse(layer_parsed, county_internal, city_parsed, entity_type)
+                    entity = entity_from_title_parse(layer_parsed, county_internal, city_parsed, entity_type, state_internal)
+                    # Convert from state_county_city to layer_state_county_city
+                    entity = f"{layer_parsed}_{entity}"
                     return entity
                 except (ValueError, TypeError):
                     pass
@@ -1743,16 +1850,16 @@ class LayersPrescrape:
             if city_db and self.cfg.layer.lower() in ['flu', 'zoning']:
                 city_internal = format_name(city_db, 'city', external=False)
                 if city_internal in {"unincorporated", "unified", "incorporated", "countywide"}:
-                    entity = f"{county_internal}_{city_internal}"
+                    entity = f"{self.cfg.layer}_{state_internal}_{county_internal}_{city_internal}"
                 else:
-                    entity = f"{county_internal}_{city_internal}"
+                    entity = f"{self.cfg.layer}_{state_internal}_{county_internal}_{city_internal}"
             else:
                 # No city or not flu/zoning layer
                 if self.cfg.layer.lower() in ['flu', 'zoning']:
-                    entity = f"{county_internal}_unincorporated"
+                    entity = f"{self.cfg.layer}_{state_internal}_{county_internal}_unincorporated"
                 else:
                     # Most other layers are county-level only
-                    entity = county_internal
+                    entity = f"{self.cfg.layer}_{state_internal}_{county_internal}"
             
             return entity
         
@@ -1762,7 +1869,7 @@ class LayersPrescrape:
     def _discover_entities_from_db(self) -> List[str]:
         """Discover entities for the layer by examining database titles."""
         sql = """
-            SELECT title, county, city 
+            SELECT title, state, county, city 
             FROM m_gis_data_catalog_main 
             WHERE status IS DISTINCT FROM 'DELETE'
         """
@@ -1773,12 +1880,31 @@ class LayersPrescrape:
         for row in rows:
             title = row.get('title', '')
             
+            # Get state from record, or infer from county if missing
+            state_db = row.get('state')
+            if state_db and str(state_db).strip() and str(state_db).strip().upper() not in ('NULL', 'NONE'):
+                state_internal = str(state_db).strip().lower()
+            else:
+                # Infer state from county
+                county_db = row.get('county', '')
+                if county_db:
+                    county_internal = format_name(county_db, 'county', external=False)
+                    if county_internal in FL_COUNTIES:
+                        state_internal = 'fl'
+                    else:
+                        # Could add other state county lists here in the future
+                        state_internal = 'fl'  # Fallback for now
+                else:
+                    state_internal = 'fl'  # Ultimate fallback
+            
             # Parse title to get layer/county/city
             layer_parsed, county_parsed, city_parsed, entity_type = parse_title_to_entity(title)
             
             if layer_parsed == self.cfg.layer:
                 try:
-                    entity = entity_from_title_parse(self.cfg.layer, county_parsed, city_parsed, entity_type)
+                    entity = entity_from_title_parse(self.cfg.layer, county_parsed, city_parsed, entity_type, state_internal)
+                    # Convert from state_county_city to layer_state_county_city
+                    entity = f"{layer_parsed}_{entity}"
                     entities.add(entity)
                 except (ValueError, TypeError):
                     # If title parsing fails, try fallback with DB fields
@@ -1789,9 +1915,9 @@ class LayersPrescrape:
                         county_internal = format_name(county_db, 'county', external=False)
                         city_internal = format_name(city_db, 'city', external=False)
                         if city_internal in {"unincorporated", "unified", "incorporated", "countywide"}:
-                            entity = f"{county_internal}_{city_internal}"
+                            entity = f"{self.cfg.layer}_{state_internal}_{county_internal}_{city_internal}"
                         else:
-                            entity = f"{county_internal}_{city_internal}"
+                            entity = f"{self.cfg.layer}_{state_internal}_{county_internal}_{city_internal}"
                         entities.add(entity)
         
         return sorted(entities)
@@ -1799,13 +1925,13 @@ class LayersPrescrape:
     def _find_record_by_entity(self, entity: str) -> Optional[Dict[str, Any]]:
         """Find database record by matching entity to expected title."""
         try:
-            county, city = split_entity(entity)
+            state, county, city = split_entity(entity)
         except ValueError:
             return None
         
         # Generate expected title patterns for this entity
         entity_type = "city" if city not in {"unincorporated", "unified", "incorporated", "countywide"} else city
-        expected = generate_expected_values(self.cfg.layer, county, city, entity_type)
+        expected = generate_expected_values(self.cfg.layer, state, county, city, entity_type)
         expected_title = expected['title']
         
         # Search for record with matching title
@@ -1916,6 +2042,8 @@ def build_arg_parser() -> argparse.ArgumentParser:
                            help="Fill missing fields from manual JSON file")
     mode_group.add_argument("--create", action="store_true", 
                            help="Create new records for specified entities")
+    mode_group.add_argument("--update-states", action="store_true",
+                           help="One-time update: Set all NULL state values to 'FL'")
     
     # Options
     parser.add_argument("--apply", action="store_true", 
@@ -1941,6 +2069,8 @@ def main():
         mode = "fill"
     elif args.create:
         mode = "create"
+    elif args.update_states:
+        mode = "update_states"
     else:
         mode = "detect"  # default
     
@@ -1948,6 +2078,41 @@ def main():
     if mode == "create" and not args.include:
         print("[ERROR] CREATE mode requires --include entities to be specified")
         sys.exit(1)
+    
+    # Handle one-time state update mode
+    if mode == "update_states":
+        print("[INFO] Running one-time state update: Setting all NULL state values to 'FL'")
+        
+        if not args.apply:
+            print("[ERROR] --update-states mode requires --apply flag to actually perform the update")
+            sys.exit(1)
+        
+        # Connect to database
+        db = DB()
+        try:
+            # Count records that need updating
+            count_sql = "SELECT COUNT(*) as count FROM m_gis_data_catalog_main WHERE state IS NULL OR state = ''"
+            count_result = db.fetchone(count_sql)
+            count = count_result['count'] if count_result else 0
+            
+            if count == 0:
+                print("[INFO] No records found with NULL state values. Update not needed.")
+            else:
+                print(f"[INFO] Found {count} records with NULL state values")
+                
+                # Perform the update
+                update_sql = "UPDATE m_gis_data_catalog_main SET state = 'FL' WHERE state IS NULL OR state = ''"
+                db.execute(update_sql)
+                
+                print(f"[SUCCESS] Updated {count} records to set state = 'FL'")
+                
+        except Exception as e:
+            print(f"[ERROR] Failed to update state values: {e}")
+            sys.exit(1)
+        finally:
+            db.close()
+        
+        return
     
     # Validate layer argument
     layer_input = args.layer.lower()
