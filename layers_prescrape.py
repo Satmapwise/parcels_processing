@@ -81,8 +81,10 @@ def format_name(name: str, name_type: str, external: bool = False) -> str:
         'bldg_ftpr': 'Building Footprints',
         'parcel_geo': 'Parcel Geometry',
         'flood_zones': 'Flood Zones',
+        'fdot_tc': 'Traffic Counts FDOT',
         'subdiv': 'Subdivisions',
         'streets': 'Streets',
+        'sunbiz': 'SunBiz',
         'zoning': 'Zoning'
     }
     
@@ -255,6 +257,7 @@ LAYER_CONFIGS = {
         'category': '12_Hazards',
         'layer_group': 'hazards',
         'level': 'national',
+        'entity': 'flood_zones',
     },
     'parcel_geo': {
         'category': '05_Parcels',
@@ -285,11 +288,13 @@ LAYER_CONFIGS = {
         'category': '03_Transportation',
         'layer_group': 'base_map_overlay',
         'level': 'state',
+        'entity': 'fdot_tc_fl',
     },
     'sunbiz': {
         'category': '21_Misc',
         'layer_group': 'parcels',
         'level': 'state',
+        'entity': 'sunbiz_fl',
     }
 }
 
@@ -418,10 +423,26 @@ def parse_title_to_entity(title: str) -> Tuple[Optional[str], Optional[str], Opt
       "Zoning - City of Gainesville"        -> ("zoning", "alachua", "gainesville", "city")
       "Zoning - Alachua Unincorporated"     -> ("zoning", "alachua", "unincorporated", "unincorporated")
       "Future Land Use - Duval Unified"     -> ("flu", "duval", "unified", "unified")
+      "Traffic Counts FDOT"                 -> ("fdot_tc", None, None, "state")
+      "SunBiz"                              -> ("sunbiz", None, None, "state")
+      "Flood Zones"                         -> ("flood_zones", None, None, "national")
     
     Returns lowercase values; if parsing fails returns (None, None, None, None).
     """
-    # Split the string into layer part and the remainder
+    # Handle special cases for layers without standard "Layer - Location" format
+    title_lower = title.lower().strip()
+    
+    # Special state/national level layers
+    if "traffic counts fdot" in title_lower or title_lower == "traffic counts fdot":
+        return ("fdot_tc", None, None, "state")
+    
+    if "sunbiz" in title_lower:
+        return ("sunbiz", None, None, "state") 
+        
+    if "fema flood zones" in title_lower or "flood zones" in title_lower:
+        return ("flood_zones", None, None, "national")
+    
+    # Standard format: "Layer - Location"
     try:
         layer_part, rest = title.split(" - ", 1)
     except ValueError:
@@ -471,7 +492,16 @@ def parse_title_to_entity(title: str) -> Tuple[Optional[str], Optional[str], Opt
     return (None, None, None, None)
 
 def entity_from_title_parse(layer: str, county_from_title: str, city_from_title: str, entity_type: str, state: str = 'fl') -> str:
-    """Convert parsed title components to entity name format (state_county_city)."""
+    """Convert parsed title components to entity name format."""
+    # Special handling for state-level and national-level layers
+    if entity_type == "state":
+        # State-level layers (fdot_tc, sunbiz) - simple format: just state
+        return state
+    elif entity_type == "national":
+        # National-level layers (flood_zones) - no state suffix
+        return ""
+    
+    # Standard county/city-level layers (layer_state_county_city format)
     if county_from_title and city_from_title:
         # Normalize county and city names to match entity format (internal format)
         county_internal = format_name(county_from_title, 'county', external=False)
@@ -1584,12 +1614,26 @@ class LayersPrescrape:
         current_value = record.get(field) or ''
         
         try:
-            # Parse entity components (strip layer prefix from layer_state_county_city format)
-            entity_without_layer = entity
-            if entity.startswith(f"{self.cfg.layer}_"):
-                entity_without_layer = entity[len(f"{self.cfg.layer}_"):]
-            state, county, city = split_entity(entity_without_layer)
-            entity_type = "city" if city not in {"unincorporated", "unified", "incorporated", "countywide"} else city
+            # Special handling for state-level and national-level layers
+            if self.cfg.layer in ['fdot_tc', 'sunbiz']:
+                # State-level layers: simple format like "fdot_tc_fl"
+                state = 'fl'
+                county = None
+                city = None
+                entity_type = 'state'
+            elif self.cfg.layer == 'flood_zones':
+                # National-level layers: simple format like "flood_zones"
+                state = None
+                county = None  
+                city = None
+                entity_type = 'national'
+            else:
+                # Standard county/city-level layers: parse entity components
+                entity_without_layer = entity
+                if entity.startswith(f"{self.cfg.layer}_"):
+                    entity_without_layer = entity[len(f"{self.cfg.layer}_"):]
+                state, county, city = split_entity(entity_without_layer)
+                entity_type = "city" if city not in {"unincorporated", "unified", "incorporated", "countywide"} else city
             
             # Handle countywide alias
             if entity_type == "countywide":
@@ -1636,24 +1680,43 @@ class LayersPrescrape:
             return expected if actual_title != expected else ""
         
         elif field == "state":
-            # Check state field and validate/convert abbreviation
-            expected_state = validate_state_abbreviation(state)
-            if expected_state:
+            # Special handling for state-level and national-level layers
+            if self.cfg.layer in ['fdot_tc', 'sunbiz']:
+                # State-level layers default to FL
+                expected_state = 'FL'
                 return expected_state if current_value != expected_state else ""
+            elif self.cfg.layer == 'flood_zones':
+                # National layer - state should be null/empty
+                return "" if not current_value else ""
             else:
-                # Invalid state - mark as manual field
-                self.missing_fields[entity]["state"] = "MANUAL_REQUIRED"
-                return "***MISSING***"
+                # Standard county/city level layers
+                expected_state = validate_state_abbreviation(state)
+                if expected_state:
+                    return expected_state if current_value != expected_state else ""
+                else:
+                    # Invalid state - mark as manual field
+                    self.missing_fields[entity]["state"] = "MANUAL_REQUIRED"
+                    return "***MISSING***"
         
         elif field == "county":
-            # Check county field contains proper county in external format
-            expected = county_external
-            return expected if current_value != expected else ""
+            # Special handling for state-level and national-level layers
+            if self.cfg.layer in ['fdot_tc', 'sunbiz', 'flood_zones']:
+                # State/national level layers should have null county
+                return "" if not current_value else ""
+            else:
+                # Standard county/city level layers
+                expected = county_external
+                return expected if current_value != expected else ""
         
         elif field == "city":
-            # Check city field contains proper city in external format
-            expected = city_external
-            return expected if current_value != expected else ""
+            # Special handling for state-level and national-level layers
+            if self.cfg.layer in ['fdot_tc', 'sunbiz', 'flood_zones']:
+                # State/national level layers should have null city
+                return "" if not current_value else ""
+            else:
+                # Standard county/city level layers
+                expected = city_external
+                return expected if current_value != expected else ""
         
         elif field == "src_url_file":
             # Check URL exists and is valid using cached results
@@ -1813,6 +1876,12 @@ class LayersPrescrape:
         Returns layer_state_county_city format (e.g., zoning_fl_alachua_gainesville)
         If parsing fails: returns "ERROR"
         """
+        # Check if this layer has a hardcoded entity in the config
+        config = LAYER_CONFIGS.get(self.cfg.layer, {})
+        hardcoded_entity = config.get('entity')
+        if hardcoded_entity:
+            return hardcoded_entity
+        
         title = record.get('title', '')
         
         # Get state from record, or infer from county if missing
