@@ -1153,7 +1153,7 @@ class LayersPrescrape:
         
         # CSV headers - specific fields requested by user
         headers = [
-            "entity", "title", "state", "county", "city", "source_org", "src_url_file", 
+            "entity", "title", "state", "county", "city", "source_org", "data_date", "publish_date", "src_url_file", 
             "format", "format_subtype", "download", "resource", "layer_group", 
             "layer_subgroup", "category", "sub_category", "sys_raw_folder", 
             "table_name", "fields_obj_transform", "source_comments", "processing_comments"

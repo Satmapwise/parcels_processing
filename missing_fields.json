@@ -1,8 +1,6 @@
 {
-  "bldg_ftpr_fl_palm_beach_boca_raton": {
-    "src_url_file": "URL_DEPRECATED"
-  },
-  "bldg_ftpr_fl_broward_fort_lauderdale": {
-    "src_url_file": "URL_DEPRECATED"
+  "sunbiz_fl": {
+    "src_url_file": "MANUAL_REQUIRED",
+    "fields_obj_transform": "MANUAL_REQUIRED"
   }
 }
