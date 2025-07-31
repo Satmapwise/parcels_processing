@@ -693,13 +693,16 @@ def get_format_from_files(work_dir: str) -> str:
         if 'geojson' in file_extensions:
             return "AGS"
         
-        # Specific identifiable formats
+        # Prioritize geospatial data formats over documentation
+        # Check for shapefiles first (before PDF to avoid false positives from disclaimer docs)
+        elif any(ext in file_extensions for ext in ['shp', 'gdb']):
+            return "SHP"
+        
+        # Other specific identifiable formats
         elif 'csv' in file_extensions:
             return "CSV"
         elif 'kml' in file_extensions:
             return "KML"
-        elif 'pdf' in file_extensions:
-            return "PDF"
         elif any(ext in file_extensions for ext in ['mdb', 'accdb']):
             return "ACCDB" if 'accdb' in file_extensions else "MDB"
         elif any(ext in file_extensions for ext in ['xls', 'xlsx']):
@@ -708,8 +711,10 @@ def get_format_from_files(work_dir: str) -> str:
             return "GeoTIFF"
         elif 'txt' in file_extensions:
             return "TXT"
+        elif 'pdf' in file_extensions:
+            return "PDF"
         
-        # Everything else defaults to SHP (shapefiles, ZIP files, GDB, etc.)
+        # Everything else defaults to SHP (ZIP files, etc.)
         # This covers the majority of geospatial downloads
         else:
             return "SHP"
