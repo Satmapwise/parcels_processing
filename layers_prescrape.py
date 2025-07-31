@@ -805,7 +805,8 @@ def extract_manifest_commands(layer: str, entity: str) -> tuple[str, str]:
             elif cmd == "ogrinfo" or 'ogrinfo' in cmd_str:
                 phase = "processing_comments"  # Commands after ogrinfo, before update
                 continue
-            elif any(x in cmd_str for x in ['update_zoning2.py', 'update_data_catalog', 'psql']):
+            elif any(x in cmd_str for x in ['update_data_catalog', 'psql']) or 'update_' in cmd_str and '.py' in cmd_str:
+                # Skip layer-specific update scripts as they're handled automatically by layer_processing()
                 phase = "after_update"
                 break
                 

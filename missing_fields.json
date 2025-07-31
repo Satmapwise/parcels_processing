@@ -1,5 +1,6 @@
 {
-  "citrus_unincorporated": {
+  "alachua_gainesville": {
+    "src_url_file": "URL_DEPRECATED",
     "fields_obj_transform": "MANUAL_REQUIRED"
   }
 }
