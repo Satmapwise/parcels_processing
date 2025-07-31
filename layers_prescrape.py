@@ -1059,23 +1059,25 @@ class LayersPrescrape:
             self._run_fill_mode()
         elif self.cfg.mode == "create":
             self._run_create_mode()
+        elif self.cfg.mode == "detect_and_fill":
+            self._run_detect_and_fill_mode()
         else:
             raise ValueError(f"Unknown mode: {self.cfg.mode}")
         
-        # Write missing fields JSON if any issues found (fill mode only)
-        if self.missing_fields and self.cfg.mode in {"fill", "create"}:
+        # Write missing fields JSON if any issues found (fill modes only)
+        if self.missing_fields and self.cfg.mode in {"fill", "create", "detect_and_fill"}:
             self.logger.info(f"Writing missing field report → {self.cfg.manual_file}")
             with open(self.cfg.manual_file, "w", encoding="utf-8") as fh:
                 json.dump(self.missing_fields, fh, indent=2)
         
         # Commit or rollback database changes
         if self.db:
-            if self.cfg.mode in {"fill", "create"} and (self.cfg.apply_changes or self.cfg.apply_manual):
+            if self.cfg.mode in {"fill", "create", "detect_and_fill"} and (self.cfg.apply_changes or self.cfg.apply_manual):
                 self.db.commit()
                 self.logger.info("Database changes committed.")
             else:
                 self.db.conn.rollback()
-                if not (self.cfg.apply_changes or self.cfg.apply_manual) and self.cfg.mode in {"fill", "create"}:
+                if not (self.cfg.apply_changes or self.cfg.apply_manual) and self.cfg.mode in {"fill", "create", "detect_and_fill"}:
                     self.logger.info("Apply flags not set - no database changes made.")
             self.db.close()
     
@@ -1497,6 +1499,20 @@ class LayersPrescrape:
             self.logger.info(f"Creation report written → {csv_path}")
         
         self.logger.info(f"Create complete: {len(created_records)} records processed")
+    
+    def _run_detect_and_fill_mode(self):
+        """Run detect mode first, then fill mode on the same entities."""
+        self.logger.info("Running DETECT+FILL mode - detecting records first, then filling on same entities")
+        
+        # Step 1: Run detect mode to identify entities and generate detect CSV
+        self.logger.info("Step 1: Running DETECT phase...")
+        self._run_detect_mode()
+        
+        # Step 2: Run fill mode on the same entities
+        self.logger.info("Step 2: Running FILL phase on same entities...")
+        self._run_fill_mode()
+        
+        self.logger.info("DETECT+FILL mode complete")
     
     # Helper methods
     
@@ -2034,12 +2050,14 @@ def build_arg_parser() -> argparse.ArgumentParser:
     parser.add_argument("--exclude", nargs="*", metavar="ENTITY",
                        help="Exclude entities matching these patterns")
     
-    # Mode selection
+    # Mode selection (detect and fill can be combined)
+    parser.add_argument("--detect", action="store_true", 
+                       help="Detect malformed records and missing fields (default if no other mode specified)")
+    parser.add_argument("--fill", action="store_true", 
+                       help="Fill missing fields from manual JSON file (can be combined with --detect)")
+    
+    # Exclusive modes (cannot be combined with detect/fill or each other)
     mode_group = parser.add_mutually_exclusive_group()
-    mode_group.add_argument("--detect", action="store_true", 
-                           help="Detect malformed records and missing fields (default)")
-    mode_group.add_argument("--fill", action="store_true", 
-                           help="Fill missing fields from manual JSON file")
     mode_group.add_argument("--create", action="store_true", 
                            help="Create new records for specified entities")
     mode_group.add_argument("--update-states", action="store_true",
@@ -2064,15 +2082,24 @@ def main():
     parser = build_arg_parser()
     args = parser.parse_args()
     
-    # Determine mode
-    if args.fill:
-        mode = "fill"
-    elif args.create:
+    # Determine mode(s)
+    if args.create:
         mode = "create"
     elif args.update_states:
         mode = "update_states"
+    elif args.detect and args.fill:
+        mode = "detect_and_fill"
+    elif args.fill:
+        mode = "fill"
+    elif args.detect:
+        mode = "detect"
     else:
         mode = "detect"  # default
+    
+    # Validate mode combinations
+    if (args.create or args.update_states) and (args.detect or args.fill):
+        print("[ERROR] CREATE and UPDATE-STATES modes cannot be combined with DETECT or FILL")
+        sys.exit(1)
     
     # Validate CREATE mode requirements
     if mode == "create" and not args.include:
