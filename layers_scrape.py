@@ -57,7 +57,13 @@ def should_process_entity(catalog_row: dict) -> tuple[bool, str]:
     else:
         return False, f"Format '{fmt}' is excluded from pipeline"
 
-# Note: should_run_processing logic is now integrated directly into layer_processing function
+def should_run_processing(catalog_row: dict) -> bool:
+    """Determine if an entity should run the processing stage.
+    
+    Processing is skipped for metadata-only formats like PDF.
+    """
+    fmt = (catalog_row.get('format') or '').lower()
+    return fmt not in METADATA_ONLY_FORMATS
 
 # ---------------------------------------------------------------------------
 # Name Formatting Utilities

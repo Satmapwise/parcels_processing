@@ -2037,6 +2037,38 @@ class LayersPrescrape:
         self.db.execute(sql, params)
 
 # ---------------------------------------------------------------------------
+# Entity Pattern Processing  
+# ---------------------------------------------------------------------------
+
+def extract_layers_from_patterns(include_patterns: list[str] = None, exclude_patterns: list[str] = None) -> list[str]:
+    """Extract unique layer names from entity patterns.
+    
+    Args:
+        include_patterns: List of include patterns (e.g., ['zoning_fl_*', 'flu_*'])
+        exclude_patterns: List of exclude patterns
+        
+    Returns:
+        List of unique layer names found in patterns
+    """
+    layers = set()
+    
+    # Extract layers from include patterns
+    if include_patterns:
+        for pattern in include_patterns:
+            # Entity format is layer_state_county_city, so layer is first component
+            if '_' in pattern:
+                layer = pattern.split('_')[0]
+                if layer in LAYER_CONFIGS:
+                    layers.add(layer)
+            elif pattern in LAYER_CONFIGS:
+                # Direct layer name
+                layers.add(pattern)
+    
+    # Note: exclude patterns don't add layers, they only filter
+    
+    return sorted(layers)
+
+# ---------------------------------------------------------------------------
 # CLI Interface
 # ---------------------------------------------------------------------------
 
@@ -2144,46 +2176,23 @@ def main():
         
         return
     
-    # Validate layer argument
-    layer_input = args.layer.lower()
-    if layer_input == "all":
-        # Process all configured layers
-        valid_layers = list(LAYER_CONFIGS.keys())
-        print(f"[INFO] Processing all layers: {', '.join(valid_layers)}")
-        
-        for layer in valid_layers:
-            print(f"\n[INFO] ==================== Processing layer: {layer.upper()} ====================")
-            
-            # Create config for this layer
-            cfg = Config(
-                layer=layer,
-                include_entities=[e.lower() for e in args.include] if args.include else None,
-                exclude_entities=[e.lower() for e in args.exclude] if args.exclude else None,
-                mode=mode,
-                debug=args.debug,
-                generate_csv=args.generate_csv,
-                apply_changes=args.apply,
-                apply_manual=args.apply_manual,
-                manual_file=args.manual_file,
-                fill_all=args.fill_all
-            )
-            
-            # Run the processor for this layer
-            processor = LayersPrescrape(cfg)
-            processor.run()
-        
-        print(f"\n[INFO] ==================== Completed processing all {len(valid_layers)} layers ====================")
-        
+    # Extract layers from entity patterns
+    layers_to_process = extract_layers_from_patterns(args.include, args.exclude)
+    
+    if not layers_to_process:
+        # No patterns specified or no valid layers found - process all layers
+        layers_to_process = list(LAYER_CONFIGS.keys())
+        print(f"[INFO] No entity patterns specified, processing all layers: {', '.join(layers_to_process)}")
     else:
-        # Single layer - validate it exists
-        if layer_input not in LAYER_CONFIGS:
-            valid_layers = ', '.join(sorted(LAYER_CONFIGS.keys()))
-            print(f"[ERROR] Invalid layer '{layer_input}'. Valid layers are: {valid_layers}, all")
-            sys.exit(1)
+        print(f"[INFO] Processing layers extracted from entity patterns: {', '.join(layers_to_process)}")
+    
+    # Process each layer separately
+    for layer in layers_to_process:
+        print(f"\n[INFO] ==================== Processing layer: {layer.upper()} ====================")
         
-        # Create config for single layer
+        # Create config for this layer
         cfg = Config(
-            layer=layer_input,
+            layer=layer,
             include_entities=[e.lower() for e in args.include] if args.include else None,
             exclude_entities=[e.lower() for e in args.exclude] if args.exclude else None,
             mode=mode,
@@ -2195,9 +2204,11 @@ def main():
             fill_all=args.fill_all
         )
         
-        # Run the processor
+        # Run the processor for this layer
         processor = LayersPrescrape(cfg)
         processor.run()
+    
+    print(f"\n[INFO] ==================== Completed processing {len(layers_to_process)} layer(s) ====================")
 
 if __name__ == "__main__":
     main()
