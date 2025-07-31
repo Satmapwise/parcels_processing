@@ -222,42 +222,52 @@ LAYER_CONFIGS = {
     'zoning': {
         'category': '08_Land_Use_and_Zoning',
         'layer_group': 'flu_zoning',
+        'level': 'county_city',
     },
     'flu': {
         'category': '08_Land_Use_and_Zoning', 
         'layer_group': 'flu_zoning',
+        'level': 'county_city',
     },
     'flood_zones': {
         'category': '12_Hazards',
         'layer_group': 'hazards',
+        'level': 'national',
     },
     'parcel_geo': {
         'category': '05_Parcels',
         'layer_group': 'parcels',
+        'level': 'county',
     },
     'streets': {
         'category': '03_Transportation',
         'layer_group': 'base_map_overlay',
+        'level': 'county',
     },
     'addr_pnts': {
         'category': '05_Parcels',
         'layer_group': 'parcels',
+        'level': 'county',
     },
     'subdiv': {
         'category': '05_Parcels',
         'layer_group': 'parcels',
+        'level': 'county',
     },
     'bldg_ftpr': {
         'category': '05_Parcels',
         'layer_group': 'parcels',
+        'level': 'county',
     },
     'fdot_tc': {
         'category': '03_Transportation',
         'layer_group': 'base_map_overlay',
+        'level': 'state',
     },
     'sunbiz': {
         'category': '21_Misc',
         'layer_group': 'parcels',
+        'level': 'state',
     }
 }
 
