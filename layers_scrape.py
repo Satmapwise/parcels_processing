@@ -266,14 +266,14 @@ FL_COUNTIES = {
 # Backwards compatibility alias
 counties = FL_COUNTIES
 
-# Work directory patterns
+# Work directory patterns (state-aware)
 WORK_DIR_PATTERNS = {
     'zoning': os.path.join(
-        '/srv/datascrub', '08_Land_Use_and_Zoning', 'zoning', 'florida', 
+        '/srv/datascrub', '08_Land_Use_and_Zoning', 'zoning', '{state_name}', 
         'county', '{county}', 'current', 'source_data', '{city}'
     ),
     'flu': os.path.join(
-        '/srv/datascrub', '08_Land_Use_and_Zoning', 'future_land_use', 'florida',
+        '/srv/datascrub', '08_Land_Use_and_Zoning', 'future_land_use', '{state_name}',
         'county', '{county}', 'current', 'source_data', '{city}'
     ),
 }
@@ -443,25 +443,25 @@ def split_entity(entity: str) -> tuple[str, str, str]:
     return state, county, city
 
 def resolve_work_dir(layer: str, entity: str):
-    """Return (work_dir, county, city) for layer/entity."""
+    """Return (work_dir, state, county, city) for layer/entity."""
+    # Parse entity to get state, county, city
+    state, county, city = split_entity(entity)
+    
+    # Generate state_name for directory path (florida, georgia, delaware, etc.)
+    state_name = 'florida' if state == 'fl' else state.lower()
+    
     # Handle special business logic cases
-    if layer == 'zoning' and entity == 'duval_unified':
+    if layer == 'zoning' and state == 'fl' and county == 'duval' and city == 'unified':
         # Duval Unified refers to Jacksonville city-county government
         county, city = 'duval', 'jacksonville'
-        work_dir = '/srv/datascrub/08_Land_Use_and_Zoning/zoning/florida/county/duval/current/source_data/jacksonville'
-        return work_dir, county, city
+        work_dir = f'/srv/datascrub/08_Land_Use_and_Zoning/zoning/{state_name}/county/duval/current/source_data/jacksonville'
+        return work_dir, state, county, city
 
     # General case
-    template = WORK_DIR_PATTERNS.get(layer, os.path.join('/srv/datascrub', '{layer}', '{county}', '{city}'))
-    needs_city = '{city}' in template
+    template = WORK_DIR_PATTERNS.get(layer, os.path.join('/srv/datascrub', '{layer}', '{state_name}', 'county', '{county}', '{city}'))
     
-    if needs_city:
-        state, county, city = split_entity(entity)
-    else:
-        state, county, city = 'fl', entity, ''
-
-    work_dir = template.format(layer=layer, county=county, city=city)
-    return work_dir, county, city
+    work_dir = template.format(layer=layer, state_name=state_name, county=county, city=city)
+    return work_dir, state, county, city
 
 def _run_command(command, work_dir, logger):
     """Run a shell command in a specified directory."""
@@ -575,23 +575,26 @@ def _run_source_comments(source_comments: str, work_dir: str, logger):
 # Database Functions
 # ---------------------------------------------------------------------------
 
-def _fetch_catalog_row(layer: str, county: str, city: str):
-    """Return catalog row for the given layer/county/city or None if missing."""
+def _fetch_catalog_row(layer: str, state: str, county: str, city: str):
+    """Return catalog row for the given layer/state/county/city or None if missing."""
     conn = psycopg2.connect(PG_CONNECTION)
     cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
     try:
         # Convert internal format names to external format for database query
         layer_external = format_name(layer, 'layer', external=True)
+        state_external = VALID_STATES.get(state, state.upper())
         county_external = format_name(county, 'county', external=True)
         city_external = format_name(city, 'city', external=True)
         
+        # Try with state first, fallback to without state for backwards compatibility
         sql = (
             "SELECT * FROM m_gis_data_catalog_main "
             "WHERE lower(layer_subgroup) = %s "
+            "AND (state = %s OR state IS NULL) "
             "AND lower(county) = %s "
             "AND lower(city) = %s LIMIT 1"
         )
-        params = (layer_external.lower(), county_external.lower(), city_external.lower())
+        params = (layer_external.lower(), state_external, county_external.lower(), city_external.lower())
         cur.execute(sql, params)
         row = cur.fetchone()
         return dict(row) if row else None
@@ -638,14 +641,14 @@ def _fetch_entities_from_db(layer: str) -> list[str]:
     cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
     try:
         sql = (
-            "SELECT county, city FROM m_gis_data_catalog_main "
+            "SELECT state, county, city FROM m_gis_data_catalog_main "
             "WHERE status IS DISTINCT FROM 'DELETE' "
             "AND lower(layer_subgroup) = %s"
         )
         cur.execute(sql, (layer.lower(),))
         rows = cur.fetchall()
         for row in rows:
-            entity = _entity_from_parts(row['county'], row['city'])
+            entity = _entity_from_parts(layer, row['state'], row['county'], row['city'])
             entities.append(entity)
     except Exception as exc:
         logging.error(f"DB entity fetch failed: {exc}")
@@ -654,15 +657,27 @@ def _fetch_entities_from_db(layer: str) -> list[str]:
         conn.close()
     return list(dict.fromkeys(entities))  # de-dupe preserving order
 
-def _entity_from_parts(county: str, city: str | None) -> str:
-    """Return entity id from raw DB county/city values."""
+def _entity_from_parts(layer: str, state: str | None, county: str, city: str | None) -> str:
+    """Return entity id from raw DB values in layer_state_county_city format."""
     # Convert external DB values to internal format
     county_internal = format_name(county, 'county', external=False)
     city_internal = format_name(city, 'city', external=False) if city else ""
     
+    # Handle state - infer from county if missing
+    if state and str(state).strip() and str(state).strip().upper() not in ('NULL', 'NONE'):
+        state_internal = str(state).strip().lower()
+    else:
+        # Infer state from county for backwards compatibility
+        if county_internal in FL_COUNTIES:
+            state_internal = 'fl'
+        else:
+            state_internal = 'fl'  # Default fallback
+    
+    # Generate full entity in layer_state_county_city format
     if not city_internal:
-        return county_internal
-    return f"{county_internal}_{city_internal}"
+        city_internal = 'countywide'  # Default for county-only records
+    
+    return f"{layer}_{state_internal}_{county_internal}_{city_internal}"
 
 def _parse_processing_comments(text):
     """Parse the processing_comments field into a list of command strings.
@@ -700,7 +715,7 @@ def _parse_processing_comments(text):
 # Main Pipeline Functions
 # ---------------------------------------------------------------------------
 
-def layer_download(layer: str, entity: str, county: str, city: str, catalog_row: dict, work_dir: str, logger):
+def layer_download(layer: str, entity: str, state: str, county: str, city: str, catalog_row: dict, work_dir: str, logger):
     """Handle the download phase for an entity."""
     if not CONFIG.run_download:
         logger.debug(f"[DOWNLOAD] Skipping download for {layer}/{entity} (disabled in config)")
@@ -844,7 +859,7 @@ def extract_basic_file_metadata(work_dir: str, logger) -> dict:
     
     return metadata
 
-def layer_metadata(layer: str, entity: str, county: str, city: str, catalog_row: dict, work_dir: str, logger):
+def layer_metadata(layer: str, entity: str, state: str, county: str, city: str, catalog_row: dict, work_dir: str, logger):
     """Handle the metadata extraction phase for an entity."""
     if not CONFIG.run_metadata:
         logger.debug(f"[METADATA] Skipping metadata extraction for {layer}/{entity} (disabled in config)")
@@ -909,7 +924,7 @@ def layer_metadata(layer: str, entity: str, county: str, city: str, catalog_row:
             logger.warning("No shapefile found to process for metadata extraction")
             return {}
 
-def layer_processing(layer: str, entity: str, county: str, city: str, catalog_row: dict, work_dir: str, logger):
+def layer_processing(layer: str, entity: str, state: str, county: str, city: str, catalog_row: dict, work_dir: str, logger):
     """Handle the processing phase for an entity."""
     if not CONFIG.run_processing:
         logger.debug(f"[PROCESSING] Skipping processing for {layer}/{entity} (disabled in config)")
@@ -963,7 +978,7 @@ def layer_processing(layer: str, entity: str, county: str, city: str, catalog_ro
         _update_csv_status(layer, entity, 'processing', 'FAILED', str(e))
         raise ProcessingError(f"Processing failed: {e}", layer, entity) from e
 
-def layer_upload(layer: str, entity: str, county: str, city: str, catalog_row: dict, work_dir: str, logger, metadata: dict, raw_zip_name: str = None):
+def layer_upload(layer: str, entity: str, state: str, county: str, city: str, catalog_row: dict, work_dir: str, logger, metadata: dict, raw_zip_name: str = None):
     """Handle the upload phase for an entity."""
     if not CONFIG.run_upload:
         logger.debug(f"[UPLOAD] Skipping upload for {layer}/{entity} (disabled in config)")
@@ -1369,60 +1384,7 @@ def extract_shp_metadata(shp_path, logger):
 # Queue Management Functions
 # ---------------------------------------------------------------------------
 
-def set_queue(layer, entities):
-    """Validate layer and entity list and return a queue of entities to process."""
-    logging.info(f"Setting queue for layer '{layer}' and entities '{entities or 'all'}'")
-
-    # Get entities from database
-    layer_entities = set(_fetch_entities_from_db(layer))
-    
-    if not layer_entities and not entities:
-        raise ValueError("No entities found in database and no entities supplied – cannot determine processing queue.")
-
-    # No entities supplied → process ALL from database
-    if not entities:
-        logging.info(f"No entities specified, queuing all {len(layer_entities)} entities for layer '{layer}'")
-        queue = sorted(layer_entities)
-    else:
-        # Process specific entities
-        if isinstance(entities, str):
-            entities = [entities]
-
-        invalid = [e for e in entities if '*' not in e and '?' not in e and e not in layer_entities and e not in counties]
-        if invalid:
-            raise ValueError(f"Invalid entity/ies specified: {invalid}")
-
-        # Expand wildcard patterns
-        expanded = []
-        for pattern in entities:
-            if '*' in pattern or '?' in pattern:
-                matches = fnmatch.filter(sorted(layer_entities), pattern)
-                if not matches:
-                    logging.warning(f"Pattern '{pattern}' matched no entities; skipping.")
-                else:
-                    logging.info(f"Pattern '{pattern}' expanded to {len(matches)} entities: {matches}")
-                    expanded.extend(matches)
-            else:
-                expanded.append(pattern)
-
-        # Deduplicate while preserving order
-        seen = set()
-        queue = []
-        for e in expanded:
-            if e not in seen:
-                queue.append(e)
-                seen.add(e)
-
-    # Filter out blacklisted entities
-    if SKIP_ENTITIES:
-        original_count = len(queue)
-        skipped_entities = [e for e in queue if e in SKIP_ENTITIES]
-        queue = [e for e in queue if e not in SKIP_ENTITIES]
-        skipped_count = original_count - len(queue)
-        if skipped_count > 0:
-            logging.info(f"Skipped {skipped_count} blacklisted entities: {sorted(skipped_entities)}")
-
-    return queue
+# Legacy set_queue function removed - replaced with new entity filtering system
 
 # ---------------------------------------------------------------------------
 # Main Processing Function
@@ -1443,13 +1405,13 @@ def process_layer(layer, queue):
         entity_start_time = datetime.now()
         try:
             # Setup
-            work_dir, county, city = resolve_work_dir(layer, entity)
+            work_dir, state, county, city = resolve_work_dir(layer, entity)
             entity_logger = setup_entity_logger(layer, entity, work_dir)
             
             logging.info(f"--- Processing entity: {entity} ---")
             
             # Get catalog row
-            catalog_row = _fetch_catalog_row(layer, county, city)
+            catalog_row = _fetch_catalog_row(layer, state, county, city)
             if catalog_row is None:
                 raise RuntimeError(f"Catalog row not found for {layer}/{entity}")
 
@@ -1471,13 +1433,13 @@ def process_layer(layer, queue):
 
             # Stage 1: Download
             try:
-                raw_zip_name = layer_download(layer, entity, county, city, catalog_row, work_dir, entity_logger)
+                raw_zip_name = layer_download(layer, entity, state, county, city, catalog_row, work_dir, entity_logger)
             except SkipEntityError as e:
                 raise  # Re-raise to skip entire entity
 
             # Stage 2: Metadata
             try:
-                metadata = layer_metadata(layer, entity, county, city, catalog_row, work_dir, entity_logger)
+                metadata = layer_metadata(layer, entity, state, county, city, catalog_row, work_dir, entity_logger)
             except SkipEntityError as e:
                 # Handle metadata-based NND (data date unchanged)
                 if "data date unchanged" in str(e):
@@ -1485,10 +1447,11 @@ def process_layer(layer, queue):
                 raise  # Re-raise to skip entire entity
 
             # Stage 3: Processing
-            layer_processing(layer, entity, county, city, catalog_row, work_dir, entity_logger)
+            if should_run_processing(catalog_row):
+                layer_processing(layer, entity, state, county, city, catalog_row, work_dir, entity_logger)
 
             # Stage 4: Upload
-            layer_upload(layer, entity, county, city, catalog_row, work_dir, entity_logger, metadata, raw_zip_name)
+            layer_upload(layer, entity, state, county, city, catalog_row, work_dir, entity_logger, metadata, raw_zip_name)
 
             # Record success
             entity_end_time = datetime.now()
@@ -1519,7 +1482,7 @@ def process_layer(layer, queue):
             # If it's a "no new data" case, update publish_date to show we checked
             if "No new data available" in str(e) or "data date unchanged" in str(e):
                 try:
-                    layer_upload(layer, entity, county, city, catalog_row, work_dir, entity_logger, {})
+                    layer_upload(layer, entity, state, county, city, catalog_row, work_dir, entity_logger, {})
                     logging.info(f"Updated publish_date for {entity} (NND case)")
                 except Exception as publish_error:
                     logging.warning(f"Failed to update publish_date for {entity}: {publish_error}")
@@ -1855,14 +1818,101 @@ def _write_csv_file(filepath, headers, data_dict):
             writer.writerow(filtered_row)
 
 # ---------------------------------------------------------------------------
+# Entity Discovery and Filtering Functions  
+# ---------------------------------------------------------------------------
+
+def get_all_entities_from_db() -> list[str]:
+    """Get all entities from database across all layers."""
+    entities = []
+    conn = psycopg2.connect(PG_CONNECTION)
+    cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+    try:
+        sql = (
+            "SELECT layer_subgroup, state, county, city FROM m_gis_data_catalog_main "
+            "WHERE status IS DISTINCT FROM 'DELETE'"
+        )
+        cur.execute(sql)
+        rows = cur.fetchall()
+        for row in rows:
+            layer = row['layer_subgroup']
+            if layer:  # Skip records without layer_subgroup
+                entity = _entity_from_parts(layer, row['state'], row['county'], row['city'])
+                entities.append(entity)
+    except Exception as exc:
+        logging.error(f"DB entity fetch failed: {exc}")
+    finally:
+        cur.close()
+        conn.close()
+    return list(dict.fromkeys(entities))  # de-dupe preserving order
+
+def apply_entity_filters(entities: list[str], include_patterns: list[str] = None, exclude_patterns: list[str] = None) -> list[str]:
+    """Apply include/exclude filters to entity list."""
+    if not entities:
+        return []
+    
+    # Apply include filters
+    if include_patterns:
+        included = set()
+        for pattern in include_patterns:
+            matches = fnmatch.filter(entities, pattern)
+            included.update(matches)
+            if matches:
+                logging.info(f"Include pattern '{pattern}' matched {len(matches)} entities")
+            else:
+                logging.warning(f"Include pattern '{pattern}' matched no entities")
+        entities = list(included)
+    
+    # Apply exclude filters
+    if exclude_patterns:
+        for pattern in exclude_patterns:
+            before_count = len(entities)
+            entities = [e for e in entities if not fnmatch.fnmatch(e, pattern)]
+            excluded_count = before_count - len(entities)
+            if excluded_count > 0:
+                logging.info(f"Exclude pattern '{pattern}' excluded {excluded_count} entities")
+    
+    return sorted(entities)
+
+def get_filtered_entities(include_patterns: list[str] = None, exclude_patterns: list[str] = None) -> list[str]:
+    """Get entities from database with include/exclude filters applied."""
+    # Get all entities from database
+    all_entities = get_all_entities_from_db()
+    logging.info(f"Found {len(all_entities)} total entities in database")
+    
+    # Apply filters
+    filtered_entities = apply_entity_filters(all_entities, include_patterns, exclude_patterns)
+    logging.info(f"After applying filters: {len(filtered_entities)} entities selected")
+    
+    return filtered_entities
+
+def group_entities_by_layer(entities: list[str]) -> dict[str, list[str]]:
+    """Group entities by their layer component."""
+    groups = {}
+    for entity in entities:
+        # Extract layer from entity (first component)
+        if '_' in entity:
+            layer = entity.split('_')[0]
+            if layer not in groups:
+                groups[layer] = []
+            groups[layer].append(entity)
+        else:
+            logging.warning(f"Invalid entity format (no layer component): {entity}")
+    
+    return groups
+
+# ---------------------------------------------------------------------------
 # Main Function
 # ---------------------------------------------------------------------------
 
 def main():
     """Main script execution."""
     parser = argparse.ArgumentParser(description="Clean 4-stage geospatial data processing pipeline.")
-    parser.add_argument("layer", help="The layer to process.")
-    parser.add_argument("entities", nargs='*', help="Optional entity IDs. If omitted, all entities for the layer will be processed.")
+    
+    # Entity filtering (replaces old layer + entities args)
+    parser.add_argument("--include", nargs='*', help="Entity patterns to include (e.g., 'zoning_fl_*', 'flu_fl_miami_dade_*')")
+    parser.add_argument("--exclude", nargs='*', help="Entity patterns to exclude")
+    
+    # Processing options
     parser.add_argument("--test-mode", action="store_true", help="Run in test mode, skipping actual execution.")
     parser.add_argument("--debug", action="store_true", help="Enable debug logging.")
     parser.add_argument("--no-log-isolation", dest='isolate_logs', action='store_false', help="Show all logs in console.")
@@ -1897,15 +1947,21 @@ def main():
 
     results = []
     try:
-        # Set the queue of entities to process
-        queue = set_queue(args.layer, args.entities)
-
-        if not queue:
-            logging.info("No entities to process.")
+        # Get all entities from database and apply filters
+        all_entities = get_filtered_entities(args.include, args.exclude)
+        
+        if not all_entities:
+            logging.info("No entities to process after applying filters.")
             return
 
-        # Process the layer using 4-stage pipeline
-        results = process_layer(args.layer, queue)
+        # Group entities by layer for processing
+        entities_by_layer = group_entities_by_layer(all_entities)
+        
+        # Process each layer separately
+        for layer, entities in entities_by_layer.items():
+            logging.info(f"Processing layer '{layer}' with {len(entities)} entities")
+            layer_results = process_layer(layer, entities)
+            results.extend(layer_results)
 
     except (ValueError, NotImplementedError) as e:
         logging.critical(f"A critical error occurred: {e}")

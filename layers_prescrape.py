@@ -2045,7 +2045,7 @@ def build_arg_parser() -> argparse.ArgumentParser:
         description="Prepare database for layers_scrape.py by detecting and fixing malformed records"
     )
     
-    parser.add_argument("layer", help="Layer name (zoning, flu, flood_zones, parcel_geo, streets, addr_pnts, subdiv, bldg_ftpr, fdot_tc, sunbiz, all)")
+    # Layer argument removed - layers are now extracted from entity patterns
     
     # Entity filtering options
     parser.add_argument("--include", nargs="*", metavar="ENTITY", 
