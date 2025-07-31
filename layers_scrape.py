@@ -272,6 +272,8 @@ FL_COUNTIES = {
 # Backwards compatibility alias
 counties = FL_COUNTIES
 
+
+
 # Work directory patterns (state-aware)
 WORK_DIR_PATTERNS = {
     'zoning': os.path.join(
@@ -386,24 +388,54 @@ def setup_entity_logger(layer, entity, work_dir):
         
     return logger
 
-def split_entity(entity: str) -> tuple[str, str, str]:
-    """Split entity into (state, county, city).
+def split_entity_new(entity: str) -> tuple[str, str, str, str]:
+    """Split entity into (layer, state, county, city).
     
-    Handles both old 2-part (county_city) and new 3-part (state_county_city) formats.
-    For multi-word counties like 'fl_miami_dade_unincorporated' or 'fl_st_lucie_port_st_lucie'.
+    Handles multiple entity formats:
+    - layer_state_county_city (e.g., zoning_fl_alachua_gainesville)
+    - layer_state (e.g., fdot_tc_fl)  
+    - layer (e.g., flood_zones)
+    - Legacy county_city format (backwards compatibility)
     
     Strategy:
-    1. Check if first token is a valid state - if so, use 3-part format
-    2. If not, assume old 2-part format and infer state from county
-    3. For county detection, use known suffixes and FL_COUNTIES lookup
+    1. Extract layer (first component)
+    2. Parse remaining components based on format
+    3. Handle multi-word counties and state inference
     """
+    
     tokens = entity.split("_")
-    if len(tokens) < 2:
+    if len(tokens) < 1:
         raise ValueError(f"Invalid entity format: {entity}")
-
-    # Check if first token is a valid state
-    first_token = tokens[0].lower()
-    if first_token in VALID_STATES:
+    
+    # Extract layer (first component)
+    layer = tokens[0]
+    
+    if len(tokens) == 1:
+        # Single component: just layer (e.g., "flood_zones")
+        return (layer, None, None, None)
+    elif len(tokens) == 2:
+        # Two components: check if second is a state
+        second_token = tokens[1].lower()
+        if second_token in VALID_STATES:
+            # layer_state format (e.g., "fdot_tc_fl")
+            return (layer, second_token, None, None)
+        else:
+            # Legacy county_city format - need to infer state
+            county_city_tokens = tokens
+    elif len(tokens) >= 3:
+        # Three or more components: check if second is a state
+        second_token = tokens[1].lower()
+        if second_token in VALID_STATES:
+            # layer_state_county_city format
+            layer = tokens[0]
+            state = second_token
+            county_city_tokens = tokens[2:]
+        else:
+            # Legacy county_city format - treat all as county_city
+            county_city_tokens = tokens
+    
+    # Parse county_city portion (for legacy format or layer_state_county_city)
+    if 'county_city_tokens' in locals():
         # New 3-part format: state_county_city
         if len(tokens) < 3:
             raise ValueError(f"Invalid 3-part entity format: {entity}")
@@ -448,10 +480,151 @@ def split_entity(entity: str) -> tuple[str, str, str]:
     
     return state, county, city
 
+def split_entity_v2(entity: str) -> tuple[str, str, str, str]:
+    """Split entity into (layer, state, county, city).
+    
+    Handles multiple entity formats:
+    - layer_state_county_city (e.g., zoning_fl_alachua_gainesville)
+    - layer_state (e.g., fdot_tc_fl)  
+    - layer (e.g., flood_zones)
+    """
+    tokens = entity.split("_")
+    if len(tokens) < 1:
+        raise ValueError(f"Invalid entity format: {entity}")
+    
+    # Extract layer (first component)
+    layer = tokens[0]
+    
+    if len(tokens) == 1:
+        # Single component: just layer (e.g., "flood_zones")
+        return (layer, None, None, None)
+    
+    elif len(tokens) == 2:
+        # Two components: check if second is a state
+        second_token = tokens[1].lower()
+        if second_token in VALID_STATES:
+            # layer_state format (e.g., "fdot_tc_fl")
+            return (layer, second_token, None, None)
+        else:
+            # Legacy county_city format - infer state from county
+            county, city = _parse_county_city_tokens(tokens, entity)
+            if county in FL_COUNTIES:
+                state = 'fl'
+            else:
+                raise ValueError(f"County '{county}' not found in FL_COUNTIES. Cannot determine state for entity: {entity}")
+            return (tokens[0], state, county, city)  # Use first token as layer for legacy
+    
+    else:  # len(tokens) >= 3
+        # Three or more components: check if second is a state
+        second_token = tokens[1].lower()
+        if second_token in VALID_STATES:
+            # layer_state_county_city format
+            state = second_token
+            county_city_tokens = tokens[2:]
+            county, city = _parse_county_city_tokens(county_city_tokens, entity)
+            return (layer, state, county, city)
+        else:
+            # Legacy county_city format - all tokens are county_city
+            county, city = _parse_county_city_tokens(tokens, entity)
+            if county in FL_COUNTIES:
+                state = 'fl'
+            else:
+                raise ValueError(f"County '{county}' not found in FL_COUNTIES. Cannot determine state for entity: {entity}")
+            return (tokens[0], state, county, city)  # Use first token as layer for legacy
+
+def parse_entity_pattern(pattern: str) -> tuple[str | None, str | None, str | None, str | None]:
+    """Parse an entity pattern into (layer, state, county, city) components.
+    
+    Strategy:
+    1. Check if pattern starts with any known layer name - extract and remove it
+    2. Check if remaining starts with any valid state - extract and remove it  
+    3. Check if remaining starts with any county from that state - extract and remove it
+    4. Whatever remains is the city
+    
+    Returns tuple of (layer, state, county, city) where None means not found/parsed.
+    """
+    remaining = pattern.strip()
+    if not remaining:
+        return (None, None, None, None)
+    
+    # Step 1: Extract layer
+    layer = None
+    layer_names = ['zoning', 'flu', 'flood_zones', 'parcel_geo', 'streets', 'addr_pnts', 'subdiv', 'bldg_ftpr', 'fdot_tc', 'sunbiz']
+    
+    for layer_name in layer_names:
+        if remaining.startswith(layer_name):
+            layer = layer_name
+            remaining = remaining[len(layer_name):].lstrip('_')
+            break
+    
+    if not remaining:
+        return (layer, None, None, None)
+    
+    # Step 2: Extract state
+    state = None
+    for state_abbrev in VALID_STATES.keys():
+        if remaining == state_abbrev or remaining.startswith(state_abbrev + '_'):
+            state = state_abbrev
+            remaining = remaining[len(state_abbrev):].lstrip('_')
+            break
+    
+    if not remaining:
+        return (layer, state, None, None)
+    
+    # Step 3: Extract county 
+    county = None
+    # Check FL counties regardless of state (we can infer state from county)
+    for county_name in FL_COUNTIES:
+        if remaining.startswith(county_name):
+            county = county_name
+            # If no state was identified yet, infer it from the county
+            if state is None:
+                state = 'fl'
+            remaining = remaining[len(county_name):].lstrip('_')
+            break
+    
+    if not remaining:
+        return (layer, state, county, None)
+    
+    # Step 4: Whatever remains is the city
+    city = remaining if remaining else None
+    
+    return (layer, state, county, city)
+
+def _parse_county_city_tokens(tokens: list[str], entity: str) -> tuple[str, str]:
+    """Parse county_city tokens into (county, city)."""
+    if not tokens:
+        raise ValueError(f"No county/city tokens to parse in entity: {entity}")
+    
+    # Special suffixes that indicate city type
+    suffixes = {"unincorporated", "incorporated", "unified", "countywide"}
+    
+    if tokens[-1] in suffixes:
+        county = "_".join(tokens[:-1])
+        city = tokens[-1]
+        return (county, city)
+    
+    # Try to recognize multi-word counties by longest-prefix match
+    for i in range(len(tokens), 1, -1):  # from longest possible down to 2 tokens
+        candidate_county = "_".join(tokens[:i])
+        if candidate_county in FL_COUNTIES:
+            county = candidate_county
+            city = "_".join(tokens[i:])
+            if not city:  # edge case – entity only county
+                raise ValueError(f"Could not determine city part in entity: {entity}")
+            return (county, city)
+    
+    # Fallback to simple split if no FL county match
+    if len(tokens) < 2:
+        raise ValueError(f"Could not parse county_city from entity: {entity}")
+    county = tokens[0]
+    city = "_".join(tokens[1:])
+    return (county, city)
+
 def resolve_work_dir(layer: str, entity: str):
     """Return (work_dir, state, county, city) for layer/entity."""
-    # Parse entity to get state, county, city
-    state, county, city = split_entity(entity)
+    # Parse entity to get layer, state, county, city
+    parsed_layer, state, county, city = split_entity_v2(entity)
     
     # Generate state_name for directory path (florida, georgia, delaware, etc.)
     state_name = 'florida' if state == 'fl' else state.lower()
@@ -588,19 +761,34 @@ def _fetch_catalog_row(layer: str, state: str, county: str, city: str):
     try:
         # Convert internal format names to external format for database query
         layer_external = format_name(layer, 'layer', external=True)
-        state_external = VALID_STATES.get(state, state.upper())
-        county_external = format_name(county, 'county', external=True)
-        city_external = format_name(city, 'city', external=True)
+        state_external = VALID_STATES.get(state, state.upper()) if state else None
+        county_external = format_name(county, 'county', external=True) if county else None
+        city_external = format_name(city, 'city', external=True) if city else None
         
-        # Try with state first, fallback to without state for backwards compatibility
-        sql = (
-            "SELECT * FROM m_gis_data_catalog_main "
-            "WHERE lower(layer_subgroup) = %s "
-            "AND (state = %s OR state IS NULL) "
-            "AND lower(county) = %s "
-            "AND lower(city) = %s LIMIT 1"
-        )
-        params = (layer_external.lower(), state_external, county_external.lower(), city_external.lower())
+        # Build SQL query based on which fields are provided
+        sql_parts = ["SELECT * FROM m_gis_data_catalog_main WHERE lower(layer_subgroup) = %s"]
+        params = [layer_external.lower()]
+        
+        # Add state condition
+        if state_external:
+            sql_parts.append("AND (state = %s OR state IS NULL)")
+            params.append(state_external)
+        
+        # Add county condition
+        if county_external:
+            sql_parts.append("AND lower(county) = %s")
+            params.append(county_external.lower())
+        else:
+            sql_parts.append("AND county IS NULL")
+        
+        # Add city condition  
+        if city_external:
+            sql_parts.append("AND lower(city) = %s")
+            params.append(city_external.lower())
+        else:
+            sql_parts.append("AND city IS NULL")
+            
+        sql = " ".join(sql_parts) + " LIMIT 1"
         cur.execute(sql, params)
         row = cur.fetchone()
         return dict(row) if row else None
@@ -625,8 +813,12 @@ def _get_existing_data_date(layer: str, entity: str) -> str:
         return None
     
     try:
-        state, county, city = split_entity(entity)
-        entity_key = f"{county}_{city}"
+        parsed_layer, state, county, city = split_entity_v2(entity)
+        # For special entities with NULL county/city, use the entity itself as key
+        if county is None and city is None:
+            entity_key = entity
+        else:
+            entity_key = f"{county}_{city}"
         
         with open(summary_filepath, 'r', newline='') as csvfile:
             reader = csv.DictReader(csvfile)
@@ -658,6 +850,61 @@ def _fetch_entities_from_db(layer: str) -> list[str]:
             entities.append(entity)
     except Exception as exc:
         logging.error(f"DB entity fetch failed: {exc}")
+    finally:
+        cur.close()
+        conn.close()
+    return list(dict.fromkeys(entities))  # de-dupe preserving order
+
+def _fetch_entities_by_pattern(pattern: str) -> list[str]:
+    """Return list of entity strings matching the given pattern from database."""
+    # Parse the pattern to get components
+    layer, state, county, city = parse_entity_pattern(pattern)
+    
+    entities = []
+    conn = psycopg2.connect(PG_CONNECTION)
+    cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+    try:
+        # Build dynamic SQL based on parsed components
+        sql_parts = ["SELECT state, county, city FROM m_gis_data_catalog_main WHERE status IS DISTINCT FROM 'DELETE'"]
+        params = []
+        
+        if layer:
+            sql_parts.append("AND lower(layer_subgroup) = %s")
+            params.append(layer.lower())
+        
+        if state:
+            state_external = VALID_STATES.get(state, state.upper())
+            sql_parts.append("AND (state = %s OR state IS NULL)")
+            params.append(state_external)
+        
+        if county:
+            county_external = format_name(county, 'county', external=True)
+            sql_parts.append("AND lower(county) = %s")
+            params.append(county_external.lower())
+        else:
+            # If county was not parsed, don't restrict by county
+            pass
+        
+        if city:
+            city_external = format_name(city, 'city', external=True)
+            sql_parts.append("AND lower(city) = %s")
+            params.append(city_external.lower())
+        else:
+            # If city was not parsed, don't restrict by city
+            pass
+            
+        sql = " ".join(sql_parts)
+        cur.execute(sql, params)
+        rows = cur.fetchall()
+        
+        for row in rows:
+            # Use the parsed layer or try to infer it
+            entity_layer = layer if layer else 'unknown'
+            entity = _entity_from_parts(entity_layer, row['state'], row['county'], row['city'])
+            entities.append(entity)
+            
+    except Exception as exc:
+        logging.error(f"DB pattern fetch failed for '{pattern}': {exc}")
     finally:
         cur.close()
         conn.close()
@@ -1547,7 +1794,7 @@ def generate_summary(results):
         # Process results and update data
         for result in results:
             entity = result['entity']
-            state, county, city = split_entity(entity)
+            parsed_layer, state, county, city = split_entity_v2(entity)
             entity_key = f"{county}_{city}"
             
             # Get existing row or create new one
@@ -1716,7 +1963,7 @@ def _initialize_csv_status(layer, queue):
         
         # Initialize status columns for entities in queue
         for entity in queue:
-            state, county, city = split_entity(entity)
+            parsed_layer, state, county, city = split_entity_v2(entity)
             entity_key = f"{county}_{city}"
             
             if entity_key in existing_data:
@@ -1766,8 +2013,12 @@ def _update_csv_status(layer, entity, stage, status, error_msg='', data_date='')
                     existing_data[entity_key] = row
         
         # Update the specific entity
-        state, county, city = split_entity(entity)
-        entity_key = f"{county}_{city}"
+        parsed_layer, state, county, city = split_entity_v2(entity)
+        # For special entities with NULL county/city, use the entity itself as key
+        if county is None and city is None:
+            entity_key = entity
+        else:
+            entity_key = f"{county}_{city}"
         
         if entity_key in existing_data:
             row = existing_data[entity_key]
@@ -1880,13 +2131,31 @@ def apply_entity_filters(entities: list[str], include_patterns: list[str] = None
     return sorted(entities)
 
 def get_filtered_entities(include_patterns: list[str] = None, exclude_patterns: list[str] = None) -> list[str]:
-    """Get entities from database with include/exclude filters applied."""
-    # Get all entities from database
-    all_entities = get_all_entities_from_db()
-    logging.info(f"Found {len(all_entities)} total entities in database")
+    """Get entities from database with include/exclude filters applied using pattern parsing."""
+    entities = set()
     
-    # Apply filters
-    filtered_entities = apply_entity_filters(all_entities, include_patterns, exclude_patterns)
+    # If include patterns specified, get entities matching those patterns
+    if include_patterns:
+        for pattern in include_patterns:
+            pattern_entities = _fetch_entities_by_pattern(pattern)
+            entities.update(pattern_entities)
+            logging.info(f"Pattern '{pattern}' matched {len(pattern_entities)} entities")
+    else:
+        # No include patterns - get all entities
+        all_entities = get_all_entities_from_db()
+        entities.update(all_entities)
+        logging.info(f"Found {len(all_entities)} total entities in database")
+    
+    # Apply exclude filters
+    if exclude_patterns:
+        exclude_entities = set()
+        for pattern in exclude_patterns:
+            pattern_entities = _fetch_entities_by_pattern(pattern)
+            exclude_entities.update(pattern_entities)
+            logging.info(f"Exclude pattern '{pattern}' matched {len(pattern_entities)} entities")
+        entities = entities - exclude_entities
+    
+    filtered_entities = list(entities)
     logging.info(f"After applying filters: {len(filtered_entities)} entities selected")
     
     return filtered_entities
