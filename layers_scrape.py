@@ -29,6 +29,37 @@ import psycopg2.extras
 from pathlib import Path
 
 # ---------------------------------------------------------------------------
+# Layer Configuration
+# ---------------------------------------------------------------------------
+
+# Note: Update scripts are now generated dynamically based on layer name
+
+# Formats that should get full pipeline treatment
+FULL_PIPELINE_FORMATS = {'ags', 'arcgis', 'esri', 'ags_extract', 'shp', 'zip', 'url'}
+
+# Formats that should skip processing but still get metadata
+METADATA_ONLY_FORMATS = {'pdf'}
+
+# All other formats are excluded from the pipeline entirely
+
+def should_process_entity(catalog_row: dict) -> tuple[bool, str]:
+    """Determine if an entity should be processed and why.
+    
+    Returns:
+        tuple[bool, str]: (should_process, reason)
+    """
+    fmt = (catalog_row.get('format') or '').lower()
+    
+    if fmt in FULL_PIPELINE_FORMATS:
+        return True, f"Format '{fmt}' gets full pipeline treatment"
+    elif fmt in METADATA_ONLY_FORMATS:
+        return True, f"Format '{fmt}' gets metadata-only treatment"
+    else:
+        return False, f"Format '{fmt}' is excluded from pipeline"
+
+# Note: should_run_processing logic is now integrated directly into layer_processing function
+
+# ---------------------------------------------------------------------------
 # Name Formatting Utilities
 # ---------------------------------------------------------------------------
 
@@ -697,6 +728,48 @@ def layer_download(layer: str, entity: str, county: str, city: str, catalog_row:
         _update_csv_status(layer, entity, 'download', 'SUCCESS')  # Assume success in test mode
         return None
 
+def extract_basic_file_metadata(work_dir: str, logger) -> dict:
+    """Extract basic metadata from downloaded files (for non-shapefile formats like PDF)."""
+    metadata = {}
+    
+    try:
+        files = [f for f in os.listdir(work_dir) if os.path.isfile(os.path.join(work_dir, f))]
+        if not files:
+            return metadata
+        
+        # Find the largest file (likely the main data file)
+        largest_file = None
+        largest_size = 0
+        
+        for filename in files:
+            file_path = os.path.join(work_dir, filename)
+            file_size = os.path.getsize(file_path)
+            if file_size > largest_size:
+                largest_size = file_size
+                largest_file = filename
+        
+        if largest_file:
+            file_path = os.path.join(work_dir, largest_file)
+            stat = os.stat(file_path)
+            
+            # Use file modification time as data_date
+            data_date = datetime.fromtimestamp(stat.st_mtime).strftime('%Y-%m-%d')
+            
+            metadata = {
+                'shp': largest_file,  # Store filename in shp field for consistency
+                'data_date': data_date,
+                'epsg': '',  # Not available for non-geospatial files
+                'field_names': '[]',  # Not available for non-structured files
+                'file_size': largest_size
+            }
+            
+            logger.debug(f"Basic metadata extracted from: {largest_file} (size: {largest_size} bytes, date: {data_date})")
+            
+    except Exception as e:
+        logger.warning(f"Failed to extract basic file metadata: {e}")
+    
+    return metadata
+
 def layer_metadata(layer: str, entity: str, county: str, city: str, catalog_row: dict, work_dir: str, logger):
     """Handle the metadata extraction phase for an entity."""
     if not CONFIG.run_metadata:
@@ -704,52 +777,78 @@ def layer_metadata(layer: str, entity: str, county: str, city: str, catalog_row:
         return {}
 
     _debug_main(f"[METADATA] Extracting metadata for {layer}/{entity}", logger)
-
-    # Find shapefile to process
-    shp_to_process = None
-    try:
-        shp_to_process = _find_shapefile(work_dir, logger)
-    except DownloadError:
-        logger.warning("No shapefile found for metadata extraction")
-        return {}
-
-    if shp_to_process:
-        metadata = extract_shp_metadata(shp_to_process, logger)
-        logger.debug(f"Metadata extracted from: {os.path.basename(shp_to_process)}")
+    
+    fmt = (catalog_row.get('format') or '').lower()
+    
+    # Handle different formats differently
+    if fmt in METADATA_ONLY_FORMATS:
+        # For PDF and other non-geospatial formats, extract basic file metadata
+        logger.debug(f"Extracting basic file metadata for format: {fmt}")
+        metadata = extract_basic_file_metadata(work_dir, logger)
         
-        # Log key metadata extracted
-        epsg = metadata.get('epsg', 'Unknown')
-        data_date = metadata.get('data_date', 'Unknown')
-        field_count = len(json.loads(metadata.get('field_names', '[]')))
-        _debug_main(f"[METADATA] Extracted: EPSG:{epsg}, data_date:{data_date}, {field_count} fields", logger)
-        
-        # Normalize data_date to ensure it's not later than today
-        if metadata.get('data_date'):
-            today = datetime.now().strftime('%Y-%m-%d')
-            if metadata['data_date'] > today:
-                logger.warning(f"Data date {metadata['data_date']} is later than today {today}, setting data_date to today")
-                metadata['data_date'] = today
-        
-        # Check if data_date matches existing CSV data (NND detection)
-        try:
-            existing_data_date = _get_existing_data_date(layer, entity)
-            new_data_date = metadata.get('data_date')
-            if existing_data_date and new_data_date == existing_data_date:
-                raise SkipEntityError("No new data available (data date unchanged)", layer=layer, entity=entity)
-        except SkipEntityError:
-            raise  # Re-raise SkipEntityError
-        except Exception as e:
-            logger.debug(f"Could not check existing data date: {e}")
-        
+        if metadata:
+            _debug_main(f"[METADATA] Basic metadata extracted: file:{metadata.get('shp', 'unknown')}, date:{metadata.get('data_date', 'unknown')}", logger)
+        else:
+            logger.warning("No basic metadata could be extracted")
+            
         return metadata
+        
     else:
-        logger.warning("No shapefile found to process for metadata extraction")
-        return {}
+        # For geospatial formats, try to find and process shapefiles
+        shp_to_process = None
+        try:
+            shp_to_process = _find_shapefile(work_dir, logger)
+        except DownloadError:
+            logger.warning("No shapefile found for metadata extraction")
+            return {}
+
+        if shp_to_process:
+            metadata = extract_shp_metadata(shp_to_process, logger)
+            logger.debug(f"Metadata extracted from: {os.path.basename(shp_to_process)}")
+            
+            # Log key metadata extracted
+            epsg = metadata.get('epsg', 'Unknown')
+            data_date = metadata.get('data_date', 'Unknown')
+            field_count = len(json.loads(metadata.get('field_names', '[]')))
+            _debug_main(f"[METADATA] Extracted: EPSG:{epsg}, data_date:{data_date}, {field_count} fields", logger)
+            
+            # Normalize data_date to ensure it's not later than today
+            if metadata.get('data_date'):
+                today = datetime.now().strftime('%Y-%m-%d')
+                if metadata['data_date'] > today:
+                    logger.warning(f"Data date {metadata['data_date']} is later than today {today}, setting data_date to today")
+                    metadata['data_date'] = today
+            
+            # Check if data_date matches existing CSV data (NND detection)
+            try:
+                existing_data_date = _get_existing_data_date(layer, entity)
+                new_data_date = metadata.get('data_date')
+                if existing_data_date and new_data_date == existing_data_date:
+                    raise SkipEntityError("No new data available (data date unchanged)", layer=layer, entity=entity)
+            except SkipEntityError:
+                raise  # Re-raise SkipEntityError
+            except Exception as e:
+                logger.debug(f"Could not check existing data date: {e}")
+            
+            return metadata
+        else:
+            logger.warning("No shapefile found to process for metadata extraction")
+            return {}
 
 def layer_processing(layer: str, entity: str, county: str, city: str, catalog_row: dict, work_dir: str, logger):
     """Handle the processing phase for an entity."""
     if not CONFIG.run_processing:
         logger.debug(f"[PROCESSING] Skipping processing for {layer}/{entity} (disabled in config)")
+        _update_csv_status(layer, entity, 'processing', 'SKIPPED', error_msg='Processing disabled in config')
+        return
+
+    fmt = (catalog_row.get('format') or '').lower()
+    
+    # Skip processing for metadata-only formats (like PDF)
+    if fmt in METADATA_ONLY_FORMATS:
+        reason = f"Format '{fmt}' skips processing stage"
+        logger.info(f"[PROCESSING] Skipping processing for {layer}/{entity}: {reason}")
+        _update_csv_status(layer, entity, 'processing', 'SKIPPED', error_msg=reason)
         return
 
     _debug_main(f"[PROCESSING] Starting processing for {layer}/{entity}", logger)
@@ -763,7 +862,7 @@ def layer_processing(layer: str, entity: str, county: str, city: str, catalog_ro
             command = cmd_str.split() if isinstance(cmd_str, str) else cmd_str
             _run_command(command, work_dir, logger)
 
-    # 2. Run layer-specific update script
+    # 2. Run layer-specific update script (dynamic generation)
     proc_dir = os.path.join(os.path.dirname(__file__), 'processing_tools')
     
     if layer == 'zoning' and os.path.exists(os.path.join(proc_dir, 'update_zoning2.py')):
@@ -775,10 +874,12 @@ def layer_processing(layer: str, entity: str, county: str, city: str, catalog_ro
             command = ['python3', update_script, county, city]
             script_name = f'update_{layer}.py'
         else:
-            logger.warning(f"No update script found for layer {layer}")
+            reason = f"No update script found for layer '{layer}'"
+            logger.info(f"[PROCESSING] Skipping processing for {layer}/{entity}: {reason}")
+            _update_csv_status(layer, entity, 'processing', 'SKIPPED', error_msg=reason)
             return
 
-            _debug_main(f"[PROCESSING] Running update script: {script_name}", logger)
+    _debug_main(f"[PROCESSING] Running update script: {script_name}", logger)
     logger.debug(f"Running update script for {layer}/{entity}")
     try:
         _run_command(command, work_dir, logger)
@@ -787,6 +888,51 @@ def layer_processing(layer: str, entity: str, county: str, city: str, catalog_ro
     except Exception as e:
         _update_csv_status(layer, entity, 'processing', 'FAILED', str(e))
         raise ProcessingError(f"Processing failed: {e}", layer, entity) from e
+
+def update_publish_date_only(layer: str, entity: str, county: str, city: str, catalog_row: dict, work_dir: str, logger):
+    """Update only the publish_date in the catalog for NND cases (preserves all other data)."""
+    if not CONFIG.run_upload:
+        logger.debug(f"[PUBLISH_DATE] Skipping publish date update for {layer}/{entity} (upload disabled in config)")
+        return
+
+    _debug_main(f"[PUBLISH_DATE] Updating publish_date only for {layer}/{entity} (NND case)", logger)
+
+    # Set publish_date to today
+    publish_date = datetime.now().strftime('%Y-%m-%d')
+    
+    # Simple SQL that only updates publish_date, preserving all other values
+    sql_update = (
+        "UPDATE m_gis_data_catalog_main SET "
+        "publish_date = '{publish_date}' "
+        "WHERE layer_subgroup = '{layer}' "
+        "AND county = '{county}' "
+        "AND city = '{city}';"
+    )
+    
+    # Prepare placeholders
+    placeholders = {
+        'layer': layer,
+        'county': county.lower().replace('_', ' '),
+        'city': format_name(city, 'city', external=True),
+        'publish_date': publish_date,
+    }
+    
+    logger.debug(f"Publish date update placeholders - publish_date: {publish_date}")
+
+    # Substitute placeholders
+    final_sql = sql_update.format(**placeholders)
+    
+    command = ['psql', '-d', 'gisdev', '-U', 'postgres', '-c', final_sql]
+    
+    logger.debug(f"Running publish date update command for {layer}/{entity}")
+    try:
+        _run_command(command, work_dir, logger)
+        # Note: We don't call _update_csv_status here since the NND status is already set by the download stage
+        _debug_main(f"[PUBLISH_DATE] Publish date updated successfully for {layer}/{entity}", logger)
+    except Exception as e:
+        _update_csv_status(layer, entity, 'upload', 'FAILED', str(e))
+        raise UploadError(f"Failed to update publish date: {e}", layer, entity) from e
+
 
 def layer_upload(layer: str, entity: str, county: str, city: str, catalog_row: dict, work_dir: str, logger, metadata: dict, raw_zip_name: str = None):
     """Handle the upload phase for an entity."""
@@ -1201,6 +1347,18 @@ def process_layer(layer, queue):
             if catalog_row is None:
                 raise RuntimeError(f"Catalog row not found for {layer}/{entity}")
 
+            # Check if entity should be processed based on format
+            should_process, process_reason = should_process_entity(catalog_row)
+            if not should_process:
+                logging.info(f"Skipping entity {entity}: {process_reason}")
+                results.append({
+                    'layer': layer, 'entity': entity, 'status': 'skipped',
+                    'warning': f"Format excluded: {process_reason}", 'data_date': None, 'runtime_seconds': 0
+                })
+                continue
+
+            logging.info(f"Processing entity {entity}: {process_reason}")
+
             # Initialize variables
             raw_zip_name = None
             metadata = {}
@@ -1249,7 +1407,17 @@ def process_layer(layer, queue):
             logging.info(f"--- Successfully processed entity: {entity} ---")
 
         except SkipEntityError as e:
+            # Handle NND cases with publish date update
             logging.info(f"Skipping entity {entity} for layer {layer}: {e}")
+            
+            # If it's a "no new data" case, update publish_date to show we checked
+            if "No new data available" in str(e) or "data date unchanged" in str(e):
+                try:
+                    update_publish_date_only(layer, entity, county, city, catalog_row, entity_logger)
+                    logging.info(f"Updated publish_date for {entity} (NND case)")
+                except Exception as publish_error:
+                    logging.warning(f"Failed to update publish_date for {entity}: {publish_error}")
+            
             entity_end_time = datetime.now()
             entity_runtime = (entity_end_time - entity_start_time).total_seconds()
             results.append({
@@ -1319,12 +1487,18 @@ def generate_summary(results):
             status = result.get('status', 'failure')
             error_msg = result.get('error', '') or result.get('warning', '')
             
-            if status == 'skipped' and 'No new data available' in str(error_msg):
+            if status == 'skipped' and ('No new data available' in str(error_msg) or 'data date unchanged' in str(error_msg)):
                 # No new data case
                 row['download_status'] = 'NND'
                 row['processing_status'] = ''
                 row['upload_status'] = ''
                 # Don't clear error_message - preserve the source information set by _update_csv_status
+            elif status == 'skipped' and 'Format excluded' in str(error_msg):
+                # Format not supported by pipeline
+                row['download_status'] = 'SKIPPED'
+                row['processing_status'] = 'SKIPPED'
+                row['upload_status'] = 'SKIPPED'
+                row['error_message'] = str(error_msg)
             elif status == 'success':
                 # Full success
                 row['download_status'] = 'SUCCESS'
@@ -1542,6 +1716,9 @@ def _update_csv_status(layer, entity, stage, status, error_msg='', data_date='')
                 row['error_message'] = str(error_msg)
             elif status == 'NND' and error_msg:
                 # Keep error message for NND to show source of detection
+                row['error_message'] = str(error_msg)
+            elif status == 'SKIPPED' and error_msg:
+                # Keep error message for SKIPPED to show why stage was skipped
                 row['error_message'] = str(error_msg)
             elif status == 'SUCCESS':
                 row['error_message'] = ''

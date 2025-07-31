@@ -1,6 +1,8 @@
 {
-  "alachua_gainesville": {
-    "src_url_file": "URL_DEPRECATED",
-    "fields_obj_transform": "MANUAL_REQUIRED"
+  "palm_beach_boca_raton": {
+    "src_url_file": "URL_DEPRECATED"
+  },
+  "broward_fort_lauderdale": {
+    "src_url_file": "URL_DEPRECATED"
   }
 }
