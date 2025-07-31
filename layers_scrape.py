@@ -750,20 +750,36 @@ def extract_basic_file_metadata(work_dir: str, logger) -> dict:
         
         if largest_file:
             file_path = os.path.join(work_dir, largest_file)
-            stat = os.stat(file_path)
             
-            # Use file modification time as data_date
-            data_date = datetime.fromtimestamp(stat.st_mtime).strftime('%Y-%m-%d')
+            # Use conservative PDF metadata extraction for PDF files
+            data_date = None
+            if largest_file.lower().endswith('.pdf'):
+                pdf_metadata = _extract_pdf_metadata_conservative(file_path, logger)
+                if pdf_metadata:
+                    data_date = pdf_metadata['data_date']
+                    logger.debug(f"PDF metadata extracted using {pdf_metadata['method']}: {data_date}")
+                else:
+                    # No reasonable date found - don't fake freshness
+                    logger.warning(f"No reasonable data date found for PDF: {largest_file}")
+            else:
+                # For non-PDF files, fall back to file modification time
+                stat = os.stat(file_path)
+                data_date = datetime.fromtimestamp(stat.st_mtime).strftime('%Y-%m-%d')
+                logger.debug(f"Using file modification time for non-PDF: {data_date}")
             
             metadata = {
                 'shp': largest_file,  # Store filename in shp field for consistency
-                'data_date': data_date,
                 'epsg': '',  # Not available for non-geospatial files
                 'field_names': '[]',  # Not available for non-structured files
                 'file_size': largest_size
             }
             
-            logger.debug(f"Basic metadata extracted from: {largest_file} (size: {largest_size} bytes, date: {data_date})")
+            # Only add data_date if we found a reasonable one
+            if data_date:
+                metadata['data_date'] = data_date
+                logger.debug(f"Basic metadata extracted from: {largest_file} (size: {largest_size} bytes, date: {data_date})")
+            else:
+                logger.debug(f"Basic metadata extracted from: {largest_file} (size: {largest_size} bytes, no data_date)")
             
     except Exception as e:
         logger.warning(f"Failed to extract basic file metadata: {e}")
@@ -984,6 +1000,83 @@ def _get_directory_state(work_dir):
     except OSError:
         pass
     return state
+
+def _extract_date_from_filename(pdf_path):
+    """Extract date from PDF filename using common patterns."""
+    filename = Path(pdf_path).stem.lower()
+    
+    patterns = [
+        r'(\d{4}[-_]\d{2}[-_]\d{2})',  # YYYY-MM-DD or YYYY_MM_DD
+        r'(\d{2}[-_]\d{2}[-_]\d{4})',  # MM-DD-YYYY or MM_DD_YYYY
+        r'(\d{4})',  # Just year (will use Jan 1st)
+    ]
+    
+    for pattern in patterns:
+        match = re.search(pattern, filename)
+        if match:
+            date_str = match.group(1)
+            try:
+                # Try different date formats
+                if len(date_str) == 4:  # Just year
+                    return f"{date_str}-01-01"
+                elif '-' in date_str or '_' in date_str:
+                    normalized = date_str.replace('_', '-')
+                    if len(normalized.split('-')[0]) == 4:  # YYYY-MM-DD
+                        return normalized
+                    else:  # MM-DD-YYYY, convert to YYYY-MM-DD
+                        parts = normalized.split('-')
+                        return f"{parts[2]}-{parts[0].zfill(2)}-{parts[1].zfill(2)}"
+            except (ValueError, IndexError):
+                continue
+    
+    return None
+
+def _is_reasonable_date(date_str):
+    """Check if date is within reasonable range (last 10 years to last week)."""
+    try:
+        date_obj = datetime.strptime(date_str, '%Y-%m-%d')
+        now = datetime.now()
+        ten_years_ago = now - timedelta(days=365*10)
+        one_week_ago = now - timedelta(days=7)
+        
+        return ten_years_ago <= date_obj <= one_week_ago
+    except (ValueError, TypeError):
+        return False
+
+def _extract_pdf_metadata_conservative(pdf_path, logger):
+    """
+    Extract metadata from PDF using conservative approach.
+    
+    Strategy:
+    1. Try filename pattern extraction
+    2. Try file modification time (but only if reasonable)
+    3. Return None if no reasonable date found (avoids fake freshness)
+    
+    Returns dict with data_date and method, or None if no reasonable date found.
+    """
+    logger.debug(f"Extracting PDF metadata from: {pdf_path}")
+    
+    # 1. Try filename patterns first
+    filename_date = _extract_date_from_filename(pdf_path)
+    if filename_date and _is_reasonable_date(filename_date):
+        logger.debug(f"Found reasonable date from filename: {filename_date}")
+        return {'data_date': filename_date, 'method': 'filename_pattern'}
+    
+    # 2. Try file modification time as last resort
+    try:
+        file_mtime = os.path.getmtime(pdf_path)
+        file_date = datetime.fromtimestamp(file_mtime).strftime('%Y-%m-%d')
+        
+        if _is_reasonable_date(file_date):
+            logger.debug(f"Found reasonable date from file mtime: {file_date}")
+            return {'data_date': file_date, 'method': 'file_modification'}
+    except OSError:
+        pass
+    
+    # 3. Conservative fallback: return None instead of current date
+    # This prevents showing PDFs as "fresh" when they're actually stale
+    logger.warning(f"No reasonable data date found for PDF: {pdf_path}")
+    return None
 
 def _validate_ags_download(work_dir, table_name, logger):
     """Validate AGS download by checking GeoJSON file content."""
