@@ -245,19 +245,26 @@ layers = {
     "sunbiz"
 }
 
-# Florida counties set
-counties = {
-    "miami_dade", "broward", "palm_beach", "hillsborough", "orange", "pinellas", 
-    "duval", "lee", "polk", "brevard", "volusia", "pasco", "seminole", "sarasota",
-    "manatee", "collier", "osceola", "marion", "lake", "st_lucie", "escambia",
-    "leon", "alachua", "st_johns", "clay", "okaloosa", "hernando", "bay",
-    "charlotte", "santa_rosa", "martin", "indian_river", "citrus", "sumter",
-    "flagler", "highlands", "nassau", "monroe", "putnam", "walton", "columbia",
-    "gadsden", "suwannee", "jackson", "hendry", "okeechobee", "levy", "desoto",
-    "wakulla", "baker", "bradford", "hardee", "washington", "taylor", "gilchrist",
-    "gulf", "union", "hamilton", "jefferson", "lafayette", "liberty", "madison",
-    "glades", "calhoun", "dixie", "franklin"
+# Valid state abbreviations for multi-state support
+VALID_STATES = {
+    'fl': 'FL',  # Florida (primary)
+    'ga': 'GA',  # Georgia (future)
+    'de': 'DE',  # Delaware (future)
 }
+
+# Florida counties set (matching layers_prescrape.py format)
+FL_COUNTIES = {
+    "alachua", "baker", "bay", "bradford", "brevard", "broward", "calhoun", "charlotte", "citrus", "clay",
+    "collier", "columbia", "desoto", "dixie", "duval", "escambia", "flagler", "franklin", "gadsden", "gilchrist",
+    "glades", "gulf", "hamilton", "hardee", "hendry", "hernando", "highlands", "hillsborough", "holmes",
+    "indian_river", "jackson", "jefferson", "lafayette", "lake", "lee", "leon", "levy", "liberty", "madison",
+    "manatee", "marion", "martin", "miami_dade", "monroe", "nassau", "okaloosa", "okeechobee", "orange", "osceola",
+    "palm_beach", "pasco", "pinellas", "polk", "putnam", "santa_rosa", "sarasota", "seminole", "st_johns", "st_lucie",
+    "sumter", "suwannee", "taylor", "union", "volusia", "wakulla", "walton", "washington"
+}
+
+# Backwards compatibility alias
+counties = FL_COUNTIES
 
 # Work directory patterns
 WORK_DIR_PATTERNS = {
@@ -373,16 +380,67 @@ def setup_entity_logger(layer, entity, work_dir):
         
     return logger
 
-def split_entity(entity: str):
-    """Return (county, city) parts for an entity identifier."""
-    for county in sorted(counties, key=len, reverse=True):
-        if entity == county:
-            return county, ''
-        prefix = f"{county}_"
-        if entity.startswith(prefix):
-            city = entity[len(prefix):]
-            return county, city
-    raise ValueError(f"Unable to parse county/city from entity '{entity}'.")
+def split_entity(entity: str) -> tuple[str, str, str]:
+    """Split entity into (state, county, city).
+    
+    Handles both old 2-part (county_city) and new 3-part (state_county_city) formats.
+    For multi-word counties like 'fl_miami_dade_unincorporated' or 'fl_st_lucie_port_st_lucie'.
+    
+    Strategy:
+    1. Check if first token is a valid state - if so, use 3-part format
+    2. If not, assume old 2-part format and infer state from county
+    3. For county detection, use known suffixes and FL_COUNTIES lookup
+    """
+    tokens = entity.split("_")
+    if len(tokens) < 2:
+        raise ValueError(f"Invalid entity format: {entity}")
+
+    # Check if first token is a valid state
+    first_token = tokens[0].lower()
+    if first_token in VALID_STATES:
+        # New 3-part format: state_county_city
+        if len(tokens) < 3:
+            raise ValueError(f"Invalid 3-part entity format: {entity}")
+        
+        state = first_token
+        county_city_tokens = tokens[1:]
+    else:
+        # Old 2-part format: county_city (infer state from county)
+        county_city_tokens = tokens
+
+    # Parse county_city portion
+    suffixes = {"unincorporated", "incorporated", "unified", "countywide"}
+    if county_city_tokens[-1] in suffixes:
+        county = "_".join(county_city_tokens[:-1])
+        city = county_city_tokens[-1]
+    else:
+        # Try to recognize multi-word counties by longest-prefix match
+        county = None
+        city = None
+        for i in range(len(county_city_tokens), 1, -1):  # from longest possible down to 2 tokens
+            candidate_county = "_".join(county_city_tokens[:i])
+            if candidate_county in FL_COUNTIES:
+                county = candidate_county
+                city = "_".join(county_city_tokens[i:])
+                if not city:  # edge case – entity only county
+                    raise ValueError(f"Could not determine city part in entity: {entity}")
+                break
+        
+        # Fallback to simple split if no FL county match
+        if county is None:
+            if len(county_city_tokens) < 2:
+                raise ValueError(f"Could not parse county_city from entity: {entity}")
+            county = county_city_tokens[0]
+            city = "_".join(county_city_tokens[1:])
+
+    # Infer state from county if not already determined
+    if 'state' not in locals():
+        if county in FL_COUNTIES:
+            state = 'fl'
+        else:
+            raise ValueError(f"County '{county}' not found in FL_COUNTIES. Cannot determine state for entity: {entity}")
+    
+    return state, county, city
 
 def resolve_work_dir(layer: str, entity: str):
     """Return (work_dir, county, city) for layer/entity."""
@@ -398,9 +456,9 @@ def resolve_work_dir(layer: str, entity: str):
     needs_city = '{city}' in template
     
     if needs_city:
-        county, city = split_entity(entity)
+        state, county, city = split_entity(entity)
     else:
-        county, city = entity, ''
+        state, county, city = 'fl', entity, ''
 
     work_dir = template.format(layer=layer, county=county, city=city)
     return work_dir, county, city
@@ -558,7 +616,7 @@ def _get_existing_data_date(layer: str, entity: str) -> str:
         return None
     
     try:
-        county, city = split_entity(entity)
+        state, county, city = split_entity(entity)
         entity_key = f"{county}_{city}"
         
         with open(summary_filepath, 'r', newline='') as csvfile:
@@ -1520,7 +1578,7 @@ def generate_summary(results):
         # Process results and update data
         for result in results:
             entity = result['entity']
-            county, city = split_entity(entity)
+            state, county, city = split_entity(entity)
             entity_key = f"{county}_{city}"
             
             # Get existing row or create new one
@@ -1689,7 +1747,7 @@ def _initialize_csv_status(layer, queue):
         
         # Initialize status columns for entities in queue
         for entity in queue:
-            county, city = split_entity(entity)
+            state, county, city = split_entity(entity)
             entity_key = f"{county}_{city}"
             
             if entity_key in existing_data:
@@ -1739,7 +1797,7 @@ def _update_csv_status(layer, entity, stage, status, error_msg='', data_date='')
                     existing_data[entity_key] = row
         
         # Update the specific entity
-        county, city = split_entity(entity)
+        state, county, city = split_entity(entity)
         entity_key = f"{county}_{city}"
         
         if entity_key in existing_data:
