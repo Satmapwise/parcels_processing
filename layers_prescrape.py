@@ -1584,8 +1584,11 @@ class LayersPrescrape:
         current_value = record.get(field) or ''
         
         try:
-            # Parse entity components
-            state, county, city = split_entity(entity)
+            # Parse entity components (strip layer prefix from layer_state_county_city format)
+            entity_without_layer = entity
+            if entity.startswith(f"{self.cfg.layer}_"):
+                entity_without_layer = entity[len(f"{self.cfg.layer}_"):]
+            state, county, city = split_entity(entity_without_layer)
             entity_type = "city" if city not in {"unincorporated", "unified", "incorporated", "countywide"} else city
             
             # Handle countywide alias
