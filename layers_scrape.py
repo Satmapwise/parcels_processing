@@ -889,51 +889,6 @@ def layer_processing(layer: str, entity: str, county: str, city: str, catalog_ro
         _update_csv_status(layer, entity, 'processing', 'FAILED', str(e))
         raise ProcessingError(f"Processing failed: {e}", layer, entity) from e
 
-def update_publish_date_only(layer: str, entity: str, county: str, city: str, catalog_row: dict, work_dir: str, logger):
-    """Update only the publish_date in the catalog for NND cases (preserves all other data)."""
-    if not CONFIG.run_upload:
-        logger.debug(f"[PUBLISH_DATE] Skipping publish date update for {layer}/{entity} (upload disabled in config)")
-        return
-
-    _debug_main(f"[PUBLISH_DATE] Updating publish_date only for {layer}/{entity} (NND case)", logger)
-
-    # Set publish_date to today
-    publish_date = datetime.now().strftime('%Y-%m-%d')
-    
-    # Simple SQL that only updates publish_date, preserving all other values
-    sql_update = (
-        "UPDATE m_gis_data_catalog_main SET "
-        "publish_date = '{publish_date}' "
-        "WHERE layer_subgroup = '{layer}' "
-        "AND county = '{county}' "
-        "AND city = '{city}';"
-    )
-    
-    # Prepare placeholders
-    placeholders = {
-        'layer': layer,
-        'county': county.lower().replace('_', ' '),
-        'city': format_name(city, 'city', external=True),
-        'publish_date': publish_date,
-    }
-    
-    logger.debug(f"Publish date update placeholders - publish_date: {publish_date}")
-
-    # Substitute placeholders
-    final_sql = sql_update.format(**placeholders)
-    
-    command = ['psql', '-d', 'gisdev', '-U', 'postgres', '-c', final_sql]
-    
-    logger.debug(f"Running publish date update command for {layer}/{entity}")
-    try:
-        _run_command(command, work_dir, logger)
-        # Note: We don't call _update_csv_status here since the NND status is already set by the download stage
-        _debug_main(f"[PUBLISH_DATE] Publish date updated successfully for {layer}/{entity}", logger)
-    except Exception as e:
-        _update_csv_status(layer, entity, 'upload', 'FAILED', str(e))
-        raise UploadError(f"Failed to update publish date: {e}", layer, entity) from e
-
-
 def layer_upload(layer: str, entity: str, county: str, city: str, catalog_row: dict, work_dir: str, logger, metadata: dict, raw_zip_name: str = None):
     """Handle the upload phase for an entity."""
     if not CONFIG.run_upload:
@@ -944,57 +899,57 @@ def layer_upload(layer: str, entity: str, county: str, city: str, catalog_row: d
 
     fmt = (catalog_row.get('format') or '').lower()
     
-    # Set publish_date to today
+    # Build SQL dynamically based on available metadata
+    # Always update publish_date
     publish_date = datetime.now().strftime('%Y-%m-%d')
     
-    # Build SQL based on download type
-    if fmt in {'ags', 'arcgis', 'esri', 'ags_extract'}:
-        # AGS entities don't have zip files
-        sql_update = (
-            "UPDATE m_gis_data_catalog_main SET "
-            "data_date = '{data_date}', "
-            "publish_date = '{update_date}', "
-            "srs_epsg = '{epsg}', "
-            "sys_raw_file = '{shp}', "
-            "field_names = '{field_names}' "
-            "WHERE layer_subgroup = '{layer}' "
-            "AND county = '{county}' "
-            "AND city = '{city}';"
-        )
-    else:
-        # Zip download entities may have zip files
-        sql_update = (
-            "UPDATE m_gis_data_catalog_main SET "
-            "data_date = '{data_date}', "
-            "publish_date = '{update_date}', "
-            "srs_epsg = '{epsg}', "
-            "sys_raw_file = '{shp}', "
-            "sys_raw_file_zip = '{raw_zip}', "
-            "field_names = '{field_names}' "
-            "WHERE layer_subgroup = '{layer}' "
-            "AND county = '{county}' "
-            "AND city = '{city}';"
-        )
-    
-    # Prepare placeholders
+    # Start building SET clauses with fields we always want to update
+    set_clauses = []
     placeholders = {
         'layer': layer,
         'county': county.lower().replace('_', ' '),
-        'city': format_name(city, 'city', external=True), # Use format_name for city
-        'data_date': metadata.get('data_date', publish_date),
+        'city': format_name(city, 'city', external=True),
         'publish_date': publish_date,
-        'update_date': publish_date,
-        'epsg': metadata.get('epsg', ''),
-        'shp': metadata.get('shp', ''),
-        'raw_zip': raw_zip_name or '',
-        'field_names': metadata.get('field_names', ''),
     }
     
-    logger.debug(f"Upload placeholders - data_date: {metadata.get('data_date', publish_date)}, publish_date: {publish_date}")
-
-    # Check for required placeholders
-    if '{raw_zip}' in sql_update and not raw_zip_name:
-        raise UploadError('Upload command expects raw_zip but no ZIP file detected', layer, entity)
+    # Always update publish_date
+    set_clauses.append("publish_date = '{publish_date}'")
+    
+    # Add metadata fields only if they have meaningful values
+    if metadata.get('data_date'):
+        set_clauses.append("data_date = '{data_date}'")
+        placeholders['data_date'] = metadata['data_date']
+    
+    if metadata.get('epsg'):
+        set_clauses.append("srs_epsg = '{epsg}'")
+        placeholders['epsg'] = metadata['epsg']
+    
+    if metadata.get('shp'):
+        set_clauses.append("sys_raw_file = '{shp}'")
+        placeholders['shp'] = metadata['shp']
+    
+    if metadata.get('field_names'):
+        set_clauses.append("field_names = '{field_names}'")
+        placeholders['field_names'] = metadata['field_names']
+    
+    # Add raw_zip field for non-AGS formats if zip file exists
+    if fmt not in {'ags', 'arcgis', 'esri', 'ags_extract'} and raw_zip_name:
+        set_clauses.append("sys_raw_file_zip = '{raw_zip}'")
+        placeholders['raw_zip'] = raw_zip_name
+    
+    # Build final SQL
+    sql_update = (
+        "UPDATE m_gis_data_catalog_main SET "
+        + ", ".join(set_clauses) + " "
+        "WHERE layer_subgroup = '{layer}' "
+        "AND county = '{county}' "
+        "AND city = '{city}';"
+    )
+    
+    # Log what fields will be updated
+    updating_fields = [clause.split(' = ')[0] for clause in sql_update.split('SET ')[1].split(' WHERE')[0].split(', ')]
+    logger.debug(f"Updating fields: {', '.join(updating_fields)}")
+    logger.debug(f"Upload placeholders - data_date: {metadata.get('data_date', 'not_set')}, publish_date: {publish_date}")
 
     # Substitute placeholders
     final_sql = sql_update.format(**placeholders)
@@ -1413,7 +1368,7 @@ def process_layer(layer, queue):
             # If it's a "no new data" case, update publish_date to show we checked
             if "No new data available" in str(e) or "data date unchanged" in str(e):
                 try:
-                    update_publish_date_only(layer, entity, county, city, catalog_row, entity_logger)
+                    layer_upload(layer, entity, county, city, catalog_row, work_dir, entity_logger, {})
                     logging.info(f"Updated publish_date for {entity} (NND case)")
                 except Exception as publish_error:
                     logging.warning(f"Failed to update publish_date for {entity}: {publish_error}")
