@@ -33,9 +33,13 @@ from selenium_opendata import extract_arcgis_url_from_opendata
 
 # Simple opendata portal detection
 def is_opendata_portal(url):
-    """Simple check if URL is an opendata portal (not a direct ArcGIS service)."""
+    """Simple check if URL is an opendata portal (not a direct ArcGIS service or direct download)."""
     # First, exclude direct ArcGIS service URLs
     if any(pattern in url.lower() for pattern in ['rest/services', 'mapserver', 'featureserver']):
+        return False
+    
+    # Skip direct downloads (.zip files)
+    if url.lower().endswith('.zip') or '.zip?' in url.lower():
         return False
     
     # Then check for opendata portal indicators
@@ -43,6 +47,29 @@ def is_opendata_portal(url):
         'hub.arcgis.com', 'opendata', 'data.', 'geoportal', 'portal', 'datahub', 'open-data'
     ]
     return any(indicator in url.lower() for indicator in opendata_indicators)
+
+# URL validation function
+def is_url_accessible(url, timeout=10):
+    """Check if URL is accessible before attempting conversion."""
+    try:
+        import urllib.request
+        import ssl
+        
+        # Create SSL context that doesn't verify certificates
+        ssl_context = ssl.create_default_context()
+        ssl_context.check_hostname = False
+        ssl_context.verify_mode = ssl.CERT_NONE
+        
+        # Create request with headers
+        req = urllib.request.Request(url)
+        req.add_header('User-Agent', 'Mozilla/5.0 (compatible; OpenDataExtractor/1.0)')
+        
+        # Try to open the URL
+        with urllib.request.urlopen(req, timeout=timeout, context=ssl_context) as response:
+            return response.status == 200
+    except Exception as e:
+        logging.debug(f"URL validation failed for {url}: {e}")
+        return False
 
 # Simple ArcGIS URL validation
 def validate_arcgis_url(url):
@@ -95,6 +122,38 @@ class OpendataToAGS:
         except Exception as e:
             print(f"[ERROR] Failed to initialize database connection: {e}")
             sys.exit(1)
+        
+        # Load existing CSV data for skipping already-processed URLs
+        self.processed_urls = self._load_existing_csv_data()
+    
+    def _load_existing_csv_data(self):
+        """Load existing CSV data to skip already-processed URLs."""
+        processed_urls = {}
+        csv_path = REPORTS_DIR / f"{self.cfg.layer}_opendata_to_ags.csv"
+        
+        if csv_path.exists():
+            try:
+                with open(csv_path, 'r', encoding='utf-8') as f:
+                    reader = csv.DictReader(f)
+                    for row in reader:
+                        old_url = row.get('old_url', '').strip()
+                        new_ags_url = row.get('new_ags_url', '').strip()
+                        ags_valid = row.get('ags_valid', '').strip()
+                        
+                        if old_url and new_ags_url != 'NO_AGS_FOUND':
+                            processed_urls[old_url] = {
+                                'new_ags_url': new_ags_url,
+                                'ags_valid': ags_valid,
+                                'validation_reason': row.get('validation_reason', ''),
+                                'relevance_score': row.get('relevance_score', '0.00')
+                            }
+                
+                self.logger.info(f"Loaded {len(processed_urls)} already-processed URLs from existing CSV")
+            except Exception as e:
+                self.logger.warning(f"Could not load existing CSV data: {e}")
+                processed_urls = {}
+        
+        return processed_urls
     
     def run(self):
         """Main execution method."""
@@ -296,7 +355,27 @@ class OpendataToAGS:
             # Check if URL is an opendata portal
             if is_opendata_portal(old_url):
                 opendata_count += 1
-                self.logger.debug(f"Processing opendata URL for {entity}: {old_url}")
+                
+                # Check if URL was already processed successfully
+                if old_url in self.processed_urls:
+                    self.logger.debug(f"⏭️  Skipping already-processed URL for {entity}: {old_url}")
+                    processed_data = self.processed_urls[old_url]
+                    csv_rows.append([
+                        entity, og_title, old_url, processed_data['new_ags_url'],
+                        processed_data['relevance_score'], processed_data['ags_valid'], 
+                        processed_data['validation_reason']
+                    ])
+                    continue
+                
+                self.logger.debug(f"🔍 Processing opendata URL for {entity}: {old_url}")
+                
+                # Validate URL accessibility before attempting conversion
+                if not is_url_accessible(old_url):
+                    self.logger.warning(f"⚠️  URL not accessible for {entity}: {old_url}")
+                    csv_rows.append([
+                        entity, og_title, old_url, "URL_NOT_ACCESSIBLE", "0.00", "NO", "URL_VALIDATION_FAILED"
+                    ])
+                    continue
                 
                 # Extract layer keywords from the layer name
                 layer_keywords = [self.cfg.layer]
@@ -335,10 +414,17 @@ class OpendataToAGS:
                         entity, og_title, old_url, "NO_AGS_FOUND", "0.00", "NO", "NO_EXTRACTION"
                     ])
             else:
-                # Not an opendata portal - skip or note as regular URL
+                # Not an opendata portal - categorize the type
                 if self.cfg.debug:
+                    if old_url.lower().endswith('.zip') or '.zip?' in old_url.lower():
+                        reason = "DIRECT_ZIP_DOWNLOAD"
+                    elif any(pattern in old_url.lower() for pattern in ['rest/services', 'mapserver', 'featureserver']):
+                        reason = "DIRECT_ARCGIS_SERVICE"
+                    else:
+                        reason = "REGULAR_URL"
+                    
                     csv_rows.append([
-                        entity, og_title, old_url, "NOT_OPENDATA", "0.00", "N/A", "REGULAR_URL"
+                        entity, og_title, old_url, "NOT_OPENDATA", "0.00", "N/A", reason
                     ])
         
         # Write CSV report

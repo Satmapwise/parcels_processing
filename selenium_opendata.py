@@ -4,6 +4,7 @@ import sys
 import json
 import logging
 import subprocess
+import time
 import undetected_chromedriver as uc
 from selenium import webdriver
 from selenium.webdriver.common.by import By
@@ -200,19 +201,26 @@ def get_arcgis_url(driver, url, selectors):
         logging.info(f"Navigating to: {url}")
         driver.get(url)
 
-        # Wait for page to load
-        WebDriverWait(driver, 20).until(
-            EC.presence_of_element_located((By.CSS_SELECTOR, selectors["wait_for_selector"]))
-        )
-        logging.info("Page loaded successfully")
+        # Check if data source is already present
+        try:
+            data_source = WebDriverWait(driver, 10).until(
+                EC.presence_of_element_located((By.CSS_SELECTOR, selectors["data_source"]))
+            )
+            arcgis_url = data_source.get_attribute("href")
+            logging.info(f"Found ArcGIS URL: {arcgis_url}")
+            return arcgis_url
+        except Exception as e:
+            logging.error(f"Failed to find data source link: {e}")
+            return None
 
         # Click "Full Details" or "View Full Details" button
         try:
             full_details = WebDriverWait(driver, 10).until(
                 EC.element_to_be_clickable((By.CSS_SELECTOR, selectors["full_details"]))
             )
-            driver.execute_script("arguments[0].click();", full_details)
-            logging.info("Clicked full details button")
+            if full_details:
+                driver.execute_script("arguments[0].click();", full_details)
+                logging.info("Clicked full details button")
         except Exception as e:
             logging.error(f"Failed to click full details: {e}")
             return None
