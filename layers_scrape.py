@@ -34,13 +34,7 @@ from pathlib import Path
 
 # Note: Update scripts are now generated dynamically based on layer name
 
-# Formats that should get full pipeline treatment
-FULL_PIPELINE_FORMATS = {'ags', 'arcgis', 'esri', 'ags_extract', 'shp', 'zip', 'url'}
-
-# Formats that should skip processing but still get metadata
-METADATA_ONLY_FORMATS = {'pdf'}
-
-# All other formats are excluded from the pipeline entirely
+# Format constants now imported from layers_helpers.py
 
 def should_process_entity(catalog_row: dict) -> tuple[bool, str]:
     """Determine if an entity should be processed and why.
@@ -66,10 +60,8 @@ def should_run_processing(catalog_row: dict) -> bool:
     return fmt not in METADATA_ONLY_FORMATS
 
 # ---------------------------------------------------------------------------
-# Name Formatting Utilities
+# Name Formatting Utilities - now imported from layers_helpers.py
 # ---------------------------------------------------------------------------
-
-def format_name(name: str, name_type: str, external: bool = False) -> str:
     """Convert between internal and external name formats.
     
     Args:
@@ -215,62 +207,16 @@ def _to_internal_format(name: str) -> str:
 # Configuration and Constants
 # ---------------------------------------------------------------------------
 
-# Load environment variables from .env file
-try:
-    from dotenv import load_dotenv
-    load_dotenv()
-except ImportError:
-    # dotenv not available, try manual loading
-    env_path = Path('.env')
-    if env_path.exists():
-        with open(env_path, 'r') as f:
-            for line in f:
-                line = line.strip()
-                if line and not line.startswith('#') and '=' in line:
-                    key, value = line.split('=', 1)
-                    os.environ[key.strip()] = value.strip().strip('\'"')
-# Database connection
-PG_CONNECTION = os.getenv("PG_CONNECTION")
+# Import shared utilities and constants
+from layers_helpers import (
+    PG_CONNECTION, VALID_STATES, FL_COUNTIES, LAYERS, LAYER_CONFIGS,
+    SKIP_ENTITIES, FULL_PIPELINE_FORMATS, METADATA_ONLY_FORMATS,
+    format_name, parse_entity_pattern, safe_catalog_val,
+    # Backwards compatibility aliases
+    counties, layers
+)
 
-# Entities to skip (blacklist)
-SKIP_ENTITIES = {
-    "hillsborough_temple_terrace",
-    "charlotte_punta_gorda"
-}
-
-layers = {
-    "zoning",
-    "flu",
-    "flood_zones",
-    "parcel_geo",
-    "streets",
-    "addr_pnts",
-    "subdiv",
-    "bldg_ftpr"
-    "fdot_tc",
-    "sunbiz"
-}
-
-# Valid state abbreviations for multi-state support
-VALID_STATES = {
-    'fl': 'FL',  # Florida (primary)
-    'ga': 'GA',  # Georgia (future)
-    'de': 'DE',  # Delaware (future)
-}
-
-# Florida counties set (matching layers_prescrape.py format)
-FL_COUNTIES = {
-    "alachua", "baker", "bay", "bradford", "brevard", "broward", "calhoun", "charlotte", "citrus", "clay",
-    "collier", "columbia", "desoto", "dixie", "duval", "escambia", "flagler", "franklin", "gadsden", "gilchrist",
-    "glades", "gulf", "hamilton", "hardee", "hendry", "hernando", "highlands", "hillsborough", "holmes",
-    "indian_river", "jackson", "jefferson", "lafayette", "lake", "lee", "leon", "levy", "liberty", "madison",
-    "manatee", "marion", "martin", "miami_dade", "monroe", "nassau", "okaloosa", "okeechobee", "orange", "osceola",
-    "palm_beach", "pasco", "pinellas", "polk", "putnam", "santa_rosa", "sarasota", "seminole", "st_johns", "st_lucie",
-    "sumter", "suwannee", "taylor", "union", "volusia", "wakulla", "walton", "washington"
-}
-
-# Backwards compatibility alias
-counties = FL_COUNTIES
+# All constants now imported from layers_helpers.py
 
 
 

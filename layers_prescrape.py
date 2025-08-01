@@ -30,20 +30,11 @@ from typing import Any, Dict, List, Optional, Tuple
 import psycopg2
 import psycopg2.extras
 
-# Load environment variables from .env file
-try:
-    from dotenv import load_dotenv
-    load_dotenv()
-except ImportError:
-    # dotenv not available, try manual loading
-    env_path = Path('.env')
-    if env_path.exists():
-        with open(env_path, 'r') as f:
-            for line in f:
-                line = line.strip()
-                if line and not line.startswith('#') and '=' in line:
-                    key, value = line.split('=', 1)
-                    os.environ[key.strip()] = value.strip().strip('\'"')
+# Import shared utilities and constants
+from layers_helpers import (
+    PG_CONNECTION, VALID_STATES, FL_COUNTIES, LAYERS, LAYER_CONFIGS,
+    format_name, parse_entity_pattern, safe_catalog_val, validate_state_abbreviation
+)
 
 # ---------------------------------------------------------------------------
 # Name Formatting Utilities
@@ -197,8 +188,7 @@ def _to_internal_format(name: str) -> str:
 # Configuration and Constants
 # ---------------------------------------------------------------------------
 
-# Database connection - should match layers_scrape.py  
-PG_CONNECTION = os.getenv("PG_CONNECTION")
+# Database connection now imported from layers_helpers.py
 
 # Output directories
 REPORTS_DIR = Path("reports")
@@ -208,95 +198,7 @@ REPORTS_DIR.mkdir(exist_ok=True)
 MISSING_FIELDS_JSON = Path("missing_fields.json")
 MANIFEST_PATH = Path("test/layer_manifest.json")
 
-# Florida counties for entity parsing (from original script)
-FL_COUNTIES = {
-    "alachua","baker","bay","bradford","brevard","broward","calhoun","charlotte","citrus","clay",
-    "collier","columbia","desoto","dixie","duval","escambia","flagler","franklin","gadsden","gilchrist",
-    "glades","gulf","hamilton","hardee","hendry","hernando","highlands","hillsborough","holmes",
-    "indian_river","jackson","jefferson","lafayette","lake","lee","leon","levy","liberty","madison",
-    "manatee","marion","martin","miami_dade","monroe","nassau","okaloosa","okeechobee","orange","osceola",
-    "palm_beach","pasco","pinellas","polk","putnam","santa_rosa","sarasota","seminole","st_johns",
-    "st_lucie","sumter","suwannee","taylor","union","volusia","wakulla","walton","washington",
-}
-
-# Valid state abbreviations for multi-state support
-VALID_STATES = {
-    'fl': 'FL',  # Florida (primary)
-    'ga': 'GA',  # Georgia (future)
-    'de': 'DE',  # Delaware (future)
-}
-
-def validate_state_abbreviation(state_value: str) -> Optional[str]:
-    """Validate and normalize state abbreviation.
-    
-    Args:
-        state_value: State value from database (can be None, empty, or abbreviation)
-        
-    Returns:
-        External format state (e.g., 'FL') if valid, None if invalid/missing
-    """
-    if not state_value or str(state_value).strip().upper() in ('NULL', 'NONE', ''):
-        return None
-    
-    state_internal = str(state_value).strip().lower()
-    return VALID_STATES.get(state_internal)
-
-# Layer configurations
-LAYER_CONFIGS = {
-    'zoning': {
-        'category': '08_Land_Use_and_Zoning',
-        'layer_group': 'flu_zoning',
-        'level': 'state_county_city',
-    },
-    'flu': {
-        'category': '08_Land_Use_and_Zoning', 
-        'layer_group': 'flu_zoning',
-        'level': 'state_county_city',
-    },
-    'flood_zones': {
-        'category': '12_Hazards',
-        'layer_group': 'hazards',
-        'level': 'national',
-        'entity': 'flood_zones',
-    },
-    'parcel_geo': {
-        'category': '05_Parcels',
-        'layer_group': 'parcels',
-        'level': 'state_county',
-    },
-    'streets': {
-        'category': '03_Transportation',
-        'layer_group': 'base_map_overlay',
-        'level': 'state_county',
-    },
-    'addr_pnts': {
-        'category': '05_Parcels',
-        'layer_group': 'parcels',
-        'level': 'state_county',
-    },
-    'subdiv': {
-        'category': '05_Parcels',
-        'layer_group': 'parcels',
-        'level': 'state_county',
-    },
-    'bldg_ftpr': {
-        'category': '05_Parcels',
-        'layer_group': 'parcels',
-        'level': 'state_county',
-    },
-    'fdot_tc': {
-        'category': '03_Transportation',
-        'layer_group': 'base_map_overlay',
-        'level': 'state',
-        'entity': 'fdot_tc_fl',
-    },
-    'sunbiz': {
-        'category': '21_Misc',
-        'layer_group': 'parcels',
-        'level': 'state',
-        'entity': 'sunbiz_fl',
-    }
-}
+# Constants now imported from layers_helpers.py
 
 # Note: Layer configurations are now centralized in LAYER_CONFIGS above
 # No need for separate LAYER_GROUP_MAP and CATEGORY_MAP dictionaries
@@ -305,11 +207,7 @@ LAYER_CONFIGS = {
 # Utility Functions (preserved from layer_standardize_database.py)
 # ---------------------------------------------------------------------------
 
-def safe_catalog_val(val: Any) -> str:
-    """Return value or **MISSING** if val is falsy/None."""
-    if val in (None, "", "NULL", "null"):
-        return "**MISSING**"
-    return str(val)
+# safe_catalog_val now imported from layers_helpers.py
 
 def get_today_str() -> str:
     return datetime.utcnow().strftime("%Y-%m-%d")
