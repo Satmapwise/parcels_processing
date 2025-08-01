@@ -33,7 +33,8 @@ import psycopg2.extras
 # Import shared utilities and constants
 from layers_helpers import (
     PG_CONNECTION, VALID_STATES, FL_COUNTIES, LAYERS, LAYER_CONFIGS,
-    format_name, parse_entity_pattern, safe_catalog_val, validate_state_abbreviation
+    format_name, parse_entity_pattern, safe_catalog_val, validate_state_abbreviation,
+    resolve_layer_directory
 )
 
 # ---------------------------------------------------------------------------
@@ -908,10 +909,8 @@ def generate_expected_values(layer: str, state: str, county: str, city: str, ent
     else:
         table_name = f"{layer_internal}_{city_internal}"
     
-    # Generate sys_raw_folder with state support (internal format for paths)
-    category = config.get('category', '08_Land_Use_and_Zoning')
-    state_name = 'florida' if state_internal == 'fl' else state_internal
-    sys_raw_folder = f"/srv/datascrub/{category}/{layer_internal}/{state_name}/county/{county_internal}/current/source_data/{city_internal}"
+    # Generate sys_raw_folder using layer directory pattern
+    sys_raw_folder = resolve_layer_directory(layer, state_internal, county_internal, city_internal)
     
     return {
         'title': title,
@@ -1692,10 +1691,7 @@ class LayersPrescrape:
         
         elif field == "sys_raw_folder":
             # Check sys_raw_folder matches pattern and create directory
-            config = LAYER_CONFIGS.get(self.cfg.layer, {})
-            category = config.get('category', '08_Land_Use_and_Zoning')
-            state_name = 'florida' if state and state.lower() == 'fl' else (state.lower() if state else 'unknown')
-            expected = f"/srv/datascrub/{category}/{layer_internal}/{state_name}/county/{county_internal}/current/source_data/{city_internal}"
+            expected = resolve_layer_directory(self.cfg.layer, state, county_internal, city_internal)
             
             # Create directory if it doesn't exist
             try:

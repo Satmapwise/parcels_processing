@@ -76,54 +76,64 @@ LAYER_CONFIGS = {
         'category': '08_Land_Use_and_Zoning',
         'layer_group': 'flu_zoning',
         'level': 'state_county_city',
+        'directory_pattern': '/srv/datascrub/08_Land_Use_and_Zoning/zoning/{state_name}/{county}/{city}',
     },
     'flu': {
         'category': '08_Land_Use_and_Zoning', 
         'layer_group': 'flu_zoning',
         'level': 'state_county_city',
+        'directory_pattern': '/srv/datascrub/08_Land_Use_and_Zoning/future_land_use/{state_name}/county/{county}/current/source_data/{city}',
     },
-    'flood_zones': {
+    'fema_flood': {
         'category': '12_Hazards',
         'layer_group': 'hazards',
         'level': 'national',
         'entity': 'flood_zones',
+        'directory_pattern': '/srv/datascrub/12_Hazards/fema_flood/fema_dfirm',
     },
     'parcel_geo': {
         'category': '05_Parcels',
         'layer_group': 'parcels',
         'level': 'state_county',
+        'directory_pattern': '/srv/datascrub/05_Parcels/parcels/{state_name}/county/{county}/current/source_data',
     },
     'streets': {
         'category': '03_Transportation',
         'layer_group': 'base_map_overlay',
         'level': 'state_county',
+        'directory_pattern': '/srv/datascrub/03_Transportation/streets/{state_name}/county/{county}/current/source_data',
     },
-    'addr_pnts': {
+    'address_points': {
         'category': '05_Parcels',
         'layer_group': 'parcels',
         'level': 'state_county',
+        'directory_pattern': '/srv/datascrub/05_Parcels/addr_pnts/{state_name}/county/{county}/current/source_data',
     },
-    'subdiv': {
+    'subdivisions': {
         'category': '05_Parcels',
         'layer_group': 'parcels',
         'level': 'state_county',
+        'directory_pattern': '/srv/datascrub/05_Parcels/subdiv/{state_name}/county/{county}/current/source_data',
     },
-    'bldg_ftpr': {
+    'buildings': {
         'category': '05_Parcels',
         'layer_group': 'parcels',
         'level': 'state_county',
+        'directory_pattern': '/srv/datascrub/05_Parcels/bldg_ftpr/{state_name}/county/{county}/current/source_data',
     },
-    'fdot_tc': {
+    'traffic_counts': {
         'category': '03_Transportation',
         'layer_group': 'base_map_overlay',
         'level': 'state',
         'entity': 'fdot_tc_fl',
+        'directory_pattern': '/srv/datascrub/03_Transportation/fdot_tc/{state_name}',
     },
     'sunbiz': {
         'category': '21_Misc',
         'layer_group': 'parcels',
         'level': 'state',
         'entity': 'sunbiz_fl',
+        'directory_pattern': '/srv/datascrub/21_Misc/sunbiz/{state_name}',
     }
 }
 
@@ -347,6 +357,63 @@ def safe_catalog_val(val: Any) -> str:
     if val in (None, "", "NULL", "null"):
         return "**MISSING**"
     return str(val)
+
+
+# ---------------------------------------------------------------------------
+# Directory Path Resolution
+# ---------------------------------------------------------------------------
+
+def resolve_layer_directory(layer: str, state: str = None, county: str = None, city: str = None) -> str:
+    """Resolve directory path for a layer using its configured pattern.
+    
+    Args:
+        layer: Layer name (e.g., 'zoning', 'flu')
+        state: State abbreviation (e.g., 'fl') - converted to state_name
+        county: County name in internal format (e.g., 'alachua')
+        city: City name in internal format (e.g., 'gainesville') 
+        
+    Returns:
+        Full directory path with placeholders filled in
+        
+    Examples:
+        resolve_layer_directory('zoning', 'fl', 'alachua', 'gainesville')
+        -> '/srv/datascrub/08_Land_Use_and_Zoning/zoning/florida/county/alachua/current/source_data/gainesville'
+        
+        resolve_layer_directory('flood_zones')
+        -> '/srv/datascrub/12_Hazards/fema_flood'
+    """
+    config = LAYER_CONFIGS.get(layer, {})
+    pattern = config.get('directory_pattern')
+    
+    if not pattern:
+        # Fallback to generic pattern
+        if state and county and city:
+            pattern = '/srv/datascrub/{category}/{layer}/{state_name}/county/{county}/current/source_data/{city}'
+        elif state and county:
+            pattern = '/srv/datascrub/{category}/{layer}/{state_name}/county/{county}/current/source_data'
+        elif state:
+            pattern = '/srv/datascrub/{category}/{layer}/{state_name}'
+        else:
+            pattern = '/srv/datascrub/{category}/{layer}'
+    
+    # Convert state abbreviation to state name for directories
+    state_name = None
+    if state:
+        state_name = 'florida' if state.lower() == 'fl' else state.lower()
+    
+    # Fill in the pattern with available values
+    try:
+        formatted_path = pattern.format(
+            layer=layer,
+            state_name=state_name or '',
+            county=county or '',
+            city=city or '',
+            category=config.get('category', 'Unknown')
+        )
+        return formatted_path
+    except KeyError as e:
+        # Handle missing placeholder gracefully
+        return pattern  # Return unformatted pattern if substitution fails
 
 
 # ---------------------------------------------------------------------------

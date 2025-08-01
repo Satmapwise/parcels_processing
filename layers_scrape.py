@@ -211,7 +211,7 @@ def _to_internal_format(name: str) -> str:
 from layers_helpers import (
     PG_CONNECTION, VALID_STATES, FL_COUNTIES, LAYERS, LAYER_CONFIGS,
     SKIP_ENTITIES, FULL_PIPELINE_FORMATS, METADATA_ONLY_FORMATS,
-    format_name, parse_entity_pattern, safe_catalog_val,
+    format_name, parse_entity_pattern, safe_catalog_val, resolve_layer_directory,
     # Backwards compatibility aliases
     counties, layers
 )
@@ -220,17 +220,7 @@ from layers_helpers import (
 
 
 
-# Work directory patterns (state-aware)
-WORK_DIR_PATTERNS = {
-    'zoning': os.path.join(
-        '/srv/datascrub', '08_Land_Use_and_Zoning', 'zoning', '{state_name}', 
-        'county', '{county}', 'current', 'source_data', '{city}'
-    ),
-    'flu': os.path.join(
-        '/srv/datascrub', '08_Land_Use_and_Zoning', 'future_land_use', '{state_name}',
-        'county', '{county}', 'current', 'source_data', '{city}'
-    ),
-}
+# Work directory patterns now configured in layers_helpers.py LAYER_CONFIGS
 
 # ---------------------------------------------------------------------------
 # Configuration Class
@@ -482,20 +472,15 @@ def resolve_work_dir(layer: str, entity: str):
     # Parse entity to get layer, state, county, city
     parsed_layer, state, county, city = split_entity_v2(entity)
     
-    # Generate state_name for directory path (florida, georgia, delaware, etc.)
-    state_name = 'florida' if state == 'fl' else state.lower()
-    
     # Handle special business logic cases
     if layer == 'zoning' and state == 'fl' and county == 'duval' and city == 'unified':
         # Duval Unified refers to Jacksonville city-county government
         county, city = 'duval', 'jacksonville'
-        work_dir = f'/srv/datascrub/08_Land_Use_and_Zoning/zoning/{state_name}/county/duval/current/source_data/jacksonville'
+        work_dir = resolve_layer_directory('zoning', 'fl', 'duval', 'jacksonville')
         return work_dir, state, county, city
 
-    # General case
-    template = WORK_DIR_PATTERNS.get(layer, os.path.join('/srv/datascrub', '{layer}', '{state_name}', 'county', '{county}', '{city}'))
-    
-    work_dir = template.format(layer=layer, state_name=state_name, county=county, city=city)
+    # General case - use new directory resolution from LAYER_CONFIGS
+    work_dir = resolve_layer_directory(layer, state, county, city)
     return work_dir, state, county, city
 
 def _run_command(command, work_dir, logger):
