@@ -1,0 +1,27 @@
+{
+  "zoning_fl_alachua_gainesville": {
+    "src_url_file": "https://gis.cityofgainesville.org/arcgis/rest/services/Zoning/MapServer/0",
+    "fields_obj_transform": "OBJECTID: id, ZONING: zoning_code, ZONING_DESC: zoning_description",
+    "source_org": "City of Gainesville GIS Department"
+  },
+  "flu_fl_broward_unincorporated": {
+    "src_url_file": "https://gis.broward.org/arcgis/rest/services/Planning/FutureLandUse/MapServer/0",
+    "fields_obj_transform": "OBJECTID: id, FLU_CODE: flu_code, FLU_DESC: flu_description",
+    "source_org": "Broward County Planning Division"
+  },
+  "streets_fl_miami_dade": {
+    "src_url_file": "https://gis.miamidade.gov/arcgis/rest/services/Transportation/Streets/MapServer/0",
+    "format": "AGS",
+    "table_name": "streets_fl_miami_dade_ags",
+    "source_org": "Miami-Dade County GIS Department"
+  },
+  "address_points_fl_orange": {
+    "src_url_file": "https://gis.ocfl.net/arcgis/rest/services/Addresses/AddressPoints/MapServer/0",
+    "fields_obj_transform": "OBJECTID: id, ADDRESS: full_address, CITY: city_name",
+    "source_org": "Orange County Property Appraiser"
+  },
+  "zoning_fl_invalid_entity": {
+    "src_url_file": "MANUAL_REQUIRED",
+    "fields_obj_transform": "***MISSING***"
+  }
+} 

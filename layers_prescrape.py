@@ -1164,16 +1164,21 @@ class LayersPrescrape:
                     correction = self._check_field_health(record, entity, field)
                     if correction and not correction.startswith("***"):  # Has correction and not a manual marker
                         is_manual = self._is_manual_field(field)
+                        has_manual_override = self._get_manual_override(entity, field) is not None
                         
-                        if is_manual and self.cfg.apply_manual:
+                        # Determine if this should be applied based on flags and field type
+                        should_apply_manual = (is_manual or has_manual_override) and self.cfg.apply_manual
+                        should_apply_auto = (not is_manual and not has_manual_override) and self.cfg.apply_changes
+                        
+                        if should_apply_manual:
                             updates[field] = correction
                             applied_manual += 1
-                        elif not is_manual and self.cfg.apply_changes:
+                        elif should_apply_auto:
                             updates[field] = correction  
                             applied_auto += 1
-                        elif is_manual and not self.cfg.apply_manual:
+                        elif is_manual or has_manual_override:
                             skipped_manual += 1
-                        elif not is_manual and not self.cfg.apply_changes:
+                        else:
                             skipped_auto += 1
                 
                 # Apply updates to this record
@@ -1205,8 +1210,25 @@ class LayersPrescrape:
         # Load manual data if available
         manual_data = {}
         if Path(self.cfg.manual_file).exists():
-            with open(self.cfg.manual_file, 'r') as f:
-                manual_data = json.load(f)
+            try:
+                with open(self.cfg.manual_file, 'r', encoding='utf-8') as f:
+                    data = json.load(f)
+                
+                # Process manual data to filter out special markers
+                for entity, fields in data.items():
+                    if isinstance(fields, dict):
+                        # Filter out special markers and only include actual values
+                        overrides = {}
+                        for field, value in fields.items():
+                            # Skip special markers that indicate missing fields
+                            if value not in ["MANUAL_REQUIRED", "URL_DEPRECATED", "***MISSING***", "***DEPRECATED***"]:
+                                overrides[field] = value
+                        
+                        if overrides:  # Only add if there are actual overrides
+                            manual_data[entity] = overrides
+                            
+            except Exception as e:
+                self.logger.warning(f"Failed to load manual data from {self.cfg.manual_file}: {e}")
         
         created_records = []
         
@@ -1364,6 +1386,12 @@ class LayersPrescrape:
             - "***MISSING***" if field requires manual input
         """
         current_value = record.get(field) or ''
+        
+        # Check for manual override first
+        manual_override = self._get_manual_override(entity, field)
+        if manual_override is not None:
+            # Manual override exists - return it if different from current value
+            return manual_override if current_value != manual_override else ""
         
         # Initialize all variables with default values to prevent UnboundLocalError
         state = None
@@ -1915,6 +1943,59 @@ class LayersPrescrape:
         params = tuple(record_data.values())
         
         self.db.execute(sql, params)
+    
+    def _load_manual_overrides(self) -> Dict[str, Dict[str, Any]]:
+        """Load manual field overrides from JSON file.
+        
+        Returns:
+            Dictionary mapping entity names to field overrides
+            Format: {entity: {field: value}}
+        """
+        manual_overrides = {}
+        
+        if not Path(self.cfg.manual_file).exists():
+            return manual_overrides
+        
+        try:
+            with open(self.cfg.manual_file, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+            
+            # Process each entity entry
+            for entity, fields in data.items():
+                if isinstance(fields, dict):
+                    # Filter out special markers and only include actual values
+                    overrides = {}
+                    for field, value in fields.items():
+                        # Skip special markers that indicate missing fields
+                        if value not in ["MANUAL_REQUIRED", "URL_DEPRECATED", "***MISSING***", "***DEPRECATED***"]:
+                            overrides[field] = value
+                    
+                    if overrides:  # Only add if there are actual overrides
+                        manual_overrides[entity] = overrides
+            
+            if manual_overrides:
+                self.logger.info(f"Loaded manual overrides for {len(manual_overrides)} entities from {self.cfg.manual_file}")
+                
+        except Exception as e:
+            self.logger.warning(f"Failed to load manual overrides from {self.cfg.manual_file}: {e}")
+        
+        return manual_overrides
+    
+    def _get_manual_override(self, entity: str, field: str) -> Optional[str]:
+        """Get manual override value for a specific entity and field.
+        
+        Args:
+            entity: Entity name
+            field: Field name
+            
+        Returns:
+            Override value if exists, None otherwise
+        """
+        if not hasattr(self, '_manual_overrides'):
+            self._manual_overrides = self._load_manual_overrides()
+        
+        entity_overrides = self._manual_overrides.get(entity, {})
+        return entity_overrides.get(field)
 
 # ---------------------------------------------------------------------------
 # Entity Pattern Processing  
