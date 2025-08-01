@@ -155,10 +155,99 @@ class OpendataToAGS:
         
         return processed_urls
     
+    def _apply_from_csv(self):
+        """Apply successful conversions directly from existing CSV data."""
+        csv_path = REPORTS_DIR / f"{self.cfg.layer}_opendata_to_ags.csv"
+        
+        if not csv_path.exists():
+            self.logger.error(f"No CSV file found at {csv_path}. Run without --apply first to generate conversions.")
+            return
+        
+        # Get all records for this layer to match against CSV data
+        records = self._find_records_with_urls()
+        if not records:
+            self.logger.warning(f"No records with URLs found for layer '{self.cfg.layer}'")
+            return
+        
+        # Create a lookup by URL for fast matching
+        url_to_record = {record.get('src_url_file', '').strip(): record for record in records}
+        
+        # Apply entity filtering
+        entity_records = []
+        for record in records:
+            entity = self._generate_entity_from_record(record)
+            entity_records.append((entity, record))
+        
+        if self.cfg.include_entities or self.cfg.exclude_entities:
+            entity_records = self._filter_records_by_entity_patterns(entity_records)
+        
+        if not entity_records:
+            filter_desc = f"include: {self.cfg.include_entities}" if self.cfg.include_entities else f"exclude: {self.cfg.exclude_entities}"
+            self.logger.warning(f"No records found matching entity filters ({filter_desc})")
+            return
+        
+        # Load CSV data and apply successful conversions
+        update_count = 0
+        skipped_count = 0
+        error_count = 0
+        
+        try:
+            with open(csv_path, 'r', encoding='utf-8') as f:
+                reader = csv.DictReader(f)
+                for row in reader:
+                    old_url = row.get('old_url', '').strip()
+                    new_ags_url = row.get('new_ags_url', '').strip()
+                    ags_valid = row.get('ags_valid', '').strip()
+                    entity = row.get('entity', '').strip()
+                    
+                    # Skip if not a successful conversion
+                    if not old_url or new_ags_url in ['NO_AGS_FOUND', 'NOT_OPENDATA', 'URL_NOT_ACCESSIBLE'] or ags_valid != 'YES':
+                        continue
+                    
+                    # Find the corresponding database record
+                    if old_url not in url_to_record:
+                        self.logger.debug(f"URL not found in current records: {old_url}")
+                        continue
+                    
+                    record = url_to_record[old_url]
+                    record_id = record.get('id')
+                    
+                    if not record_id:
+                        self.logger.warning(f"No record ID found for {entity}: {old_url}")
+                        error_count += 1
+                        continue
+                    
+                    # Check if this entity matches our filters
+                    entity_matches = any(entity == filtered_entity for filtered_entity, _ in entity_records)
+                    if not entity_matches:
+                        skipped_count += 1
+                        continue
+                    
+                    # Apply the update to the database
+                    try:
+                        update_sql = "UPDATE m_gis_data_catalog_main SET src_url_file = %s WHERE id = %s"
+                        self.db.execute(update_sql, (new_ags_url, record_id))
+                        update_count += 1
+                        self.logger.info(f"✅ Applied {entity}: {old_url} → {new_ags_url}")
+                    except Exception as e:
+                        self.logger.error(f"❌ Failed to update {entity}: {e}")
+                        error_count += 1
+        
+        except Exception as e:
+            self.logger.error(f"Error reading CSV file: {e}")
+            return
+        
+        # Summary
+        self.logger.info(f"Apply complete: {update_count} database updates applied, {skipped_count} skipped (filters), {error_count} errors")
+    
     def run(self):
         """Main execution method."""
-        self.logger.info(f"Running opendata-to-AGS conversion for layer '{self.cfg.layer}'")
-        self._run_conversion()
+        if self.cfg.apply:
+            self.logger.info(f"Applying successful conversions from CSV for layer '{self.cfg.layer}'")
+            self._apply_from_csv()
+        else:
+            self.logger.info(f"Running opendata-to-AGS conversion for layer '{self.cfg.layer}'")
+            self._run_conversion()
     
     def _find_records_with_urls(self) -> List[Dict[str, Any]]:
         """Find all records for the layer that have URLs."""
