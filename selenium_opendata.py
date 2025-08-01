@@ -1,595 +1,650 @@
-import json
+#!/usr/bin/env python3
 import os
-import time
 import logging
+import time
+import argparse
 import re
 import fnmatch
-import zipfile
-import undetected_chromedriver as uc
-from datetime import datetime
-from selenium.webdriver.common.by import By
+from datetime import datetime, timedelta
+from dateutil.relativedelta import relativedelta
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.common.exceptions import TimeoutException, NoSuchElementException
+from selenium.common.exceptions import (TimeoutException, NoSuchElementException)
+from selenium.webdriver.common.by import By
+from dataclasses import dataclass
+from python_batch_functions import (initialize_all, start_county_logging, 
+                                    log_county_info, log_county_error, 
+                                    end_county_logging, add_batch_summary)
 
-# Function to load county config
-def load_county_config(county_name):
-    try:
-        with open("county_config.json", "r") as f:
-            config = json.load(f)
-    except Exception as e:
-        logging.error("Unable to load county_config.json. Make sure the file exists.")
-        exit(1)
+# Import helper functions
+from python_batch_functions import (
+                                    load_county_config, safe_find, 
+                                    safe_click, safe_input, split_date_range, 
+                                    debug_screenshot, wait_for_download, rename_file,
+                                    transfer_files)
 
-    if county_name in config:
-        return config[county_name]
-    else:
-        logging.error(f"County '{county_name}' not found in configuration.")
-        exit(1)
 
-# Function to initialize debug directory
-def initialize_debug(county_name):
-    # Setup logging for info and error messages
-    logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
+# Control variables (defaults)
+local = False # Set directories for local testing
+manual = False # Set to True to manually enter counties
+isolate_county_logs = True # Set to True to isolate county logs from main log (reduces verbosity of output)
+chromium = True # Set to True to use Chromium
+headless = True # Set to True to run headless
+attempts = 10 # Set the number of attempts per county
 
-    # Create the debug screenshot directory if not exists
-    debug_dir = os.path.expanduser(f"~/Downloads/debug_screenshots_{county_name.lower()}")
-    os.makedirs(debug_dir, exist_ok=True)
-    logging.info(f"Debug screenshots will be saved to: {debug_dir}")  # Make usage explicit for linter
+# PRESET:
+prod = False # For production runs (DEPRECATED AFTER ARG UPDATE)
+# local = False
+# manual = False
+# isolate_county_logs = True
+# headless = True
+# attempts = 10
 
-    return debug_dir
+# Module-level variables to track sessions
+_active_sessions = {}
+_summary_file = None
+_batch_initialized = False
 
-# Function to wait for download
-def wait_for_download(download_dir, file_pattern, ex_file_pattern=None, timeout=90, check_interval=0.5, log_interval=10, max_age_seconds=1):
+def parse_arguments():
     """
-    Wait for a file matching the pattern to appear in the download directory.
+    Parse command-line arguments to override default configuration.
     
-    Args:
-        download_dir: Directory to check for downloads
-        file_pattern: Pattern to match in filenames
-        ex_file_pattern: Pattern to exclude from filenames
-        timeout: Maximum time to wait for file (default 90 seconds)
-        check_interval: Time between checks (default 0.5 seconds)
-        log_interval: How often to log status messages (default 10 seconds)
-        max_age_seconds: Maximum age of files to consider (default None, all files)
-        
     Returns:
-        str: Full path of the downloaded file
+        argparse.Namespace: Parsed command-line arguments
     """
-    # Get initial files in directory
-    initial_files = set(os.listdir(download_dir))
-    logging.info(f"Waiting for {file_pattern}.")
+    parser = argparse.ArgumentParser(
+        description="Download parcel data from various county websites",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+Examples:
+  python parcel_selenium_download.py                    # Use default settings
+  python parcel_selenium_download.py --local            # Run in local mode
+  python parcel_selenium_download.py --headful          # Run with browser visible
+  python parcel_selenium_download.py --chrome --no-retry # Use Chrome, no retries
+  python parcel_selenium_download.py --full-logs        # Show all county logs
+        """
+    )
     
-    start_time = time.time()
-    last_log_time = start_time
-    download_started = False
+    # Add county arguments (existing functionality)
+    parser.add_argument("counties", nargs="*", help="Names of counties to process")
     
-    while time.time() - start_time < timeout:
-        # Wait for specified interval
-        time.sleep(check_interval)
-        
-        # Get current files
-        current_files = set(os.listdir(download_dir))
-        
-        # Find new files
-        new_files = current_files - initial_files
-        
-        if new_files:
-            # Filter by pattern if specified
-            if file_pattern:
-                # Check for temporary files
-                temp_pattern = f"{file_pattern}*"
-                temp_files = [f for f in new_files if fnmatch.fnmatch(f, temp_pattern) and (f.endswith('.crdownload') or f.endswith('.part'))]
+    # Add configuration flags
+    parser.add_argument("--local", action="store_true", 
+                       help="Set local mode (use local directories for testing)")
+    parser.add_argument("--full-logs", action="store_true", 
+                       help="Show full county logs (don't isolate county logs)")
+    parser.add_argument("--chrome", action="store_true", 
+                       help="Use Chrome instead of Chromium")
+    parser.add_argument("--headful", action="store_true", 
+                       help="Run with browser visible (not headless)")
+    parser.add_argument("--no-retry", action="store_true", 
+                       help="Set attempts to 1 (no retries on failure)")
+    
+    return parser.parse_args()
 
-                # Then check for completed files
-                matching_files = [f for f in new_files if fnmatch.fnmatch(f, file_pattern)]
-                exclude_condition = (lambda f: not fnmatch.fnmatch(f, ex_file_pattern)) if ex_file_pattern else (lambda f: True)
-                complete_files = [f for f in matching_files if not f.endswith('.crdownload') and not f.endswith('.part') and exclude_condition(f)]
-                
-                # Filter by creation time if max_age_seconds is set
-                if max_age_seconds is not None:
-                    now = time.time()
-                    complete_files = [
-                        f for f in complete_files
-                        if now - os.path.getctime(os.path.join(download_dir, f)) <= max_age_seconds
-                    ]
-                
-                # Case 1: Download is in progress (temporary file exists)
-                if temp_files:
-                    if download_started == False:
-                        download_started = True
-                        temp_file = max(temp_files, key=lambda f: os.path.getctime(os.path.join(download_dir, f)))
-                        logging.info(f"Download started: {temp_file}")
-                    
-                    # Log download in progress message (but not too often)
-                    current_time = time.time()
-                    if current_time - last_log_time >= log_interval:
-                        logging.info(f"Waiting for download completion... ({current_time - start_time:.1f}s elapsed)")
-                        last_log_time = current_time
-                
-                # Case 2: Download is complete
-                if complete_files:
-                    newest_file = max(complete_files, key=lambda f: os.path.getctime(os.path.join(download_dir, f)))
-                    full_path = os.path.join(download_dir, newest_file)
-                    logging.info(f"Download complete: {newest_file} after {time.time() - start_time:.1f} seconds")
-                    return full_path, newest_file
-        
-        # Log "waiting for initiation" if no download has started yet
-        current_time = time.time()
-        if not download_started and current_time - last_log_time >= log_interval:
-            logging.info(f"Still waiting for download initiation... ({current_time - start_time:.1f}s elapsed)")
-            last_log_time = current_time
-    
-    logging.warning(f"Download timeout after {timeout} seconds")
-    return None
-    
-# Function to take debug screenshot
-def debug_screenshot(driver, debug_dir, county_name, description):
-    base_filename = f"{county_name}_{description.replace(' ', '_')}"
-    screenshot_path = os.path.join(debug_dir, f"{base_filename}.png")
-    
-    # Check if file already exists, add number if needed
-    counter = 1
-    while os.path.exists(screenshot_path):
-        screenshot_path = os.path.join(debug_dir, f"{base_filename}_{counter}.png")
-        counter += 1
-    
-    try:
-        driver.save_screenshot(screenshot_path)
-        logging.info(f"Screenshot saved to {screenshot_path}")
-    except Exception as sce:
-        logging.error(f"Failed to save screenshot for {description}: {sce}")
-
-# Function to initialize driver
-def initialize_driver():
-     # Update Chrome options for better popup handling
-    options = uc.ChromeOptions()
-    options.add_argument("--no-sandbox")
-    options.add_argument("--disable-dev-shm-usage")
-    options.add_argument("--disable-infobars")
-    options.add_argument("--disable-blink-features=AutomationControlled")
-    options.add_argument("--disable-popup-blocking")  # Explicitly disable popup blocking
-    options.add_argument("--allow-popups-during-page-unload")
-    options.add_argument("--allow-popups")
-    # Ensure browser is NOT headless, so Cloudflare sees a real user browser
-    options.headless = False
-    # Set default download directory and file handling prefs
-    download_dir = os.path.expanduser("~/Downloads")
-    prefs = {
-        "download.default_directory": download_dir,
-        "download.prompt_for_download": False,       # Auto-download without prompt
-        "download.directory_upgrade": True,
-        "safebrowsing.enabled": True,
-        "safebrowsing.disable_download_protection": True,
-        "profile.default_content_settings.popups": 1,  # Allow popups (1 allows popups)
-        "profile.content_settings.exceptions.automatic_downloads.*.setting": 1  # Allow automatic downloads
-    }
-    options.add_experimental_option("prefs", prefs)
-
-    # Launch the undetected Chrome driver
-    driver = uc.Chrome(options=options)
-    driver.maximize_window()  # open browser in max window for visibility
-
-    return driver, download_dir
-
-# Function to safely click an element (5 main arguments, 1 config argument)
-def safe_click(driver, element, debug_dir, county_name, description, return_to_default=False):
+# Function to get counties to process
+def get_counties_to_process(manual, args=None):
     """
-    Safely click an element using multiple methods with fallbacks.
-    
+    Determines which counties to process based on user input or command-line arguments.
+
+    If `manual` is True, it prompts the user to enter a comma- or space-separated list of counties.
+    If `manual` is False, it uses the counties from parsed command-line arguments.
+    If no counties are provided either way, it defaults to a predefined list of all valid counties.
+
     Args:
-        driver: Selenium WebDriver instance
-        element: The WebElement to click
-        debug_dir: Directory to save debug screenshots
-        county_name: Name of the county being processed
-        description: Descriptive name of the element for logging
-        return_to_default: Whether to return to default content after clicking (for frame handling)
-        critical: If True, exit on failure
-        
+        manual (bool): A flag to determine the input method.
+        args (argparse.Namespace, optional): Parsed command-line arguments.
+
     Returns:
-        bool: True if click was successful, False otherwise
+        list: A list of lowercase county names to be processed. Returns an empty list if invalid
+              county names are provided via command-line arguments.
     """
-    critical = True
-    if element is None:
-        logging.error(f"Cannot click {description}: Element is None")
-        if critical:
-            driver.quit()
-            exit(1)
-        return False
+    # Define valid counties
+    valid_counties = [
+        "palm_beach", "duval", "pinellas", "collier", "escambia", "okaloosa", "bay", "santa_rosa",
+        "indian_river", "sumter", "flagler", "nassau", "walton", "putnam", "columbia",
+        "jackson", "gadsden", "suwannee", "levy", "okeechobee", "hendry", "desoto",
+        "wakulla", "bradford", "hardee", "washington", "taylor", "holmes", "madison",
+        "gilchrist", "dixie", "union", "jefferson", "gulf", "hamilton", "calhoun",
+        "franklin", "glades", "lafayette", "liberty"
+    ]
     
-    try:
-        # Try JavaScript click first, as this seems most reliable
-        driver.execute_script("arguments[0].click();", element)
-        logging.info(f"Clicked {description} using JavaScript.")
-        success = True
-    except Exception as js_e:
-        try:
-            # Fallback to regular click
-            element.click()
-            logging.info(f"Clicked {description} using regular click.")
-            success = True
-        except Exception as e:
+    if manual:
+        input_counties = input("Enter the counties to process, separated by commas or spaces: ")
+        # First split by commas, then split each part by spaces
+        counties = []
+        # If no counties specified anywhere, return full list
+        if not input_counties:
+            print("[INFO] No counties specified, defaulting to all counties.")
+            return valid_counties
+        
+        for part in input_counties.split(","):
+            counties.extend([county.strip().lower() for county in part.split()])
+        return counties
+    
+    # Use counties from parsed arguments
+    if args and args.counties:
+        logging.info(f"Using counties from command line arguments: {args.counties}")
+        # Convert to lowercase and validate
+        counties = [county.lower() for county in args.counties]
+        invalid_counties = [county for county in counties if county not in valid_counties]
+        if invalid_counties:
+            print(f"[ERROR] Invalid counties found in arguments: {invalid_counties}")
+            print("[INFO] Valid counties are: " + ", ".join(valid_counties))
+            return []
+        return counties
+    
+    # If no counties specified anywhere, return full list
+    print("[INFO] No counties specified, defaulting to all counties.")
+    return valid_counties
+
+# Function to define and map download functions
+def download_county(county_name, driver, county_logger, download_dir, main_window, initial_window_count):
+    """
+    Orchestrates the download of parcel data for a specific county by calling the appropriate
+    download function based on the county's category (e.g., QPublic, Grizzly).
+
+    Args:
+        county_name (str): The name of the county to process.
+        driver: The Selenium WebDriver instance.
+        county_logger: The logger instance for the specific county.
+        download_dir (str): The directory where files will be downloaded.
+        main_window: The handle for the main browser window.
+        initial_window_count (int): The number of browser windows open at the start.
+
+    Returns:
+        dict: A result dictionary containing the status of the download ('SUCCESS' or 'FAILED'),
+              an error message if applicable, the data date, and file count information.
+    """
+    # Define county categories
+    qpublic = ["madison","holmes","okaloosa","flagler","walton","hardee","washington",
+               "hendry","levy","gilchrist","calhoun","liberty","dixie","jefferson","gulf",
+               "hamilton","taylor","gadsden","jackson","bay","glades","sumter"]
+    grizzly = ["union","columbia","suwannee","okeechobee","desoto","bradford","lafayette"]
+    gsacorp = ["wakulla","nassau","franklin"]
+    opendata = ["palm_beach"]
+    other = ["indian_river","santa_rosa","duval","pinellas","escambia","putnam","collier"]
+
+    # Define critical error class
+    class CriticalError(Exception):
+        """
+        Custom exception for critical errors that should halt execution.
+        """
+        pass
+
+
+    # Set context to package common variables needed for the download functions
+    county_config = load_county_config(county_name)
+    county_logger.info(f"Loaded configuration for {county_name.replace('_', ' ').title()}")
+    
+    @dataclass
+    class CountyContext:
+        driver: object
+        county_name: str
+        county_logger: object  # add more as needed
+        county_config: object
+        download_dir: str
+        local: bool
+        manual: bool
+        main_window: object
+        initial_window_count: int
+
+    context = CountyContext(driver, county_name, county_logger, county_config, download_dir, local, manual, main_window, initial_window_count)
+
+    
+    # Define download functions
+
+    def download_opendata(context):
+        """
+        Downloads parcel data for counties using an OpenData platform (ArcGIS Hub).
+
+        This function handles modern web applications that heavily use Shadow DOM. It navigates
+        to the data page, extracts the data update date, clicks through a series of tabs and
+        buttons (some within nested shadow roots) to trigger the download of a shapefile.
+
+        Args:
+            context (CountyContext): An object containing all necessary parameters.
+
+        Returns:
+            dict: A dictionary containing the download status, data date, and file count.
+
+        Raises:
+            CriticalError: For failures in critical steps like finding elements or file download.
+        """
+
+        # Helper: extract data date
+        def find_data_date(context):
+            """Extracts the data date from the OpenData page."""
+            driver = context.driver
+            county_logger = context.county_logger
+            selectors = context.county_config["palm_beach"]["parcels"]["selectors"]
+            info_tab = context.county_config["opendata"]["selectors"]["info_tab"]
+
             try:
-                # Try scrolling first then JS click
-                driver.execute_script("arguments[0].scrollIntoView(true);", element)
-                time.sleep(1)  # Short pause after scrolling
-                driver.execute_script("arguments[0].click();", element)
-                logging.info(f"Clicked {description} after scrolling it into view with JavaScript.")
-                success = True
-            except Exception as scroll_e:
+                # Get data date text
                 try:
-                    # ActionChains as last resort
-                    from selenium.webdriver.common.action_chains import ActionChains
-                    ActionChains(driver).move_to_element(element).click().perform()
-                    logging.info(f"Clicked {description} using ActionChains.")
-                    success = True
-                except Exception as action_e:
-                    logging.error(f"All attempts to click {description} failed.")
-                    debug_screenshot(driver, debug_dir, county_name, f"{description}_click_fail")
-                    success = False
-                    if critical:
-                        driver.quit()
-                        exit(1)
-    
-    # Make sure we're back in the main document after clicking if requested
-    if return_to_default:
-        try:
-            driver.switch_to.default_content()
-            logging.info(f"Switched back to main document after {description} interaction")
-        except Exception as switch_e:
-            logging.error(f"Error switching to default content after clicking {description}: {switch_e}")
-    
-    return None
+                    WebDriverWait(driver, 5).until(EC.visibility_of_element_located((By.CSS_SELECTOR, selectors["data_date"])))
+                    data_date_text = driver.find_element("css selector", selectors["data_date"]).text
+                    county_logger.info(f"Data date text: \"{data_date_text}\"")
+                except TimeoutException:
+                    county_logger.error("Error: Timeout occurred while waiting for element to be visible.")
+                    county_logger.error(f"Attempting to open info tab...")
+                    try:
+                        info_tab = driver.find_element(By.CSS_SELECTOR, info_tab)
+                        info_tab.click()
+                        info_tab.click()
+                        county_logger.info(f"Clicked info tab")
+                    except Exception as e_1:
+                        county_logger.error(f"Failed to click info tab: {e_1}")
+                        debug_screenshot(context, "info_tab_not_found")
+                        raise CriticalError(f"Failed to click info tab: {e_1}")
+                    try:
+                        WebDriverWait(driver, 3).until(EC.visibility_of_element_located((By.CSS_SELECTOR, selectors["data_date"])))
+                        data_date_text = driver.find_element("css selector", selectors["data_date"]).text
+                        county_logger.info(f"Data date text: \"{data_date_text}\"")
+                    except Exception as e_2:
+                        county_logger.error(f"Failed to extract data date text: {e_2}")
+                        debug_screenshot(context, "data_date_text_not_found")
+                        raise CriticalError(f"Failed to extract data date text: {e_2}")
+                except Exception as e_3:
+                    county_logger.error(f"Failed to extract data date text: {e_3}")
+                    debug_screenshot(context, "data_date_text_not_found")
+                    raise CriticalError(f"Failed to extract data date text: {e_3}")
 
-# Function to extract data date
-def find_data_date(driver, debug_dir, county_name, selectors):
-    try:
-        # Get data date text
-        try:
-            WebDriverWait(driver, 5).until(EC.visibility_of_element_located((By.CSS_SELECTOR, selectors["data_date"])))
-            data_date_text = driver.find_element("css selector", selectors["data_date"]).text
-            logging.info(f"Data date text: \"{data_date_text}\"")
-        except TimeoutException:
-            logging.error("Error: Timeout occurred while waiting for element to be visible.")
-            logging.error(f"Attempting to open info tab...")
-            try:
-                info_tab = driver.find_element(By.CSS_SELECTOR, selectors["info_tab"])
-                info_tab.click()
-                info_tab.click()
-                logging.info(f"Clicked info tab")
-            except Exception as e_1:
-                logging.error(f"Failed to click info tab: {e_1}")
-                debug_screenshot(driver, debug_dir, county_name, "info_tab_not_found")
-                exit(1)
-            try:
-                WebDriverWait(driver, 3).until(EC.visibility_of_element_located((By.CSS_SELECTOR, selectors["data_date"])))
-                data_date_text = driver.find_element("css selector", selectors["data_date"]).text
-                logging.info(f"Data date text: \"{data_date_text}\"")
-            except Exception as e_2:
-                logging.error(f"Failed to extract data date text: {e_2}")
-                debug_screenshot(driver, debug_dir, county_name, "data_date_text_not_found")
-                exit(1)
-        except Exception as e_3:
-            logging.error(f"Failed to extract data date text: {e_3}")
-            debug_screenshot(driver, debug_dir, county_name, "data_date_text_not_found")
-            exit(1)
-
-        # Extract date and time
-        # Extract date from text (format like "March 31, 2025")
-        date_pattern = r'([A-Za-z]+)\s+(\d{1,2}),\s+(\d{4})'
-        match = re.search(date_pattern, data_date_text)
-
-        if not match:
-            logging.warning(f"Could not extract date from text: \"{data_date_text}\"")
-            logging.warning(f"Attempting alternate date source...")
-            try:
-                WebDriverWait(driver, 5).until(EC.visibility_of_element_located((By.CSS_SELECTOR, selectors["data_date_alt"])))
-                data_date_text = driver.find_element("css selector", selectors["data_date_alt"]).text
-                logging.info(f"Data date text: \"{data_date_text}\"")
+                # Extract date and time
+                # Extract date from text (format like "March 31, 2025")
                 date_pattern = r'([A-Za-z]+)\s+(\d{1,2}),\s+(\d{4})'
                 match = re.search(date_pattern, data_date_text)
+
+                if not match:
+                    county_logger.warning(f"Could not extract date from text: \"{data_date_text}\"")
+                    county_logger.warning(f"Attempting alternate date source...")
+                    try:
+                        WebDriverWait(driver, 5).until(EC.visibility_of_element_located((By.CSS_SELECTOR, selectors["data_date_alt"])))
+                        data_date_text = driver.find_element("css selector", selectors["data_date_alt"]).text
+                        county_logger.info(f"Data date text: \"{data_date_text}\"")
+                        date_pattern = r'([A-Za-z]+)\s+(\d{1,2}),\s+(\d{4})'
+                        match = re.search(date_pattern, data_date_text)
+                    except Exception as e:
+                        county_logger.error(f"Failed to extract data date text: {e}")
+                        debug_screenshot(context, "date_extraction_failed")
+                        raise CriticalError(f"Failed to extract data date text: {e}")
+                    
+                if match:
+                    month_name, day, year = match.groups()
+                    
+                    # Convert month name to number
+                    month_dict = {
+                        'January': '01', 'February': '02', 'March': '03', 'April': '04',
+                        'May': '05', 'June': '06', 'July': '07', 'August': '08',
+                        'September': '09', 'October': '10', 'November': '11', 'December': '12'
+                    }
+                    
+                    # Get month number
+                    month = month_dict.get(month_name, '01')  # Default to 01 if not found
+                    
+                    # Format day with leading zero if needed
+                    day = day.zfill(2)
+                    
+                    # Format as MM/DD/YYYY
+                    data_date = f"{month}/{day}/{year}"
+                    county_logger.info(f"Extracted date: {data_date}")
+                    
+                    return data_date
+                else:
+                    county_logger.warning(f"Failed to extract date from text: \"{data_date_text}\"")
+                    debug_screenshot(context, "date_extraction_failed")
+                    raise CriticalError(f"Failed to extract date from text: {data_date_text}")
+
+            except NoSuchElementException:
+                county_logger.error("Error: Element not found.")
+                debug_screenshot(context, "date_extraction_failed")
+                raise CriticalError(f"An unexpected error occurred: {e}")
+            
             except Exception as e:
-                logging.error(f"Failed to extract data date text: {e}")
-                debug_screenshot(driver, debug_dir, county_name, "date_extraction_failed")
-                exit(1)
-            
-        if match:
-            month_name, day, year = match.groups()
-            
-            # Convert month name to number
-            month_dict = {
-                'January': '01', 'February': '02', 'March': '03', 'April': '04',
-                'May': '05', 'June': '06', 'July': '07', 'August': '08',
-                'September': '09', 'October': '10', 'November': '11', 'December': '12'
-            }
-            
-            # Get month number
-            month = month_dict.get(month_name, '01')  # Default to 01 if not found
-            
-            # Format day with leading zero if needed
-            day = day.zfill(2)
-            
-            # Format as MM/DD/YYYY
-            data_date = f"{month}/{day}/{year}"
-            logging.info(f"Extracted date: {data_date}")
-            
-            return data_date
-        else:
-            logging.warning(f"Failed to extract date from text: \"{data_date_text}\"")
-            debug_screenshot(driver, debug_dir, county_name, "date_extraction_failed")
-            exit(1)
+                county_logger.error(f"An unexpected error occurred: {e}")
+                debug_screenshot(context, "date_extraction_failed")
+                raise CriticalError(f"An unexpected error occurred: {e}")
 
-    except NoSuchElementException:
-        logging.error("Error: Element not found.")
-        debug_screenshot(driver, debug_dir, county_name, "date_extraction_failed")
-        exit(1)
-    
-    except Exception as e:
-        logging.error(f"An unexpected error occurred: {e}")
-        debug_screenshot(driver, debug_dir, county_name, "date_extraction_failed")
-        exit(1)
+        # Function to click download button
+        def find_download_button(context, selectors, critical=True):
+            """
+            Traverses nested Shadow DOMs to locate and return the download button.
 
-# Function to click download button
-def find_download_button(driver, debug_dir, county_name, selectors, critical=True):
-    """Use JavaScript to traverse shadow DOM and find the download button."""
-    try:
-        js_code = """
-        // Start with the container element
-        const container = document.querySelector(arguments[0]);
-        if (!container) return null;
-        
-        // Get its shadow root
-        const shadowRoot1 = container.shadowRoot;
-        if (!shadowRoot1) return null;
-        
-        // Find the next element in the first shadow DOM
-        const nestedElement = shadowRoot1.querySelector(arguments[1]);
-        if (!nestedElement) return null;
-        
-        // Get the second shadow root
-        const shadowRoot2 = nestedElement.shadowRoot;
-        if (!shadowRoot2) return null;
-        
-        // Find the button container in the second shadow DOM
-        const buttonContainer = shadowRoot2.querySelector(arguments[2]);
-        if (!buttonContainer) return null;
-        
-        // Get the third shadow root
-        const shadowRoot3 = buttonContainer.shadowRoot;
-        if (!shadowRoot3) return null;
-        
-        // Finally, find the button in the deepest shadow DOM
-        const button = shadowRoot3.querySelector(arguments[3]);
-        return button;
-        """
-        
-        download_button = driver.execute_script(
-            js_code, 
-            selectors["outer_shadow_selector"],
-            selectors["nested_shadow_selector"], 
-            selectors["nested_shadow_selector_2"],
-            selectors["download_button"]
-        )
-        
-        if download_button:
-            logging.info("Found download button using JavaScript traversal")
-            return download_button
-        else:
-            raise Exception("Could not find download button with JavaScript traversal")
-            
-    except Exception as e:
-        logging.error(f"Error finding download button in shadow DOM: {e}")
-        debug_screenshot(driver, debug_dir, county_name, "download_button_not_found")
-        if critical:
-            driver.quit()
-            exit(1)
-        return None
+            This is necessary for modern web UIs where elements are encapsulated. It uses
+            JavaScript execution to pierce through the shadow boundaries and find the
+            target button element.
 
-# Function to add an asterisk to the filename
-def add_asterisk(filename):
-    """Add asterisk before .zip extension if present."""
-    if ".zip" in filename:
-        # Split at .zip and add wildcard
-        parts = filename.split(".zip")
-        og_filename = parts[0]
-        return f"{parts[0]}*.zip{parts[1] if len(parts) > 1 else ''}", og_filename
-    return filename, og_filename
+            Args:
+                context (CountyContext): The context object for the county.
+                selectors (dict): A dictionary of CSS selectors for the shadow DOM path.
+                critical (bool): If True, raise a CriticalError if the button is not found.
 
-# Function to unzip a file
-def unzip_file(download_dir, filename, zip_dir=None, extract_dir=None):
-    """Unzip a file to a specified directory or current directory.
-    
-    Args:
-        download_dir: Directory to save downloads
-        filename: Filename to unzip
-        zip_dir: Directory to unzip
-        extract_dir: Directory to extract to
+            Returns:
+                WebElement: The located download button element, or None.
 
-    Returns:
-        str: Path to extracted directory
-    """
-    if zip_dir is None:
-        zip_dir = os.path.join(download_dir, filename)
-    if extract_dir is None:
-        extract_dir = download_dir
-    
-    with zipfile.ZipFile(zip_dir, 'r') as zip_ref:
-        zip_ref.extractall(extract_dir)
-    
-    logging.info(f"Extracted {filename} to {extract_dir}")
-    return extract_dir
-
-# Function to rename a file
-def rename_file(download_dir, input_filename, target_filename):
-    """
-    Renames a file in the downloads directory to the target filename.
-    
-    Args:
-        download_dir: Path to the downloads directory
-        input_filename: Name of the file to rename (without path)
-        target_filename: New filename to use (without path)
-        
-    Returns:
-        str: Path to the renamed file, or None on failure
-    """
-    
-    # Create full paths for both input and output files
-    input_file_path = os.path.join(download_dir, input_filename)
-    new_file_path = os.path.join(download_dir, target_filename)
-    
-    try:
-        # Check if the input file exists
-        if not os.path.exists(input_file_path):
-            logging.error(f"Error: File {input_filename} not found in downloads folder")
-            return None
-            
-        # Check if target file already exists
-        if os.path.exists(new_file_path):
-            logging.warning(f"Target file {target_filename} already exists, removing it first")
-            return None
-            
-        # Rename the file using os.rename
-        os.rename(input_file_path, new_file_path)
-        logging.info(f"File {input_filename} renamed to: {target_filename}")
-        
-        # Return the path to the renamed file
-        return new_file_path, target_filename
-        
-    except PermissionError:
-        logging.error(f"Permission denied when trying to rename {input_filename}")
-        return None
-    except OSError as e:
-        logging.error(f"OS error when renaming {input_filename}: {e}")
-        return None
-    except Exception as e:
-        logging.error(f"Unexpected error when renaming {input_filename}: {e}")
-        return None
-
-
-def main():
-    try:
-
-        # Get usecase
-        usecase = input("Enter 'parcels' or 'URL filename zip? rename?': ")
-        if usecase == "parcels":
-            print("Downloading Palm Beach parcels...")
-            county_name = "Palm Beach"
-            layer = "parcels"
-            county_config = load_county_config(county_name)
-            url = county_config[f"{layer}"]["url"]
-            selectors = county_config[f"{layer}"]["selectors"]
-            filename = county_config[f"{layer}"]["filename"]
-            if not county_config:
-                print(f"County '{county_name}' not found in configuration.")
-                exit(1)
-        else:
-            # Split the input by space to get parameters
-            parts = usecase.strip().split(" ")
-            county_name = "opendata"
-            layer = "opendata"
-            
-            if len(parts) >= 2:
-                # Both URL and filename provided
-                url = parts[0]
-                filename = parts[1]
-
-                # Check for unzip
-                if "unzip" in parts:
-                    unzip = True
-                else:
-                    unzip = False
+            Raises:
+                CriticalError: If the button cannot be found and `critical` is True.
+            """
+            try:
+                js_code = """
+                // Start with the container element
+                const container = document.querySelector(arguments[0]);
+                if (!container) return null;
                 
-                # Check for rename
-                if "rename" in parts:
-                    rename = True
+                // Get its shadow root
+                const shadowRoot1 = container.shadowRoot;
+                if (!shadowRoot1) return null;
+                
+                // Find the next element in the first shadow DOM
+                const nestedElement = shadowRoot1.querySelector(arguments[1]);
+                if (!nestedElement) return null;
+                
+                // Get the second shadow root
+                const shadowRoot2 = nestedElement.shadowRoot;
+                if (!shadowRoot2) return null;
+                
+                // Find the button container in the second shadow DOM
+                const buttonContainer = shadowRoot2.querySelector(arguments[2]);
+                if (!buttonContainer) return null;
+                
+                // Get the third shadow root
+                const shadowRoot3 = buttonContainer.shadowRoot;
+                if (!shadowRoot3) return null;
+                
+                // Finally, find the button in the deepest shadow DOM
+                const button = shadowRoot3.querySelector(arguments[3]);
+                return button;
+                """
+                
+                download_button = driver.execute_script(
+                    js_code, 
+                    selectors["outer_shadow_selector"],
+                    selectors["nested_shadow_selector"], 
+                    selectors["nested_shadow_selector_2"],
+                    selectors["download_button"]
+                )
+                
+                if download_button:
+                    county_logger.info("Found download button using JavaScript traversal")
+                    return download_button
                 else:
-                    rename = False
-            else:
-                # Only URL provided, ask for filename separately
-                url = parts[0]
-                filename = input("Enter the filename: ")
-                unzip = input("Unzip? (y/n): ")
-                if unzip == "y":
-                    unzip = True
-                else:
-                    unzip = False
-            if unzip == True:
-                print(f"Downloading and extracting {filename}...")
-            else:
-                print(f"Downloading {filename}...")
-            filename, og_filename = add_asterisk(filename)
-            county_config = load_county_config(county_name)
-            selectors = county_config["selectors"]
+                    raise Exception("Could not find download button with JavaScript traversal")
+                    
+            except Exception as e:
+                county_logger.error(f"Error finding download button in shadow DOM: {e}")
+                debug_screenshot(context, "download_button_not_found")
+                if critical:
+                    raise CriticalError(f"Error finding download button in shadow DOM: {e}")
+                return None
 
-        # Initialize debug and driver
-        debug_dir = initialize_debug(county_name)
-        driver, download_dir = initialize_driver()
+
+
+        # Define variables
+        driver = context.driver
+        county_logger = context.county_logger
+        county_name_formatted = context.county_name.replace("_", " ").title()
+        url = context.county_config["palm_beach"]["parcels"]["url"]
+        selectors = context.county_config["palm_beach"]["parcels"]["selectors"]
+        filename = context.county_config["palm_beach"]["parcels"]["filename"]
+        temp_files = []
 
         # Navigate to the URL
-        driver.get(url)
+        try: 
+            driver.get(url)
 
-        # Wait for page to load
-        #WebDriverWait(driver, 20).until(EC.visibility_of_element_located((By.CSS_SELECTOR, selectors["wait_for_selector"])))
+            # Wait for page to load
+            WebDriverWait(driver, 20).until(EC.presence_of_element_located((By.CSS_SELECTOR, selectors["wait_for_selector"])))
 
-        # Get data date
-        data_date = find_data_date(driver, debug_dir, county_name, selectors)
+            # Get data date
+            data_date = find_data_date(context)
 
-        # Click download tab
-        try:
-            download_tab = driver.find_element(By.CSS_SELECTOR, selectors["download_tab"])
-            driver.execute_script("arguments[0].click();", download_tab)
-            logging.info(f"Clicked download tab")
-        except Exception as e_3:
-            logging.error(f"Error clicking download tab, attempting alternate selector...")
+            # Click download tab
             try:
-                WebDriverWait(driver, 5).until(EC.visibility_of_element_located((By.CSS_SELECTOR, selectors["wait_for_selector"])))
-                download_tab = driver.find_element(By.CSS_SELECTOR, selectors["DOWNLOAD_TAB_OLD"])
+                download_tab = driver.find_element(By.CSS_SELECTOR, selectors["download_tab"])
                 driver.execute_script("arguments[0].click();", download_tab)
-                logging.info(f"Clicked alternatedownload tab")
-            except Exception as e_4:
-                logging.error(f"Failed to click download tab: {e_4}")
-                debug_screenshot(driver, debug_dir, county_name, "download_tab_not_found")
-                exit(1)
+                county_logger.info(f"Clicked download tab")
+            except Exception as e_3:
+                county_logger.error(f"Error clicking download tab, attempting alternate selector...")
+                try:
+                    WebDriverWait(driver, 5).until(EC.visibility_of_element_located((By.CSS_SELECTOR, selectors["wait_for_selector"])))
+                    download_tab = driver.find_element(By.CSS_SELECTOR, selectors["DOWNLOAD_TAB_OLD"])
+                    driver.execute_script("arguments[0].click();", download_tab)
+                    county_logger.info(f"Clicked alternate download tab")
+                except Exception as e_4:
+                    county_logger.error(f"Failed to click download tab: {e_4}")
+                    debug_screenshot(context, "download_tab_not_found")
+                    raise CriticalError(f"Failed to click download tab: {e_4}")
 
-        # Wait for tab to load
-        WebDriverWait(driver, 10).until(EC.visibility_of_element_located((By.CSS_SELECTOR, selectors["outer_shadow_selector"])))
-        
-        # Click download button
-        download_button = find_download_button(driver, debug_dir, county_name, selectors, critical=True)
-        safe_click(driver, download_button, debug_dir, county_name, "download button")
+            # Wait for tab to load
+            WebDriverWait(driver, 10).until(EC.visibility_of_element_located((By.CSS_SELECTOR, selectors["outer_shadow_selector"])))
             
-        # Wait for download
-        download_path, download_file = wait_for_download(download_dir, f"{filename}", timeout=90, log_interval=10)
+            # Click download button
+            download_button = find_download_button(context, selectors, critical=True)
+            safe_click(context, download_button, "download button", specific_click='action')
+                
+            # Wait for download
+            download_path, download_file = wait_for_download(context, f"{filename}", timeout=90, log_interval=10)
 
-        if download_path and county_name != "opendata":
-            logging.info(f"Download complete for {county_name} {layer}. Data date: {data_date}")
-            driver.quit()
-            exit(0)
-        elif download_path and county_name == "opendata":
-            if rename == True:
-                # Convert data date to YYYY-MM-DD format
-                data_date = datetime.strptime(data_date, "%m/%d/%Y").strftime("%Y-%m-%d")
-                download_path, download_file = rename_file(download_dir, download_file, f"{og_filename}_{data_date}.zip")
+            county_logger.info(f"Download complete for {county_name_formatted}. Data date: {data_date}")
+            temp_files.append(download_file)
 
-            if unzip == True:
-                unzip_file(download_dir, download_file, zip_dir=download_path)
+            # Transfer files
+            transfer_files(context, temp_files)
 
-            logging.info(f"{download_file} downloaded. Data date: {data_date}")
-            driver.quit()
-            exit(0)
+            return {
+                'status': 'SUCCESS', 
+                'data_date': data_date,
+                'file_count': len(temp_files),
+                'file_count_status': 'SUCCESS' if len(temp_files) > 0 else "FAILED"
+            }
+
+        except TimeoutException as te:
+            county_logger.error(f"Timeout: {te}")
+            if len(temp_files) > 0: # If files were downloaded, transfer them
+                transfer_files(context, temp_files)
+            debug_screenshot(context, "timeout")
+            raise CriticalError(f"Timeout: {te}")
+        except Exception as e:
+            county_logger.error(f"Unexpected error: {e}", exc_info=True)
+            if len(temp_files) > 0: # If files were downloaded, transfer them
+                transfer_files(context, temp_files)
+            debug_screenshot(context, "Exception")
+            raise CriticalError(f"Unexpected error: {str(e)}")
+        
+
+
+    # Main function
+    try:
+        result = download_opendata(context)
+        
+        if result:
+            if result.get('status') == 'SUCCESS' and result.get('data_date') == None:
+                result['data_date'] = datetime.now().strftime("%m/%d/%Y")
+            return result
         else:
-            logging.error(f"Download failed for {county_name} {layer}")
-            debug_screenshot(driver, debug_dir, county_name, "download_failed")
-            exit(1)
+            county_logger.error(f"Unexpected error: No result returned from {county_name.replace('_', ' ').title()} script.")
+            return {
+                'status': 'FAILED', 
+                'error': 'No result returned',
+                'data_date': None}
+    except CriticalError as e:
+        county_logger.error(f"Critical error: {e}")
+        return {
+            'status': 'FAILED', 
+            'error': str(e),
+            'data_date': None}
 
-    except TimeoutException as te:
-        logging.error(f"Timeout: {te}")
-        driver.quit()
-        exit(1)
-    except Exception as e:
-        logging.error(f"Error in main: {e}")
-        driver.quit()
-        exit(1)
+# Main orchestration function for batch downloads
+def main():
+    """
+    Main orchestration function for the entire batch download process.
+
+    This function initializes the system, determines which counties to process,
+    clears the download directory, and then iterates through the list of counties.
+    For each county, it calls the main `download_county` function and handles retries
+    on failure. Finally, it generates a summary report and cleans up resources.
+    """
+    global local
+    global manual
+    global isolate_county_logs
+    global chromium
+    global headless
+    global prod
+    global attempts
+
+    # Parse command-line arguments
+    args = parse_arguments()
     
+    # Apply command-line flag overrides
+    if args.local:
+        local = True
+    if args.full_logs:
+        isolate_county_logs = False
+    if args.chrome:
+        chromium = False
+    if args.headful:
+        headless = False
+    if args.no_retry:
+        attempts = 1
+
+    # Check control variables
+    if prod:
+        local = False
+        manual = False
+        isolate_county_logs = True
+        headless = True
+        attempts = 10
+    else:
+        if attempts < 1:
+            print("ATTEMPTS must be at least 1.")
+            exit(1)
+        print("----- RUNNING IN TEST MODE -----")
+        print(f"LOCAL: {local}")
+        print(f"MANUAL: {manual}")
+        print(f"ISOLATE_COUNTY_LOGS: {isolate_county_logs}")
+        print(f"CHROMIUM: {chromium}")
+        print(f"HEADLESS: {headless}")
+        print(f"ATTEMPTS: {attempts}")
+        print("--------------------------------")
+
+    # Set directories
+    if local:
+        _base_log_dir = os.path.join("/Users/seanmay/Downloads/batch_logs", datetime.now().strftime("%Y-%m-%d"))
+        download_dir = "/Users/seanmay/Downloads/batch_downloads"
+    else:
+        _base_log_dir = os.path.join("/srv/mapwise_dev/county/_batch_logs", datetime.now().strftime("%Y-%m-%d"))
+        download_dir = "/srv/mapwise_dev/county/_batch_downloads"
+        os.makedirs(download_dir, exist_ok=True)
+    
+    # Determine which counties to process
+    counties_to_process = get_counties_to_process(manual, args)
+    driver = None
+    main_window = None
+    initial_window_count = None
+
+    try:
+        # Initialize batch system
+        driver, main_window, initial_window_count = initialize_all(_base_log_dir, download_dir, chromium, local, headless)
+
+        # Clear download directory
+        try:
+            # Get list of all files in download directory
+            if not os.path.exists(download_dir):
+                pass
+            else:
+                files = os.listdir(download_dir)
+                logging.info(f"Download directory: {download_dir}")
+                
+                # Delete each file
+                if len(files) > 0:
+                    logging.info(f"Files in download directory: {files}")
+                    if manual:
+                        response = input(f"Clear download directory? (y/n): ")
+                        if response == "y":
+                            for file in files:
+                                file_path = os.path.join(download_dir, file)
+                                if os.path.isfile(file_path):
+                                    os.remove(file_path)
+                            logging.info(f"Download directory cleared.")
+                        else:
+                            logging.info(f"Download directory not cleared.")
+                    else:
+                        for file in files:
+                            file_path = os.path.join(download_dir, file)
+                            if os.path.isfile(file_path):
+                                os.remove(file_path) # Delete each file
+                    
+                    for file in files:
+                        file_path = os.path.join(download_dir, file)
+                        if os.path.isfile(file_path):
+                            os.remove(file_path)
+                            logging.info(f"Deleted file: {file}")
+                    
+                    logging.info(f"Cleared download directory: {download_dir}")
+
+        except Exception as e:
+            logging.error(f"Error clearing download directory: {e}")
+            raise Exception(f"Error clearing download directory: {e}")
+        
+        # Loop through counties
+        for county_name in counties_to_process:
+            # Attempt each county up to the number of attempts
+            max_attempts = attempts
+            for attempt in range(1, max_attempts + 1):
+                county_logger = start_county_logging(county_name, isolate_county_logs, chromium, local)
+                try:
+                    # Call the function with shared resources
+                    result = download_county(county_name, driver, county_logger, download_dir, main_window, initial_window_count)
+
+                    if result.get('status') == 'SUCCESS':
+                        # Success – record information and stop retrying
+                        log_county_info(county_name, f"Data date: {result['data_date']}")
+                        end_county_logging(county_name, 'SUCCESS',
+                                           attempt=attempt,
+                                           file_count=result.get('file_count'),
+                                           file_count_status=result.get('file_count_status'))
+                        break
+                    else:
+                        # The function returned FAILED – log the error
+                        log_county_error(county_name, f"Attempt {attempt} error: {result.get('error')}")
+                        end_county_logging(county_name, 'FAILED',
+                                           attempt=attempt,
+                                           error_message=result.get('error'),
+                                           file_count=result.get('file_count'),
+                                           file_count_status=result.get('file_count_status'))
+                except Exception as e:
+                    # Unexpected exception during the attempt – log it
+                    log_county_error(county_name, f"Attempt {attempt} unexpected error: {str(e)}")
+                    end_county_logging(county_name, 'FAILED', attempt=attempt, error_message=str(e))
+
+                # If we reach here, the attempt failed. Decide whether to retry.
+                if attempt < max_attempts:
+                    county_logger.info(f"Retrying {county_name.replace('_', ' ').title()} (attempt {attempt + 1}/{max_attempts}) after reinitializing browser…")
+                    driver.quit()
+                    driver, main_window, initial_window_count = initialize_all(_base_log_dir, download_dir, chromium, local, headless)
+                else:
+                    county_logger.info(f"All attempts failed for {county_name.replace('_', ' ').title()}.")
+
+            # Optional delay between counties (regardless of success/failure)
+            time.sleep(3)
+
+        # Add batch summary
+        add_batch_summary(counties_to_process)
+        
+    except KeyboardInterrupt:
+        print('\nReceived keyboard interrupt. Cleaning up...')
+        logging.info("Script interrupted by user")
+    finally:
+        # Cleanup - this runs whether we complete normally or get interrupted
+        if driver:
+            try:
+                driver.quit()
+                logging.info("Browser driver cleaned up")
+            except Exception as e:
+                logging.error(f"Error during cleanup: {e}")
+        
+        logging.info("Batch download completed")
+
 if __name__ == "__main__":
     main()
