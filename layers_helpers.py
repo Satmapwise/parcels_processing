@@ -200,7 +200,7 @@ def format_name(name: str, name_type: str, external: bool = False) -> str:
         layer_mappings[layer_key] = external_name
         layer_mappings_reverse[external_name.lower()] = layer_key
     
-    # Add legacy mappings for backward compatibility
+    # Add legacy mappings for backward compatibility (but don't override LAYER_CONFIGS)
     legacy_mappings = {
         'addr_pnts': 'Address Points',
         'bldg_ftpr': 'Building Footprints', 
@@ -208,9 +208,15 @@ def format_name(name: str, name_type: str, external: bool = False) -> str:
         'flood_zones': 'FEMA Flood Zones',
         'fdot_tc': 'Traffic Counts FDOT'
     }
-    layer_mappings.update(legacy_mappings)
-    for k, v in legacy_mappings.items():
-        layer_mappings_reverse[v.lower()] = k
+    
+    # Add legacy forward mappings (internal -> external) only if not already in LAYER_CONFIGS
+    for legacy_internal, external_name in legacy_mappings.items():
+        if legacy_internal not in layer_mappings:
+            layer_mappings[legacy_internal] = external_name
+        
+        # For reverse mapping, only add legacy if the external name isn't already mapped to a current layer
+        if external_name.lower() not in layer_mappings_reverse:
+            layer_mappings_reverse[external_name.lower()] = legacy_internal
     
     # Special county mappings (internal -> external)
     county_special = {
