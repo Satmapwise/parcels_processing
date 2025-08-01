@@ -1,7 +1,9 @@
 {
-"opendata": {
-      "selectors": {
-        "full_details": "#ember807"
-      }
+"arcgis": {
+    "selectors": {
+        "full_details": "a.btn.btn-primary.btn-block",
+        "data_source": "a[data-test=\"dataSource\"]",
+        "wait_for_selector": ".hub-toolbar-inner.hide-overflow > button:nth-child(4)"
     }
+}
 }
