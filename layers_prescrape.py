@@ -919,7 +919,7 @@ def generate_expected_values(layer: str, state: str, county: str, city: str, ent
         'city': format_name(city_std, 'city', external=True),   # external format for database
         'layer_subgroup': layer_internal,
         'layer_group': config.get('layer_group', 'flu_zoning'),
-        'category': category,
+        'category': config.get('category', ''),
         'table_name': table_name,
         'sys_raw_folder': sys_raw_folder,
     }
