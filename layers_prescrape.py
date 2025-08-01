@@ -739,14 +739,17 @@ def generate_expected_values(layer: str, state: str, county: str, city: str, ent
     layer_external = format_name(layer, 'layer', external=True)
     county_external = format_name(county, 'county', external=True)
     city_external = format_name(city_std, 'city', external=True)
+    state_abbrev = validate_state_abbreviation(state) or 'FL'
     
     if entity_type == "city":
-        # Default to "City of" but this will be refined in health check based on original title
-        title = f"{layer_external} - City of {city_external}"
+        # City-level: "Future Land Use - City of Gainesville FL"
+        title = f"{layer_external} - City of {city_external} {state_abbrev}"
     elif entity_type in ["unincorporated", "unified", "incorporated"]:
-        title = f"{layer_external} - {county_external} {entity_type.capitalize()}"
+        # County-level with special suffixes: "Zoning - Broward County Unincorporated FL"
+        title = f"{layer_external} - {county_external} County {entity_type.capitalize()} {state_abbrev}"
     else:
-        title = f"{layer_external} - {city_external}"
+        # Standard county-level: "Streets - Broward County FL"
+        title = f"{layer_external} - {county_external} County {state_abbrev}"
     
     # Generate table name (internal format)
     layer_internal = format_name(layer, 'layer', external=False)
@@ -1426,9 +1429,10 @@ class LayersPrescrape:
         
         # Field-specific health checks
         if field == "new_title":
-            # Check title format: "<layer> - City/Town/Village of <city>" or "<layer> - <county> Unincorporated/Unified/Incorporated"
+            # Check title format with state abbreviation and "County" suffix
             # Get the actual title value from the database for comparison
             actual_title = record.get('title') or ''
+            state_abbrev = validate_state_abbreviation(state) or 'FL'
             
             if entity_type == "city":
                 # Determine the correct prefix (City/Town/Village) from the original title
@@ -1439,18 +1443,20 @@ class LayersPrescrape:
                     elif "Village of" in actual_title:
                         title_prefix = "Village"
                 
-                expected = f"{layer_external} - {title_prefix} of {city_external}"
+                # City-level: "Future Land Use - City of Gainesville FL"
+                expected = f"{layer_external} - {title_prefix} of {city_external} {state_abbrev}"
             elif entity_type in ["unincorporated", "unified", "incorporated"]:
-                expected = f"{layer_external} - {county_external} {entity_type.capitalize()}"
+                # County-level with special suffixes: "Zoning - Broward County Unincorporated FL"
+                expected = f"{layer_external} - {county_external} County {entity_type.capitalize()} {state_abbrev}"
             elif entity_type == "county" or self.cfg.layer in ['streets', 'address_points', 'subdivisions', 'buildings']:
-                # County-level layers: "<layer> - <county>"
-                expected = f"{layer_external} - {county_external}"
+                # Standard county-level: "Streets - Broward County FL"
+                expected = f"{layer_external} - {county_external} County {state_abbrev}"
             else:
                 # Fallback - if we have county but no city, use county format
                 if county_external and not city_external:
-                    expected = f"{layer_external} - {county_external}"
+                    expected = f"{layer_external} - {county_external} County {state_abbrev}"
                 else:
-                    expected = f"{layer_external} - {city_external}"
+                    expected = f"{layer_external} - {city_external} {state_abbrev}"
             
             return expected if actual_title != expected else ""
         
