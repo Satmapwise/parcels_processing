@@ -2,5 +2,107 @@
   "sunbiz_fl": {
     "src_url_file": "MANUAL_REQUIRED",
     "fields_obj_transform": "MANUAL_REQUIRED"
+  },
+  "address_points_fl_collier": {
+    "src_url_file": "https://services2.arcgis.com/SlIq32SqARUHIhSx/arcgis/rest/services/Site_Address_Points_b/FeatureServer/3"
+  },
+  "address_points_fl_hillsborough": {
+    "src_url_file": "https://services.arcgis.com/apTfC6SUmnNfnxuF/arcgis/rest/services/Site_Address_Point/FeatureServer/0"
+  },
+  "address_points_fl_miami_dade": {
+    "src_url_file": "https://services.arcgis.com/8Pc9XBTAsYuxx9Ny/arcgis/rest/services/GeoAddressWCondo_gdb/FeatureServer/0"
+  },
+  "address_points_fl_palm_beach": {
+    "src_url_file": "https://services1.arcgis.com/ZWOoUZbtaYePLlPw/arcgis/rest/services/Situs_Addresses/FeatureServer/0"
+  },
+  "address_points_fl_pinellas": {
+    "src_url_file": "https://egis.pinellas.gov/gis/rest/services/AGO/Parcels/MapServer/2"
+  },
+  "address_points_fl_sarasota": {
+    "src_url_file": "https://ags3.scgov.net/server/rest/services/Hosted/AddressPoint/FeatureServer/0"
+  },
+  "address_points_fl_st_johns": {
+    "src_url_file": "https://services1.arcgis.com/t2yugAJW83eUIFui/arcgis/rest/services/Address_Sites/FeatureServer/0"
+  },
+  "address_points_fl_st_lucie": {
+    "src_url_file": "https://slcgis.stlucieco.gov/hosting/rest/services/AddressMaster/MapServer/0"
+  },
+  "address_points_fl_volusia": {
+    "src_url_file": "https://maps5.vcgov.org/arcgis/rest/services/Open_Data/Open_Data_1/FeatureServer/2"
+  },
+  "flu_fl_brevard": {
+    "src_url_file": "https://gis.brevardfl.gov/gissrv/rest/services/Emergency_Management/9_1_1_Emergency_Response_Layers/MapServer/0"
+  },
+  "flu_fl_lee_cape_coral": {
+    "src_url_file": "https://capeims.capecoral.gov/arcgis/rest/services/OpenData/DCD/MapServer/2"
+  },
+  "flu_fl_alachua": {
+    "src_url_file": "https://services1.arcgis.com/MiBZ4u97DWldovjI/arcgis/rest/services/Future_Land_Use04/FeatureServer/14"
+  },
+  "flu_fl_seminole_lake_mary": {
+    "src_url_file": "https://services1.arcgis.com/v0YMSb0ovdJoIQKg/arcgis/rest/services/Zoning_FLU_Query_AGO_2021/FeatureServer/5"
+  },
+  "flu_fl_lake_minneola": {
+    "src_url_file": "https://gis.lakecountyfl.gov/lakegis/rest/services/LocalGov/CityFLU/MapServer/9"
+  },
+  "flu_fl_martin": {
+    "src_url_file": "https://geoweb.martin.fl.us/arcgis/rest/services/Administrative_Areas/Administrative_Areas/MapServer/9"
+  },
+  "flu_fl_indian_river_vero_beach": {
+    "src_url_file": "https://services1.arcgis.com/mK9abRqiJFkUgbPZ/arcgis/rest/services/ZoningFutureLandUse/FeatureServer/0"
+  },
+  "flu_fl_leon": {
+    "src_url_file": "https://intervector.leoncountyfl.gov/intervector/rest/services/MapServices/TLC_OverlayFutureLandUse_D_WM/MapServer/0"
+  },
+  "flu_fl_pinellas": {
+    "src_url_file": "https://egis.pinellas.gov/gis/rest/services/AGO/PPC_Data/MapServer/17"
+  },
+  "flu_fl_pinellas_unincorporated": {
+    "src_url_file": "https://egis.pinellas.gov/gis/rest/services/AGO/Planning_LandUse/MapServer/13"
+  },
+  "flu_fl_sarasota": {
+    "src_url_file": "https://ags3.scgov.net/server/rest/services/Hosted/FutureLandUse/FeatureServer/0"
+  },
+  "streets_fl_brevard": {
+    "src_url_file": "https://gis.brevardfl.gov/gissrv/rest/services/Emergency_Management/9_1_1_Emergency_Response_Layers/MapServer/1"
+  },
+  "streets_fl_broward": {
+    "src_url_file": "https://bcgishub.broward.org/server/rest/services/GeoHubDownloads/Broward_County_Streets/MapServer/0"
+  },
+  "streets_fl_hillsborough": {
+    "src_url_file": "https://services.arcgis.com/apTfC6SUmnNfnxuF/arcgis/rest/services/Roads_HC1/FeatureServer/0"
+  },
+  "streets_fl_lake": {
+    "src_url_file": "https://gis.lakecountyfl.gov/lakegis/rest/services/OpenData/OpenData1/FeatureServer/7"
+  },
+  "streets_fl_manatee": {
+    "src_url_file": "https://www.mymanatee.org/gisits/rest/services/opendata/Transportation/FeatureServer/3"
+  },
+  "streets_fl_miami_dade": {
+    "src_url_file": "https://services.arcgis.com/8Pc9XBTAsYuxx9Ny/arcgis/rest/services/GeoStreets_gdb/FeatureServer/0"
+  },
+  "streets_fl_orange": {
+    "src_url_file": "https://ocgis4.ocfl.net/arcgis/rest/services/AGOL_Open_Data/MapServer/1"
+  },
+  "streets_fl_palm_beach": {
+    "src_url_file": "https://maps.co.palm-beach.fl.us/arcgis/rest/services/OpenData/Transportation_Open_Data/MapServer/3"
+  },
+  "streets_fl_pasco": {
+    "src_url_file": "https://services6.arcgis.com/Mo4MddfRHpFwT7UF/arcgis/rest/services/Centerlines/FeatureServer/0"
+  },
+  "streets_fl_pinellas": {
+    "src_url_file": "https://egis.pinellas.gov/gis/rest/services/AGO/Centerline/MapServer/0"
+  },
+  "streets_fl_sarasota": {
+    "src_url_file": "https://ags3.scgov.net/server/rest/services/Hosted/Street/FeatureServer/0"
+  },
+  "subdivisions_fl_lake": {
+    "src_url_file": "https://gis.lakecountyfl.gov/lakegis/rest/services/OpenData/OpenData1/FeatureServer/10"
+  },
+  "zoning_fl_orange_unincorporated": {
+    "src_url_file": "https://ocgis4.ocfl.net/arcgis/rest/services/AGOL_Open_Data/MapServer/51"
+  },
+  "zoning_fl_st_lucie_unincorporated": {
+    "src_url_file": "https://slcgis.stlucieco.gov/hosting/rest/services/LandUse/Zoning/MapServer/0"
   }
 }
