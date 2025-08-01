@@ -75,63 +75,63 @@ LAYER_CONFIGS = {
     'zoning': {
         'category': '08_Land_Use_and_Zoning',
         'layer_group': 'flu_zoning',
-        'layer_subgroup': 'zoning',
+        'external_frmt': 'Zoning',
         'level': 'state_county_city',
     },
     'flu': {
         'category': '08_Land_Use_and_Zoning', 
         'layer_group': 'flu_zoning',
-        'layer_subgroup': 'flu',
+        'external_frmt': 'Future Land Use',
         'level': 'state_county_city',
     },
     'fema_flood': {
         'category': '12_Hazards',
         'layer_group': 'hazards',
-        'layer_subgroup': 'fema_flood',
+        'external_frmt': 'FEMA Flood Zones',
         'level': 'national',
         'entity': 'fema_flood',
     },
     'parcel_geo': {
         'category': '05_Parcels',
         'layer_group': 'parcels',
-        'layer_subgroup': 'parcel_geo',
+        'external_frmt': 'Parcel Geometry',
         'level': 'state_county',
     },
     'streets': {
         'category': '03_Transportation',
         'layer_group': 'base_map_overlay',
-        'layer_subgroup': 'streets',
+        'external_frmt': 'Streets',
         'level': 'state_county',
     },
     'address_points': {
         'category': '05_Parcels',
         'layer_group': 'parcels',
-        'layer_subgroup': 'address_points',
+        'external_frmt': 'Address Points',
         'level': 'state_county',
     },
     'subdivisions': {
         'category': '05_Parcels',
         'layer_group': 'parcels',
-        'layer_subgroup': 'subdivisions',
+        'external_frmt': 'Subdivisions',
         'level': 'state_county',
     },
     'buildings': {
         'category': '05_Parcels',
         'layer_group': 'parcels',
-        'layer_subgroup': 'buildings',
+        'external_frmt': 'Building Footprints',
         'level': 'state_county',
     },
     'traffic_counts': {
         'category': '03_Transportation',
         'layer_group': 'base_map_overlay',
-        'layer_subgroup': 'traffic_counts',
+        'external_frmt': 'Traffic Counts FDOT',
         'level': 'state',
         'entity': 'traffic_counts_fl',
     },
     'sunbiz': {
         'category': '21_Misc',
         'layer_group': 'misc',
-        'layer_subgroup': 'sunbiz',
+        'external_frmt': 'Sunbiz',
         'level': 'state',
         'entity': 'sunbiz_fl',
     }
@@ -191,26 +191,26 @@ def format_name(name: str, name_type: str, external: bool = False) -> str:
     
     name = name.strip()
     
-    # Special mappings for layers
-    layer_mappings = {
-        # internal -> external
-        'flu': 'Future Land Use',
-        'addr_pnts': 'Address Points',
-        'address_points': 'Address Points',
-        'bldg_ftpr': 'Building Footprints',
-        'buildings': 'Buildings',
-        'parcel_geo': 'Parcel Geometry',
-        'flood_zones': 'Flood Zones',
-        'fdot_tc': 'Traffic Counts FDOT',
-        'subdiv': 'Subdivisions',
-        'subdivisions': 'Subdivisions',
-        'streets': 'Streets',
-        'sunbiz': 'SunBiz',
-        'zoning': 'Zoning'
-    }
+    # Get layer mappings from LAYER_CONFIGS
+    layer_mappings = {}
+    layer_mappings_reverse = {}
     
-    # Reverse mapping for external -> internal
-    layer_mappings_reverse = {v.lower(): k for k, v in layer_mappings.items()}
+    for layer_key, config in LAYER_CONFIGS.items():
+        external_name = config.get('external_frmt', layer_key.title())
+        layer_mappings[layer_key] = external_name
+        layer_mappings_reverse[external_name.lower()] = layer_key
+    
+    # Add legacy mappings for backward compatibility
+    legacy_mappings = {
+        'addr_pnts': 'Address Points',
+        'bldg_ftpr': 'Building Footprints', 
+        'subdiv': 'Subdivisions',
+        'flood_zones': 'FEMA Flood Zones',
+        'fdot_tc': 'Traffic Counts FDOT'
+    }
+    layer_mappings.update(legacy_mappings)
+    for k, v in legacy_mappings.items():
+        layer_mappings_reverse[v.lower()] = k
     
     # Special county mappings (internal -> external)
     county_special = {
