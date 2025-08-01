@@ -1,0 +1,16 @@
+{
+"opendata": {
+      "selectors": {
+        "data_date": "li.metadata-item[data-test=\"modified\"] > div:nth-child(2)",
+        "data_date_alt": "li.metadata-item[data-test=\"modified\"] > div:nth-child(3)",
+        "wait_for_selector": ".hub-toolbar-inner.hide-overflow > button:nth-child(4)",
+        "download_tab": "button.btn.btn-default.btn-block",
+        "download_button": "button.button-padding--shrunk.content--slotted.icon-end-empty",
+        "outer_shadow_selector": "arcgis-hub-download-list",
+        "nested_shadow_selector": "arcgis-hub-download-list-item:nth-of-type(2)",
+        "nested_shadow_selector_2": "calcite-button",
+        "info_tab": ".hub-toolbar-inner.hide-overflow > button:nth-child(1)",
+        "DOWNLOAD_TAB_OLD": ".hub-toolbar-inner.hide-overflow > button:nth-child(3)"
+      }
+    }
+}

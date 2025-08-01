@@ -32,6 +32,7 @@ from opendata_detector import (
     is_opendata_portal, extract_arcgis_from_opendata,
     validate_arcgis_url
 )
+import opendata_detector as od
 
 # Output directory
 REPORTS_DIR = Path("reports")
@@ -205,14 +206,18 @@ class OpendataToAGS:
             layer_keywords = [self.cfg.layer]
         
         try:
-            # Extract ArcGIS URLs from opendata portal
-            candidates = extract_arcgis_from_opendata(url, layer_keywords)
+            # Try to extract ArcGIS URLs from opendata portal using enhanced API-first approach
+            extracted_urls = od.extract_arcgis_urls_from_opendata(url, layer_keywords)
             
             results = []
-            for ags_url, score, metadata in candidates[:self.cfg.max_candidates]:
+            if extracted_urls:
+                # Take the best match
+                best_url, relevance_score = extracted_urls[0]
+                
                 # Validate the extracted ArcGIS URL
-                is_valid, reason, _ = validate_arcgis_url(ags_url)
-                results.append((ags_url, score, is_valid, reason))
+                is_valid, validation_reason = self.validate_arcgis_url(best_url)
+                
+                results.append((best_url, relevance_score, is_valid, validation_reason))
             
             return results
             
