@@ -66,8 +66,8 @@ FL_COUNTIES = {
 
 # Available layers
 LAYERS = {
-    "zoning", "flu", "flood_zones", "parcel_geo", "streets", "addr_pnts", 
-    "subdiv", "bldg_ftpr", "fdot_tc", "sunbiz"
+    "zoning", "flu", "fema_flood", "parcel_geo", "streets", "address_points", 
+    "subdivisions", "buildings", "traffic_counts", "sunbiz"
 }
 
 # Layer configurations with metadata
@@ -75,65 +75,65 @@ LAYER_CONFIGS = {
     'zoning': {
         'category': '08_Land_Use_and_Zoning',
         'layer_group': 'flu_zoning',
+        'layer_subgroup': 'zoning',
         'level': 'state_county_city',
-        'directory_pattern': '/srv/datascrub/08_Land_Use_and_Zoning/zoning/{state_name}/{county}/{city}',
     },
     'flu': {
         'category': '08_Land_Use_and_Zoning', 
         'layer_group': 'flu_zoning',
+        'layer_subgroup': 'flu',
         'level': 'state_county_city',
-        'directory_pattern': '/srv/datascrub/08_Land_Use_and_Zoning/future_land_use/{state_name}/county/{county}/current/source_data/{city}',
     },
     'fema_flood': {
         'category': '12_Hazards',
         'layer_group': 'hazards',
+        'layer_subgroup': 'fema_flood',
         'level': 'national',
-        'entity': 'flood_zones',
-        'directory_pattern': '/srv/datascrub/12_Hazards/fema_flood/fema_dfirm',
+        'entity': 'fema_flood',
     },
     'parcel_geo': {
         'category': '05_Parcels',
         'layer_group': 'parcels',
+        'layer_subgroup': 'parcel_geo',
         'level': 'state_county',
-        'directory_pattern': '/srv/datascrub/05_Parcels/parcels/{state_name}/county/{county}/current/source_data',
     },
     'streets': {
         'category': '03_Transportation',
         'layer_group': 'base_map_overlay',
+        'layer_subgroup': 'streets',
         'level': 'state_county',
-        'directory_pattern': '/srv/datascrub/03_Transportation/streets/{state_name}/county/{county}/current/source_data',
     },
     'address_points': {
         'category': '05_Parcels',
         'layer_group': 'parcels',
+        'layer_subgroup': 'address_points',
         'level': 'state_county',
-        'directory_pattern': '/srv/datascrub/05_Parcels/addr_pnts/{state_name}/county/{county}/current/source_data',
     },
     'subdivisions': {
         'category': '05_Parcels',
         'layer_group': 'parcels',
+        'layer_subgroup': 'subdivisions',
         'level': 'state_county',
-        'directory_pattern': '/srv/datascrub/05_Parcels/subdiv/{state_name}/county/{county}/current/source_data',
     },
     'buildings': {
         'category': '05_Parcels',
         'layer_group': 'parcels',
+        'layer_subgroup': 'buildings',
         'level': 'state_county',
-        'directory_pattern': '/srv/datascrub/05_Parcels/bldg_ftpr/{state_name}/county/{county}/current/source_data',
     },
     'traffic_counts': {
         'category': '03_Transportation',
         'layer_group': 'base_map_overlay',
+        'layer_subgroup': 'traffic_counts',
         'level': 'state',
-        'entity': 'fdot_tc_fl',
-        'directory_pattern': '/srv/datascrub/03_Transportation/fdot_tc/{state_name}',
+        'entity': 'traffic_counts_fl',
     },
     'sunbiz': {
         'category': '21_Misc',
-        'layer_group': 'parcels',
+        'layer_group': 'misc',
+        'layer_subgroup': 'sunbiz',
         'level': 'state',
         'entity': 'sunbiz_fl',
-        'directory_pattern': '/srv/datascrub/21_Misc/sunbiz/{state_name}',
     }
 }
 
@@ -363,8 +363,22 @@ def safe_catalog_val(val: Any) -> str:
 # Directory Path Resolution
 # ---------------------------------------------------------------------------
 
+def resolve_layer_name(layer: str) -> str:
+    """Resolve layer name, handling backwards compatibility aliases.
+    
+    Args:
+        layer: Layer name (old or new format)
+        
+    Returns:
+        Canonical layer name for use in configs
+    """
+    return LAYER_NAME_ALIASES.get(layer, layer)
+
+
 def resolve_layer_directory(layer: str, state: str = None, county: str = None, city: str = None) -> str:
-    """Resolve directory path for a layer using its configured pattern.
+    """Resolve directory path for a layer using standardized format.
+    
+    Standard format: /srv/datascrub/<category>/<layer_subgroup>/<state>/<county>/<city>
     
     Args:
         layer: Layer name (e.g., 'zoning', 'flu')
@@ -373,47 +387,38 @@ def resolve_layer_directory(layer: str, state: str = None, county: str = None, c
         city: City name in internal format (e.g., 'gainesville') 
         
     Returns:
-        Full directory path with placeholders filled in
+        Full directory path using standardized format
         
     Examples:
         resolve_layer_directory('zoning', 'fl', 'alachua', 'gainesville')
-        -> '/srv/datascrub/08_Land_Use_and_Zoning/zoning/florida/county/alachua/current/source_data/gainesville'
+        -> '/srv/datascrub/08_Land_Use_and_Zoning/zoning/florida/alachua/gainesville'
         
-        resolve_layer_directory('flood_zones')
+        resolve_layer_directory('fema_flood')
         -> '/srv/datascrub/12_Hazards/fema_flood'
     """
-    config = LAYER_CONFIGS.get(layer, {})
-    pattern = config.get('directory_pattern')
-    
-    if not pattern:
-        # Fallback to generic pattern
-        if state and county and city:
-            pattern = '/srv/datascrub/{category}/{layer}/{state_name}/county/{county}/current/source_data/{city}'
-        elif state and county:
-            pattern = '/srv/datascrub/{category}/{layer}/{state_name}/county/{county}/current/source_data'
-        elif state:
-            pattern = '/srv/datascrub/{category}/{layer}/{state_name}'
-        else:
-            pattern = '/srv/datascrub/{category}/{layer}'
+    # Resolve layer name for backwards compatibility
+    canonical_layer = resolve_layer_name(layer)
+    config = LAYER_CONFIGS.get(canonical_layer, {})
+    category = config.get('category', 'unknown')
+    layer_subgroup = config.get('layer_subgroup', canonical_layer)
     
     # Convert state abbreviation to state name for directories
     state_name = None
     if state:
         state_name = 'florida' if state.lower() == 'fl' else state.lower()
     
-    # Fill in the pattern with available values
-    try:
-        formatted_path = pattern.format(
-            layer=layer,
-            state_name=state_name or '',
-            county=county or '',
-            city=city or '',
-            category=config.get('category', 'Unknown')
-        )
-        return formatted_path
-    except KeyError as e:
-        # Handle missing placeholder gracefully
-        return pattern  # Return unformatted pattern if substitution fails
+    # Build standardized path: /srv/datascrub/<category>/<layer_subgroup>/<state>/<county>/<city>
+    path_parts = ['/srv/datascrub', category, layer_subgroup]
+    
+    # Add additional parts based on what's provided
+    if state_name:
+        path_parts.append(state_name)
+        if county:
+            path_parts.append(county)
+            if city:
+                path_parts.append(city)
+    
+    return '/'.join(path_parts)
 
 
 # ---------------------------------------------------------------------------
@@ -423,3 +428,16 @@ def resolve_layer_directory(layer: str, state: str = None, county: str = None, c
 # For layers_scrape.py compatibility
 counties = FL_COUNTIES
 layers = LAYERS
+
+# Layer name mapping for backwards compatibility
+LAYER_NAME_ALIASES = {
+    # Old name -> New name
+    'flood_zones': 'fema_flood',
+    'addr_pnts': 'address_points', 
+    'subdiv': 'subdivisions',
+    'bldg_ftpr': 'buildings',
+    'fdot_tc': 'traffic_counts',
+}
+
+# Reverse mapping for new name -> old name  
+LAYER_NAME_REVERSE_ALIASES = {v: k for k, v in LAYER_NAME_ALIASES.items()}

@@ -211,7 +211,8 @@ def _to_internal_format(name: str) -> str:
 from layers_helpers import (
     PG_CONNECTION, VALID_STATES, FL_COUNTIES, LAYERS, LAYER_CONFIGS,
     SKIP_ENTITIES, FULL_PIPELINE_FORMATS, METADATA_ONLY_FORMATS,
-    format_name, parse_entity_pattern, safe_catalog_val, resolve_layer_directory,
+    format_name, parse_entity_pattern, safe_catalog_val, 
+    resolve_layer_name, resolve_layer_directory,
     # Backwards compatibility aliases
     counties, layers
 )
