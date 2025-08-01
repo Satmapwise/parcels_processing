@@ -788,6 +788,9 @@ class Config:
     layer: str
     include_entities: List[str] | None = None
     exclude_entities: List[str] | None = None
+    include_fields: List[str] | None = None
+    exclude_fields: List[str] | None = None
+    target_title: str | None = None
     mode: str = "detect"  # detect | fill | create
     debug: bool = False
     generate_csv: bool = True
@@ -885,21 +888,26 @@ class LayersPrescrape:
         
         self.logger.info(f"Found {len(records)} total records for layer '{self.cfg.layer}'")
         
-        # Filter by include/exclude entities if provided
-        if self.cfg.include_entities or self.cfg.exclude_entities:
+        # Filter by include/exclude entities and title if provided
+        if self.cfg.include_entities or self.cfg.exclude_entities or self.cfg.target_title:
             filtered_records = []
             
             for record in records:
+                # Check title filter first
+                if not self._should_include_record_by_title(record):
+                    continue
+                
+                # Check entity filter
                 entity = self._generate_entity_from_record(record)
                 if self._should_include_entity(entity):
                     filtered_records.append(record)
             
-            filter_desc = self._get_entity_filter_description()
+            filter_desc = self._get_filter_description()
             records = filtered_records
-            self.logger.info(f"Filtered to {len(records)} records matching entity filters {filter_desc}")
+            self.logger.info(f"Filtered to {len(records)} records matching filters {filter_desc}")
             
             if not records:
-                self.logger.warning(f"No records found matching entity filters {filter_desc}")
+                self.logger.warning(f"No records found matching filters {filter_desc}")
                 return
         
         # CSV headers - specific fields requested by user
@@ -1049,21 +1057,26 @@ class LayersPrescrape:
         
         self.logger.info(f"Found {len(records)} total records for layer '{self.cfg.layer}'")
         
-        # Filter by include/exclude entities if provided
-        if self.cfg.include_entities or self.cfg.exclude_entities:
+        # Filter by include/exclude entities and title if provided
+        if self.cfg.include_entities or self.cfg.exclude_entities or self.cfg.target_title:
             filtered_records = []
             
             for record in records:
+                # Check title filter first
+                if not self._should_include_record_by_title(record):
+                    continue
+                
+                # Check entity filter
                 entity = self._generate_entity_from_record(record)
                 if self._should_include_entity(entity):
                     filtered_records.append(record)
             
-            filter_desc = self._get_entity_filter_description()
+            filter_desc = self._get_filter_description()
             records = filtered_records
-            self.logger.info(f"Filtered to {len(records)} records matching entity filters {filter_desc}")
+            self.logger.info(f"Filtered to {len(records)} records matching filters {filter_desc}")
             
             if not records:
-                self.logger.warning(f"No records found matching entity filters {filter_desc}")
+                self.logger.warning(f"No records found matching filters {filter_desc}")
                 return
         
         # Group records by entity and filter out duplicates/errors
@@ -1120,12 +1133,20 @@ class LayersPrescrape:
                     # og_title is always "healthy" since it's just showing original data
                     healthy_counts[field] += 1
                 else:
-                    correction = self._check_field_health(record, entity, field)
-                    row_values.append(correction)
-                    
-                    # Count as healthy if no correction needed (empty cell)
-                    if not correction:
-                        healthy_counts[field] += 1
+                    # Check if field should be included based on field filters
+                    if self._should_include_field(field):
+                        correction = self._check_field_health(record, entity, field)
+                        row_values.append(correction)
+                        
+                        # Count as healthy if no correction needed (empty cell)
+                        if not correction:
+                            healthy_counts[field] += 1
+                    else:
+                        # Field is excluded - show current value without checking health
+                        row_values.append(record.get(field) or '')
+                        # Don't count excluded fields in health statistics
+                        if field in healthy_counts:
+                            healthy_counts[field] += 1
             
             csv_rows.append(row_values)
         
@@ -1159,6 +1180,10 @@ class LayersPrescrape:
                 for field in headers[1:]:
                     if field == "og_title":  # Skip the original title display field
                         continue
+                    
+                    # Check if field should be included based on field filters
+                    if not self._should_include_field(field):
+                        continue  # Skip excluded fields
                         
                     correction = self._check_field_health(record, entity, field)
                     if correction and not correction.startswith("***"):  # Has correction and not a manual marker
@@ -1358,13 +1383,47 @@ class LayersPrescrape:
         
         return True
     
-    def _get_entity_filter_description(self) -> str:
-        """Get description of current entity filters for logging."""
+    def _should_include_field(self, field: str) -> bool:
+        """Check if field should be included based on include/exclude filters."""
+        field_lower = field.lower()
+        
+        # If include filters are specified, field must match at least one
+        if self.cfg.include_fields:
+            include_match = any(pattern.lower() in field_lower for pattern in self.cfg.include_fields)
+            if not include_match:
+                return False
+        
+        # If exclude filters are specified, field must not match any
+        if self.cfg.exclude_fields:
+            exclude_match = any(pattern.lower() in field_lower for pattern in self.cfg.exclude_fields)
+            if exclude_match:
+                return False
+        
+        return True
+    
+    def _should_include_record_by_title(self, record: Dict[str, Any]) -> bool:
+        """Check if record should be included based on title filter."""
+        if not self.cfg.target_title:
+            return True
+        
+        record_title = record.get('title', '').lower()
+        target_title = self.cfg.target_title.lower()
+        
+        return record_title == target_title
+    
+    def _get_filter_description(self) -> str:
+        """Get description of current filters for logging."""
         parts = []
         if self.cfg.include_entities:
-            parts.append(f"include: {', '.join(self.cfg.include_entities)}")
+            parts.append(f"include entities: {', '.join(self.cfg.include_entities)}")
         if self.cfg.exclude_entities:
-            parts.append(f"exclude: {', '.join(self.cfg.exclude_entities)}")
+            parts.append(f"exclude entities: {', '.join(self.cfg.exclude_entities)}")
+        if self.cfg.include_fields:
+            parts.append(f"include fields: {', '.join(self.cfg.include_fields)}")
+        if self.cfg.exclude_fields:
+            parts.append(f"exclude fields: {', '.join(self.cfg.exclude_fields)}")
+        if self.cfg.target_title:
+            parts.append(f"title: '{self.cfg.target_title}'")
         return f"({'; '.join(parts)})" if parts else ""
 
     def _is_manual_field(self, field: str) -> bool:
@@ -2110,6 +2169,16 @@ def build_arg_parser() -> argparse.ArgumentParser:
     parser.add_argument("--exclude", nargs="*", metavar="ENTITY",
                        help="Exclude entities matching these patterns")
     
+    # Field filtering options (for FILL mode)
+    parser.add_argument("--include-fields", nargs="*", metavar="FIELD",
+                       help="Include only these fields for standardization (FILL mode only)")
+    parser.add_argument("--exclude-fields", nargs="*", metavar="FIELD",
+                       help="Exclude these fields from standardization (FILL mode only)")
+    
+    # Record targeting options
+    parser.add_argument("--title", metavar="TITLE",
+                       help="Target a specific record by exact title match (case-insensitive)")
+    
     # Mode selection (detect and fill can be combined)
     parser.add_argument("--detect", action="store_true", 
                        help="Detect malformed records and missing fields (default if no other mode specified)")
@@ -2220,6 +2289,9 @@ def main():
             layer=layer,
             include_entities=[e.lower() for e in args.include] if args.include else None,
             exclude_entities=[e.lower() for e in args.exclude] if args.exclude else None,
+            include_fields=[f.lower() for f in args.include_fields] if args.include_fields else None,
+            exclude_fields=[f.lower() for f in args.exclude_fields] if args.exclude_fields else None,
+            target_title=args.title.lower() if args.title else None,
             mode=mode,
             debug=args.debug,
             generate_csv=args.generate_csv,
