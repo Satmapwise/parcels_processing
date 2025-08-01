@@ -70,6 +70,7 @@ class OpendataConfig:
     debug: bool = False
     generate_csv: bool = True
     max_candidates: int = 3  # Max ArcGIS URLs to extract per opendata portal
+    apply: bool = False  # Whether to actually update the database
 
 class OpendataToAGS:
     """Main engine for opendata-to-AGS URL conversion."""
@@ -282,10 +283,12 @@ class OpendataToAGS:
         
         opendata_count = 0
         conversion_count = 0
+        update_count = 0
         
         for entity, record in entity_records:
             old_url = record.get('src_url_file', '').strip()
             og_title = record.get('title', '')
+            record_id = record.get('id')
             
             if not old_url:
                 continue
@@ -306,6 +309,20 @@ class OpendataToAGS:
                 
                 if ags_candidates:
                     conversion_count += 1
+                    # Use the first (best) candidate for database update
+                    best_ags_url, score, is_valid, reason = ags_candidates[0]
+                    
+                    # Update database if apply=True and URL is valid
+                    if self.cfg.apply and is_valid and record_id:
+                        try:
+                            update_sql = "UPDATE m_gis_data_catalog_main SET src_url_file = %s WHERE id = %s"
+                            self.db.execute(update_sql, (best_ags_url, record_id))
+                            update_count += 1
+                            self.logger.info(f"✅ Updated {entity}: {old_url} → {best_ags_url}")
+                        except Exception as e:
+                            self.logger.error(f"❌ Failed to update {entity}: {e}")
+                            reason = f"UPDATE_FAILED: {e}"
+                    
                     # Add each candidate as a separate row
                     for ags_url, score, is_valid, reason in ags_candidates:
                         csv_rows.append([
@@ -333,7 +350,10 @@ class OpendataToAGS:
             self.logger.info(f"Conversion report written → {csv_path}")
         
         # Summary
-        self.logger.info(f"Conversion complete: {opendata_count} opendata URLs found, {conversion_count} successful conversions")
+        if self.cfg.apply:
+            self.logger.info(f"Conversion complete: {opendata_count} opendata URLs found, {conversion_count} successful conversions, {update_count} database updates applied")
+        else:
+            self.logger.info(f"Conversion complete: {opendata_count} opendata URLs found, {conversion_count} successful conversions (preview mode - use --apply to update database)")
 
 def main():
     """Main entry point."""
@@ -359,7 +379,8 @@ def main():
             exclude_entities=[e.lower() for e in args.exclude] if args.exclude else None,
             debug=args.debug,
             generate_csv=args.generate_csv,
-            max_candidates=3
+            max_candidates=3,
+            apply=args.apply if hasattr(args, 'apply') else False
         )
         
         converter = OpendataToAGS(cfg)
