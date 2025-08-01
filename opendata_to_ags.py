@@ -28,11 +28,34 @@ from layers_prescrape import (
     Config, DB, build_arg_parser, 
     format_name, LAYER_CONFIGS, PG_CONNECTION
 )
-from opendata_detector import (
-    is_opendata_portal, extract_arcgis_from_opendata,
-    validate_arcgis_url
-)
-import opendata_detector as od
+# Import our clean Selenium-based extraction
+from selenium_opendata import extract_arcgis_url_from_opendata
+
+# Simple opendata portal detection
+def is_opendata_portal(url):
+    """Simple check if URL is an opendata portal (not a direct ArcGIS service)."""
+    # First, exclude direct ArcGIS service URLs
+    if any(pattern in url.lower() for pattern in ['rest/services', 'mapserver', 'featureserver']):
+        return False
+    
+    # Then check for opendata portal indicators
+    opendata_indicators = [
+        'hub.arcgis.com', 'opendata', 'data.', 'geoportal', 'portal', 'datahub', 'open-data'
+    ]
+    return any(indicator in url.lower() for indicator in opendata_indicators)
+
+# Simple ArcGIS URL validation
+def validate_arcgis_url(url):
+    """Simple validation for ArcGIS service URLs."""
+    if not url:
+        return False, "Empty URL"
+    
+    # Check for ArcGIS service patterns
+    arcgis_patterns = ['rest/services', 'MapServer', 'FeatureServer']
+    if any(pattern in url for pattern in arcgis_patterns):
+        return True, "Valid ArcGIS service URL"
+    
+    return False, "Not an ArcGIS service URL"
 
 # Output directory
 REPORTS_DIR = Path("reports")
@@ -194,35 +217,38 @@ class OpendataToAGS:
     
     def _convert_opendata_to_ags(self, url: str, layer_keywords: List[str] = None) -> List[Tuple[str, float, bool, str]]:
         """
-        Convert opendata portal URL to ArcGIS URLs.
+        Convert opendata portal URL to ArcGIS URLs using Selenium.
         
         Returns:
             List of (ags_url, relevance_score, is_valid, validation_reason) tuples
         """
-        if not is_opendata_portal(url):
-            return []
-        
-        if not layer_keywords:
-            layer_keywords = [self.cfg.layer]
-        
         try:
-            # Try to extract ArcGIS URLs from opendata portal using enhanced API-first approach
-            extracted_urls = od.extract_arcgis_urls_from_opendata(url, layer_keywords)
+            self.logger.debug(f"Converting opendata URL: {url}")
             
-            results = []
-            if extracted_urls:
-                # Take the best match
-                best_url, relevance_score = extracted_urls[0]
-                
-                # Validate the extracted ArcGIS URL
-                is_valid, validation_reason = self.validate_arcgis_url(best_url)
-                
-                results.append((best_url, relevance_score, is_valid, validation_reason))
+            # Use Selenium to extract the ArcGIS URL
+            ags_url = extract_arcgis_url_from_opendata(url, headless=True)
             
-            return results
+            if not ags_url:
+                self.logger.warning(f"No ArcGIS URL extracted from {url}")
+                return []
+            
+            # Validate the extracted URL
+            is_valid, reason = validate_arcgis_url(ags_url)
+            
+            # Simple relevance scoring based on URL patterns
+            score = 1.0  # Default score
+            if layer_keywords:
+                for keyword in layer_keywords:
+                    if keyword.lower() in ags_url.lower():
+                        score += 0.5
+            
+            if self.cfg.debug:
+                self.logger.debug(f"  → {ags_url} (score: {score:.2f}, valid: {is_valid})")
+            
+            return [(ags_url, score, is_valid, reason)]
             
         except Exception as e:
-            self.logger.debug(f"Failed to convert {url}: {e}")
+            self.logger.error(f"Error converting {url}: {e}")
             return []
     
     def _run_conversion(self):

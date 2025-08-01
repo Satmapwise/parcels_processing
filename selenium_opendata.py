@@ -1,11 +1,15 @@
 #!/usr/bin/env python3
-import selenium
+import os
+import sys
+import json
+import logging
+import subprocess
+import undetected_chromedriver as uc
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import (TimeoutException, NoSuchElementException)
-import json
 
 # Set up Selenium WebDriver with anti-detection options
 def initialize_driver(download_dir, chromium, local, headless):
@@ -174,122 +178,130 @@ def initialize_driver(download_dir, chromium, local, headless):
 
 
 
-def get_arcgis_url(url):
+def get_arcgis_url(driver, url, selectors):
     """
-    Downloads parcel data for counties using an OpenData platform (ArcGIS Hub).
+    Extract ArcGIS service URL from an opendata portal using Selenium.
 
-    This function handles modern web applications that heavily use Shadow DOM. It navigates
-    to the data page, extracts the data update date, clicks through a series of tabs and
-    buttons (some within nested shadow roots) to trigger the download of a shapefile.
+    This function navigates to an opendata portal page, clicks through the interface
+    to find the "Data Source" link that points to the actual ArcGIS REST service.
 
     Args:
-        context (CountyContext): An object containing all necessary parameters.
+        driver: Selenium WebDriver instance
+        url (str): The opendata portal URL to extract from
+        selectors (dict): CSS selectors for navigation elements
 
     Returns:
-        dict: A dictionary containing the download status, data date, and file count.
+        str: The extracted ArcGIS service URL, or None if extraction failed
 
     Raises:
-        CriticalError: For failures in critical steps like finding elements or file download.
+        Exception: For critical failures in navigation or element finding
     """
-
-    # Navigate to the URL
-    try: 
+    try:
+        logging.info(f"Navigating to: {url}")
         driver.get(url)
 
         # Wait for page to load
-        WebDriverWait(driver, 20).until(EC.presence_of_element_located((By.CSS_SELECTOR, selectors["wait_for_selector"])))
+        WebDriverWait(driver, 20).until(
+            EC.presence_of_element_located((By.CSS_SELECTOR, selectors["wait_for_selector"]))
+        )
+        logging.info("Page loaded successfully")
 
-        # Click full details
+        # Click "Full Details" or "View Full Details" button
         try:
-            full_details = driver.find_element(By.CSS_SELECTOR, selectors["full_details"])
+            full_details = WebDriverWait(driver, 10).until(
+                EC.element_to_be_clickable((By.CSS_SELECTOR, selectors["full_details"]))
+            )
             driver.execute_script("arguments[0].click();", full_details)
-            county_logger.info(f"Clicked full details")
-        except Exception as e_3:
-            county_logger.error(f"Error clicking full details, attempting alternate selector...")
-            try:
-                WebDriverWait(driver, 5).until(EC.visibility_of_element_located((By.CSS_SELECTOR, selectors["wait_for_selector"])))
-                full_details = driver.find_element(By.CSS_SELECTOR, selectors["full_details"])
-                driver.execute_script("arguments[0].click();", full_details)
-                county_logger.info(f"Clicked alternate full details")
-            except Exception as e_4:
-                county_logger.error(f"Failed to click full details: {e_4}")
-                debug_screenshot(context, "full_details_not_found")
-                raise CriticalError(f"Failed to click full details: {e_4}")
+            logging.info("Clicked full details button")
+        except Exception as e:
+            logging.error(f"Failed to click full details: {e}")
+            return None
 
-        # Wait for tab to load
-        WebDriverWait(driver, 10).until(EC.visibility_of_element_located((By.CSS_SELECTOR, selectors["data_source"])))
-        
-        # Get destination link from source
-        data_source = driver.find_element(By.CSS_SELECTOR, selectors["data_source"])
-        destination_link = data_source.get_attribute("href")
-
-
-        return {
-            'status': 'SUCCESS', 
-            'data_date': data_date,
-            'file_count': len(temp_files),
-            'file_count_status': 'SUCCESS' if len(temp_files) > 0 else "FAILED"
-        }
+        # Wait for the data source link to appear and extract it
+        try:
+            data_source = WebDriverWait(driver, 10).until(
+                EC.presence_of_element_located((By.CSS_SELECTOR, selectors["data_source"]))
+            )
+            arcgis_url = data_source.get_attribute("href")
+            logging.info(f"Found ArcGIS URL: {arcgis_url}")
+            return arcgis_url
+        except Exception as e:
+            logging.error(f"Failed to find data source link: {e}")
+            return None
 
     except TimeoutException as te:
-        county_logger.error(f"Timeout: {te}")
-        if len(temp_files) > 0: # If files were downloaded, transfer them
-            transfer_files(context, temp_files)
-        debug_screenshot(context, "timeout")
-        raise CriticalError(f"Timeout: {te}")
+        logging.error(f"Timeout while loading page: {te}")
+        return None
     except Exception as e:
-        county_logger.error(f"Unexpected error: {e}", exc_info=True)
-        if len(temp_files) > 0: # If files were downloaded, transfer them
-            transfer_files(context, temp_files)
-        debug_screenshot(context, "Exception")
-        raise CriticalError(f"Unexpected error: {str(e)}")
+        logging.error(f"Unexpected error: {e}")
+        return None
     
 
 
-    # Main function
-    try:
-        result = download_opendata(context)
-
-        if result:
-            if result.get('status') == 'SUCCESS' and result.get('data_date') == None:
-                result['data_date'] = datetime.now().strftime("%m/%d/%Y")
-            return result
-        else:
-            county_logger.error(f"Unexpected error: No result returned from {county_name.replace('_', ' ').title()} script.")
-            return {
-                'status': 'FAILED', 
-                'error': 'No result returned',
-                'data_date': None}
-    except CriticalError as e:
-        county_logger.error(f"Critical error: {e}")
-        return {
-            'status': 'FAILED', 
-            'error': str(e),
-            'data_date': None}
-
-# Main orchestration function for batch downloads
-def main():
+def extract_arcgis_url_from_opendata(opendata_url, headless=True):
     """
-    Main orchestration function for the entire batch download process.
-
-    This function initializes the system, determines which counties to process,
-    clears the download directory, and then iterates through the list of counties.
-    For each county, it calls the main `download_county` function and handles retries
-    on failure. Finally, it generates a summary report and cleans up resources.
+    Main function to extract ArcGIS service URL from an opendata portal.
+    
+    Args:
+        opendata_url (str): The opendata portal URL to extract from
+        headless (bool): Whether to run browser in headless mode
+        
+    Returns:
+        str: The extracted ArcGIS service URL, or None if extraction failed
     """
+    driver = None
     try:
         # Load selectors from county_config.json
         with open("county_config.json", "r") as f:
             county_config = json.load(f)
             selectors = county_config["arcgis"]["selectors"]
             
-        # Initialize driver
-        driver = initialize_driver(download_dir, chromium, local, headless)
+        # Initialize driver with minimal settings
+        download_dir = "/tmp"  # We don't need downloads for URL extraction
+        try:
+            driver, main_window, initial_window_count = initialize_driver(
+                download_dir=download_dir, 
+                chromium=True,   # Use Chromium
+                local=False,     # Server environment
+                headless=headless
+            )
+        except Exception as init_e:
+            logging.error(f"Failed to initialize driver: {init_e}")
+            return None
         
-        # Get the ArcGIS URL
-        arcgis_url = get_arcgis_url(url)
+        # Extract the ArcGIS URL with timeout protection
+        try:
+            arcgis_url = get_arcgis_url(driver, opendata_url, selectors)
+            return arcgis_url
+        except Exception as extract_e:
+            logging.error(f"Failed to extract URL: {extract_e}")
+            return None
         
-       
     except Exception as e:
-        county_logger.error(f"Unexpected error: {e}", exc_info=True)
-        raise CriticalError(f"Unexpected error: {str(e)}")
+        logging.error(f"Error extracting ArcGIS URL: {e}")
+        return None
+    finally:
+        # Robust driver cleanup
+        if driver:
+            try:
+                # Force close all windows first
+                driver.close()
+            except:
+                pass
+            try:
+                # Then quit the driver
+                driver.quit()
+            except:
+                pass
+            try:
+                # Kill any remaining processes
+                driver.service.stop()
+            except:
+                pass
+
+
+if __name__ == "__main__":
+    # Simple test
+    test_url = "https://ocgis-datahub-ocfl.hub.arcgis.com/datasets/ocfl::orange-county-zoning/explore"
+    result = extract_arcgis_url_from_opendata(test_url, headless=False)
+    print(f"Extracted URL: {result}")
