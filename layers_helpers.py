@@ -196,11 +196,14 @@ def format_name(name: str, name_type: str, external: bool = False) -> str:
         # internal -> external
         'flu': 'Future Land Use',
         'addr_pnts': 'Address Points',
+        'address_points': 'Address Points',
         'bldg_ftpr': 'Building Footprints',
+        'buildings': 'Buildings',
         'parcel_geo': 'Parcel Geometry',
         'flood_zones': 'Flood Zones',
         'fdot_tc': 'Traffic Counts FDOT',
         'subdiv': 'Subdivisions',
+        'subdivisions': 'Subdivisions',
         'streets': 'Streets',
         'sunbiz': 'SunBiz',
         'zoning': 'Zoning'
