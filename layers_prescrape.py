@@ -1628,12 +1628,26 @@ class LayersPrescrape:
                 city = None
                 entity_type = 'national'
             else:
-                # Standard county/city-level layers: parse entity components
-                entity_without_layer = entity
-                if entity.startswith(f"{self.cfg.layer}_"):
-                    entity_without_layer = entity[len(f"{self.cfg.layer}_"):]
-                state, county, city = split_entity(entity_without_layer)
-                entity_type = "city" if city not in {"unincorporated", "unified", "incorporated", "countywide"} else city
+                # Standard county/city-level layers: parse entity components using robust logic
+                try:
+                    from layers_scrape import parse_entity_pattern
+                    parsed_layer, state, county, city = parse_entity_pattern(entity)
+                    
+                    # Determine entity type based on what was parsed
+                    if city:
+                        entity_type = "city" if city not in {"unincorporated", "unified", "incorporated", "countywide"} else city
+                    elif county:
+                        # County-level entity (3 parts)
+                        entity_type = "county"
+                    else:
+                        # State-level entity (2 parts)
+                        entity_type = "state"
+                        
+                except Exception as e:
+                    # Fallback for problematic entities
+                    logging.warning(f"Could not parse entity '{entity}': {e}")
+                    state, county, city = None, None, None
+                    entity_type = "unknown"
             
             # Handle countywide alias
             if entity_type == "countywide":
@@ -1782,7 +1796,7 @@ class LayersPrescrape:
             # Check sys_raw_folder matches pattern and create directory
             config = LAYER_CONFIGS.get(self.cfg.layer, {})
             category = config.get('category', '08_Land_Use_and_Zoning')
-            state_name = 'florida' if state.lower() == 'fl' else state.lower()
+            state_name = 'florida' if state and state.lower() == 'fl' else (state.lower() if state else 'unknown')
             expected = f"/srv/datascrub/{category}/{layer_internal}/{state_name}/county/{county_internal}/current/source_data/{city_internal}"
             
             # Create directory if it doesn't exist
@@ -1946,7 +1960,7 @@ class LayersPrescrape:
                 if self.cfg.layer.lower() in ['flu', 'zoning']:
                     entity = f"{self.cfg.layer}_{state_internal}_{county_internal}_unincorporated"
                 else:
-                    # Most other layers are county-level only
+                    # Most other layers are county-level (3-part format)
                     entity = f"{self.cfg.layer}_{state_internal}_{county_internal}"
             
             return entity
