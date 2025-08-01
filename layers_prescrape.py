@@ -849,8 +849,7 @@ class LayersPrescrape:
         # Write missing fields JSON if any issues found (fill modes only)
         if self.missing_fields and self.cfg.mode in {"fill", "create", "detect_and_fill"}:
             self.logger.info(f"Writing missing field report → {self.cfg.manual_file}")
-            with open(self.cfg.manual_file, "w", encoding="utf-8") as fh:
-                json.dump(self.missing_fields, fh, indent=2)
+            self._write_missing_fields_preserving_existing()
         
         # Commit or rollback database changes
         if self.db:
@@ -1996,6 +1995,71 @@ class LayersPrescrape:
         
         entity_overrides = self._manual_overrides.get(entity, {})
         return entity_overrides.get(field)
+    
+    def _write_missing_fields_preserving_existing(self):
+        """Write missing fields to JSON file while preserving existing entries.
+        
+        This method treats the JSON file as a living document:
+        1. Load existing entries from the file
+        2. Add new missing field entries without overwriting existing ones
+        3. Only add fields that don't already exist for each entity
+        4. Preserve all existing manual work
+        """
+        # Load existing data from the file
+        existing_data = {}
+        if Path(self.cfg.manual_file).exists():
+            try:
+                with open(self.cfg.manual_file, 'r', encoding='utf-8') as f:
+                    existing_data = json.load(f)
+                self.logger.debug(f"Loaded existing data with {len(existing_data)} entities")
+            except Exception as e:
+                self.logger.warning(f"Could not load existing {self.cfg.manual_file}: {e}")
+        
+        # Merge new missing fields with existing data
+        added_entities = 0
+        added_fields = 0
+        
+        for entity, fields in self.missing_fields.items():
+            if entity not in existing_data:
+                # New entity - add it completely
+                existing_data[entity] = fields.copy()
+                added_entities += 1
+                added_fields += len(fields)
+                self.logger.debug(f"Added new entity: {entity}")
+            else:
+                # Existing entity - only add missing fields
+                existing_entity_data = existing_data[entity]
+                for field, value in fields.items():
+                    if field not in existing_entity_data:
+                        # Field doesn't exist - add it
+                        existing_entity_data[field] = value
+                        added_fields += 1
+                        self.logger.debug(f"Added field {field} to existing entity {entity}")
+                    else:
+                        # Field exists - preserve existing value unless it's a special marker
+                        existing_value = existing_entity_data[field]
+                        if existing_value in ["MANUAL_REQUIRED", "URL_DEPRECATED", "***MISSING***", "***DEPRECATED***"]:
+                            # Replace special markers with new values
+                            existing_entity_data[field] = value
+                            added_fields += 1
+                            self.logger.debug(f"Replaced special marker for {field} in {entity}")
+                        else:
+                            # Preserve existing non-marker value
+                            self.logger.debug(f"Preserved existing value for {field} in {entity}")
+        
+        # Write the merged data back to the file
+        try:
+            with open(self.cfg.manual_file, 'w', encoding='utf-8') as fh:
+                json.dump(existing_data, fh, indent=2)
+            
+            if added_entities > 0 or added_fields > 0:
+                self.logger.info(f"Updated {self.cfg.manual_file}: {added_entities} new entities, {added_fields} new fields")
+            else:
+                self.logger.debug(f"No new entries added to {self.cfg.manual_file}")
+                
+        except Exception as e:
+            self.logger.error(f"Failed to write {self.cfg.manual_file}: {e}")
+            raise
 
 # ---------------------------------------------------------------------------
 # Entity Pattern Processing  
