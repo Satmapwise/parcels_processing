@@ -2211,6 +2211,16 @@ def extract_layers_from_patterns(include_patterns: list[str] = None, exclude_pat
                 
                 if found_layer:
                     layers.add(found_layer)
+            else:
+                # Check if pattern is a wildcard that matches any layer name
+                # Support various wildcard patterns:
+                # - * (any characters)
+                # - ? (single character)
+                # - [abc] (character class)
+                # - [!abc] (negated character class)
+                for layer_name in LAYER_CONFIGS.keys():
+                    if fnmatch.fnmatch(layer_name, pattern):
+                        layers.add(layer_name)
     else:
         layers = LAYER_CONFIGS.keys()
     
@@ -2240,15 +2250,15 @@ def build_arg_parser() -> argparse.ArgumentParser:
     
     # Entity filtering options
     parser.add_argument("--include", nargs="*", metavar="ENTITY", 
-                       help="Include only entities matching these patterns (required for CREATE mode)")
+                       help="Include only entities matching these patterns (supports wildcards: *, ?, [abc], [!abc])")
     parser.add_argument("--exclude", nargs="*", metavar="ENTITY",
-                       help="Exclude entities matching these patterns")
+                       help="Exclude entities matching these patterns (supports wildcards: *, ?, [abc], [!abc])")
     
     # Field filtering options (for FILL mode)
     parser.add_argument("--include-fields", nargs="*", metavar="FIELD",
-                       help="Include only these fields for standardization (FILL mode only)")
+                       help="Include only these fields for standardization (supports wildcards: *, ?, [abc], [!abc])")
     parser.add_argument("--exclude-fields", nargs="*", metavar="FIELD",
-                       help="Exclude these fields from standardization (FILL mode only)")
+                       help="Exclude these fields from standardization (supports wildcards: *, ?, [abc], [!abc])")
     
     # Record targeting options
     parser.add_argument("--title", metavar="TITLE",
