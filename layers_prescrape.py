@@ -1777,25 +1777,25 @@ class LayersPrescrape:
             return expected if current_value != expected else ""
         
         elif field == "source_comments":
-            # Always overwrite source_comments from manifest, preserving existing values to distrib_comments
+            # Check source_comments from manifest, preserving existing values to distrib_comments
             if self.cfg.layer.lower() in ['zoning', 'flu']:
                 expected_source, _ = extract_manifest_commands(self.cfg.layer, entity)
-                # Preserve existing value to distrib_comments if it exists
-                if current_value and current_value.strip():
+                # Preserve existing value to distrib_comments if it exists and is different
+                if current_value and current_value.strip() and current_value != expected_source:
                     self._preserve_to_distrib_comments(record, entity, 'SOURCE COMMENTS', current_value)
-                # Always return manifest value
-                return expected_source
+                # Return expected value only if different from current
+                return expected_source if current_value != expected_source else ""
             return ""
         
         elif field == "processing_comments":
-            # Always overwrite processing_comments from manifest, preserving existing values to distrib_comments
+            # Check processing_comments from manifest, preserving existing values to distrib_comments
             if self.cfg.layer.lower() in ['zoning', 'flu']:
                 _, expected_processing = extract_manifest_commands(self.cfg.layer, entity)
-                # Preserve existing value to distrib_comments if it exists
-                if current_value and current_value.strip():
+                # Preserve existing value to distrib_comments if it exists and is different
+                if current_value and current_value.strip() and current_value != expected_processing:
                     self._preserve_to_distrib_comments(record, entity, 'PROCESSING COMMENTS', current_value)
-                # Always return manifest value
-                return expected_processing
+                # Return expected value only if different from current
+                return expected_processing if current_value != expected_processing else ""
             return ""
         
         elif field == "distrib_comments":
