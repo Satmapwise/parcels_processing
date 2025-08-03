@@ -238,7 +238,7 @@ def parse_title_to_entity(title: str) -> Tuple[Optional[str], Optional[str], Opt
     rest_main = re.sub(r"\s+County\s+(?=(unincorporated|incorporated|unified|countywide)$)", " ", rest_main, flags=re.I)
 
     # Regex patterns for different entity types
-    city_re = re.compile(r"^(?:city|town|village) of\s+(.+)$", re.I)
+    city_re = re.compile(r"^(?:city|town|village) of\s+([A-Za-z\s\-\.]+?)(?:\s+[A-Z]{2})?$", re.I)
     county_suffix_re = re.compile(r"^([A-Za-z\s\-\.]+?)\s+(unincorporated|incorporated|unified|countywide)$", re.I)
     county_only_re = re.compile(r"^([A-Za-z\s\-\.]+?)\s+county$", re.I)
 

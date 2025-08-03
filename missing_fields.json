@@ -587,7 +587,8 @@
     "fields_obj_transform": "MANUAL_REQUIRED"
   },
   "flu_fl_desoto_arcadia": {
-    "fields_obj_transform": "MANUAL_REQUIRED"
+    "fields_obj_transform": "MANUAL_REQUIRED",
+    "src_url_file": "URL_DEPRECATED"
   },
   "flu_fl_polk_auburndale": {
     "src_url_file": "MANUAL_REQUIRED",
@@ -1951,7 +1952,8 @@
     "fields_obj_transform": "MANUAL_REQUIRED"
   },
   "parcel_geo_fl_okaloosa": {
-    "fields_obj_transform": "MANUAL_REQUIRED"
+    "fields_obj_transform": "MANUAL_REQUIRED",
+    "src_url_file": "URL_DEPRECATED"
   },
   "parcel_geo_fl_orange": {
     "src_url_file": "MANUAL_REQUIRED",
@@ -2001,6 +2003,9 @@
   },
   "parcel_geo_fl_walton": {
     "src_url_file": "URL_DEPRECATED",
+    "fields_obj_transform": "MANUAL_REQUIRED"
+  },
+  "address_points_fl_state_state": {
     "fields_obj_transform": "MANUAL_REQUIRED"
   }
 }
