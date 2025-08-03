@@ -194,6 +194,17 @@ def parse_title_to_entity(title: str) -> Tuple[Optional[str], Optional[str], Opt
     if "fema flood zones" in title_lower or "flood zones" in title_lower:
         return ("flood_zones", None, None, "national")
     
+    # Handle Parcel Polygons and Parcel Geometry titles
+    if "parcel polygons" in title_lower or "parcel geometry" in title_lower:
+        # Parse format: "Parcel Polygons - {County}" or "Parcel Geometry - {County}"
+        try:
+            layer_part, rest = title.split(" - ", 1)
+            county = format_name(rest.strip(), 'county', external=False)
+            return ("parcel_geo", county, None, "county")
+        except ValueError:
+            # Fallback if no " - " separator
+            return ("parcel_geo", None, None, "county")
+    
     # Standard format: "Layer - Location"
     try:
         layer_part, rest = title.split(" - ", 1)
@@ -252,6 +263,10 @@ def entity_from_title_parse(layer: str, county_from_title: str, city_from_title:
     elif entity_type == "national":
         # National-level layers (flood_zones) - no state suffix
         return ""
+    elif entity_type == "county" and layer == "parcel_geo":
+        # Parcel geometry county-level layers (parcel_geo_state_county format)
+        county_internal = format_name(county_from_title, 'county', external=False)
+        return f"{state}_{county_internal}"
     
     # Standard county/city-level layers (layer_state_county_city format)
     if county_from_title and city_from_title:
@@ -874,14 +889,25 @@ class LayersPrescrape:
         layer_internal = format_name(self.cfg.layer, 'layer', external=False)
         layer_external = format_name(self.cfg.layer, 'layer', external=True)
         
-        sql = """
-            SELECT * FROM m_gis_data_catalog_main 
-            WHERE status IS DISTINCT FROM 'DELETE' 
-            AND (lower(title) LIKE %s OR lower(title) LIKE %s)
-            ORDER BY title
-        """
-        
-        records = self.db.fetchall(sql, (f'%{layer_internal}%', f'%{layer_external.lower()}%'))
+        # Build SQL query with appropriate title patterns
+        if self.cfg.layer == 'parcel_geo':
+            # Special case for parcel_geo - look for "Parcel Polygons" titles
+            sql = """
+                SELECT * FROM m_gis_data_catalog_main 
+                WHERE status IS DISTINCT FROM 'DELETE' 
+                AND (lower(title) LIKE %s OR lower(title) LIKE %s OR lower(title) LIKE %s)
+                ORDER BY title
+            """
+            records = self.db.fetchall(sql, (f'%{layer_internal}%', f'%{layer_external.lower()}%', '%parcel polygons%'))
+        else:
+            # Standard case for other layers
+            sql = """
+                SELECT * FROM m_gis_data_catalog_main 
+                WHERE status IS DISTINCT FROM 'DELETE' 
+                AND (lower(title) LIKE %s OR lower(title) LIKE %s)
+                ORDER BY title
+            """
+            records = self.db.fetchall(sql, (f'%{layer_internal}%', f'%{layer_external.lower()}%'))
         
         if not records:
             self.logger.warning(f"No records found for layer '{self.cfg.layer}'")
@@ -1043,14 +1069,25 @@ class LayersPrescrape:
         layer_internal = format_name(self.cfg.layer, 'layer', external=False)
         layer_external = format_name(self.cfg.layer, 'layer', external=True)
         
-        sql = """
-            SELECT * FROM m_gis_data_catalog_main 
-            WHERE status IS DISTINCT FROM 'DELETE' 
-            AND (lower(title) LIKE %s OR lower(title) LIKE %s)
-            ORDER BY title
-        """
-        
-        records = self.db.fetchall(sql, (f'%{layer_internal}%', f'%{layer_external.lower()}%'))
+        # Build SQL query with appropriate title patterns
+        if self.cfg.layer == 'parcel_geo':
+            # Special case for parcel_geo - look for both "Parcel Polygons" and "Parcel Geometry" titles
+            sql = """
+                SELECT * FROM m_gis_data_catalog_main 
+                WHERE status IS DISTINCT FROM 'DELETE' 
+                AND (lower(title) LIKE %s OR lower(title) LIKE %s OR lower(title) LIKE %s OR lower(title) LIKE %s)
+                ORDER BY title
+            """
+            records = self.db.fetchall(sql, (f'%{layer_internal}%', f'%{layer_external.lower()}%', '%parcel polygons%', '%parcel geometry%'))
+        else:
+            # Standard case for other layers
+            sql = """
+                SELECT * FROM m_gis_data_catalog_main 
+                WHERE status IS DISTINCT FROM 'DELETE' 
+                AND (lower(title) LIKE %s OR lower(title) LIKE %s)
+                ORDER BY title
+            """
+            records = self.db.fetchall(sql, (f'%{layer_internal}%', f'%{layer_external.lower()}%'))
         
         if not records:
             self.logger.warning(f"No records found for layer '{self.cfg.layer}'")
@@ -2162,9 +2199,15 @@ def extract_layers_from_patterns(include_patterns: list[str] = None, exclude_pat
         for pattern in include_patterns:
             # Entity format is layer_state_county_city, so layer is first component
             if '_' in pattern:
-                layer = pattern.split('_')[0]
-                if layer in LAYER_CONFIGS:
-                    layers.add(layer)
+                # Try to find the longest matching layer name
+                found_layer = None
+                for layer_name in LAYER_CONFIGS.keys():
+                    if pattern.startswith(layer_name + '_'):
+                        found_layer = layer_name
+                        break
+                
+                if found_layer:
+                    layers.add(found_layer)
             elif pattern in LAYER_CONFIGS:
                 # Direct layer name
                 layers.add(pattern)
