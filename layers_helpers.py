@@ -142,6 +142,17 @@ AZ_COUNTIES = {
     "pinal", "pima", "santa_cruz", "yavapai", "yuma"
 }
 
+# State-county mapping for integrated states (with full county data)
+STATE_COUNTIES = {
+    'fl': FL_COUNTIES,
+    'ga': GA_COUNTIES,
+    'de': DE_COUNTIES,
+    'az': AZ_COUNTIES,
+}
+
+# States with full county data integration
+INTEGRATED_STATES = set(STATE_COUNTIES.keys())
+
 # Layer configurations with metadata
 LAYER_CONFIGS = {
     'zoning': {
@@ -395,15 +406,26 @@ def parse_entity_pattern(pattern: str) -> tuple[str | None, str | None, str | No
     
     # Step 3: Extract county 
     county = None
-    # Check FL counties regardless of state (we can infer state from county)
-    for county_name in FL_COUNTIES:
-        if remaining.startswith(county_name):
-            county = county_name
-            # If no state was identified yet, infer it from the county
-            if state is None:
-                state = 'fl'
-            remaining = remaining[len(county_name):].lstrip('_')
-            break
+    
+    # If we have a state, check counties for that state
+    if state and state in STATE_COUNTIES:
+        for county_name in STATE_COUNTIES[state]:
+            if remaining.startswith(county_name):
+                county = county_name
+                remaining = remaining[len(county_name):].lstrip('_')
+                break
+    
+    # If no county found and no state identified, try to infer state from county
+    if county is None and state is None:
+        for state_abbrev, counties in STATE_COUNTIES.items():
+            for county_name in counties:
+                if remaining.startswith(county_name):
+                    county = county_name
+                    state = state_abbrev
+                    remaining = remaining[len(county_name):].lstrip('_')
+                    break
+            if county is not None:
+                break
     
     if not remaining:
         return (layer, state, county, None)
@@ -486,7 +508,13 @@ def resolve_layer_directory(layer: str, state: str = None, county: str = None, c
     # Convert state abbreviation to state name for directories
     state_name = None
     if state:
-        state_name = 'florida' if state.lower() == 'fl' else state.lower()
+        state_mapping = {
+            'fl': 'florida',
+            'ga': 'georgia', 
+            'de': 'delaware',
+            'az': 'arizona'
+        }
+        state_name = state_mapping.get(state.lower(), state.lower())
     
     # Build standardized path: /srv/datascrub/<category>/<layer_subgroup>/<state>/<county>/<city>
     path_parts = ['/srv/datascrub', category, layer_subgroup]
@@ -507,7 +535,7 @@ def resolve_layer_directory(layer: str, state: str = None, county: str = None, c
 # ---------------------------------------------------------------------------
 
 # For layers_scrape.py compatibility
-counties = FL_COUNTIES
+counties = FL_COUNTIES  # Keep for backwards compatibility
 layers = LAYER_CONFIGS.keys()
 
 # Layer name mapping for backwards compatibility

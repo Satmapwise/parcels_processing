@@ -33,7 +33,7 @@ import psycopg2.extras
 
 # Import shared utilities and constants
 from layers_helpers import (
-    PG_CONNECTION, VALID_STATES, FL_COUNTIES, LAYER_CONFIGS,
+    PG_CONNECTION, VALID_STATES, STATE_COUNTIES, INTEGRATED_STATES, LAYER_CONFIGS,
     format_name, parse_entity_pattern, safe_catalog_val, validate_state_abbreviation,
     resolve_layer_name, resolve_layer_directory
 )
@@ -105,14 +105,18 @@ def split_entity(entity: str) -> Tuple[str, str, str]:
         city = None
         for i in range(len(county_city_tokens), 1, -1):  # from longest possible down to 2 tokens
             candidate_county = "_".join(county_city_tokens[:i])
-            if candidate_county in FL_COUNTIES:
-                county = candidate_county
-                city = "_".join(county_city_tokens[i:])
-                if not city:  # edge case – entity only county
-                    raise ValueError(f"Could not determine city part in entity: {entity}")
+            # Check all integrated states for county match
+            for state_abbrev, counties in STATE_COUNTIES.items():
+                if candidate_county in counties:
+                    county = candidate_county
+                    city = "_".join(county_city_tokens[i:])
+                    if not city:  # edge case – entity only county
+                        raise ValueError(f"Could not determine city part in entity: {entity}")
+                    break
+            if county is not None:
                 break
         
-        # Fallback to simple split if no FL county match
+        # Fallback to simple split if no county match
         if county is None:
             if len(county_city_tokens) < 2:
                 raise ValueError(f"Could not parse county_city from entity: {entity}")
@@ -121,10 +125,13 @@ def split_entity(entity: str) -> Tuple[str, str, str]:
 
     # Infer state from county if not already determined
     if 'state' not in locals():
-        if county in FL_COUNTIES:
-            state = 'fl'
-        else:
-            raise ValueError(f"County '{county}' not found in FL_COUNTIES. Cannot determine state for entity: {entity}")
+        state = None
+        for state_abbrev, counties in STATE_COUNTIES.items():
+            if county in counties:
+                state = state_abbrev
+                break
+        if state is None:
+            raise ValueError(f"County '{county}' not found in any integrated state. Cannot determine state for entity: {entity}")
     
     return state, county, city
 
@@ -1846,9 +1853,14 @@ class LayersPrescrape:
             county_db = record.get('county', '')
             if county_db:
                 county_internal = format_name(county_db, 'county', external=False)
-                if county_internal in FL_COUNTIES:
-                    state_internal = 'fl'
-                else:
+                # Check all integrated states for county match
+                state_internal = None
+                for state_abbrev, counties in STATE_COUNTIES.items():
+                    if county_internal in counties:
+                        state_internal = state_abbrev
+                        break
+                
+                if state_internal is None:
                     # Could add other state county lists here in the future
                     state_internal = 'fl'  # Fallback for now
             else:
@@ -1930,9 +1942,14 @@ class LayersPrescrape:
                 county_db = row.get('county', '')
                 if county_db:
                     county_internal = format_name(county_db, 'county', external=False)
-                    if county_internal in FL_COUNTIES:
-                        state_internal = 'fl'
-                    else:
+                    # Check all integrated states for county match
+                    state_internal = None
+                    for state_abbrev, counties in STATE_COUNTIES.items():
+                        if county_internal in counties:
+                            state_internal = state_abbrev
+                            break
+                    
+                    if state_internal is None:
                         # Could add other state county lists here in the future
                         state_internal = 'fl'  # Fallback for now
                 else:
