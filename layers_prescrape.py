@@ -2182,7 +2182,7 @@ def extract_layers_from_patterns(include_patterns: list[str] = None, exclude_pat
     # Remove excluded layers from the set
     layers = layers - excluded_layers
     
-    return sorted(layers)
+    return sorted(layers), sorted(excluded_layers)
 
 # ---------------------------------------------------------------------------
 # CLI Interface
@@ -2303,7 +2303,9 @@ def main():
         return
     
     # Extract layers from entity patterns
-    layers_to_process = extract_layers_from_patterns(args.include, args.exclude)
+    layers_to_process, excluded_layers = extract_layers_from_patterns(args.include, args.exclude)
+    if excluded_layers:
+        print(f"[INFO] Excluding {', '.join(excluded_layers)}")
     print(f"[INFO] Processing layers: {', '.join(layers_to_process)}")
     
     # Process each layer separately
