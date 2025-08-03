@@ -1629,9 +1629,13 @@ class LayersPrescrape:
             return expected if current_value != expected else ""
         
         elif field == "resource":
-            # For non-AGS, check resource matches pattern based on layer type
+            # Resource field should only be populated for non-AGS formats
             fmt = record.get('format') or ''
-            if str(fmt).upper() != 'AGS':
+            if str(fmt).upper() == 'AGS':
+                # AGS format doesn't need resource field - should be empty/null
+                return "" if not current_value else ""
+            else:
+                # For non-AGS formats, check resource matches pattern based on layer type
                 if self.cfg.layer in ['fdot_tc', 'sunbiz']:
                     # State-level layers: "/data/<layer>"
                     expected = f"/data/{layer_internal}"
@@ -1645,7 +1649,6 @@ class LayersPrescrape:
                     # City-level layers: "/data/<layer>/<county>/<city>"
                     expected = f"/data/{layer_internal}/{county_internal}/{city_internal}"
                 return expected if current_value != expected else ""
-            return ""  # AGS doesn't need resource field
         
         elif field == "layer_group":
             # Check layer_group is correct using mapping
