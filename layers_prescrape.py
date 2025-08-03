@@ -1532,8 +1532,8 @@ class LayersPrescrape:
                 # City-level: "Future Land Use - City of Gainesville FL"
                 expected = f"{layer_external} - {title_prefix} of {city_external} {state_abbrev}"
             elif entity_type in ["unincorporated", "unified", "incorporated"]:
-                # County-level with special suffixes: "Zoning - Broward County Unincorporated FL"
-                expected = f"{layer_external} - {county_external} County {entity_type.capitalize()} {state_abbrev}"
+                # City-level with special designations: "Zoning - Broward Unincorporated FL"
+                expected = f"{layer_external} - {county_external} {entity_type.capitalize()} {state_abbrev}"
             elif entity_type == "county" or self.cfg.layer in ['streets', 'address_points', 'subdivisions', 'buildings']:
                 # Standard county-level: "Streets - Broward County FL"
                 expected = f"{layer_external} - {county_external} County {state_abbrev}"
