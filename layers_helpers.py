@@ -142,12 +142,24 @@ AZ_COUNTIES = {
     "pinal", "pima", "santa_cruz", "yavapai", "yuma"
 }
 
+# Alabama counties
+AL_COUNTIES = {
+    "autauga", "baldwin", "barbour", "bibb", "blount", "bullock", "butler", "calhoun", "chambers", "cherokee", 
+    "chilton", "choctaw", "clarke", "clay", "cleburne", "coffee", "colbert", "conecuh", "coosa", "covington", 
+    "crenshaw", "cullman", "dale", "dallas", "dekalb", "elmore", "escambia", "etowah", "fayette", "franklin", 
+    "geneva", "greene", "hale", "henry", "houston", "jackson", "jefferson", "lamar", "lauderdale", "lawrence", 
+    "lee", "limestone", "lowndes", "macon", "madison", "marengo", "marion", "marshall", "mobile", "monroe", 
+    "montgomery", "morgan", "perry", "pickens", "pike", "randolph", "russell", "st._clair", "shelby", "sumter", 
+    "talladega", "tallapoosa", "tuscaloosa", "walker", "washington", "wilcox", "winston"
+    }
+
 # State-county mapping for integrated states (with full county data)
 STATE_COUNTIES = {
     'fl': FL_COUNTIES,
     'ga': GA_COUNTIES,
     'de': DE_COUNTIES,
     'az': AZ_COUNTIES,
+    'al': AL_COUNTIES,
 }
 
 # States with full county data integration
