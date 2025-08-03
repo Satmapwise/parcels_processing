@@ -1630,8 +1630,11 @@ class LayersPrescrape:
         
         elif field == "resource":
             # Resource field should only be populated for non-AGS formats
-            fmt = record.get('format') or ''
-            if str(fmt).upper() == 'AGS':
+            # Use expected format (same logic as format field validation)
+            url = record.get('src_url_file') or ''
+            expected_format = _get_best_format_detection(url, record.get('sys_raw_folder') or '')
+            
+            if expected_format and str(expected_format).upper() == 'AGS':
                 # AGS format doesn't need resource field - should be empty/null
                 return "" if not current_value else ""
             else:

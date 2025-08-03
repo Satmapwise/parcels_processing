@@ -1252,5 +1252,8 @@
   },
   "address_points_fl_alachua": {
     "src_url_file": "URL_DEPRECATED"
+  },
+  "subdivisions_fl_okaloosa": {
+    "src_url_file": "URL_DEPRECATED"
   }
 }
