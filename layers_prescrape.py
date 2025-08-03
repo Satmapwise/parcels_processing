@@ -2197,8 +2197,11 @@ def extract_layers_from_patterns(include_patterns: list[str] = None, exclude_pat
     # Extract layers from include patterns
     if include_patterns:
         for pattern in include_patterns:
-            # Entity format is layer_state_county_city, so layer is first component
-            if '_' in pattern:
+            # First check if the pattern itself is a layer name
+            if pattern in LAYER_CONFIGS:
+                layers.add(pattern)
+            elif '_' in pattern:
+                # Entity format is layer_state_county_city, so layer is first component
                 # Try to find the longest matching layer name
                 found_layer = None
                 for layer_name in LAYER_CONFIGS.keys():
@@ -2208,9 +2211,6 @@ def extract_layers_from_patterns(include_patterns: list[str] = None, exclude_pat
                 
                 if found_layer:
                     layers.add(found_layer)
-            elif pattern in LAYER_CONFIGS:
-                # Direct layer name
-                layers.add(pattern)
     else:
         layers = LAYER_CONFIGS.keys()
     
