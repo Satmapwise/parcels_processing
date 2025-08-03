@@ -98,24 +98,24 @@ class TransformTableToObject:
             raise ValueError("PG_CONNECTION not found in environment. Please set it in .env file.")
         
         self.db = DB(PG_CONNECTION)
-        self.missing_values_file = "missing_values.json"
-        self.missing_values_data = {}
+        self.missing_fields_file = "missing_fields.json"
+        self.missing_fields_data = {}
         
     def run(self):
         """Main execution method."""
         print("[INFO] Starting transform table to object process...")
         
         try:
-            # Load existing missing_values.json if it exists
-            self._load_missing_values()
+            # Load existing missing_fields.json if it exists
+            self._load_missing_fields()
             
             # Process each table type
             self._process_zoning_transforms()
             self._process_flu_transforms() 
             self._process_parcel_shp_fields()
             
-            # Save updated missing_values.json
-            self._save_missing_values()
+            # Save updated missing_fields.json
+            self._save_missing_fields()
             
             print("[INFO] Transform process completed successfully!")
             
@@ -125,15 +125,14 @@ class TransformTableToObject:
         finally:
             self.db.close()
     
-    def _load_missing_values(self):
-        """Load existing missing_values.json file if it exists."""
-        if Path(self.missing_values_file).exists():
-            with open(self.missing_values_file, 'r') as f:
-                self.missing_values_data = json.load(f)
-            print(f"[INFO] Loaded existing {self.missing_values_file}")
+    def _load_missing_fields(self):
+        """Load existing missing_fields.json file if it exists."""
+        if Path(self.missing_fields_file).exists():
+            with open(self.missing_fields_file, 'r') as f:
+                self.missing_fields_data = json.load(f)
+            print(f"[INFO] Loaded existing {self.missing_fields_file}")
         else:
-            self.missing_values_data = {}
-            print(f"[INFO] Creating new {self.missing_values_file}")
+            raise FileNotFoundError(f"{self.missing_fields_file} not found. This file must exist.")
     
     def _process_zoning_transforms(self):
         """Process zoning transform table records."""
@@ -158,7 +157,7 @@ class TransformTableToObject:
                     field_mappings = self._extract_zoning_field_mappings(record)
                     if field_mappings:
                         transform_string = self._convert_field_mappings_to_transform(field_mappings)
-                        self._add_to_missing_values(entity, "fields_obj_transform", transform_string)
+                        self._add_to_missing_fields(entity, "fields_obj_transform", transform_string)
                         print(f"[INFO] Added transform for {entity}: {transform_string}")
                         
         except Exception as e:
@@ -188,7 +187,7 @@ class TransformTableToObject:
                     field_mappings = self._extract_flu_field_mappings(record)
                     if field_mappings:
                         transform_string = self._convert_field_mappings_to_transform(field_mappings)
-                        self._add_to_missing_values(entity, "fields_obj_transform", transform_string)
+                        self._add_to_missing_fields(entity, "fields_obj_transform", transform_string)
                         print(f"[INFO] Added transform for {entity}: {transform_string}")
                         
         except Exception as e:
@@ -218,7 +217,7 @@ class TransformTableToObject:
                     field_mappings = self._extract_parcel_field_mappings(record)
                     if field_mappings:
                         transform_string = self._convert_field_mappings_to_transform(field_mappings)
-                        self._add_to_missing_values(entity, "fields_obj_transform", transform_string)
+                        self._add_to_missing_fields(entity, "fields_obj_transform", transform_string)
                         print(f"[INFO] Added transform for {entity}: {transform_string}")
                         
         except Exception as e:
@@ -434,24 +433,24 @@ class TransformTableToObject:
         
         return mappings
     
-    def _add_to_missing_values(self, entity: str, field: str, value: str):
-        """Add or update a field value in missing_values_data.
+    def _add_to_missing_fields(self, entity: str, field: str, value: str):
+        """Add or update a field value in missing_fields_data.
         
         Args:
             entity: Entity name (e.g., "zoning_fl_alachua_gainesville")
             field: Field name (e.g., "fields_obj_transform")
             value: Field value
         """
-        if entity not in self.missing_values_data:
-            self.missing_values_data[entity] = {}
+        if entity not in self.missing_fields_data:
+            raise ValueError(f"Entity '{entity}' not found in {self.missing_fields_file}. This entity needs to be added to the data catalog.")
         
-        self.missing_values_data[entity][field] = value
+        self.missing_fields_data[entity][field] = value
         
-    def _save_missing_values(self):
-        """Save updated missing_values_data to JSON file."""
-        with open(self.missing_values_file, 'w') as f:
-            json.dump(self.missing_values_data, f, indent=2)
-        print(f"[INFO] Saved updated {self.missing_values_file}")
+    def _save_missing_fields(self):
+        """Save updated missing_fields_data to JSON file."""
+        with open(self.missing_fields_file, 'w') as f:
+            json.dump(self.missing_fields_data, f, indent=2)
+        print(f"[INFO] Saved updated {self.missing_fields_file}")
 
 
 # ---------------------------------------------------------------------------
