@@ -64,12 +64,6 @@ FL_COUNTIES = {
     "st_lucie", "sumter", "suwannee", "taylor", "union", "volusia", "wakulla", "walton", "washington",
 }
 
-# Available layers
-LAYERS = {
-    "zoning", "flu", "fema_flood", "parcel_geo", "streets", "address_points", 
-    "subdivisions", "buildings", "traffic_counts", "sunbiz"
-}
-
 # Layer configurations with metadata
 LAYER_CONFIGS = {
     'zoning': {
@@ -299,7 +293,7 @@ def parse_entity_pattern(pattern: str) -> tuple[str | None, str | None, str | No
     
     # Step 1: Extract layer
     layer = None
-    layer_names = list(LAYERS)
+    layer_names = list(LAYER_CONFIGS.keys())
     
     for layer_name in layer_names:
         if remaining.startswith(layer_name):
@@ -436,7 +430,7 @@ def resolve_layer_directory(layer: str, state: str = None, county: str = None, c
 
 # For layers_scrape.py compatibility
 counties = FL_COUNTIES
-layers = LAYERS
+layers = LAYER_CONFIGS.keys()
 
 # Layer name mapping for backwards compatibility
 LAYER_NAME_ALIASES = {

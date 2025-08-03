@@ -33,7 +33,7 @@ import psycopg2.extras
 
 # Import shared utilities and constants
 from layers_helpers import (
-    PG_CONNECTION, VALID_STATES, FL_COUNTIES, LAYERS, LAYER_CONFIGS,
+    PG_CONNECTION, VALID_STATES, FL_COUNTIES, LAYER_CONFIGS,
     format_name, parse_entity_pattern, safe_catalog_val, validate_state_abbreviation,
     resolve_layer_name, resolve_layer_directory
 )
