@@ -2168,6 +2168,8 @@ def extract_layers_from_patterns(include_patterns: list[str] = None, exclude_pat
             elif pattern in LAYER_CONFIGS:
                 # Direct layer name
                 layers.add(pattern)
+    else:
+        layers = LAYER_CONFIGS.keys()
     
     # Extract layers from exclude patterns
     if exclude_patterns:
@@ -2302,28 +2304,7 @@ def main():
     
     # Extract layers from entity patterns
     layers_to_process = extract_layers_from_patterns(args.include, args.exclude)
-    
-    if not layers_to_process:
-        # No include patterns specified - check if we have exclude patterns
-        if args.exclude:
-            # Process all layers except excluded ones
-            import fnmatch
-            all_layers = list(LAYER_CONFIGS.keys())
-            excluded_layers = set()
-            
-            for pattern in args.exclude:
-                for layer in all_layers:
-                    if fnmatch.fnmatch(layer.lower(), pattern.lower()):
-                        excluded_layers.add(layer)
-            
-            layers_to_process = [layer for layer in all_layers if layer not in excluded_layers]
-            print(f"[INFO] Processing all layers except excluded: {', '.join(layers_to_process)}")
-        else:
-            # No patterns at all - process all layers
-            layers_to_process = list(LAYER_CONFIGS.keys())
-            print(f"[INFO] No entity patterns specified, processing all layers: {', '.join(layers_to_process)}")
-    else:
-        print(f"[INFO] Processing layers extracted from entity patterns: {', '.join(layers_to_process)}")
+    print(f"[INFO] Processing layers: {', '.join(layers_to_process)}")
     
     # Process each layer separately
     for layer in layers_to_process:
