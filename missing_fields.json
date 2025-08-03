@@ -500,7 +500,8 @@
     "fields_obj_transform": "MANUAL_REQUIRED"
   },
   "zoning_fl_okaloosa_unincorporated": {
-    "fields_obj_transform": "MANUAL_REQUIRED"
+    "fields_obj_transform": "MANUAL_REQUIRED",
+    "src_url_file": "URL_DEPRECATED"
   },
   "zoning_fl_osceola_unincorporated": {
     "fields_obj_transform": "MANUAL_REQUIRED"
