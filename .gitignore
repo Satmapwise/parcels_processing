@@ -3,3 +3,4 @@ data/
 *.csv
 *.DS_Store
 upload_layer/test/
+documentation/

@@ -60,7 +60,8 @@
     "src_url_file": "https://egis.pinellas.gov/gis/rest/services/AGO/PPC_Data/MapServer/17"
   },
   "flu_fl_pinellas_unincorporated": {
-    "src_url_file": "https://egis.pinellas.gov/gis/rest/services/AGO/Planning_LandUse/MapServer/13"
+    "src_url_file": "https://egis.pinellas.gov/gis/rest/services/AGO/Planning_LandUse/MapServer/13",
+    "fields_obj_transform": "MANUAL_REQUIRED"
   },
   "flu_fl_sarasota": {
     "src_url_file": "https://ags3.scgov.net/server/rest/services/Hosted/FutureLandUse/FeatureServer/0"
@@ -1241,6 +1242,15 @@
     "fields_obj_transform": "MANUAL_REQUIRED"
   },
   "subdivisions_fl_leon": {
+    "src_url_file": "URL_DEPRECATED"
+  },
+  "flu_fl_lake_unincorporated": {
+    "fields_obj_transform": "MANUAL_REQUIRED"
+  },
+  "streets_fl_okaloosa": {
+    "src_url_file": "URL_DEPRECATED"
+  },
+  "address_points_fl_alachua": {
     "src_url_file": "URL_DEPRECATED"
   }
 }
