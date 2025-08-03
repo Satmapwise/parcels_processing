@@ -51,9 +51,56 @@ VALID_STATES = {
     'fl': 'FL',  # Florida (primary)
     'ga': 'GA',  # Georgia (future)
     'de': 'DE',  # Delaware (future)
+    'al': 'AL',  # Alabama
+    'ak': 'AK',  # Alaska
+    'az': 'AZ',  # Arizona
+    'ar': 'AR',  # Arkansas
+    'ca': 'CA',  # California
+    'co': 'CO',  # Colorado
+    'ct': 'CT',  # Connecticut
+    'dc': 'DC',  # District of Columbia
+    'hi': 'HI',  # Hawaii
+    'id': 'ID',  # Idaho
+    'il': 'IL',  # Illinois
+    'in': 'IN',  # Indiana
+    'ia': 'IA',  # Iowa
+    'ks': 'KS',  # Kansas
+    'ky': 'KY',  # Kentucky
+    'la': 'LA',  # Louisiana
+    'me': 'ME',  # Maine
+    'md': 'MD',  # Maryland
+    'ma': 'MA',  # Massachusetts
+    'mi': 'MI',  # Michigan
+    'mn': 'MN',  # Minnesota
+    'ms': 'MS',  # Mississippi
+    'mo': 'MO',  # Missouri
+    'mt': 'MT',  # Montana
+    'ne': 'NE',  # Nebraska
+    'nv': 'NV',  # Nevada
+    'nh': 'NH',  # New Hampshire
+    'nj': 'NJ',  # New Jersey
+    'nm': 'NM',  # New Mexico
+    'ny': 'NY',  # New York
+    'nc': 'NC',  # North Carolina
+    'nd': 'ND',  # North Dakota
+    'oh': 'OH',  # Ohio
+    'ok': 'OK',  # Oklahoma
+    'or': 'OR',  # Oregon
+    'pa': 'PA',  # Pennsylvania
+    'ri': 'RI',  # Rhode Island
+    'sc': 'SC',  # South Carolina
+    'sd': 'SD',  # South Dakota
+    'tn': 'TN',  # Tennessee
+    'tx': 'TX',  # Texas
+    'ut': 'UT',  # Utah
+    'vt': 'VT',  # Vermont
+    'va': 'VA',  # Virginia
+    'wa': 'WA',  # Washington
+    'wi': 'WI',  # Wisconsin
+    'wv': 'WV',  # West Virginia
 }
 
-# Florida counties set
+# Florida counties
 FL_COUNTIES = {
     "alachua", "baker", "bay", "bradford", "brevard", "broward", "calhoun", "charlotte", "citrus", "clay",
     "collier", "columbia", "desoto", "dixie", "duval", "escambia", "flagler", "franklin", "gadsden", "gilchrist",
@@ -62,6 +109,37 @@ FL_COUNTIES = {
     "manatee", "marion", "martin", "miami_dade", "monroe", "nassau", "okaloosa", "okeechobee", "orange", "osceola",
     "palm_beach", "pasco", "pinellas", "polk", "putnam", "santa_rosa", "sarasota", "seminole", "st_johns",
     "st_lucie", "sumter", "suwannee", "taylor", "union", "volusia", "wakulla", "walton", "washington",
+}
+
+# Georgia counties
+GA_COUNTIES = {
+    "appling", "atkinson", "bacon", "baker", "baldwin", "banks", "barrow", "bartow", "ben_hill", "berrien",
+    "bibb", "bleckley", "brantley", "brooks", "bryan", "bulloch", "burke", "butts", "calhoun", "camden",
+    "candler", "carroll", "catoosa", "charlton", "chatham", "chattahoochee", "chattooga", "cherokee", "clarke",
+    "clay", "clayton", "clinch", "cobb", "coffee", "colquitt", "columbia", "cook", "coweta", "crawford",
+    "crisp", "dade", "dawson", "decatur", "dekalb", "dodge", "dooly", "dougherty", "douglas", "early",
+    "echols", "effingham", "elbert", "emanuel", "evans", "fannin", "fayette", "floyd", "forsyth", "franklin",
+    "fulton", "gilmer", "glascock", "glynn", "gordon", "grady", "greene", "gwinnett", "habersham", "hall",
+    "hancock", "haralson", "harris", "hart", "heard", "henry", "houston", "irwin", "jackson", "jasper",
+    "jeff_davis", "jefferson", "jenkins", "johnson", "jones", "lamar", "lanier", "laurens", "lee", "liberty",
+    "lincoln", "long", "lowndes", "lumpkin", "mcduffie", "mcintosh", "macon", "madison", "marion", "meriwether",
+    "miller", "mitchell", "monroe", "montgomery", "morgan", "murray", "muscogee", "newton", "oconee", "oglethorpe",
+    "paulding", "peach", "pickens", "pierce", "pike", "polk", "pulaski", "putnam", "quitman", "rabun",
+    "randolph", "richmond", "rockdale", "schley", "screven", "seminole", "spalding", "stephens", "stewart", "sumter",
+    "talbot", "taliaferro", "tattnall", "taylor", "telfair", "terrell", "thomas", "tift", "toombs", "towns",
+    "treutlen", "troup", "turner", "twiggs", "union", "upson", "walker", "walton", "ware", "warren",
+    "washington", "wayne", "webster", "wheeler", "white", "whitfield", "wilcox", "wilkes", "wilkinson", "worth"
+}
+
+# Delaware counties
+DE_COUNTIES = {
+    "new_castle", "kent", "sussex"
+}
+
+# Arizona counties
+AZ_COUNTIES = {
+    "apache", "cochise", "coconino", "gila", "graham", "greenlee", "la_paz", "maricopa", "mohave", "navajo",
+    "pinal", "pima", "santa_cruz", "yavapai", "yuma"
 }
 
 # Layer configurations with metadata
