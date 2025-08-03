@@ -21,6 +21,7 @@ import logging
 import os
 import re
 import sys
+import fnmatch
 from collections import defaultdict
 from dataclasses import dataclass
 from datetime import datetime
@@ -1195,10 +1196,14 @@ class LayersPrescrape:
                         should_apply_auto = (not is_manual and not has_manual_override) and self.cfg.apply_changes
                         
                         if should_apply_manual:
-                            updates[field] = correction
+                            # Map new_title to title for database updates
+                            db_field = "title" if field == "new_title" else field
+                            updates[db_field] = correction
                             applied_manual += 1
                         elif should_apply_auto:
-                            updates[field] = correction  
+                            # Map new_title to title for database updates
+                            db_field = "title" if field == "new_title" else field
+                            updates[db_field] = correction  
                             applied_auto += 1
                         elif is_manual or has_manual_override:
                             skipped_manual += 1
@@ -1357,7 +1362,6 @@ class LayersPrescrape:
             self.logger.info(f"Batch validating {len(urls_to_validate)} URLs...")
             # Validate all URLs concurrently
             # Use conservative thread count (max 4 on smaller systems, 8 on larger)
-            import os
             cpu_count = os.cpu_count() or 4
             max_workers = min(8, max(2, cpu_count // 2))  # Use half of available cores, max 8
             results = validate_url_batch(list(urls_to_validate), max_workers=max_workers)
@@ -1371,13 +1375,13 @@ class LayersPrescrape:
         
         # If include filters are specified, entity must match at least one
         if self.cfg.include_entities:
-            include_match = any(pattern.lower() in entity_lower for pattern in self.cfg.include_entities)
+            include_match = any(fnmatch.fnmatch(entity_lower, pattern.lower()) for pattern in self.cfg.include_entities)
             if not include_match:
                 return False
         
         # If exclude filters are specified, entity must not match any
         if self.cfg.exclude_entities:
-            exclude_match = any(pattern.lower() in entity_lower for pattern in self.cfg.exclude_entities)
+            exclude_match = any(fnmatch.fnmatch(entity_lower, pattern.lower()) for pattern in self.cfg.exclude_entities)
             if exclude_match:
                 return False
         
@@ -1389,13 +1393,13 @@ class LayersPrescrape:
         
         # If include filters are specified, field must match at least one
         if self.cfg.include_fields:
-            include_match = any(pattern.lower() in field_lower for pattern in self.cfg.include_fields)
+            include_match = any(fnmatch.fnmatch(field_lower, pattern.lower()) for pattern in self.cfg.include_fields)
             if not include_match:
                 return False
         
         # If exclude filters are specified, field must not match any
         if self.cfg.exclude_fields:
-            exclude_match = any(pattern.lower() in field_lower for pattern in self.cfg.exclude_fields)
+            exclude_match = any(fnmatch.fnmatch(field_lower, pattern.lower()) for pattern in self.cfg.exclude_fields)
             if exclude_match:
                 return False
         
@@ -2149,7 +2153,9 @@ def extract_layers_from_patterns(include_patterns: list[str] = None, exclude_pat
     Returns:
         List of unique layer names found in patterns
     """
+    
     layers = set()
+    excluded_layers = set()
     
     # Extract layers from include patterns
     if include_patterns:
@@ -2163,7 +2169,16 @@ def extract_layers_from_patterns(include_patterns: list[str] = None, exclude_pat
                 # Direct layer name
                 layers.add(pattern)
     
-    # Note: exclude patterns don't add layers, they only filter
+    # Extract layers from exclude patterns
+    if exclude_patterns:
+        for pattern in exclude_patterns:
+            # Check if pattern matches any layer names
+            for layer in LAYER_CONFIGS.keys():
+                if fnmatch.fnmatch(layer.lower(), pattern.lower()):
+                    excluded_layers.add(layer)
+    
+    # Remove excluded layers from the set
+    layers = layers - excluded_layers
     
     return sorted(layers)
 
@@ -2289,9 +2304,24 @@ def main():
     layers_to_process = extract_layers_from_patterns(args.include, args.exclude)
     
     if not layers_to_process:
-        # No patterns specified or no valid layers found - process all layers
-        layers_to_process = list(LAYER_CONFIGS.keys())
-        print(f"[INFO] No entity patterns specified, processing all layers: {', '.join(layers_to_process)}")
+        # No include patterns specified - check if we have exclude patterns
+        if args.exclude:
+            # Process all layers except excluded ones
+            import fnmatch
+            all_layers = list(LAYER_CONFIGS.keys())
+            excluded_layers = set()
+            
+            for pattern in args.exclude:
+                for layer in all_layers:
+                    if fnmatch.fnmatch(layer.lower(), pattern.lower()):
+                        excluded_layers.add(layer)
+            
+            layers_to_process = [layer for layer in all_layers if layer not in excluded_layers]
+            print(f"[INFO] Processing all layers except excluded: {', '.join(layers_to_process)}")
+        else:
+            # No patterns at all - process all layers
+            layers_to_process = list(LAYER_CONFIGS.keys())
+            print(f"[INFO] No entity patterns specified, processing all layers: {', '.join(layers_to_process)}")
     else:
         print(f"[INFO] Processing layers extracted from entity patterns: {', '.join(layers_to_process)}")
     
