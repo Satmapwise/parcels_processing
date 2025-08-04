@@ -211,7 +211,7 @@ def _to_internal_format(name: str) -> str:
 from layers_helpers import (
     PG_CONNECTION, VALID_STATES, FL_COUNTIES, LAYER_CONFIGS,
     SKIP_ENTITIES, FULL_PIPELINE_FORMATS, METADATA_ONLY_FORMATS,
-    format_name, parse_entity_pattern, safe_catalog_val, 
+    format_name, safe_catalog_val, 
     resolve_layer_name, resolve_layer_directory,
     DATA_ROOT, TOOLS_DIR,
     # Backwards compatibility aliases
@@ -502,7 +502,7 @@ def _parse_county_city_tokens(tokens: list[str], entity: str) -> tuple[str, str]
     return (county, city)
 
 def resolve_work_dir(layer: str, entity: str):
-    """Return (work_dir, state, county, city) for layer/entity."""
+    """Return work_dir for layer/entity."""
     # Parse entity to get layer, state, county, city
     parsed_layer, state, county, city = split_entity_v2(entity)
     
@@ -511,11 +511,11 @@ def resolve_work_dir(layer: str, entity: str):
         # Duval Unified refers to Jacksonville city-county government
         county, city = 'duval', 'jacksonville'
         work_dir = resolve_layer_directory('zoning', 'fl', 'duval', 'jacksonville')
-        return work_dir, state, county, city
+        return work_dir
 
     # General case - use new directory resolution from LAYER_CONFIGS
     work_dir = resolve_layer_directory(layer, state, county, city)
-    return work_dir, state, county, city
+    return work_dir
 
 def _run_command(command, work_dir, logger):
     """Run a shell command in a specified directory."""
@@ -1534,7 +1534,7 @@ def extract_shp_metadata(shp_path, logger):
 # Main Processing Function
 # ---------------------------------------------------------------------------
 
-def process_layer(layer, queue):
+def process_layer(layer, queue, entity_components):
     """Process a layer for entities in the queue using the 4-stage pipeline."""
     if CONFIG.run_download:
         logging.info(f"Starting processing for layer '{layer}' with {len(queue)} entities")
@@ -1548,8 +1548,17 @@ def process_layer(layer, queue):
     for entity in queue:
         entity_start_time = datetime.now()
         try:
+            # Get entity components from dictionary
+            if entity not in entity_components:
+                raise RuntimeError(f"Entity '{entity}' not found in entity components")
+            
+            components = entity_components[entity]
+            state = components['state']
+            county = components['county']
+            city = components['city']
+            
             # Setup
-            work_dir, state, county, city = resolve_work_dir(layer, entity)
+            work_dir = resolve_work_dir(layer, entity)
             entity_logger = setup_entity_logger(layer, entity, work_dir)
             
             logging.info(f"--- Processing entity: {entity} ---")
@@ -1732,7 +1741,7 @@ def generate_summary(results):
             existing_data[entity_key] = row
         
         # Sort data by county, then city
-        sorted_data = sorted(existing_data.values(), key=lambda x: (x['county'], x['city']))
+        sorted_data = sorted(existing_data.values(), key=lambda x: (x['county'], x['city'] or ''))
         
         # Calculate summary statistics
         total_entities = len(sorted_data)
@@ -1969,29 +1978,62 @@ def _write_csv_file(filepath, headers, data_dict):
 # Entity Discovery and Filtering Functions  
 # ---------------------------------------------------------------------------
 
-def get_all_entities_from_db() -> list[str]:
-    """Get all entities from database across all layers."""
-    entities = []
+def get_all_entities_from_db() -> dict[str, dict]:
+    """Get all entities from database with their component parts.
+    
+    Returns:
+        Dictionary mapping entity strings to their component parts:
+        {
+            'zoning_fl_leon_tallahassee': {
+                'layer': 'zoning',
+                'state': 'fl', 
+                'county': 'leon',
+                'city': 'tallahassee'
+            },
+            ...
+        }
+    """
+    entity_dict = {}
     conn = psycopg2.connect(PG_CONNECTION)
     cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
     try:
+        # Get all valid records with populated layer_subgroup
         sql = (
             "SELECT layer_subgroup, state, county, city FROM m_gis_data_catalog_main "
-            "WHERE status IS DISTINCT FROM 'DELETE'"
+            "WHERE status IS DISTINCT FROM 'DELETE' "
+            "AND layer_subgroup IS NOT NULL"
         )
         cur.execute(sql)
         rows = cur.fetchall()
+        
         for row in rows:
             layer = row['layer_subgroup']
-            if layer:  # Skip records without layer_subgroup
-                entity = _entity_from_parts(layer, row['state'], row['county'], row['city'])
-                entities.append(entity)
+            state = row['state']
+            county = row['county'] 
+            city = row['city']
+            
+            # Convert to internal format
+            state_internal = format_name(state, 'state', external=False) if state else None
+            county_internal = format_name(county, 'county', external=False) if county else None
+            city_internal = format_name(city, 'city', external=False) if city else None
+            
+            # Build entity string
+            entity = _entity_from_parts(layer, state_internal, county_internal, city_internal)
+            
+            # Store with component parts
+            entity_dict[entity] = {
+                'layer': layer,
+                'state': state_internal,
+                'county': county_internal, 
+                'city': city_internal
+            }
+            
     except Exception as exc:
         logging.error(f"DB entity fetch failed: {exc}")
     finally:
         cur.close()
         conn.close()
-    return list(dict.fromkeys(entities))  # de-dupe preserving order
+    return entity_dict
 
 def apply_entity_filters(entities: list[str], include_patterns: list[str] = None, exclude_patterns: list[str] = None) -> list[str]:
     """Apply include/exclude filters to entity list."""
@@ -2021,56 +2063,60 @@ def apply_entity_filters(entities: list[str], include_patterns: list[str] = None
     
     return sorted(entities)
 
-def get_filtered_entities(include_patterns: list[str] = None, exclude_patterns: list[str] = None) -> list[str]:
-    """Get entities from database with include/exclude filters applied using pattern parsing."""
-    entities = set()
+def get_filtered_entities(include_patterns: list[str] = None, exclude_patterns: list[str] = None) -> tuple[list[str], dict[str, dict]]:
+    """Get entities from database with include/exclude filters applied using simple pattern matching.
     
-    # If include patterns specified, get entities matching those patterns
+    Returns:
+        Tuple of (filtered_entities_list, entity_components_dict)
+    """
+    # Get all entities with their component parts
+    all_entities_dict = get_all_entities_from_db()
+    all_entities = list(all_entities_dict.keys())
+    
+    logging.info(f"Found {len(all_entities)} total entities in database")
+    
+    # Start with all entities
+    filtered_entities = set(all_entities)
+    
+    # Apply include filters
     if include_patterns:
+        included = set()
         for pattern in include_patterns:
-            pattern_entities = _fetch_entities_by_pattern(pattern)
-            entities.update(pattern_entities)
-            logging.info(f"Pattern '{pattern}' matched {len(pattern_entities)} entities")
-    else:
-        # No include patterns - get all entities
-        all_entities = get_all_entities_from_db()
-        entities.update(all_entities)
-        logging.info(f"Found {len(all_entities)} total entities in database")
+            matches = fnmatch.filter(all_entities, pattern)
+            included.update(matches)
+            if matches:
+                logging.info(f"Include pattern '{pattern}' matched {len(matches)} entities")
+            else:
+                logging.warning(f"Include pattern '{pattern}' matched no entities")
+        filtered_entities = included
     
     # Apply exclude filters
     if exclude_patterns:
-        exclude_entities = set()
         for pattern in exclude_patterns:
-            pattern_entities = _fetch_entities_by_pattern(pattern)
-            exclude_entities.update(pattern_entities)
-            logging.info(f"Exclude pattern '{pattern}' matched {len(pattern_entities)} entities")
-        entities = entities - exclude_entities
+            before_count = len(filtered_entities)
+            filtered_entities = {e for e in filtered_entities if not fnmatch.fnmatch(e, pattern)}
+            excluded_count = before_count - len(filtered_entities)
+            if excluded_count > 0:
+                logging.info(f"Exclude pattern '{pattern}' excluded {excluded_count} entities")
     
-    filtered_entities = list(entities)
-    logging.info(f"After applying filters: {len(filtered_entities)} entities selected")
+    filtered_entities_list = sorted(list(filtered_entities))
+    logging.info(f"After applying filters: {len(filtered_entities_list)} entities selected")
     
-    return filtered_entities
+    # Return filtered entities and their components
+    filtered_components = {entity: all_entities_dict[entity] for entity in filtered_entities_list}
+    
+    return filtered_entities_list, filtered_components
 
-def group_entities_by_layer(entities: list[str]) -> dict[str, list[str]]:
-    """Group entities by their layer component."""
+def group_entities_by_layer(entities: list[str], entity_components: dict[str, dict]) -> dict[str, list[str]]:
+    """Group entities by their layer component using the entity components dictionary."""
     groups = {}
-    layer_names = ['zoning', 'flu', 'flood_zones', 'parcel_geo', 'streets', 'addr_pnts', 'subdiv', 'bldg_ftpr', 'fdot_tc', 'sunbiz']
     
     for entity in entities:
-        # Extract layer from entity (handle multi-word layer names)
-        layer = None
-        for layer_name in layer_names:
-            if entity.startswith(layer_name + '_'):
-                layer = layer_name
-                break
-        
-        # Fallback to first token if no multi-word layer found
-        if layer is None:
-            layer = entity.split('_')[0]
-        
-        if layer not in groups:
-            groups[layer] = []
-        groups[layer].append(entity)
+        if entity in entity_components:
+            layer = entity_components[entity]['layer']
+            if layer not in groups:
+                groups[layer] = []
+            groups[layer].append(entity)
     
     return groups
 
@@ -2122,19 +2168,19 @@ def main():
     results = []
     try:
         # Get all entities from database and apply filters
-        all_entities = get_filtered_entities(args.include, args.exclude)
+        all_entities, entity_components = get_filtered_entities(args.include, args.exclude)
         
         if not all_entities:
             logging.info("No entities to process after applying filters.")
             return
 
         # Group entities by layer for processing
-        entities_by_layer = group_entities_by_layer(all_entities)
+        entities_by_layer = group_entities_by_layer(all_entities, entity_components)
         
         # Process each layer separately
         for layer, entities in entities_by_layer.items():
             logging.info(f"Processing layer '{layer}' with {len(entities)} entities")
-            layer_results = process_layer(layer, entities)
+            layer_results = process_layer(layer, entities, entity_components)
             results.extend(layer_results)
 
     except (ValueError, NotImplementedError) as e:
