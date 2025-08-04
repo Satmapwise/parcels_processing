@@ -1471,7 +1471,8 @@ def generate_summary(results, entity_components: dict = None):
     script_dir = os.path.dirname(os.path.abspath(__file__))
     summary_filepath = os.path.join(script_dir, summary_filename)
     
-    headers = ['county', 'city', 'data_date', 'download_status', 'processing_status', 
+    # Use new format headers
+    headers = ['entity', 'data_date', 'download_status', 'processing_status', 
                'upload_status', 'error_message', 'timestamp']
     
     try:
@@ -1480,12 +1481,38 @@ def generate_summary(results, entity_components: dict = None):
         if os.path.exists(summary_filepath):
             with open(summary_filepath, 'r', newline='') as csvfile:
                 reader = csv.DictReader(csvfile)
+                # Check if this is old format (has county/city columns)
+                old_format = 'county' in reader.fieldnames
+                
                 for row in reader:
                     # Skip summary rows
-                    if row.get('layer', '').startswith('LAST UPDATED:'):
-                        continue
-                    entity_key = f"{row.get('county', '')}_{row.get('city', '')}"
-                    existing_data[entity_key] = row
+                    if old_format:
+                        if row.get('county', '').startswith('LAST UPDATED:'):
+                            continue
+                    else:
+                        if row.get('entity', '').startswith('LAST UPDATED:'):
+                            continue
+                    
+                    if old_format:
+                        # Convert old format to new format
+                        county = row.get('county', '')
+                        city = row.get('city', '')
+                        entity_key = f"{county}_{city}"
+                        # Create new format row
+                        new_row = {
+                            'entity': entity_key,
+                            'data_date': row.get('data_date', ''),
+                            'download_status': row.get('download_status', ''),
+                            'processing_status': row.get('processing_status', ''),
+                            'upload_status': row.get('upload_status', ''),
+                            'error_message': row.get('error_message', ''),
+                            'timestamp': row.get('timestamp', '')
+                        }
+                        existing_data[entity_key] = new_row
+                    else:
+                        # Already new format
+                        entity_key = row.get('entity', '')
+                        existing_data[entity_key] = row
         
         # Process results and update data
         for result in results:
@@ -1510,8 +1537,7 @@ def generate_summary(results, entity_components: dict = None):
                 row = existing_data[entity_key]
             else:
                 row = {h: '' for h in headers}
-                row['county'] = county
-                row['city'] = city
+                row['entity'] = entity
             
             # Update based on result status
             status = result.get('status', 'failure')
@@ -1548,8 +1574,8 @@ def generate_summary(results, entity_components: dict = None):
             row['timestamp'] = datetime.now().strftime('%m/%d/%y %I:%M %p')
             existing_data[entity_key] = row
         
-        # Sort data by county, then city
-        sorted_data = sorted(existing_data.values(), key=lambda x: (x['county'], x['city'] or ''))
+        # Sort data by entity
+        sorted_data = sorted(existing_data.values(), key=lambda x: x['entity'])
         
         # Calculate summary statistics
         total_entities = len(sorted_data)
@@ -1565,39 +1591,24 @@ def generate_summary(results, entity_components: dict = None):
         total_runtime = (end_time - CONFIG.start_time).total_seconds()
         runtime_str = _format_runtime_detailed(total_runtime)
         
-        # Create summary row with timestamp spread across columns
+        # Create summary row
         now = datetime.now()
-        if layer.lower() in ['flu', 'zoning']:
-            # Spread across 3 columns: county, city, data_date
-            summary_row = {
-                'county': 'LAST UPDATED:',
-                'city': now.strftime('%m/%d/%y'),
-                'data_date': now.strftime('%I:%M %p'),
-                'download_status': f"{download_success}/{download_total}" if download_total > 0 else "0/0",
-                'processing_status': f"{processing_success}/{processing_total}" if processing_total > 0 else "0/0",
-                'upload_status': f"{upload_success}/{upload_total}" if upload_total > 0 else "0/0",
-                'error_message': '',
-                'timestamp': runtime_str
-            }
-        else:
-            # Use 2 columns: county, data_date
-            summary_row = {
-                'county': 'LAST UPDATED:',
-                'city': '',
-                'data_date': now.strftime('%m/%d/%y %I:%M %p'),
-                'download_status': f"{download_success}/{download_total}" if download_total > 0 else "0/0",
-                'processing_status': f"{processing_success}/{processing_total}" if processing_total > 0 else "0/0",
-                'upload_status': f"{upload_success}/{upload_total}" if upload_total > 0 else "0/0",
-                'error_message': '',
-                'timestamp': runtime_str
-            }
+        summary_row = {
+            'entity': 'LAST UPDATED:',
+            'data_date': now.strftime('%m/%d/%y %I:%M %p'),
+            'download_status': f"{download_success}/{download_total}" if download_total > 0 else "0/0",
+            'processing_status': f"{processing_success}/{processing_total}" if processing_total > 0 else "0/0",
+            'upload_status': f"{upload_success}/{upload_total}" if upload_total > 0 else "0/0",
+            'error_message': '',
+            'timestamp': runtime_str
+        }
         
         # Write the CSV file
         with open(summary_filepath, 'w', newline='') as csvfile:
             writer = csv.DictWriter(csvfile, fieldnames=headers)
             writer.writeheader()
             
-            # Write data rows sorted by county/city
+            # Write data rows sorted by entity
             for row in sorted_data:
                 writer.writerow(row)
             
@@ -1653,7 +1664,8 @@ def _initialize_csv_status(layer, queue, entity_components: dict = None):
     script_dir = os.path.dirname(os.path.abspath(__file__))
     summary_filepath = os.path.join(script_dir, summary_filename)
     
-    headers = ['county', 'city', 'data_date', 'download_status', 'processing_status', 
+    # Use new format headers
+    headers = ['entity', 'data_date', 'download_status', 'processing_status', 
                'upload_status', 'error_message', 'timestamp']
     
     try:
@@ -1662,12 +1674,38 @@ def _initialize_csv_status(layer, queue, entity_components: dict = None):
         if os.path.exists(summary_filepath):
             with open(summary_filepath, 'r', newline='') as csvfile:
                 reader = csv.DictReader(csvfile)
+                # Check if this is old format (has county/city columns)
+                old_format = 'county' in reader.fieldnames
+                
                 for row in reader:
                     # Skip summary rows
-                    if row.get('county', '').startswith('LAST UPDATED:'):
-                        continue
-                    entity_key = f"{row.get('county', '')}_{row.get('city', '')}"
-                    existing_data[entity_key] = row
+                    if old_format:
+                        if row.get('county', '').startswith('LAST UPDATED:'):
+                            continue
+                    else:
+                        if row.get('entity', '').startswith('LAST UPDATED:'):
+                            continue
+                    
+                    if old_format:
+                        # Convert old format to new format
+                        county = row.get('county', '')
+                        city = row.get('city', '')
+                        entity_key = f"{county}_{city}"
+                        # Create new format row
+                        new_row = {
+                            'entity': entity_key,
+                            'data_date': row.get('data_date', ''),
+                            'download_status': row.get('download_status', ''),
+                            'processing_status': row.get('processing_status', ''),
+                            'upload_status': row.get('upload_status', ''),
+                            'error_message': row.get('error_message', ''),
+                            'timestamp': row.get('timestamp', '')
+                        }
+                        existing_data[entity_key] = new_row
+                    else:
+                        # Already new format
+                        entity_key = row.get('entity', '')
+                        existing_data[entity_key] = row
         
         # Initialize status columns for entities in queue
         for entity in queue:
@@ -1690,8 +1728,7 @@ def _initialize_csv_status(layer, queue, entity_components: dict = None):
                 row = existing_data[entity_key]
             else:
                 row = {h: '' for h in headers}
-                row['county'] = county
-                row['city'] = city
+                row['entity'] = entity
             
             # Clear status columns for this run
             row['download_status'] = ''
@@ -1716,7 +1753,8 @@ def _update_csv_status(layer, entity, stage, status, error_msg='', data_date='',
     script_dir = os.path.dirname(os.path.abspath(__file__))
     summary_filepath = os.path.join(script_dir, summary_filename)
     
-    headers = ['county', 'city', 'data_date', 'download_status', 'processing_status', 
+    # Use new format headers
+    headers = ['entity', 'data_date', 'download_status', 'processing_status', 
                'upload_status', 'error_message', 'timestamp']
     
     try:
@@ -1725,12 +1763,38 @@ def _update_csv_status(layer, entity, stage, status, error_msg='', data_date='',
         if os.path.exists(summary_filepath):
             with open(summary_filepath, 'r', newline='') as csvfile:
                 reader = csv.DictReader(csvfile)
+                # Check if this is old format (has county/city columns)
+                old_format = 'county' in reader.fieldnames
+                
                 for row in reader:
                     # Skip summary rows
-                    if row.get('county', '').startswith('LAST UPDATED:'):
-                        continue
-                    entity_key = f"{row.get('county', '')}_{row.get('city', '')}"
-                    existing_data[entity_key] = row
+                    if old_format:
+                        if row.get('county', '').startswith('LAST UPDATED:'):
+                            continue
+                    else:
+                        if row.get('entity', '').startswith('LAST UPDATED:'):
+                            continue
+                    
+                    if old_format:
+                        # Convert old format to new format
+                        county = row.get('county', '')
+                        city = row.get('city', '')
+                        entity_key = f"{county}_{city}"
+                        # Create new format row
+                        new_row = {
+                            'entity': entity_key,
+                            'data_date': row.get('data_date', ''),
+                            'download_status': row.get('download_status', ''),
+                            'processing_status': row.get('processing_status', ''),
+                            'upload_status': row.get('upload_status', ''),
+                            'error_message': row.get('error_message', ''),
+                            'timestamp': row.get('timestamp', '')
+                        }
+                        existing_data[entity_key] = new_row
+                    else:
+                        # Already new format
+                        entity_key = row.get('entity', '')
+                        existing_data[entity_key] = row
         
         # Update the specific entity
         # Get entity components from provided dict or database
@@ -1747,11 +1811,8 @@ def _update_csv_status(layer, entity, stage, status, error_msg='', data_date='',
         county = components['county']
         city = components['city']
         
-        # For special entities with NULL county/city, use the entity itself as key
-        if county is None and city is None:
-            entity_key = entity
-        else:
-            entity_key = f"{county}_{city}"
+        # Use entity as the key
+        entity_key = entity
         
         if entity_key in existing_data:
             row = existing_data[entity_key]
@@ -1795,8 +1856,13 @@ def _update_csv_status(layer, entity, stage, status, error_msg='', data_date='',
 
 def _write_csv_file(filepath, headers, data_dict):
     """Write CSV file with sorted data."""
-    # Sort data by county, then city (handle None values for county-level layers)
-    sorted_data = sorted(data_dict.values(), key=lambda x: (x['county'], x['city'] or ''))
+    # Handle both old format (county/city) and new format (entity)
+    if 'entity' in headers:
+        # New format: sort by entity
+        sorted_data = sorted(data_dict.values(), key=lambda x: x.get('entity', ''))
+    else:
+        # Old format: sort by county, then city
+        sorted_data = sorted(data_dict.values(), key=lambda x: (x.get('county', ''), x.get('city', '') or ''))
     
     with open(filepath, 'w', newline='') as csvfile:
         writer = csv.DictWriter(csvfile, fieldnames=headers)
