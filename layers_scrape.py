@@ -1527,10 +1527,8 @@ def generate_summary(results, entity_components: dict = None):
             else:
                 components = entity_components[entity]
             
-            state = components['state']
-            county = components['county']
-            city = components['city']
-            entity_key = f"{county}_{city}"
+            # Use the original entity name as the key
+            entity_key = entity
             
             # Get existing row or create new one
             if entity_key in existing_data:
@@ -1708,27 +1706,15 @@ def _initialize_csv_status(layer, queue, entity_components: dict = None):
                         existing_data[entity_key] = row
         
         # Initialize status columns for entities in queue
-        for entity in queue:
-            # Get entity components from provided dict or database
-            if entity_components is None or entity not in entity_components:
-                # Fallback to database query (should be rare)
-                all_entities_dict = get_all_entities_from_db()
-                if entity not in all_entities_dict:
-                    raise ValueError(f"Entity '{entity}' not found in database. Cannot determine components.")
-                components = all_entities_dict[entity]
-            else:
-                components = entity_components[entity]
-            
-            state = components['state']
-            county = components['county']
-            city = components['city']
-            entity_key = f"{county}_{city}"
+        for entity_name in queue:
+            # Use the original entity name as the key
+            entity_key = entity_name
             
             if entity_key in existing_data:
                 row = existing_data[entity_key]
             else:
                 row = {h: '' for h in headers}
-                row['entity'] = entity
+                row['entity'] = entity_name
             
             # Clear status columns for this run
             row['download_status'] = ''
@@ -1796,22 +1782,7 @@ def _update_csv_status(layer, entity, stage, status, error_msg='', data_date='',
                         entity_key = row.get('entity', '')
                         existing_data[entity_key] = row
         
-        # Update the specific entity
-        # Get entity components from provided dict or database
-        if entity_components is None or entity not in entity_components:
-            # Fallback to database query (should be rare)
-            all_entities_dict = get_all_entities_from_db()
-            if entity not in all_entities_dict:
-                raise ValueError(f"Entity '{entity}' not found in database. Cannot determine components.")
-            components = all_entities_dict[entity]
-        else:
-            components = entity_components[entity]
-        
-        state = components['state']
-        county = components['county']
-        city = components['city']
-        
-        # Use entity as the key
+        # Use the original entity name as the key
         entity_key = entity
         
         if entity_key in existing_data:
