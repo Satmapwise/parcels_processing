@@ -2016,6 +2016,11 @@ def main():
         for layer, entities in entities_by_layer.items():
             logging.info(f"Processing layer '{layer}' with {len(entities)} entities")
             layer_results = process_layer(layer, entities, entity_components)
+            
+            # Generate summary for this layer's results
+            if layer_results:
+                generate_summary(layer_results, entity_components)
+            
             results.extend(layer_results)
 
     except (ValueError, NotImplementedError) as e:
@@ -2025,8 +2030,6 @@ def main():
         logging.critical(f"An unexpected error occurred: {e}", exc_info=True)
         sys.exit(1)
     finally:
-        # Generate summary
-        generate_summary(results, entity_components)
         end_time = datetime.now()
         logging.info(f"Script finished at {end_time.strftime('%Y-%m-%d %H:%M:%S')}. Total runtime: {end_time - CONFIG.start_time}")
 
