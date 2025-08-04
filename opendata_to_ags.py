@@ -189,7 +189,8 @@ class OpendataToAGS:
                         new_ags_url = row.get('new_ags_url', '').strip()
                         ags_valid = row.get('ags_valid', '').strip()
                         
-                        if old_url and new_ags_url != 'NO_AGS_FOUND':
+                        if old_url:
+                            # Cache ALL results, including failed extractions
                             processed_urls[old_url] = {
                                 'new_ags_url': new_ags_url,
                                 'ags_valid': ags_valid,
@@ -494,10 +495,17 @@ class OpendataToAGS:
             if is_opendata_portal(old_url):
                 opendata_count += 1
                 
-                # Check if URL was already processed successfully
+                # Check if URL was already processed (successfully or failed)
                 if old_url in self.processed_urls:
-                    self.logger.debug(f"⏭️  Skipping already-processed URL for {entity}: {old_url}")
                     processed_data = self.processed_urls[old_url]
+                    new_ags_url = processed_data['new_ags_url']
+                    
+                    # Skip if it was a failed extraction (don't retry)
+                    if new_ags_url in ['NO_AGS_FOUND', 'URL_NOT_ACCESSIBLE', 'NOT_OPENDATA']:
+                        self.logger.debug(f"⏭️  Skipping previously failed URL for {entity}: {old_url} ({new_ags_url})")
+                    else:
+                        self.logger.debug(f"⏭️  Skipping already-processed URL for {entity}: {old_url}")
+                    
                     csv_rows.append([
                         entity, og_title, old_url, processed_data['new_ags_url'],
                         processed_data['relevance_score'], processed_data['ags_valid'], 
@@ -552,7 +560,7 @@ class OpendataToAGS:
                         entity, og_title, old_url, "NO_AGS_FOUND", "0.00", "NO", "NO_EXTRACTION"
                     ])
             else:
-                # Not an opendata portal - categorize the type
+                # Skip non-opendata URLs entirely - don't add them to CSV
                 if self.cfg.debug:
                     if old_url.lower().endswith('.zip') or '.zip?' in old_url.lower():
                         reason = "DIRECT_ZIP_DOWNLOAD"
@@ -561,9 +569,7 @@ class OpendataToAGS:
                     else:
                         reason = "REGULAR_URL"
                     
-                    csv_rows.append([
-                        entity, og_title, old_url, "NOT_OPENDATA", "0.00", "N/A", reason
-                    ])
+                    self.logger.debug(f"⏭️  Skipping non-opendata URL for {entity}: {old_url} ({reason})")
         
         # Write CSV report
         if self.cfg.generate_csv:
