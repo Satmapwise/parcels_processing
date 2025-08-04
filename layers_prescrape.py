@@ -2036,6 +2036,12 @@ class LayersPrescrape:
         
         current_distrib = self.distrib_comments_updates[entity]
         
+        # Check if this comment type already exists in the distrib_comments
+        comment_header = f"{comment_type}:"
+        if comment_header in current_distrib:
+            # Comment type already exists - don't add duplicate
+            return
+        
         # Add the new preserved comment
         if current_distrib and current_distrib.strip():
             # Existing content - add newline separator
