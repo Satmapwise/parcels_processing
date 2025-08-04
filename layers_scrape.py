@@ -501,10 +501,17 @@ def _parse_county_city_tokens(tokens: list[str], entity: str) -> tuple[str, str]
     city = "_".join(tokens[1:])
     return (county, city)
 
-def resolve_work_dir(layer: str, entity: str):
+def resolve_work_dir(layer: str, entity: str, entity_components: dict = None):
     """Return work_dir for layer/entity."""
-    # Parse entity to get layer, state, county, city
-    parsed_layer, state, county, city = split_entity_v2(entity)
+    # Get entity components from database if not provided
+    if entity_components is None or entity not in entity_components:
+        # Fallback to old parsing for backward compatibility
+        parsed_layer, state, county, city = split_entity_v2(entity)
+    else:
+        components = entity_components[entity]
+        state = components['state']
+        county = components['county'] 
+        city = components['city']
     
     # Handle special business logic cases
     if layer == 'zoning' and state == 'fl' and county == 'duval' and city == 'unified':
@@ -689,7 +696,17 @@ def _get_existing_data_date(layer: str, entity: str) -> str:
         return None
     
     try:
-        parsed_layer, state, county, city = split_entity_v2(entity)
+        # Get entity components from database
+        all_entities_dict = get_all_entities_from_db()
+        if entity in all_entities_dict:
+            components = all_entities_dict[entity]
+            state = components['state']
+            county = components['county']
+            city = components['city']
+        else:
+            # Fallback to old parsing for backward compatibility
+            parsed_layer, state, county, city = split_entity_v2(entity)
+        
         # For special entities with NULL county/city, use the entity itself as key
         if county is None and city is None:
             entity_key = entity
@@ -1558,7 +1575,7 @@ def process_layer(layer, queue, entity_components):
             city = components['city']
             
             # Setup
-            work_dir = resolve_work_dir(layer, entity)
+            work_dir = resolve_work_dir(layer, entity, entity_components)
             entity_logger = setup_entity_logger(layer, entity, work_dir)
             
             logging.info(f"--- Processing entity: {entity} ---")
@@ -1694,7 +1711,16 @@ def generate_summary(results):
         # Process results and update data
         for result in results:
             entity = result['entity']
-            parsed_layer, state, county, city = split_entity_v2(entity)
+            # Get entity components from database
+            all_entities_dict = get_all_entities_from_db()
+            if entity in all_entities_dict:
+                components = all_entities_dict[entity]
+                state = components['state']
+                county = components['county']
+                city = components['city']
+            else:
+                # Fallback to old parsing for backward compatibility
+                parsed_layer, state, county, city = split_entity_v2(entity)
             entity_key = f"{county}_{city}"
             
             # Get existing row or create new one
@@ -1863,7 +1889,16 @@ def _initialize_csv_status(layer, queue):
         
         # Initialize status columns for entities in queue
         for entity in queue:
-            parsed_layer, state, county, city = split_entity_v2(entity)
+            # Get entity components from database
+            all_entities_dict = get_all_entities_from_db()
+            if entity in all_entities_dict:
+                components = all_entities_dict[entity]
+                state = components['state']
+                county = components['county']
+                city = components['city']
+            else:
+                # Fallback to old parsing for backward compatibility
+                parsed_layer, state, county, city = split_entity_v2(entity)
             entity_key = f"{county}_{city}"
             
             if entity_key in existing_data:
@@ -1913,7 +1948,17 @@ def _update_csv_status(layer, entity, stage, status, error_msg='', data_date='')
                     existing_data[entity_key] = row
         
         # Update the specific entity
-        parsed_layer, state, county, city = split_entity_v2(entity)
+        # Get entity components from database
+        all_entities_dict = get_all_entities_from_db()
+        if entity in all_entities_dict:
+            components = all_entities_dict[entity]
+            state = components['state']
+            county = components['county']
+            city = components['city']
+        else:
+            # Fallback to old parsing for backward compatibility
+            parsed_layer, state, county, city = split_entity_v2(entity)
+        
         # For special entities with NULL county/city, use the entity itself as key
         if county is None and city is None:
             entity_key = entity
@@ -2005,6 +2050,8 @@ def get_all_entities_from_db() -> dict[str, dict]:
         )
         cur.execute(sql)
         rows = cur.fetchall()
+        
+        logging.debug(f"Retrieved {len(rows)} entities from database")
         
         for row in rows:
             layer = row['layer_subgroup']
