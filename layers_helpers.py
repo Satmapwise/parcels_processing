@@ -41,6 +41,10 @@ load_environment()
 # Database connection
 PG_CONNECTION = os.getenv("PG_CONNECTION")
 
+# Base directory configuration
+DATA_ROOT = os.getenv("DATA_ROOT", "/srv/datascrub")
+TOOLS_DIR = os.getenv("TOOLS_DIR", "/srv/tools/python/lib")
+
 
 # ---------------------------------------------------------------------------
 # Constants and Data Structures
@@ -172,12 +176,14 @@ LAYER_CONFIGS = {
         'layer_group': 'flu_zoning',
         'external_frmt': 'Zoning',
         'level': 'state_county_city',
+        'processing_script': 'update_zoning2.py',
     },
     'flu': {
         'category': '08_Land_Use_and_Zoning', 
         'layer_group': 'flu_zoning',
         'external_frmt': 'Future Land Use',
         'level': 'state_county_city',
+        'processing_script': 'update_flu.py',
     },
     'fema_flood': {
         'category': '12_Hazards',
@@ -185,36 +191,42 @@ LAYER_CONFIGS = {
         'external_frmt': 'FEMA Flood Zones',
         'level': 'national',
         'entity': 'fema_flood',
+        'processing_script': None,  # No processing script needed
     },
     'parcel_geo': {
         'category': '05_Parcels',
         'layer_group': 'parcels',
         'external_frmt': 'Parcel Geometry',
         'level': 'state_county',
+        'processing_script': 'load_parcel_geometry.py',
     },
     'streets': {
         'category': '03_Transportation',
         'layer_group': 'base_map_overlay',
         'external_frmt': 'Streets',
         'level': 'state_county',
+        'processing_script': None,  # No processing script needed
     },
     'address_points': {
         'category': '05_Parcels',
         'layer_group': 'parcels',
         'external_frmt': 'Address Points',
         'level': 'state_county',
+        'processing_script': None,  # No processing script needed
     },
     'subdivisions': {
         'category': '05_Parcels',
         'layer_group': 'parcels',
         'external_frmt': 'Subdivisions',
         'level': 'state_county',
+        'processing_script': None,  # No processing script needed
     },
     'buildings': {
         'category': '05_Parcels',
         'layer_group': 'parcels',
         'external_frmt': 'Building Footprints',
         'level': 'state_county',
+        'processing_script': None,  # No processing script needed
     },
     'traffic_counts': {
         'category': '03_Transportation',
@@ -222,6 +234,7 @@ LAYER_CONFIGS = {
         'external_frmt': 'Traffic Counts FDOT',
         'level': 'state',
         'entity': 'traffic_counts_fl',
+        'processing_script': None,  # No processing script needed
     },
     'sunbiz': {
         'category': '21_Misc',
@@ -229,6 +242,7 @@ LAYER_CONFIGS = {
         'external_frmt': 'Sunbiz',
         'level': 'state',
         'entity': 'sunbiz_fl',
+        'processing_script': None,  # No processing script needed
     }
 }
 
@@ -528,8 +542,8 @@ def resolve_layer_directory(layer: str, state: str = None, county: str = None, c
         }
         state_name = state_mapping.get(state.lower(), state.lower())
     
-    # Build standardized path: /srv/datascrub/<category>/<layer_subgroup>/<state>/<county>/<city>
-    path_parts = ['/srv/datascrub', category, layer_subgroup]
+    # Build standardized path: <DATA_ROOT>/<category>/<layer_subgroup>/<state>/<county>/<city>
+    path_parts = [DATA_ROOT, category, layer_subgroup]
     
     # Add additional parts based on what's provided
     if state_name:

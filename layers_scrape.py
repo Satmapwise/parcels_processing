@@ -213,6 +213,7 @@ from layers_helpers import (
     SKIP_ENTITIES, FULL_PIPELINE_FORMATS, METADATA_ONLY_FORMATS,
     format_name, parse_entity_pattern, safe_catalog_val, 
     resolve_layer_name, resolve_layer_directory,
+    DATA_ROOT, TOOLS_DIR,
     # Backwards compatibility aliases
     counties, layers
 )
@@ -869,7 +870,7 @@ def layer_download(layer: str, entity: str, state: str, county: str, city: str, 
             raise DownloadError('Missing table_name for AGS download', layer, entity)
         command = [
             'python3',
-            os.path.join(os.path.dirname(__file__), 'download_tools', 'ags_extract_data2.py'),
+            os.path.join(TOOLS_DIR, 'ags_extract_data2.py'),
             table_name,
             'delete',
             '15'
@@ -882,7 +883,7 @@ def layer_download(layer: str, entity: str, state: str, county: str, city: str, 
             raise DownloadError('Missing resource/url for download_data.py', layer, entity)
         command = [
             'python3',
-            os.path.join(os.path.dirname(__file__), 'download_tools', 'download_data.py'),
+            os.path.join(TOOLS_DIR, 'download_data.py'),
             resource
         ]
         _debug_main(f"[DOWNLOAD] Running file download for {layer}/{entity} (format: {fmt}, url: {resource})", logger)
@@ -1061,7 +1062,7 @@ def layer_metadata(layer: str, entity: str, state: str, county: str, city: str, 
             logger.warning("No shapefile found to process for metadata extraction")
             return {}
 
-def layer_processing(layer: str, entity: str, state: str, county: str, city: str, catalog_row: dict, work_dir: str, logger):
+def layer_processing(layer: str, entity: str, state: str, county: str, city: str, catalog_row: dict, work_dir: str, logger, metadata: dict):
     """Handle the processing phase for an entity."""
     if not CONFIG.run_processing:
         logger.debug(f"[PROCESSING] Skipping processing for {layer}/{entity} (disabled in config)")
@@ -1088,23 +1089,30 @@ def layer_processing(layer: str, entity: str, state: str, county: str, city: str
             command = cmd_str.split() if isinstance(cmd_str, str) else cmd_str
             _run_command(command, work_dir, logger)
 
-    # 2. Run layer-specific update script (dynamic generation)
-    proc_dir = os.path.join(os.path.dirname(__file__), 'processing_tools')
+    # 2. Run layer-specific update script (from config)
+    layer_config = LAYER_CONFIGS.get(layer, {})
+    script_name = layer_config.get('processing_script')
     
-    if layer == 'zoning' and os.path.exists(os.path.join(proc_dir, 'update_zoning2.py')):
-        command = ['python3', os.path.join(proc_dir, 'update_zoning2.py'), county, city]
-        script_name = 'update_zoning2.py'
+    if script_name is None:
+        reason = f"No processing script configured for layer '{layer}'"
+        logger.info(f"[PROCESSING] Skipping processing for {layer}/{entity}: {reason}")
+        _update_csv_status(layer, entity, 'processing', 'SKIPPED', error_msg=reason)
+        return
+    
+    script_path = os.path.join(TOOLS_DIR, script_name)
+    if not os.path.exists(script_path):
+        reason = f"Processing script '{script_name}' not found for layer '{layer}'"
+        logger.info(f"[PROCESSING] Skipping processing for {layer}/{entity}: {reason}")
+        _update_csv_status(layer, entity, 'processing', 'SKIPPED', error_msg=reason)
+        return
+    
+    # Build command based on script type
+    if script_name == 'load_parcel_geometry.py':
+        command = ['python3', script_path, state, county, 'current', metadata.get("data_date", "")]
     else:
-        update_script = os.path.join(proc_dir, f'update_{layer}.py')
-        if os.path.exists(update_script):
-            command = ['python3', update_script, county, city]
-            script_name = f'update_{layer}.py'
-        else:
-            reason = f"No update script found for layer '{layer}'"
-            logger.info(f"[PROCESSING] Skipping processing for {layer}/{entity}: {reason}")
-            _update_csv_status(layer, entity, 'processing', 'SKIPPED', error_msg=reason)
-            return
-
+        # Default command for other scripts
+        command = ['python3', script_path, county, city]
+    
     _debug_main(f"[PROCESSING] Running update script: {script_name}", logger)
     logger.debug(f"Running update script for {layer}/{entity}")
     try:
@@ -1585,7 +1593,7 @@ def process_layer(layer, queue):
 
             # Stage 3: Processing
             if should_run_processing(catalog_row):
-                layer_processing(layer, entity, state, county, city, catalog_row, work_dir, entity_logger)
+                layer_processing(layer, entity, state, county, city, catalog_row, work_dir, entity_logger, metadata)
 
             # Stage 4: Upload
             layer_upload(layer, entity, state, county, city, catalog_row, work_dir, entity_logger, metadata, raw_zip_name)
