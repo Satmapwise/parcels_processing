@@ -717,7 +717,6 @@ def _fetch_entities_from_db(layer: str) -> list[str]:
         sql = (
             "SELECT state, county, city FROM m_gis_data_catalog_main "
             "WHERE status IS DISTINCT FROM 'DELETE' "
-            "AND status IS DISTINCT FROM 'NO' "
             "AND lower(layer_subgroup) = %s"
         )
         cur.execute(sql, (layer.lower(),))
@@ -742,7 +741,7 @@ def _fetch_entities_by_pattern(pattern: str) -> list[str]:
     cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
     try:
         # Build dynamic SQL based on parsed components
-        sql_parts = ["SELECT state, county, city FROM m_gis_data_catalog_main WHERE status IS DISTINCT FROM 'DELETE' AND status IS DISTINCT FROM 'NO'"]
+        sql_parts = ["SELECT state, county, city FROM m_gis_data_catalog_main WHERE status IS DISTINCT FROM 'DELETE'"]
         params = []
         
         if layer:
