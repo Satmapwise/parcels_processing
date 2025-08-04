@@ -31,22 +31,71 @@ from layers_prescrape import (
 # Import our clean Selenium-based extraction
 from selenium_opendata import extract_arcgis_url_from_opendata
 
-# Simple opendata portal detection
+# Enhanced opendata portal detection
 def is_opendata_portal(url):
-    """Simple check if URL is an opendata portal (not a direct ArcGIS service or direct download)."""
+    """Enhanced check if URL is an opendata portal (not a direct ArcGIS service)."""
+    if not url:
+        return False
+    
+    url_lower = url.lower()
+    
     # First, exclude direct ArcGIS service URLs
-    if any(pattern in url.lower() for pattern in ['rest/services', 'mapserver', 'featureserver']):
+    if any(pattern in url_lower for pattern in ['rest/services', 'mapserver', 'featureserver']):
         return False
     
-    # Skip direct downloads (.zip files)
-    if url.lower().endswith('.zip') or '.zip?' in url.lower():
-        return False
-    
-    # Then check for opendata portal indicators
+    # Enhanced opendata portal indicators
     opendata_indicators = [
-        'hub.arcgis.com', 'opendata', 'data.', 'geoportal', 'portal', 'datahub', 'open-data'
+        # ArcGIS Hub patterns
+        'hub.arcgis.com',
+        'opendata.arcgis.com',
+        
+        # County/city specific ArcGIS opendata patterns
+        'geodata-',
+        'data-',
+        'public-',
+        'data1-',
+        'data2-',
+        'data3-',
+        
+        # General opendata patterns
+        'opendata',
+        'data.',
+        'geoportal',
+        'datahub',
+        'open-data',
+        'gis-open',
+        
+        # Portal patterns (but exclude ArcGIS Portal URLs)
+        'portal',  # Note: This may catch some ArcGIS Portal URLs, but they're often opendata
+        
+        # Florida-specific patterns
+        'floridagio.gov',
+        'data.florida.gov',
+        'gis.doh.state.fl.us',
+        
+        # County/city specific patterns
+        'miamidade.gov/gis',
+        'broward.org/gis',
+        'pinellascounty.org/gis',
+        'data.cityof',
+        'gis.county',
+        'opendata.county'
     ]
-    return any(indicator in url.lower() for indicator in opendata_indicators)
+    
+    # Check for opendata indicators
+    is_opendata = any(indicator in url_lower for indicator in opendata_indicators)
+    
+    # Exclude ArcGIS Portal URLs (they're not opendata portals)
+    if 'portal' in url_lower and ('arcgis.com/portal' in url_lower or 'maps.' in url_lower and 'portal' in url_lower):
+        return False
+    
+    # Special case: Allow opendata URLs that contain .zip if they're from opendata portals
+    if is_opendata and ('.zip' in url_lower or '.zip?' in url_lower):
+        # Only exclude if it's a direct download from a non-opendata source
+        # Most opendata portals that serve zip files are still valid opendata URLs
+        return True
+    
+    return is_opendata
 
 # URL validation function
 def is_url_accessible(url, timeout=10):

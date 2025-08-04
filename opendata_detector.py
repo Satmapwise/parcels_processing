@@ -16,7 +16,7 @@ from typing import List, Tuple, Optional
 import json
 import html.parser
 
-# Common opendata portal URL patterns
+# Enhanced opendata portal URL patterns
 OPENDATA_PATTERNS = [
     # Major opendata platforms
     'data.gov',
@@ -29,13 +29,23 @@ OPENDATA_PATTERNS = [
     'gis-open',
     'open-data',
     'geoportal',
+    'portal',
+    'datahub',
+    
+    # County/city specific ArcGIS opendata patterns
+    'geodata-',
+    'data-',
+    'public-',
+    'data1-',
+    'data2-',
+    'data3-',
     
     # Florida-specific patterns
     'floridagio.gov',
     'data.florida.gov',
     'gis.doh.state.fl.us',
     
-    # County/city specific patterns (examples)
+    # County/city specific patterns
     'miamidade.gov/gis',
     'broward.org/gis',
     'pinellascounty.org/gis',
@@ -67,7 +77,18 @@ def is_opendata_portal(url: str) -> bool:
     url_lower = url.lower()
     
     # Check against known opendata patterns
-    return any(pattern in url_lower for pattern in OPENDATA_PATTERNS)
+    is_opendata = any(pattern in url_lower for pattern in OPENDATA_PATTERNS)
+    
+    # Exclude ArcGIS Portal URLs (they're not opendata portals)
+    if 'portal' in url_lower and ('arcgis.com/portal' in url_lower or 'maps.' in url_lower and 'portal' in url_lower):
+        return False
+    
+    # Special case: Allow opendata URLs that contain .zip if they're from opendata portals
+    if is_opendata and ('.zip' in url_lower or '.zip?' in url_lower):
+        # Most opendata portals that serve zip files are still valid opendata URLs
+        return True
+    
+    return is_opendata
 
 def is_arcgis_service_url(url: str) -> bool:
     """
@@ -632,11 +653,9 @@ def extract_via_requests_method(url, layer_keywords):
             import zlib
             content = zlib.decompress(content)
         elif content_encoding == 'br':
-            try:
-                import brotli
-                content = brotli.decompress(content)
-            except ImportError:
-                print("Warning: brotli compression detected but brotli module not available")
+            # Brotli compression - skip for now since we don't want to add dependencies
+            print("Warning: brotli compression detected but skipping decompression to avoid dependencies")
+            # Continue with compressed content - most HTML parsing will still work
         
         # Handle different encodings
         try:
