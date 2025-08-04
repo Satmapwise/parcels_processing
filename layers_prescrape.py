@@ -2217,27 +2217,31 @@ def extract_layers_from_patterns(include_patterns: list[str] = None, exclude_pat
             # First check if the pattern itself is a layer name
             if pattern in LAYER_CONFIGS:
                 layers.add(pattern)
-            elif '_' in pattern:
-                # Entity format is layer_state_county_city, so layer is first component
-                # Try to find the longest matching layer name
-                found_layer = None
-                for layer_name in LAYER_CONFIGS.keys():
-                    if pattern.startswith(layer_name + '_'):
-                        found_layer = layer_name
-                        break
-                
-                if found_layer:
-                    layers.add(found_layer)
             else:
-                # Check if pattern is a wildcard that matches any layer name
+                # Check if pattern is a wildcard that matches any layer name FIRST
                 # Support various wildcard patterns:
                 # - * (any characters)
                 # - ? (single character)
                 # - [abc] (character class)
                 # - [!abc] (negated character class)
+                wildcard_match = False
                 for layer_name in LAYER_CONFIGS.keys():
                     if fnmatch.fnmatch(layer_name, pattern):
                         layers.add(layer_name)
+                        wildcard_match = True
+                
+                # If no wildcard match and pattern contains '_', try entity pattern parsing
+                if not wildcard_match and '_' in pattern:
+                    # Entity format is layer_state_county_city, so layer is first component
+                    # Try to find the longest matching layer name
+                    found_layer = None
+                    for layer_name in LAYER_CONFIGS.keys():
+                        if pattern.startswith(layer_name + '_'):
+                            found_layer = layer_name
+                            break
+                    
+                    if found_layer:
+                        layers.add(found_layer)
     else:
         layers = LAYER_CONFIGS.keys()
     
