@@ -328,190 +328,23 @@ def setup_entity_logger(layer, entity, work_dir):
 
 
 
-def split_entity_v2(entity: str) -> tuple[str, str, str, str]:
-    """Split entity into (layer, state, county, city).
-    
-    Handles multiple entity formats:
-    - layer_state_county_city (e.g., zoning_fl_alachua_gainesville)
-    - layer_state (e.g., fdot_tc_fl)  
-    - layer (e.g., flood_zones)
-    """
-    tokens = entity.split("_")
-    if len(tokens) < 1:
-        raise ValueError(f"Invalid entity format: {entity}")
-    
-    # Extract layer (handle multi-word layer names)
-    layer_names = ['zoning', 'flu', 'flood_zones', 'parcel_geo', 'streets', 'addr_pnts', 'subdiv', 'bldg_ftpr', 'fdot_tc', 'sunbiz']
-    
-    # Try to find the longest matching layer name
-    layer = None
-    layer_tokens_used = 0
-    
-    for layer_name in layer_names:
-        if entity.startswith(layer_name + '_'):
-            layer = layer_name
-            layer_tokens_used = len(layer_name.split('_'))
-            break
-    
-    # Fallback to first token if no multi-word layer found
-    if layer is None:
-        layer = tokens[0]
-        layer_tokens_used = 1
-    
-    if len(tokens) == layer_tokens_used:
-        # Single component: just layer (e.g., "flood_zones")
-        return (layer, None, None, None)
-    
-    elif len(tokens) == layer_tokens_used + 1:
-        # Two components after layer: check if second is a state
-        second_token = tokens[layer_tokens_used].lower()
-        if second_token in VALID_STATES:
-            # layer_state format (e.g., "fdot_tc_fl")
-            return (layer, second_token, None, None)
-        else:
-            # Legacy county_city format - infer state from county
-            county_city_tokens = tokens[layer_tokens_used:]
-            county, city = _parse_county_city_tokens(county_city_tokens, entity)
-            if county in FL_COUNTIES:
-                state = 'fl'
-            else:
-                raise ValueError(f"County '{county}' not found in FL_COUNTIES. Cannot determine state for entity: {entity}")
-            return (layer, state, county, city)
-    
-    else:  # len(tokens) >= layer_tokens_used + 2
-        # Three or more components after layer: check if second is a state
-        second_token = tokens[layer_tokens_used].lower()
-        if second_token in VALID_STATES:
-            # Check if this is a county-level layer (3-part) or city-level layer (4-part)
-            from layers_helpers import LAYER_CONFIGS
-            layer_config = LAYER_CONFIGS.get(layer, {})
-            layer_level = layer_config.get('level', 'state_county_city')  # Default to 4-part
-            
-            state = second_token
-            
-            if layer_level == 'state_county':
-                # County-level layer: layer_state_county format
-                if len(tokens) >= layer_tokens_used + 2:
-                    county = tokens[layer_tokens_used + 1]
-                    city = None
-                    return (layer, state, county, city)
-                else:
-                    raise ValueError(f"Invalid entity format for county-level layer: {entity}")
-            else:
-                # City-level layer: layer_state_county_city format
-                county_city_tokens = tokens[layer_tokens_used + 1:]
-                county, city = _parse_county_city_tokens(county_city_tokens, entity)
-                return (layer, state, county, city)
-        else:
-            # Legacy county_city format - all remaining tokens are county_city
-            county_city_tokens = tokens[layer_tokens_used:]
-            county, city = _parse_county_city_tokens(county_city_tokens, entity)
-            if county in FL_COUNTIES:
-                state = 'fl'
-            else:
-                raise ValueError(f"County '{county}' not found in FL_COUNTIES. Cannot determine state for entity: {entity}")
-            return (layer, state, county, city)
-
-def parse_entity_pattern(pattern: str) -> tuple[str | None, str | None, str | None, str | None]:
-    """Parse an entity pattern into (layer, state, county, city) components.
-    
-    Strategy:
-    1. Check if pattern starts with any known layer name - extract and remove it
-    2. Check if remaining starts with any valid state - extract and remove it  
-    3. Check if remaining starts with any county from that state - extract and remove it
-    4. Whatever remains is the city
-    
-    Returns tuple of (layer, state, county, city) where None means not found/parsed.
-    """
-    remaining = pattern.strip()
-    if not remaining:
-        return (None, None, None, None)
-    
-    # Step 1: Extract layer
-    layer = None
-    layer_names = ['zoning', 'flu', 'flood_zones', 'parcel_geo', 'streets', 'addr_pnts', 'subdiv', 'bldg_ftpr', 'fdot_tc', 'sunbiz']
-    
-    for layer_name in layer_names:
-        if remaining.startswith(layer_name):
-            layer = layer_name
-            remaining = remaining[len(layer_name):].lstrip('_')
-            break
-    
-    if not remaining:
-        return (layer, None, None, None)
-    
-    # Step 2: Extract state
-    state = None
-    for state_abbrev in VALID_STATES.keys():
-        if remaining == state_abbrev or remaining.startswith(state_abbrev + '_'):
-            state = state_abbrev
-            remaining = remaining[len(state_abbrev):].lstrip('_')
-            break
-    
-    if not remaining:
-        return (layer, state, None, None)
-    
-    # Step 3: Extract county 
-    county = None
-    # Check FL counties regardless of state (we can infer state from county)
-    for county_name in FL_COUNTIES:
-        if remaining.startswith(county_name):
-            county = county_name
-            # If no state was identified yet, infer it from the county
-            if state is None:
-                state = 'fl'
-            remaining = remaining[len(county_name):].lstrip('_')
-            break
-    
-    if not remaining:
-        return (layer, state, county, None)
-    
-    # Step 4: Whatever remains is the city
-    city = remaining if remaining else None
-    
-    return (layer, state, county, city)
-
-def _parse_county_city_tokens(tokens: list[str], entity: str) -> tuple[str, str]:
-    """Parse county_city tokens into (county, city)."""
-    if not tokens:
-        raise ValueError(f"No county/city tokens to parse in entity: {entity}")
-    
-    # Special suffixes that indicate city type
-    suffixes = {"unincorporated", "incorporated", "unified", "countywide"}
-    
-    if tokens[-1] in suffixes:
-        county = "_".join(tokens[:-1])
-        city = tokens[-1]
-        return (county, city)
-    
-    # Try to recognize multi-word counties by longest-prefix match
-    for i in range(len(tokens), 1, -1):  # from longest possible down to 2 tokens
-        candidate_county = "_".join(tokens[:i])
-        if candidate_county in FL_COUNTIES:
-            county = candidate_county
-            city = "_".join(tokens[i:])
-            if not city:  # edge case – entity only county
-                raise ValueError(f"Could not determine city part in entity: {entity}")
-            return (county, city)
-    
-    # Fallback to simple split if no FL county match
-    if len(tokens) < 2:
-        raise ValueError(f"Could not parse county_city from entity: {entity}")
-    county = tokens[0]
-    city = "_".join(tokens[1:])
-    return (county, city)
+# Old entity parsing functions removed - now using database components exclusively
 
 def resolve_work_dir(layer: str, entity: str, entity_components: dict = None):
     """Return work_dir for layer/entity."""
     # Get entity components from database if not provided
     if entity_components is None or entity not in entity_components:
-        # Fallback to old parsing for backward compatibility
-        parsed_layer, state, county, city = split_entity_v2(entity)
+        # Query database for entity components
+        all_entities_dict = get_all_entities_from_db()
+        if entity not in all_entities_dict:
+            raise ValueError(f"Entity '{entity}' not found in database. Cannot determine components.")
+        components = all_entities_dict[entity]
     else:
         components = entity_components[entity]
-        state = components['state']
-        county = components['county'] 
-        city = components['city']
+    
+    state = components['state']
+    county = components['county'] 
+    city = components['city']
     
     # Handle special business logic cases
     if layer == 'zoning' and state == 'fl' and county == 'duval' and city == 'unified':
@@ -698,14 +531,12 @@ def _get_existing_data_date(layer: str, entity: str) -> str:
     try:
         # Get entity components from database
         all_entities_dict = get_all_entities_from_db()
-        if entity in all_entities_dict:
-            components = all_entities_dict[entity]
-            state = components['state']
-            county = components['county']
-            city = components['city']
-        else:
-            # Fallback to old parsing for backward compatibility
-            parsed_layer, state, county, city = split_entity_v2(entity)
+        if entity not in all_entities_dict:
+            raise ValueError(f"Entity '{entity}' not found in database. Cannot determine components.")
+        components = all_entities_dict[entity]
+        state = components['state']
+        county = components['county']
+        city = components['city']
         
         # For special entities with NULL county/city, use the entity itself as key
         if county is None and city is None:
@@ -748,60 +579,7 @@ def _fetch_entities_from_db(layer: str) -> list[str]:
         conn.close()
     return list(dict.fromkeys(entities))  # de-dupe preserving order
 
-def _fetch_entities_by_pattern(pattern: str) -> list[str]:
-    """Return list of entity strings matching the given pattern from database."""
-    # Parse the pattern to get components
-    layer, state, county, city = parse_entity_pattern(pattern)
-    
-    entities = []
-    conn = psycopg2.connect(PG_CONNECTION)
-    cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
-    try:
-        # Build dynamic SQL based on parsed components
-        sql_parts = ["SELECT state, county, city FROM m_gis_data_catalog_main WHERE status IS DISTINCT FROM 'DELETE'"]
-        params = []
-        
-        if layer:
-            sql_parts.append("AND lower(layer_subgroup) = %s")
-            params.append(layer.lower())
-        
-        if state:
-            state_external = VALID_STATES.get(state, state.upper())
-            sql_parts.append("AND (state = %s OR state IS NULL)")
-            params.append(state_external)
-        
-        if county:
-            county_external = format_name(county, 'county', external=True)
-            sql_parts.append("AND lower(county) = %s")
-            params.append(county_external.lower())
-        else:
-            # If county was not parsed, don't restrict by county
-            pass
-        
-        if city:
-            city_external = format_name(city, 'city', external=True)
-            sql_parts.append("AND lower(city) = %s")
-            params.append(city_external.lower())
-        else:
-            # If city was not parsed, don't restrict by city
-            pass
-            
-        sql = " ".join(sql_parts)
-        cur.execute(sql, params)
-        rows = cur.fetchall()
-        
-        for row in rows:
-            # Use the parsed layer or try to infer it
-            entity_layer = layer if layer else 'unknown'
-            entity = _entity_from_parts(entity_layer, row['state'], row['county'], row['city'])
-            entities.append(entity)
-            
-    except Exception as exc:
-        logging.error(f"DB pattern fetch failed for '{pattern}': {exc}")
-    finally:
-        cur.close()
-        conn.close()
-    return list(dict.fromkeys(entities))  # de-dupe preserving order
+# Old pattern-based entity fetching removed - now using get_filtered_entities with fnmatch
 
 def _entity_from_parts(layer: str, state: str | None, county: str, city: str | None) -> str:
     """Return entity id from raw DB values in appropriate format based on layer level."""
@@ -1713,14 +1491,12 @@ def generate_summary(results):
             entity = result['entity']
             # Get entity components from database
             all_entities_dict = get_all_entities_from_db()
-            if entity in all_entities_dict:
-                components = all_entities_dict[entity]
-                state = components['state']
-                county = components['county']
-                city = components['city']
-            else:
-                # Fallback to old parsing for backward compatibility
-                parsed_layer, state, county, city = split_entity_v2(entity)
+            if entity not in all_entities_dict:
+                raise ValueError(f"Entity '{entity}' not found in database. Cannot determine components.")
+            components = all_entities_dict[entity]
+            state = components['state']
+            county = components['county']
+            city = components['city']
             entity_key = f"{county}_{city}"
             
             # Get existing row or create new one
@@ -1891,14 +1667,12 @@ def _initialize_csv_status(layer, queue):
         for entity in queue:
             # Get entity components from database
             all_entities_dict = get_all_entities_from_db()
-            if entity in all_entities_dict:
-                components = all_entities_dict[entity]
-                state = components['state']
-                county = components['county']
-                city = components['city']
-            else:
-                # Fallback to old parsing for backward compatibility
-                parsed_layer, state, county, city = split_entity_v2(entity)
+            if entity not in all_entities_dict:
+                raise ValueError(f"Entity '{entity}' not found in database. Cannot determine components.")
+            components = all_entities_dict[entity]
+            state = components['state']
+            county = components['county']
+            city = components['city']
             entity_key = f"{county}_{city}"
             
             if entity_key in existing_data:
@@ -1950,14 +1724,12 @@ def _update_csv_status(layer, entity, stage, status, error_msg='', data_date='')
         # Update the specific entity
         # Get entity components from database
         all_entities_dict = get_all_entities_from_db()
-        if entity in all_entities_dict:
-            components = all_entities_dict[entity]
-            state = components['state']
-            county = components['county']
-            city = components['city']
-        else:
-            # Fallback to old parsing for backward compatibility
-            parsed_layer, state, county, city = split_entity_v2(entity)
+        if entity not in all_entities_dict:
+            raise ValueError(f"Entity '{entity}' not found in database. Cannot determine components.")
+        components = all_entities_dict[entity]
+        state = components['state']
+        county = components['county']
+        city = components['city']
         
         # For special entities with NULL county/city, use the entity itself as key
         if county is None and city is None:
