@@ -519,7 +519,9 @@ def _get_existing_data_date(layer: str, entity: str, entity_components: dict = N
     """Get the existing data_date for an entity from the CSV file."""
     summary_filename = f"{layer}_summary.csv"
     script_dir = os.path.dirname(os.path.abspath(__file__))
-    summary_filepath = os.path.join(script_dir, summary_filename)
+    summaries_dir = os.path.join(script_dir, "summaries")
+    os.makedirs(summaries_dir, exist_ok=True)
+    summary_filepath = os.path.join(summaries_dir, summary_filename)
     
     if not os.path.exists(summary_filepath):
         return None
@@ -1469,7 +1471,9 @@ def generate_summary(results, entity_components: dict = None):
     layer = results[0]['layer']
     summary_filename = f"{layer}_summary.csv"  # No date in filename - living document
     script_dir = os.path.dirname(os.path.abspath(__file__))
-    summary_filepath = os.path.join(script_dir, summary_filename)
+    summaries_dir = os.path.join(script_dir, "summaries")
+    os.makedirs(summaries_dir, exist_ok=True)
+    summary_filepath = os.path.join(summaries_dir, summary_filename)
     
     # Use new format headers
     headers = ['entity', 'data_date', 'download_status', 'processing_status', 
@@ -1660,7 +1664,9 @@ def _initialize_csv_status(layer, queue, entity_components: dict = None):
         
     summary_filename = f"{layer}_summary.csv"
     script_dir = os.path.dirname(os.path.abspath(__file__))
-    summary_filepath = os.path.join(script_dir, summary_filename)
+    summaries_dir = os.path.join(script_dir, "summaries")
+    os.makedirs(summaries_dir, exist_ok=True)
+    summary_filepath = os.path.join(summaries_dir, summary_filename)
     
     # Use new format headers
     headers = ['entity', 'data_date', 'download_status', 'processing_status', 
@@ -1737,7 +1743,9 @@ def _update_csv_status(layer, entity, stage, status, error_msg='', data_date='',
         
     summary_filename = f"{layer}_summary.csv"
     script_dir = os.path.dirname(os.path.abspath(__file__))
-    summary_filepath = os.path.join(script_dir, summary_filename)
+    summaries_dir = os.path.join(script_dir, "summaries")
+    os.makedirs(summaries_dir, exist_ok=True)
+    summary_filepath = os.path.join(summaries_dir, summary_filename)
     
     # Use new format headers
     headers = ['entity', 'data_date', 'download_status', 'processing_status', 
