@@ -18,6 +18,7 @@ import os
 import csv
 import logging
 import argparse
+import fnmatch
 from pathlib import Path
 from dataclasses import dataclass
 from typing import List, Dict, Any, Optional, Tuple
@@ -25,8 +26,25 @@ from collections import defaultdict
 
 # Import core logic from layers_prescrape
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from layers_prescrape import (
-    Config, DB, format_name, LAYER_CONFIGS, PG_CONNECTION
+import argparse
+import csv
+import fnmatch
+import logging
+import os
+import re
+import sys
+from dataclasses import dataclass
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Tuple
+
+import psycopg2
+import psycopg2.extras
+
+# Import core logic from layers_prescrape
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from layers_prescrape import Config, DB
+from layers_helpers import (
+    format_name, LAYER_CONFIGS, PG_CONNECTION, FL_COUNTIES
 )
 # Import our clean Selenium-based extraction
 from selenium_opendata import extract_arcgis_url_from_opendata
@@ -213,25 +231,18 @@ class OpendataToAGS:
             self.logger.error(f"No CSV file found at {csv_path}. Run without --apply first to generate conversions.")
             return
         
-        # Get all records for this layer to match against CSV data
-        records = self._find_records_with_urls()
-        if not records:
-            self.logger.warning(f"No records with URLs found for layer '{self.cfg.layer}'")
+        # Build entity dictionary from database (similar to layers_scrape.py)
+        entity_dict = self._get_entities_from_db()
+        if not entity_dict:
+            self.logger.warning(f"No entities found for layer '{self.cfg.layer}'")
             return
         
-        # Create a lookup by URL for fast matching
-        url_to_record = {record.get('src_url_file', '').strip(): record for record in records}
-        
         # Apply entity filtering
-        entity_records = []
-        for record in records:
-            entity = self._generate_entity_from_record(record)
-            entity_records.append((entity, record))
-        
         if self.cfg.include_entities or self.cfg.exclude_entities:
-            entity_records = self._filter_records_by_entity_patterns(entity_records)
+            filtered_entities = self._apply_entity_filters(list(entity_dict.keys()))
+            entity_dict = {entity: entity_dict[entity] for entity in filtered_entities}
         
-        if not entity_records:
+        if not entity_dict:
             filter_desc = f"include: {self.cfg.include_entities}" if self.cfg.include_entities else f"exclude: {self.cfg.exclude_entities}"
             self.logger.warning(f"No records found matching entity filters ({filter_desc})")
             return
@@ -245,40 +256,51 @@ class OpendataToAGS:
             with open(csv_path, 'r', encoding='utf-8') as f:
                 reader = csv.DictReader(f)
                 for row in reader:
+                    entity = row.get('entity', '').strip()
                     old_url = row.get('old_url', '').strip()
                     new_ags_url = row.get('new_ags_url', '').strip()
                     ags_valid = row.get('ags_valid', '').strip()
-                    entity = row.get('entity', '').strip()
                     
                     # Skip if not a successful conversion
                     if not old_url or new_ags_url in ['NO_AGS_FOUND', 'NOT_OPENDATA', 'URL_NOT_ACCESSIBLE'] or ags_valid != 'YES':
                         continue
                     
-                    # Find the corresponding database record
-                    if old_url not in url_to_record:
-                        self.logger.debug(f"URL not found in current records: {old_url}")
+                    # Check if this entity exists in our database entities
+                    if entity not in entity_dict:
+                        self.logger.debug(f"Entity not found in database: {entity}")
                         continue
                     
-                    record = url_to_record[old_url]
-                    record_id = record.get('id')
+                    # Get the database record components
+                    components = entity_dict[entity]
                     
-                    if not record_id:
-                        self.logger.warning(f"No record ID found for {entity}: {old_url}")
-                        error_count += 1
-                        continue
-                    
-                    # Check if this entity matches our filters
-                    entity_matches = any(entity == filtered_entity for filtered_entity, _ in entity_records)
-                    if not entity_matches:
-                        skipped_count += 1
-                        continue
-                    
-                    # Apply the update to the database
+                    # Find and update the database record
                     try:
-                        update_sql = "UPDATE m_gis_data_catalog_main SET src_url_file = %s WHERE id = %s"
-                        self.db.execute(update_sql, (new_ags_url, record_id))
-                        update_count += 1
-                        self.logger.info(f"✅ Applied {entity}: {old_url} → {new_ags_url}")
+                        update_sql = """
+                            UPDATE m_gis_data_catalog_main 
+                            SET src_url_file = %s 
+                            WHERE layer_subgroup = %s 
+                            AND state = %s 
+                            AND county = %s 
+                            AND city = %s
+                            AND status IS DISTINCT FROM 'DELETE'
+                        """
+                        # Use external format values for the database query
+                        state_external = components['state_external']
+                        county_external = components['county_external']
+                        city_external = components['city_external']
+                        
+                        params = (new_ags_url, components['layer'], state_external, county_external, city_external)
+                        
+                        self.db.execute(update_sql, params)
+                        rows_affected = self.db.cur.rowcount
+                        
+                        if rows_affected > 0:
+                            update_count += 1
+                            self.logger.info(f"✅ Applied {entity}: {old_url} → {new_ags_url}")
+                        else:
+                            self.logger.warning(f"No record found for {entity}")
+                            error_count += 1
+                            
                     except Exception as e:
                         self.logger.error(f"❌ Failed to update {entity}: {e}")
                         error_count += 1
@@ -287,8 +309,110 @@ class OpendataToAGS:
             self.logger.error(f"Error reading CSV file: {e}")
             return
         
+        # Commit all changes
+        self.db.commit()
+        
         # Summary
         self.logger.info(f"Apply complete: {update_count} database updates applied, {skipped_count} skipped (filters), {error_count} errors")
+    
+    def _get_entities_from_db(self) -> dict[str, dict]:
+        """Get all entities from database for the current layer with their component parts."""
+        entity_dict = {}
+        
+        sql = """
+            SELECT layer_subgroup, state, county, city 
+            FROM m_gis_data_catalog_main 
+            WHERE status IS DISTINCT FROM 'DELETE' 
+            AND layer_subgroup = %s
+            AND src_url_file IS NOT NULL 
+            AND src_url_file != ''
+        """
+        
+        records = self.db.fetchall(sql, (self.cfg.layer,))
+        
+        for record in records:
+            layer = record.get('layer_subgroup')
+            state_external = record.get('state')
+            county_external = record.get('county')
+            city_external = record.get('city')
+            
+            # Convert to internal format for entity generation
+            state_internal = format_name(state_external, 'state', external=False) if state_external else None
+            county_internal = format_name(county_external, 'county', external=False) if county_external else None
+            city_internal = format_name(city_external, 'city', external=False) if city_external else None
+            
+            # Build entity string using the same logic as layers_scrape.py
+            entity = self._entity_from_parts(layer, state_internal, county_internal, city_internal)
+            
+            # Store with both internal (for entity generation) and external (for DB queries) component parts
+            entity_dict[entity] = {
+                'layer': layer,
+                'state_internal': state_internal,
+                'county_internal': county_internal,
+                'city_internal': city_internal,
+                'state_external': state_external,
+                'county_external': county_external,
+                'city_external': city_external
+            }
+        
+        return entity_dict
+    
+    def _entity_from_parts(self, layer: str, state: str | None, county: str, city: str | None) -> str:
+        """Return entity id from raw DB values in appropriate format (copied from layers_scrape.py)."""
+        # Convert external DB values to internal format
+        county_internal = format_name(county, 'county', external=False)
+        city_internal = format_name(city, 'city', external=False) if city else ""
+        
+        # Handle state - infer from county if missing
+        if state and str(state).strip() and str(state).strip().upper() not in ('NULL', 'NONE'):
+            state_internal = str(state).strip().lower()
+        else:
+            # Infer state from county for backwards compatibility
+            if county_internal in FL_COUNTIES:
+                state_internal = 'fl'
+            else:
+                state_internal = 'fl'  # Default fallback
+        
+        # Check layer level to determine entity format
+        layer_config = LAYER_CONFIGS.get(layer, {})
+        layer_level = layer_config.get('level', 'state_county_city')  # Default to 4-part
+        
+        if layer_level == 'state_county':
+            # County-level layer: use 3-part format (layer_state_county)
+            return f"{layer}_{state_internal}_{county_internal}"
+        else:
+            # City-level or other layers: use 4-part format (layer_state_county_city)
+            if not city_internal:
+                city_internal = 'countywide'  # Default for county-only records
+            return f"{layer}_{state_internal}_{county_internal}_{city_internal}"
+    
+    def _apply_entity_filters(self, entities: list[str]) -> list[str]:
+        """Apply include/exclude filters to entity list."""
+        if not entities:
+            return []
+        
+        # Apply include filters
+        if self.cfg.include_entities:
+            included = set()
+            for pattern in self.cfg.include_entities:
+                matches = fnmatch.filter(entities, pattern)
+                included.update(matches)
+                if matches:
+                    self.logger.info(f"Include pattern '{pattern}' matched {len(matches)} entities")
+                else:
+                    self.logger.warning(f"Include pattern '{pattern}' matched no entities")
+            entities = list(included)
+        
+        # Apply exclude filters
+        if self.cfg.exclude_entities:
+            for pattern in self.cfg.exclude_entities:
+                before_count = len(entities)
+                entities = [e for e in entities if not fnmatch.fnmatch(e, pattern)]
+                excluded_count = before_count - len(entities)
+                if excluded_count > 0:
+                    self.logger.info(f"Exclude pattern '{pattern}' excluded {excluded_count} entities")
+        
+        return sorted(entities)
     
     def run(self):
         """Main execution method."""
@@ -301,19 +425,16 @@ class OpendataToAGS:
     
     def _find_records_with_urls(self) -> List[Dict[str, Any]]:
         """Find all records for the layer that have URLs."""
-        layer_internal = format_name(self.cfg.layer, 'layer', external=False)
-        layer_external = format_name(self.cfg.layer, 'layer', external=True)
-        
         sql = """
             SELECT * FROM m_gis_data_catalog_main 
             WHERE status IS DISTINCT FROM 'DELETE' 
-            AND (lower(title) LIKE %s OR lower(title) LIKE %s)
+            AND layer_subgroup = %s
             AND src_url_file IS NOT NULL 
             AND src_url_file != ''
             ORDER BY title
         """
         
-        records = self.db.fetchall(sql, (f'%{layer_internal}%', f'%{layer_external.lower()}%'))
+        records = self.db.fetchall(sql, (self.cfg.layer,))
         
         if not records:
             self.logger.warning(f"No records with URLs found for layer '{self.cfg.layer}'")
@@ -323,69 +444,48 @@ class OpendataToAGS:
         return records
     
     def _generate_entity_from_record(self, record: Dict[str, Any]) -> str:
-        """Generate entity name from database record (imported logic from layers_prescrape)."""
-        # Check if this layer has a hardcoded entity in the config
-        config = LAYER_CONFIGS.get(self.cfg.layer, {})
-        hardcoded_entity = config.get('entity')
-        if hardcoded_entity:
-            return hardcoded_entity
+        """Generate entity name from database record using actual database fields."""
+        if not record:
+            return "ERROR"
+            
+        # Get layer from layer_subgroup field
+        layer_subgroup = record.get('layer_subgroup')
+        if not layer_subgroup:
+            return "ERROR"
+        layer_subgroup = str(layer_subgroup).strip().lower()
+        if not layer_subgroup:
+            return "ERROR"
         
-        title = record.get('title', '')
-        
-        # Get state from record, or infer from county if missing
+        # Get state, county, city from database fields
         state_db = record.get('state')
-        if state_db and str(state_db).strip() and str(state_db).strip().upper() not in ('NULL', 'NONE'):
-            state = str(state_db).strip().lower()
-        else:
-            # Try to infer state from county
-            county_db = record.get('county')
-            if county_db:
-                county_internal = format_name(str(county_db).strip(), 'county', external=False)
-                # For now, assume FL - could be enhanced to support other states
-                state = 'fl'
-            else:
-                state = 'fl'  # Default fallback
-        
-        # Generate entity using title parsing (simplified version)
-        from layers_prescrape import parse_title_to_entity
-        layer_parsed, county_parsed, city_parsed, entity_type = parse_title_to_entity(title)
-        
-        if layer_parsed and county_parsed:
-            state_internal = state.lower()
-            county_internal = format_name(county_parsed, 'county', external=False)
-            
-            if city_parsed and city_parsed not in {"unincorporated", "unified", "incorporated"}:
-                city_internal = format_name(city_parsed, 'city', external=False)
-                entity = f"{self.cfg.layer}_{state_internal}_{county_internal}_{city_internal}"
-            elif city_parsed in {"unincorporated", "unified", "incorporated"}:
-                entity = f"{self.cfg.layer}_{state_internal}_{county_internal}_{city_parsed}"
-            else:
-                # County-level layer
-                entity = f"{self.cfg.layer}_{state_internal}_{county_internal}"
-            
-            return entity
-        
-        # Fallback: generate from database fields if title parsing fails
         county_db = record.get('county')
         city_db = record.get('city')
         
-        if county_db:
-            county_internal = format_name(str(county_db).strip(), 'county', external=False)
-            state_internal = state.lower()
-            
-            if city_db and str(city_db).strip():
-                city_internal = format_name(str(city_db).strip(), 'city', external=False)
-                if city_internal in {"unincorporated", "unified", "incorporated"}:
-                    entity = f"{self.cfg.layer}_{state_internal}_{county_internal}_{city_internal}"
-                else:
-                    entity = f"{self.cfg.layer}_{state_internal}_{county_internal}_{city_internal}"
-            else:
-                entity = f"{self.cfg.layer}_{state_internal}_{county_internal}"
-            
-            return entity
+        # Normalize state (default to 'fl' if missing)
+        if state_db and str(state_db).strip() and str(state_db).strip().upper() not in ('NULL', 'NONE', ''):
+            state_internal = str(state_db).strip().lower()
+        else:
+            state_internal = 'fl'  # Default for Florida
         
-        # Complete failure
-        return "ERROR"
+        # Normalize county
+        if county_db and str(county_db).strip() and str(county_db).strip().upper() not in ('NULL', 'NONE', ''):
+            county_internal = format_name(str(county_db).strip(), 'county', external=False)
+        else:
+            return "ERROR"
+        
+        # Normalize city
+        if city_db and str(city_db).strip() and str(city_db).strip().upper() not in ('NULL', 'NONE', ''):
+            city_internal = format_name(str(city_db).strip(), 'city', external=False)
+            # Handle special city types
+            if city_internal in {"unincorporated", "unified", "incorporated", "countywide"}:
+                entity = f"{layer_subgroup}_{state_internal}_{county_internal}_{city_internal}"
+            else:
+                entity = f"{layer_subgroup}_{state_internal}_{county_internal}_{city_internal}"
+        else:
+            # County-level only
+            entity = f"{layer_subgroup}_{state_internal}_{county_internal}"
+        
+        return entity
     
     def _filter_records_by_entity_patterns(self, records: List[Dict[str, Any]]) -> List[Tuple[str, Dict[str, Any]]]:
         """Filter records by entity include/exclude patterns."""
