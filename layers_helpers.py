@@ -205,28 +205,28 @@ LAYER_CONFIGS = {
         'layer_group': 'base_map_overlay',
         'external_frmt': 'Streets',
         'level': 'state_county',
-        'processing_script': None,  # No processing script needed
+        'processing_script': 'update_streets_county.py',  # No processing script needed
     },
     'address_points': {
         'category': '05_Parcels',
         'layer_group': 'parcels',
         'external_frmt': 'Address Points',
         'level': 'state_county',
-        'processing_script': None,  # No processing script needed
+        'processing_script': 'update_address_points.py',  # No processing script needed
     },
     'subdivisions': {
         'category': '05_Parcels',
         'layer_group': 'parcels',
         'external_frmt': 'Subdivisions',
         'level': 'state_county',
-        'processing_script': None,  # No processing script needed
+        'processing_script': 'update_subdivisions_county.py',  # No processing script needed
     },
     'buildings': {
         'category': '05_Parcels',
         'layer_group': 'parcels',
         'external_frmt': 'Building Footprints',
         'level': 'state_county',
-        'processing_script': None,  # No processing script needed
+        'processing_script': 'update_buildings.py',  # No processing script needed
     },
     'traffic_counts': {
         'category': '03_Transportation',
@@ -242,7 +242,7 @@ LAYER_CONFIGS = {
         'external_frmt': 'Sunbiz',
         'level': 'state',
         'entity': 'sunbiz_fl',
-        'processing_script': None,  # No processing script needed
+        'processing_script': 'sunbiz_corpdata_processing.py',  # No processing script needed
     }
 }
 
