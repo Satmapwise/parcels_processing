@@ -42,6 +42,11 @@ def should_process_entity(catalog_row: dict) -> tuple[bool, str]:
     Returns:
         tuple[bool, str]: (should_process, reason)
     """
+    # Check if fields_obj_transform is null/empty
+    fields_obj_transform = catalog_row.get('fields_obj_transform')
+    if not fields_obj_transform or fields_obj_transform.strip() == '':
+        return False, "fields_obj_transform is null or empty"
+    
     fmt = (catalog_row.get('format') or '').lower()
     
     if fmt in FULL_PIPELINE_FORMATS:
@@ -1553,6 +1558,12 @@ def generate_summary(results, entity_components: dict = None):
                 # Don't clear error_message - preserve the source information set by _update_csv_status
             elif status == 'skipped' and 'Format excluded' in str(error_msg):
                 # Format not supported by pipeline
+                row['download_status'] = 'SKIPPED'
+                row['processing_status'] = 'SKIPPED'
+                row['upload_status'] = 'SKIPPED'
+                row['error_message'] = str(error_msg)
+            elif status == 'skipped' and 'fields_obj_transform is null or empty' in str(error_msg):
+                # fields_obj_transform is null/empty
                 row['download_status'] = 'SKIPPED'
                 row['processing_status'] = 'SKIPPED'
                 row['upload_status'] = 'SKIPPED'
