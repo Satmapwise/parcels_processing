@@ -602,14 +602,14 @@ def _fetch_catalog_row(layer: str, state: str, county: str, city: str):
     cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
     try:
         # Convert internal format names to external format for database query
-        layer_external = format_name(layer, 'layer', external=True)
+        # Note: layer_subgroup is stored in internal format in database, so don't convert layer
         state_external = VALID_STATES.get(state, state.upper()) if state else None
         county_external = format_name(county, 'county', external=True) if county else None
         city_external = format_name(city, 'city', external=True) if city else None
         
         # Build SQL query based on which fields are provided
         sql_parts = ["SELECT * FROM m_gis_data_catalog_main WHERE lower(layer_subgroup) = %s"]
-        params = [layer_external.lower()]
+        params = [layer.lower()]
         
         # Add state condition
         if state_external:
