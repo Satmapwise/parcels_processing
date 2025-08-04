@@ -334,14 +334,10 @@ def resolve_work_dir(layer: str, entity: str, entity_components: dict = None):
     """Return work_dir for layer/entity."""
     # Get entity components from database if not provided
     if entity_components is None or entity not in entity_components:
-        # Query database for entity components
-        all_entities_dict = get_all_entities_from_db()
-        if entity not in all_entities_dict:
-            raise ValueError(f"Entity '{entity}' not found in database. Cannot determine components.")
-        components = all_entities_dict[entity]
-    else:
-        components = entity_components[entity]
+        # This should not happen in normal operation - entity_components should always be provided
+        raise ValueError(f"Entity '{entity}' components not provided. This indicates a programming error.")
     
+    components = entity_components[entity]
     state = components['state']
     county = components['county'] 
     city = components['city']
@@ -519,7 +515,7 @@ def _debug_main(message: str, logger):
     else:
         logger.debug(message)
 
-def _get_existing_data_date(layer: str, entity: str) -> str:
+def _get_existing_data_date(layer: str, entity: str, entity_components: dict = None) -> str:
     """Get the existing data_date for an entity from the CSV file."""
     summary_filename = f"{layer}_summary.csv"
     script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -529,11 +525,16 @@ def _get_existing_data_date(layer: str, entity: str) -> str:
         return None
     
     try:
-        # Get entity components from database
-        all_entities_dict = get_all_entities_from_db()
-        if entity not in all_entities_dict:
-            raise ValueError(f"Entity '{entity}' not found in database. Cannot determine components.")
-        components = all_entities_dict[entity]
+        # Get entity components from provided dict or database
+        if entity_components is None or entity not in entity_components:
+            # Fallback to database query (should be rare)
+            all_entities_dict = get_all_entities_from_db()
+            if entity not in all_entities_dict:
+                raise ValueError(f"Entity '{entity}' not found in database. Cannot determine components.")
+            components = all_entities_dict[entity]
+        else:
+            components = entity_components[entity]
+        
         state = components['state']
         county = components['county']
         city = components['city']
@@ -647,7 +648,7 @@ def _parse_processing_comments(text):
 # Main Pipeline Functions
 # ---------------------------------------------------------------------------
 
-def layer_download(layer: str, entity: str, state: str, county: str, city: str, catalog_row: dict, work_dir: str, logger):
+def layer_download(layer: str, entity: str, state: str, county: str, city: str, catalog_row: dict, work_dir: str, logger, entity_components: dict = None):
     """Handle the download phase for an entity."""
     if not CONFIG.run_download:
         logger.debug(f"[DOWNLOAD] Skipping download for {layer}/{entity} (disabled in config)")
@@ -691,7 +692,7 @@ def layer_download(layer: str, entity: str, state: str, county: str, city: str, 
         _run_command(command, work_dir, logger)
     except SkipEntityError as e:
         # Handle "no new data" case - from download command
-        _update_csv_status(layer, entity, 'download', 'NND', error_msg='Download command: no new data')
+        _update_csv_status(layer, entity, 'download', 'NND', error_msg='Download command: no new data', entity_components=entity_components)
         raise  # Re-raise skip errors
     
     # Run source_comments commands (pre-metadata processing)
@@ -714,9 +715,9 @@ def layer_download(layer: str, entity: str, state: str, county: str, city: str, 
                 _validate_ags_download(work_dir, table_name, logger)
             
             _debug_main(f"[DOWNLOAD] Download validation passed for {layer}/{entity}", logger)
-            _update_csv_status(layer, entity, 'download', 'SUCCESS')
+            _update_csv_status(layer, entity, 'download', 'SUCCESS', entity_components=entity_components)
         except DownloadError as de:
-            _update_csv_status(layer, entity, 'download', 'FAILED', str(de))
+            _update_csv_status(layer, entity, 'download', 'FAILED', str(de), entity_components=entity_components)
             raise DownloadError(str(de), layer, entity) from de
         
         # Find and return newest zip file if any
@@ -730,7 +731,7 @@ def layer_download(layer: str, entity: str, state: str, county: str, city: str, 
             return None
     else:
         logger.info(f"[TEST MODE] Skipping download validation for {layer}/{entity}")
-        _update_csv_status(layer, entity, 'download', 'SUCCESS')  # Assume success in test mode
+        _update_csv_status(layer, entity, 'download', 'SUCCESS', entity_components=entity_components)  # Assume success in test mode
         return None
 
 def extract_basic_file_metadata(work_dir: str, logger) -> dict:
@@ -856,11 +857,11 @@ def layer_metadata(layer: str, entity: str, state: str, county: str, city: str, 
             logger.warning("No shapefile found to process for metadata extraction")
             return {}
 
-def layer_processing(layer: str, entity: str, state: str, county: str, city: str, catalog_row: dict, work_dir: str, logger, metadata: dict):
+def layer_processing(layer: str, entity: str, state: str, county: str, city: str, catalog_row: dict, work_dir: str, logger, metadata: dict, entity_components: dict = None):
     """Handle the processing phase for an entity."""
     if not CONFIG.run_processing:
         logger.debug(f"[PROCESSING] Skipping processing for {layer}/{entity} (disabled in config)")
-        _update_csv_status(layer, entity, 'processing', 'SKIPPED', error_msg='Processing disabled in config')
+        _update_csv_status(layer, entity, 'processing', 'SKIPPED', error_msg='Processing disabled in config', entity_components=entity_components)
         return
 
     fmt = (catalog_row.get('format') or '').lower()
@@ -869,7 +870,7 @@ def layer_processing(layer: str, entity: str, state: str, county: str, city: str
     if fmt in METADATA_ONLY_FORMATS:
         reason = f"Format '{fmt}' skips processing stage"
         logger.info(f"[PROCESSING] Skipping processing for {layer}/{entity}: {reason}")
-        _update_csv_status(layer, entity, 'processing', 'SKIPPED', error_msg=reason)
+        _update_csv_status(layer, entity, 'processing', 'SKIPPED', error_msg=reason, entity_components=entity_components)
         return
 
     _debug_main(f"[PROCESSING] Starting processing for {layer}/{entity}", logger)
@@ -890,14 +891,14 @@ def layer_processing(layer: str, entity: str, state: str, county: str, city: str
     if script_name is None:
         reason = f"No processing script configured for layer '{layer}'"
         logger.info(f"[PROCESSING] Skipping processing for {layer}/{entity}: {reason}")
-        _update_csv_status(layer, entity, 'processing', 'SKIPPED', error_msg=reason)
+        _update_csv_status(layer, entity, 'processing', 'SKIPPED', error_msg=reason, entity_components=entity_components)
         return
     
     script_path = os.path.join(TOOLS_DIR, script_name)
     if not os.path.exists(script_path):
         reason = f"Processing script '{script_name}' not found for layer '{layer}'"
         logger.info(f"[PROCESSING] Skipping processing for {layer}/{entity}: {reason}")
-        _update_csv_status(layer, entity, 'processing', 'SKIPPED', error_msg=reason)
+        _update_csv_status(layer, entity, 'processing', 'SKIPPED', error_msg=reason, entity_components=entity_components)
         return
     
     # Build command based on script type
@@ -911,13 +912,13 @@ def layer_processing(layer: str, entity: str, state: str, county: str, city: str
     logger.debug(f"Running update script for {layer}/{entity}")
     try:
         _run_command(command, work_dir, logger)
-        _update_csv_status(layer, entity, 'processing', 'SUCCESS')
+        _update_csv_status(layer, entity, 'processing', 'SUCCESS', entity_components=entity_components)
         _debug_main(f"[PROCESSING] Processing completed for {layer}/{entity}", logger)
     except Exception as e:
-        _update_csv_status(layer, entity, 'processing', 'FAILED', str(e))
+        _update_csv_status(layer, entity, 'processing', 'FAILED', str(e), entity_components=entity_components)
         raise ProcessingError(f"Processing failed: {e}", layer, entity) from e
 
-def layer_upload(layer: str, entity: str, state: str, county: str, city: str, catalog_row: dict, work_dir: str, logger, metadata: dict, raw_zip_name: str = None):
+def layer_upload(layer: str, entity: str, state: str, county: str, city: str, catalog_row: dict, work_dir: str, logger, metadata: dict, raw_zip_name: str = None, entity_components: dict = None):
     """Handle the upload phase for an entity."""
     if not CONFIG.run_upload:
         logger.debug(f"[UPLOAD] Skipping upload for {layer}/{entity} (disabled in config)")
@@ -988,10 +989,10 @@ def layer_upload(layer: str, entity: str, state: str, county: str, city: str, ca
     try:
         _run_command(command, work_dir, logger)
         data_date = metadata.get('data_date', publish_date)
-        _update_csv_status(layer, entity, 'upload', 'SUCCESS', data_date=data_date)
+        _update_csv_status(layer, entity, 'upload', 'SUCCESS', data_date=data_date, entity_components=entity_components)
         _debug_main(f"[UPLOAD] Catalog metadata updated successfully for {layer}/{entity}", logger)
     except Exception as e:
-        _update_csv_status(layer, entity, 'upload', 'FAILED', str(e))
+        _update_csv_status(layer, entity, 'upload', 'FAILED', str(e), entity_components=entity_components)
         raise UploadError(f"Upload failed: {e}", layer, entity) from e
 
 # ---------------------------------------------------------------------------
@@ -1337,7 +1338,7 @@ def process_layer(layer, queue, entity_components):
         logging.info(f"Starting processing for layer '{layer}' (download disabled)")
     
     # Initialize CSV status tracking for entities in queue
-    _initialize_csv_status(layer, queue)
+    _initialize_csv_status(layer, queue, entity_components)
     
     results = []
     for entity in queue:
@@ -1381,7 +1382,7 @@ def process_layer(layer, queue, entity_components):
 
             # Stage 1: Download
             try:
-                raw_zip_name = layer_download(layer, entity, state, county, city, catalog_row, work_dir, entity_logger)
+                raw_zip_name = layer_download(layer, entity, state, county, city, catalog_row, work_dir, entity_logger, entity_components)
             except SkipEntityError as e:
                 raise  # Re-raise to skip entire entity
 
@@ -1391,15 +1392,15 @@ def process_layer(layer, queue, entity_components):
             except SkipEntityError as e:
                 # Handle metadata-based NND (data date unchanged)
                 if "data date unchanged" in str(e):
-                    _update_csv_status(layer, entity, 'download', 'NND', error_msg='Metadata check: data date unchanged')
+                    _update_csv_status(layer, entity, 'download', 'NND', error_msg='Metadata check: data date unchanged', entity_components=entity_components)
                 raise  # Re-raise to skip entire entity
 
             # Stage 3: Processing
             if should_run_processing(catalog_row):
-                layer_processing(layer, entity, state, county, city, catalog_row, work_dir, entity_logger, metadata)
+                layer_processing(layer, entity, state, county, city, catalog_row, work_dir, entity_logger, metadata, entity_components)
 
             # Stage 4: Upload
-            layer_upload(layer, entity, state, county, city, catalog_row, work_dir, entity_logger, metadata, raw_zip_name)
+            layer_upload(layer, entity, state, county, city, catalog_row, work_dir, entity_logger, metadata, raw_zip_name, entity_components)
 
             # Record success
             entity_end_time = datetime.now()
@@ -1460,7 +1461,7 @@ def process_layer(layer, queue, entity_components):
 # Enhanced CSV Summary Generation
 # ---------------------------------------------------------------------------
 
-def generate_summary(results):
+def generate_summary(results, entity_components: dict = None):
     """Generate/update a living CSV summary document organized by county."""
     if not results or not CONFIG.generate_summary:
         return
@@ -1489,11 +1490,16 @@ def generate_summary(results):
         # Process results and update data
         for result in results:
             entity = result['entity']
-            # Get entity components from database
-            all_entities_dict = get_all_entities_from_db()
-            if entity not in all_entities_dict:
-                raise ValueError(f"Entity '{entity}' not found in database. Cannot determine components.")
-            components = all_entities_dict[entity]
+            # Get entity components from provided dict or database
+            if entity_components is None or entity not in entity_components:
+                # Fallback to database query (should be rare)
+                all_entities_dict = get_all_entities_from_db()
+                if entity not in all_entities_dict:
+                    raise ValueError(f"Entity '{entity}' not found in database. Cannot determine components.")
+                components = all_entities_dict[entity]
+            else:
+                components = entity_components[entity]
+            
             state = components['state']
             county = components['county']
             city = components['city']
@@ -1638,7 +1644,7 @@ def _format_runtime_detailed(seconds):
     
     return f"{hours}hr {remaining_minutes}min {remaining_seconds}sec"
 
-def _initialize_csv_status(layer, queue):
+def _initialize_csv_status(layer, queue, entity_components: dict = None):
     """Initialize CSV status columns to null for entities in the processing queue."""
     if not CONFIG.generate_summary:
         return
@@ -1665,11 +1671,16 @@ def _initialize_csv_status(layer, queue):
         
         # Initialize status columns for entities in queue
         for entity in queue:
-            # Get entity components from database
-            all_entities_dict = get_all_entities_from_db()
-            if entity not in all_entities_dict:
-                raise ValueError(f"Entity '{entity}' not found in database. Cannot determine components.")
-            components = all_entities_dict[entity]
+            # Get entity components from provided dict or database
+            if entity_components is None or entity not in entity_components:
+                # Fallback to database query (should be rare)
+                all_entities_dict = get_all_entities_from_db()
+                if entity not in all_entities_dict:
+                    raise ValueError(f"Entity '{entity}' not found in database. Cannot determine components.")
+                components = all_entities_dict[entity]
+            else:
+                components = entity_components[entity]
+            
             state = components['state']
             county = components['county']
             city = components['city']
@@ -1696,7 +1707,7 @@ def _initialize_csv_status(layer, queue):
     except IOError as e:
         logging.error(f"Could not initialize CSV status: {e}")
 
-def _update_csv_status(layer, entity, stage, status, error_msg='', data_date=''):
+def _update_csv_status(layer, entity, stage, status, error_msg='', data_date='', entity_components: dict = None):
     """Update CSV status for a specific entity and stage."""
     if not CONFIG.generate_summary:
         return
@@ -1722,11 +1733,16 @@ def _update_csv_status(layer, entity, stage, status, error_msg='', data_date='')
                     existing_data[entity_key] = row
         
         # Update the specific entity
-        # Get entity components from database
-        all_entities_dict = get_all_entities_from_db()
-        if entity not in all_entities_dict:
-            raise ValueError(f"Entity '{entity}' not found in database. Cannot determine components.")
-        components = all_entities_dict[entity]
+        # Get entity components from provided dict or database
+        if entity_components is None or entity not in entity_components:
+            # Fallback to database query (should be rare)
+            all_entities_dict = get_all_entities_from_db()
+            if entity not in all_entities_dict:
+                raise ValueError(f"Entity '{entity}' not found in database. Cannot determine components.")
+            components = all_entities_dict[entity]
+        else:
+            components = entity_components[entity]
+        
         state = components['state']
         county = components['county']
         city = components['city']
@@ -2010,7 +2026,7 @@ def main():
         sys.exit(1)
     finally:
         # Generate summary
-        generate_summary(results)
+        generate_summary(results, entity_components)
         end_time = datetime.now()
         logging.info(f"Script finished at {end_time.strftime('%Y-%m-%d %H:%M:%S')}. Total runtime: {end_time - CONFIG.start_time}")
 
