@@ -44,7 +44,7 @@ import psycopg2.extras
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from layers_prescrape import Config, DB
 from layers_helpers import (
-    format_name, LAYER_CONFIGS, PG_CONNECTION, FL_COUNTIES
+    format_name, LAYER_CONFIGS, PG_CONNECTION, FL_COUNTIES, GA_COUNTIES, AL_COUNTIES, DE_COUNTIES, AZ_COUNTIES
 )
 # Import our clean Selenium-based extraction
 from selenium_opendata import extract_arcgis_url_from_opendata
@@ -275,21 +275,39 @@ class OpendataToAGS:
                     
                     # Find and update the database record
                     try:
-                        update_sql = """
+                        # Build dynamic WHERE clause to handle null values
+                        where_conditions = ["layer_subgroup = %s", "status IS DISTINCT FROM 'DELETE'"]
+                        params = [components['layer']]
+                        
+                        # Add state condition
+                        if components['state_external']:
+                            where_conditions.append("state = %s")
+                            params.append(components['state_external'])
+                        else:
+                            where_conditions.append("state IS NULL")
+                        
+                        # Add county condition
+                        if components['county_external']:
+                            where_conditions.append("county = %s")
+                            params.append(components['county_external'])
+                        else:
+                            where_conditions.append("county IS NULL")
+                        
+                        # Add city condition
+                        if components['city_external']:
+                            where_conditions.append("city = %s")
+                            params.append(components['city_external'])
+                        else:
+                            where_conditions.append("city IS NULL")
+                        
+                        update_sql = f"""
                             UPDATE m_gis_data_catalog_main 
                             SET src_url_file = %s 
-                            WHERE layer_subgroup = %s 
-                            AND state = %s 
-                            AND county = %s 
-                            AND city = %s
-                            AND status IS DISTINCT FROM 'DELETE'
+                            WHERE {' AND '.join(where_conditions)}
                         """
-                        # Use external format values for the database query
-                        state_external = components['state_external']
-                        county_external = components['county_external']
-                        city_external = components['city_external']
                         
-                        params = (new_ags_url, components['layer'], state_external, county_external, city_external)
+                        # Add the new URL as the first parameter
+                        params.insert(0, new_ags_url)
                         
                         self.db.execute(update_sql, params)
                         rows_affected = self.db.cur.rowcount
@@ -344,6 +362,9 @@ class OpendataToAGS:
             # Build entity string using the same logic as layers_scrape.py
             entity = self._entity_from_parts(layer, state_internal, county_internal, city_internal)
             
+            if entity == "ERROR":
+                continue  # Skip records that can't generate valid entities
+            
             # Store with both internal (for entity generation) and external (for DB queries) component parts
             entity_dict[entity] = {
                 'layer': layer,
@@ -357,21 +378,27 @@ class OpendataToAGS:
         
         return entity_dict
     
-    def _entity_from_parts(self, layer: str, state: str | None, county: str, city: str | None) -> str:
+    def _entity_from_parts(self, layer: str, state: str | None, county: str | None, city: str | None) -> str:
         """Return entity id from raw DB values in appropriate format (copied from layers_scrape.py)."""
         # Convert external DB values to internal format
-        county_internal = format_name(county, 'county', external=False)
-        city_internal = format_name(city, 'city', external=False) if city else ""
+        county_internal = format_name(county, 'county', external=False) if county else None
+        city_internal = format_name(city, 'city', external=False) if city else None
         
         # Handle state - infer from county if missing
         if state and str(state).strip() and str(state).strip().upper() not in ('NULL', 'NONE'):
             state_internal = str(state).strip().lower()
         else:
             # Infer state from county for backwards compatibility
-            if county_internal in FL_COUNTIES:
+            if county_internal and county_internal in FL_COUNTIES:
                 state_internal = 'fl'
-            else:
-                state_internal = 'fl'  # Default fallback
+            elif county_internal and county_internal in GA_COUNTIES:
+                state_internal = 'ga'
+            elif county_internal and county_internal in AL_COUNTIES:
+                state_internal = 'al'
+            elif county_internal and county_internal in DE_COUNTIES:
+                state_internal = 'de'
+            elif county_internal and county_internal in AZ_COUNTIES:
+                state_internal = 'az'
         
         # Check layer level to determine entity format
         layer_config = LAYER_CONFIGS.get(layer, {})
@@ -379,9 +406,19 @@ class OpendataToAGS:
         
         if layer_level == 'state_county':
             # County-level layer: use 3-part format (layer_state_county)
+            if not county_internal:
+                return "ERROR"  # County is required for county-level layers
             return f"{layer}_{state_internal}_{county_internal}"
+        elif layer_level == 'state':
+            # State-level layer: use 2-part format (layer_state)
+            return f"{layer}_{state_internal}"
+        elif layer_level == 'national':
+            # National-level layer: use 1-part format (layer)
+            return layer
         else:
             # City-level or other layers: use 4-part format (layer_state_county_city)
+            if not county_internal:
+                return "ERROR"  # County is required for city-level layers
             if not city_internal:
                 city_internal = 'countywide'  # Default for county-only records
             return f"{layer}_{state_internal}_{county_internal}_{city_internal}"
