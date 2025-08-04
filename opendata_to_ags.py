@@ -17,6 +17,7 @@ import sys
 import os
 import csv
 import logging
+import argparse
 from pathlib import Path
 from dataclasses import dataclass
 from typing import List, Dict, Any, Optional, Tuple
@@ -25,8 +26,7 @@ from collections import defaultdict
 # Import core logic from layers_prescrape
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from layers_prescrape import (
-    Config, DB, build_arg_parser, 
-    format_name, LAYER_CONFIGS, PG_CONNECTION
+    Config, DB, format_name, LAYER_CONFIGS, PG_CONNECTION
 )
 # Import our clean Selenium-based extraction
 from selenium_opendata import extract_arcgis_url_from_opendata
@@ -579,20 +579,43 @@ class OpendataToAGS:
         else:
             self.logger.info(f"Conversion complete: {opendata_count} opendata URLs found, {conversion_count} successful conversions (preview mode - use --apply to update database)")
 
+def build_opendata_arg_parser() -> argparse.ArgumentParser:
+    """Build argument parser specific to opendata-to-AGS conversion."""
+    parser = argparse.ArgumentParser(
+        description="Convert opendata portal URLs to ArcGIS REST service URLs",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+Examples:
+  python3 opendata_to_ags.py --include "flu_fl_*"                    # Process only FLU layers
+  python3 opendata_to_ags.py --include "zoning_fl_*" --debug         # Process zoning with debug
+  python3 opendata_to_ags.py --exclude "*_unincorporated"            # Skip unincorporated areas
+  python3 opendata_to_ags.py --apply                                 # Apply changes to database
+        """
+    )
+    
+    # Entity filtering options
+    parser.add_argument("--include", nargs="*", metavar="ENTITY", 
+                       help="Include only entities matching these patterns (supports wildcards: *, ?, [abc], [!abc])")
+    parser.add_argument("--exclude", nargs="*", metavar="ENTITY",
+                       help="Exclude entities matching these patterns (supports wildcards: *, ?, [abc], [!abc])")
+    
+    # Mode options
+    parser.add_argument("--apply", action="store_true", 
+                       help="Apply successful conversions to database (default: preview mode)")
+    parser.add_argument("--debug", action="store_true", 
+                       help="Enable debug logging")
+    parser.add_argument("--no-csv", dest="generate_csv", action="store_false", default=True,
+                       help="Skip CSV report generation")
+    
+    return parser
+
 def main():
     """Main entry point."""
-    parser = build_arg_parser()
-    # Remove some arguments that don't apply to this tool
-    parser.description = "Convert opendata portal URLs to ArcGIS REST service URLs"
-    
+    parser = build_opendata_arg_parser()
     args = parser.parse_args()
     
-    # Determine layers to process
-    if hasattr(args, 'layers') and args.layers:
-        layers_to_process = args.layers
-    else:
-        # Process all layers if none specified
-        layers_to_process = list(LAYER_CONFIGS.keys())
+    # Process all layers (no layer-specific filtering in this tool)
+    layers_to_process = list(LAYER_CONFIGS.keys())
     
     for layer in layers_to_process:
         print(f"\n[INFO] ==================== Processing layer: {layer.upper()} ====================")
@@ -604,7 +627,7 @@ def main():
             debug=args.debug,
             generate_csv=args.generate_csv,
             max_candidates=3,
-            apply=args.apply if hasattr(args, 'apply') else False
+            apply=args.apply
         )
         
         converter = OpendataToAGS(cfg)
