@@ -176,14 +176,14 @@ LAYER_CONFIGS = {
         'layer_group': 'flu_zoning',
         'external_frmt': 'Zoning',
         'level': 'state_county_city',
-        'processing_script': 'update_zoning2.py',
+        'processing_command': 'python3 {tools_dir}/update_zoning2.py {county} {city}',
     },
     'flu': {
         'category': '08_Land_Use_and_Zoning', 
         'layer_group': 'flu_zoning',
         'external_frmt': 'Future Land Use',
         'level': 'state_county_city',
-        'processing_script': 'update_flu.py',
+        'processing_command': 'python3 {tools_dir}/update_flu.py {county} {city}',
     },
     'fema_flood': {
         'category': '12_Hazards',
@@ -191,42 +191,42 @@ LAYER_CONFIGS = {
         'external_frmt': 'FEMA Flood Zones',
         'level': 'national',
         'entity': 'fema_flood',
-        'processing_script': None,  # No processing script needed
+        'processing_command': None,  # No processing script needed
     },
     'parcel_geo': {
         'category': '05_Parcels',
         'layer_group': 'parcels',
         'external_frmt': 'Parcel Geometry',
         'level': 'state_county',
-        'processing_script': 'load_parcel_geometry.py',
+        'processing_command': 'python3 {tools_dir}/load_parcel_geometry.py {state} {county} current {data_date}',
     },
     'streets': {
         'category': '03_Transportation',
         'layer_group': 'base_map_overlay',
         'external_frmt': 'Streets',
         'level': 'state_county',
-        'processing_script': 'update_streets_county.py',  # No processing script needed
+        'processing_command': 'python3 {tools_dir}/update_streets_county.py {county} {city}',
     },
     'address_points': {
         'category': '05_Parcels',
         'layer_group': 'parcels',
         'external_frmt': 'Address Points',
         'level': 'state_county',
-        'processing_script': 'update_address_points.py',  # No processing script needed
+        'processing_command': 'python3 {tools_dir}/update_address_points.py {county} {city}',
     },
     'subdivisions': {
         'category': '05_Parcels',
         'layer_group': 'parcels',
         'external_frmt': 'Subdivisions',
         'level': 'state_county',
-        'processing_script': 'update_subdivisions_county.py',  # No processing script needed
+        'processing_command': 'python3 {tools_dir}/update_subdivisions_county.py {county} {city}',
     },
     'buildings': {
         'category': '05_Parcels',
         'layer_group': 'parcels',
         'external_frmt': 'Building Footprints',
         'level': 'state_county',
-        'processing_script': 'update_buildings.py',  # No processing script needed
+        'processing_command': 'python3 {tools_dir}/update_buildings.py {county} {city}',
     },
     'traffic_counts': {
         'category': '03_Transportation',
@@ -234,7 +234,7 @@ LAYER_CONFIGS = {
         'external_frmt': 'Traffic Counts FDOT',
         'level': 'state',
         'entity': 'traffic_counts_fl',
-        'processing_script': None,  # No processing script needed
+        'processing_command': None,  # No processing script needed
     },
     'sunbiz': {
         'category': '21_Misc',
@@ -242,7 +242,7 @@ LAYER_CONFIGS = {
         'external_frmt': 'Sunbiz',
         'level': 'state',
         'entity': 'sunbiz_fl',
-        'processing_script': 'sunbiz_corpdata_processing.py',  # No processing script needed
+        'processing_command': 'python3 {tools_dir}/sunbiz_corpdata_processing.py',
     }
 }
 

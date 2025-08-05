@@ -891,32 +891,40 @@ def layer_processing(layer: str, entity: str, state: str, county: str, city: str
             command = cmd_str.split() if isinstance(cmd_str, str) else cmd_str
             _run_command(command, work_dir, logger)
 
-    # 2. Run layer-specific update script (from config)
+    # 2. Run layer-specific processing command (from config)
     layer_config = LAYER_CONFIGS.get(layer, {})
-    script_name = layer_config.get('processing_script')
+    processing_command = layer_config.get('processing_command')
     
-    if script_name is None:
-        reason = f"No processing script configured for layer '{layer}'"
+    if processing_command is None:
+        reason = f"No processing command configured for layer '{layer}'"
         logger.info(f"[PROCESSING] Skipping processing for {layer}/{entity}: {reason}")
         _update_csv_status(layer, entity, 'processing', 'SKIPPED', error_msg=reason, entity_components=entity_components)
         return
     
-    script_path = os.path.join(TOOLS_DIR, script_name)
-    if not os.path.exists(script_path):
-        reason = f"Processing script '{script_name}' not found for layer '{layer}'"
+    # Prepare placeholders for command substitution
+    placeholders = {
+        'tools_dir': TOOLS_DIR,
+        'state': state,
+        'county': county,
+        'city': city or '',
+        'data_date': metadata.get("data_date", ""),
+        'layer': layer,
+        'entity': entity,
+        'work_dir': work_dir,
+    }
+    
+    # Substitute placeholders in the command
+    try:
+        command_str = processing_command.format(**placeholders)
+        command = command_str.split()
+    except KeyError as e:
+        reason = f"Missing placeholder '{e}' in processing command for layer '{layer}'"
         logger.info(f"[PROCESSING] Skipping processing for {layer}/{entity}: {reason}")
         _update_csv_status(layer, entity, 'processing', 'SKIPPED', error_msg=reason, entity_components=entity_components)
         return
     
-    # Build command based on script type
-    if script_name == 'load_parcel_geometry.py':
-        command = ['python3', script_path, state, county, 'current', metadata.get("data_date", "")]
-    else:
-        # Default command for other scripts
-        command = ['python3', script_path, county, city]
-    
-    _debug_main(f"[PROCESSING] Running update script: {script_name}", logger)
-    logger.debug(f"Running update script for {layer}/{entity}")
+    _debug_main(f"[PROCESSING] Running processing command: {command_str}", logger)
+    logger.debug(f"Running processing command for {layer}/{entity}")
     try:
         _run_command(command, work_dir, logger)
         _update_csv_status(layer, entity, 'processing', 'SUCCESS', entity_components=entity_components)
