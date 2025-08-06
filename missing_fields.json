@@ -2381,5 +2381,9 @@
   },
   "zoning_fl_volusia_port_orange": {
     "fields_obj_transform": "zon_code:zoning, ord_num:ordinance"
+  },
+  "flu_fl_alachua_micanopy": {
+    "format": "MANUAL_REQUIRED",
+    "resource": "MANUAL_REQUIRED"
   }
 }

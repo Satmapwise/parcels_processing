@@ -1292,6 +1292,9 @@ class LayersPrescrape:
             self.logger.error("CREATE mode requires state and county to be specified")
             return
         
+        # Determine if we should process multiple entities from CSV
+        process_from_csv = (self.cfg.apply_changes or self.cfg.apply_manual) and not self.cfg.city
+        
         # Load manual data if available
         manual_data = {}
         if Path(self.cfg.manual_file).exists():
@@ -1317,120 +1320,241 @@ class LayersPrescrape:
         
         created_records = []
         
-        # Generate entity name from positional arguments
-        state = self.cfg.state
-        county = self.cfg.county
-        city = self.cfg.city
-        
-        # Determine entity type based on city value
-        if not city or city in {"unincorporated", "unified", "incorporated", "countywide"}:
-            entity_type = city or "unincorporated"
-            # For county-level layers, use county as the entity
-            entity = f"{self.cfg.layer}_{state}_{county}"
-        else:
-            entity_type = "city"
-            # For city-level layers, include city in entity name
-            entity = f"{self.cfg.layer}_{state}_{county}_{city}"
-        
-        # Check if record already exists
-        existing = self._find_record_by_entity(entity)
-        if existing:
-            self.logger.warning(f"Record for {entity} already exists - skipping")
-            return
-        
-        # Check for any records that might match this entity (broader search)
-        matching_records = self._find_matching_records(entity)
-        if matching_records:
-            self.logger.warning(f"Found {len(matching_records)} existing record(s) that might match {entity}:")
-            for record in matching_records:
-                self.logger.warning(f"  - {record.get('layer_subgroup')}_{record.get('state')}_{record.get('county')}_{record.get('city', '')}")
-            self.logger.warning("Skipping creation to avoid duplicates")
-            return
-        else:
-            self.logger.info(f"No existing records found for {entity} - proceeding with creation")
-        
-                # Generate base record
-        expected = generate_expected_values(self.cfg.layer, state, county, city, entity_type)
-        
-        # Apply manual overrides
-        if entity in manual_data:
-            expected.update(manual_data[entity])
-        
-        # Get manual field values (from CSV if applying, otherwise prompt)
-        if self.cfg.apply_changes or self.cfg.apply_manual:
-            # Try to get values from CSV
+        if process_from_csv:
+            # Batch processing from CSV
             csv_path = REPORTS_DIR / f"{self.cfg.layer}_prescrape_create.csv"
-            if csv_path.exists():
-                try:
-                    with open(csv_path, 'r', newline='', encoding='utf-8') as f:
-                        reader = csv.DictReader(f)
-                        for row in reader:
-                            if row.get('entity') == entity:
-                                # Found matching entity in CSV
-                                if row.get('format'):
-                                    expected['format'] = row['format'].upper()
-                                if row.get('src_url_file'):
-                                    expected['src_url_file'] = row['src_url_file']
-                                if row.get('fields_obj_transform'):
-                                    expected['fields_obj_transform'] = row['fields_obj_transform']
-                                break
-                except Exception as e:
-                    self.logger.warning(f"Failed to read CSV for {entity}: {e}")
-        else:
-            # Interactive prompting for manual fields
-            print(f"\n[CREATE] Creating record for: {entity}")
-            print("Enter values for manual fields (press Enter to leave blank):")
+            if not csv_path.exists():
+                self.logger.warning(f"No CSV file found at {csv_path}")
+                return
             
-            # Prompt for format
-            format_value = input("format: ").strip()
-            if format_value:
-                expected['format'] = format_value.upper()
+            # Read entities from CSV that match our criteria
+            entities_to_process = []
+            try:
+                with open(csv_path, 'r', newline='', encoding='utf-8') as f:
+                    reader = csv.DictReader(f)
+                    for row in reader:
+                        entity = row.get('entity', '')
+                        if not entity or entity == 'SUMMARY' or entity.startswith('==='):
+                            continue
+                        
+                        # Parse entity to check if it matches our criteria
+                        parts = entity.split('_')
+                        if len(parts) >= 3:  # layer_state_county_city
+                            csv_layer = parts[0]
+                            csv_state = parts[1]
+                            csv_county = parts[2]
+                            csv_city = '_'.join(parts[3:]) if len(parts) > 3 else None
+                            
+                            # Check if this entity matches our criteria
+                            if csv_layer == self.cfg.layer and csv_state == self.cfg.state and csv_county == self.cfg.county:
+                                entities_to_process.append({
+                                    'entity': entity,
+                                    'row': row,
+                                    'state': csv_state,
+                                    'county': csv_county,
+                                    'city': csv_city
+                                })
+                
+                if not entities_to_process:
+                    self.logger.info(f"No entities found in CSV matching {self.cfg.layer}_{self.cfg.state}_{self.cfg.county}")
+                    return
+                
+                self.logger.info(f"Found {len(entities_to_process)} entities to process from CSV")
+                
+            except Exception as e:
+                self.logger.error(f"Failed to read CSV: {e}")
+                return
             
-            # Prompt for src_url_file
-            src_url_file = input("src_url_file: ").strip()
-            if src_url_file:
-                expected['src_url_file'] = src_url_file
+            # Process each matching entity
+            for entity_info in entities_to_process:
+                entity = entity_info['entity']
+                row = entity_info['row']
+                state = entity_info['state']
+                county = entity_info['county']
+                city = entity_info['city']
+                
+                # Determine entity type
+                if not city or city in {"unincorporated", "unified", "incorporated", "countywide"}:
+                    entity_type = city or "unincorporated"
+                else:
+                    entity_type = "city"
+                
+                # Check if record already exists
+                existing = self._find_record_by_entity(entity)
+                if existing:
+                    self.logger.warning(f"Record for {entity} already exists - skipping")
+                    continue
+                
+                # Check for any records that might match this entity (broader search)
+                matching_records = self._find_matching_records(entity)
+                if matching_records:
+                    self.logger.warning(f"Found {len(matching_records)} existing record(s) that might match {entity}:")
+                    for record in matching_records:
+                        self.logger.warning(f"  - {record.get('layer_subgroup')}_{record.get('state')}_{record.get('county')}_{record.get('city', '')}")
+                    self.logger.warning("Skipping creation to avoid duplicates")
+                    continue
+                else:
+                    self.logger.info(f"No existing records found for {entity} - proceeding with creation")
+                
+                # Generate base record
+                expected = generate_expected_values(self.cfg.layer, state, county, city, entity_type)
+                
+                # Apply manual overrides
+                if entity in manual_data:
+                    expected.update(manual_data[entity])
+                
+                # Get values from CSV row
+                if row.get('format'):
+                    expected['format'] = row['format'].upper()
+                if row.get('src_url_file'):
+                    expected['src_url_file'] = row['src_url_file']
+                if row.get('fields_obj_transform'):
+                    expected['fields_obj_transform'] = row['fields_obj_transform']
+                
+                # Check for required fields
+                required_manual = []
+                if not expected.get('format') or expected['format'] == "MANUAL_REQUIRED":
+                    required_manual.append('format')
+                
+                fmt = (expected.get('format') or '').lower()
+                if fmt in ['ags', 'arcgis', 'esri', 'ags_extract']:
+                    if not expected.get('table_name') or expected['table_name'] == "MANUAL_REQUIRED":
+                        required_manual.append('table_name')
+                else:
+                    if not (expected.get('resource') or expected.get('src_url_file')):
+                        required_manual.append('resource')
+                
+                if required_manual:
+                    self.logger.error(f"Cannot create {entity} - missing required manual fields: {required_manual}")
+                    self.missing_fields[entity] = {field: "MANUAL_REQUIRED" for field in required_manual}
+                    continue
+                
+                # Create the record
+                self._create_record(expected)
+                self.logger.info(f"Created record for {entity}")
+                
+                # Track if this entity was successfully created (for CSV cleanup)
+                created_records.append({
+                    'entity': entity,
+                    'record': expected,
+                    'created': True
+                })
+        else:
+            # Single entity processing (current behavior)
+            # Generate entity name from positional arguments
+            state = self.cfg.state
+            county = self.cfg.county
+            city = self.cfg.city
             
-            # Prompt for fields_obj_transform
-            fields_obj_transform = input("fields_obj_transform: ").strip()
-            if fields_obj_transform:
-                expected['fields_obj_transform'] = fields_obj_transform
-        
-        # Check for required fields after prompting
-        required_manual = []
-        if not expected.get('format') or expected['format'] == "MANUAL_REQUIRED":
-            required_manual.append('format')
-        
-        fmt = (expected.get('format') or '').lower()
-        if fmt in ['ags', 'arcgis', 'esri', 'ags_extract']:
-            if not expected.get('table_name') or expected['table_name'] == "MANUAL_REQUIRED":
-                required_manual.append('table_name')
-        else:
-            if not (expected.get('resource') or expected.get('src_url_file')):
-                required_manual.append('resource')
-        
-        if required_manual:
-            self.logger.error(f"Cannot create {entity} - missing required manual fields: {required_manual}")
-            self.missing_fields[entity] = {field: "MANUAL_REQUIRED" for field in required_manual}
-            return
-        
-        # Create the record
-        if self.cfg.apply_changes or self.cfg.apply_manual:
-            self._create_record(expected)
-            self.logger.info(f"Created record for {entity}")
-        else:
-            self.logger.info(f"Would create record for {entity}")
-        
-        # Track if this entity was successfully created (for CSV cleanup)
-        entity_created = False
-        if self.cfg.apply_changes or self.cfg.apply_manual:
-            entity_created = True
-        
-        created_records.append({
-            'entity': entity,
-            'record': expected,
-            'created': entity_created
-        })
+            # Determine entity type based on city value
+            if not city or city in {"unincorporated", "unified", "incorporated", "countywide"}:
+                entity_type = city or "unincorporated"
+                # For county-level layers, use state_county as the entity
+                entity = f"{self.cfg.layer}_{state}_{county}"
+            else:
+                entity_type = "city"
+                # For city-level layers, include city in entity name
+                entity = f"{self.cfg.layer}_{state}_{county}_{city}"
+            
+            # Check if record already exists
+            existing = self._find_record_by_entity(entity)
+            if existing:
+                self.logger.warning(f"Record for {entity} already exists - skipping")
+                return
+            
+            # Check for any records that might match this entity (broader search)
+            matching_records = self._find_matching_records(entity)
+            if matching_records:
+                self.logger.warning(f"Found {len(matching_records)} existing record(s) that might match {entity}:")
+                for record in matching_records:
+                    self.logger.warning(f"  - {record.get('layer_subgroup')}_{record.get('state')}_{record.get('county')}_{record.get('city', '')}")
+                self.logger.warning("Skipping creation to avoid duplicates")
+                return
+            else:
+                self.logger.info(f"No existing records found for {entity} - proceeding with creation")
+            
+            # Generate base record
+            expected = generate_expected_values(self.cfg.layer, state, county, city, entity_type)
+            
+            # Apply manual overrides
+            if entity in manual_data:
+                expected.update(manual_data[entity])
+            
+            # Get manual field values (from CSV if applying, otherwise prompt)
+            if self.cfg.apply_changes or self.cfg.apply_manual:
+                # Try to get values from CSV
+                csv_path = REPORTS_DIR / f"{self.cfg.layer}_prescrape_create.csv"
+                if csv_path.exists():
+                    try:
+                        with open(csv_path, 'r', newline='', encoding='utf-8') as f:
+                            reader = csv.DictReader(f)
+                            for row in reader:
+                                if row.get('entity') == entity:
+                                    # Found matching entity in CSV
+                                    if row.get('format'):
+                                        expected['format'] = row['format'].upper()
+                                    if row.get('src_url_file'):
+                                        expected['src_url_file'] = row['src_url_file']
+                                    if row.get('fields_obj_transform'):
+                                        expected['fields_obj_transform'] = row['fields_obj_transform']
+                                    break
+                    except Exception as e:
+                        self.logger.warning(f"Failed to read CSV for {entity}: {e}")
+            else:
+                # Interactive prompting for manual fields
+                print(f"\n[CREATE] Creating record for: {entity}")
+                print("Enter values for manual fields (press Enter to leave blank):")
+                
+                # Prompt for format
+                format_value = input("format: ").strip()
+                if format_value:
+                    expected['format'] = format_value.upper()
+                
+                # Prompt for src_url_file
+                src_url_file = input("src_url_file: ").strip()
+                if src_url_file:
+                    expected['src_url_file'] = src_url_file
+                
+                # Prompt for fields_obj_transform
+                fields_obj_transform = input("fields_obj_transform: ").strip()
+                if fields_obj_transform:
+                    expected['fields_obj_transform'] = fields_obj_transform
+            
+            # Check for required fields after prompting
+            required_manual = []
+            if not expected.get('format') or expected['format'] == "MANUAL_REQUIRED":
+                required_manual.append('format')
+            
+            fmt = (expected.get('format') or '').lower()
+            if fmt in ['ags', 'arcgis', 'esri', 'ags_extract']:
+                if not expected.get('table_name') or expected['table_name'] == "MANUAL_REQUIRED":
+                    required_manual.append('table_name')
+            else:
+                if not (expected.get('resource') or expected.get('src_url_file')):
+                    required_manual.append('resource')
+            
+            if required_manual:
+                self.logger.error(f"Cannot create {entity} - missing required manual fields: {required_manual}")
+                self.missing_fields[entity] = {field: "MANUAL_REQUIRED" for field in required_manual}
+                return
+            
+            # Create the record
+            if self.cfg.apply_changes or self.cfg.apply_manual:
+                self._create_record(expected)
+                self.logger.info(f"Created record for {entity}")
+            else:
+                self.logger.info(f"Would create record for {entity}")
+            
+            # Track if this entity was successfully created (for CSV cleanup)
+            entity_created = False
+            if self.cfg.apply_changes or self.cfg.apply_manual:
+                entity_created = True
+            
+            created_records.append({
+                'entity': entity,
+                'record': expected,
+                'created': entity_created
+            })
         
         # Generate CSV report (living document format)
         if self.cfg.generate_csv:
@@ -1492,7 +1616,7 @@ class LayersPrescrape:
             all_rows.sort(key=lambda row: row[0])  # Sort by entity
             
             # Write CSV
-            if all_rows or new_rows:
+            if all_rows:
                 with open(csv_path, 'w', newline='', encoding='utf-8') as f:
                     writer = csv.writer(f)
                     writer.writerow(headers)
@@ -1502,6 +1626,11 @@ class LayersPrescrape:
                     self.logger.info(f"Creation report updated → {csv_path} ({len(new_rows)} new entities)")
                 else:
                     self.logger.info(f"Creation report updated → {csv_path} (no new entities)")
+            else:
+                # No rows left, delete the file
+                if csv_path.exists():
+                    csv_path.unlink()
+                    self.logger.info(f"Deleted empty CSV after removing all entities")
         
         self.logger.info(f"Create complete: {len(created_records)} records processed")
     
