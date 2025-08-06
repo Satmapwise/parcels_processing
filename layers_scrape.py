@@ -246,7 +246,8 @@ class Config:
                  run_processing: bool = True,
                  run_upload: bool = True,
                  generate_summary: bool = True,
-                 process_anyway: bool = False):
+                 process_anyway: bool = False,
+                 live_output: bool = False):
         self.test_mode = test_mode
         self.debug = debug
         self.isolate_logs = isolate_logs
@@ -261,6 +262,7 @@ class Config:
         # Misc behavior flags
         self.generate_summary = generate_summary
         self.process_anyway = process_anyway
+        self.live_output = live_output
 
 # Global config object
 CONFIG = Config()
@@ -361,8 +363,101 @@ def resolve_work_dir(layer: str, entity: str, entity_components: dict = None):
     work_dir = resolve_layer_directory(layer, state, county, city)
     return work_dir
 
+def _run_command_live(command, work_dir, logger):
+    """Run a shell command with live output streaming."""
+    if CONFIG.test_mode:
+        logger.info(f"[TEST MODE] COMMAND SKIPPED IN {work_dir}: {' '.join(command)}")
+        return ""
+    
+    logger.info(f"Running command in {work_dir}: {' '.join(command)}")
+    
+    # Use Popen for live output streaming
+    process = subprocess.Popen(
+        command, 
+        cwd=work_dir, 
+        stdout=subprocess.PIPE, 
+        stderr=subprocess.STDOUT, 
+        text=True, 
+        bufsize=1, 
+        universal_newlines=True
+    )
+    
+    stdout_lines = []
+    
+    # Stream output in real-time
+    while True:
+        output = process.stdout.readline()
+        if output == '' and process.poll() is not None:
+            break
+        if output:
+            output = output.rstrip()
+            print(output)  # Live output to console
+            stdout_lines.append(output)
+            logger.debug(output)
+    
+    # Wait for process to complete and get return code
+    return_code = process.wait()
+    
+    # Handle download_data.py no-new-data conditions
+    if len(command) > 1 and 'download_data.py' in command[1]:
+        if return_code == 1:
+            if CONFIG.process_anyway:
+                logger.warning("download_data.py returned exit code 1 - no new data available, but continuing due to process_anyway=True")
+                return '\n'.join(stdout_lines)
+            else:
+                logger.info("download_data.py returned exit code 1 - no new data available - skipping entity")
+                raise SkipEntityError("No new data available from server", layer=None, entity=None)
+        elif return_code == 0:
+            stdout_lower = '\n'.join(stdout_lines).lower()
+            if any(phrase in stdout_lower for phrase in [
+                '304 not modified', 'not modified on server', 'omitting download', 
+                'no new data available from server'
+            ]):
+                if CONFIG.process_anyway:
+                    logger.warning("download_data.py indicates no new data available, but continuing due to process_anyway=True")
+                else:
+                    logger.info("download_data.py indicates no new data available - skipping entity")
+                    raise SkipEntityError("No new data available from server", layer=None, entity=None)
+
+    if return_code != 0:
+        # Check for deprecated URL/service errors before general failure
+        error_output = '\n'.join(stdout_lines).lower()
+        
+        # Detect deprecated/dead service URLs
+        deprecated_patterns = [
+            'service not started',
+            'could not retrieve layer metadata', 
+            'esridownloaderror',
+            'authentication required',
+            'login required',
+            'service unavailable',
+            'service disabled',
+            'access denied',
+            'unauthorized'
+        ]
+        
+        if any(pattern in error_output for pattern in deprecated_patterns):
+            logger.error(f"Deprecated/inaccessible URL detected for command: {' '.join(command)}")
+            logger.error(f"Error indicators: {error_output}")
+            raise DownloadError(f"URL appears to be deprecated or inaccessible: {error_output}", layer=None, entity=None)
+        
+        # General command failure
+        logger.error(f"Error executing command: {' '.join(command)}")
+        logger.error(f"STDOUT: {chr(10).join(stdout_lines)}")
+        raise ProcessingError(f"Command failed with exit code {return_code}: {' '.join(command)}")
+    
+    return '\n'.join(stdout_lines)
+
 def _run_command(command, work_dir, logger):
     """Run a shell command in a specified directory."""
+    # Choose between live and regular output based on config
+    if CONFIG.live_output:
+        return _run_command_live(command, work_dir, logger)
+    else:
+        return _run_command_regular(command, work_dir, logger)
+
+def _run_command_regular(command, work_dir, logger):
+    """Run a shell command in a specified directory with captured output."""
     if CONFIG.test_mode:
         logger.info(f"[TEST MODE] COMMAND SKIPPED IN {work_dir}: {' '.join(command)}")
         return
@@ -2233,6 +2328,7 @@ def main():
     parser.add_argument("--no-upload", action="store_true", help="Skip the upload phase.")
     parser.add_argument("--no-summary", action="store_true", help="Skip the summary generation.")
     parser.add_argument("--process-anyway", action="store_true", help="Continue processing even when download returns 'no new data'.")
+    parser.add_argument("--live-output", action="store_true", help="Show live output from commands as they run.")
     
     args = parser.parse_args()
 
@@ -2247,7 +2343,8 @@ def main():
         run_processing=not args.no_processing,
         run_upload=not args.no_upload,
         generate_summary=not args.no_summary,
-        process_anyway=args.process_anyway
+        process_anyway=args.process_anyway,
+        live_output=args.live_output
     )
     
     initialize_logging(CONFIG.debug)
