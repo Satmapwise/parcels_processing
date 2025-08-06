@@ -1392,18 +1392,18 @@ class LayersPrescrape:
             self.logger.error(f"Cannot create {entity} - missing required manual fields: {required_manual}")
             self.missing_fields[entity] = {field: "MANUAL_REQUIRED" for field in required_manual}
             return
-            
-            # Create the record
-            if self.cfg.apply_changes or self.cfg.apply_manual:
-                self._create_record(expected)
-                self.logger.info(f"Created record for {entity}")
-            else:
-                self.logger.info(f"Would create record for {entity}")
-            
-            created_records.append({
-                'entity': entity,
-                'record': expected
-            })
+        
+        # Create the record
+        if self.cfg.apply_changes or self.cfg.apply_manual:
+            self._create_record(expected)
+            self.logger.info(f"Created record for {entity}")
+        else:
+            self.logger.info(f"Would create record for {entity}")
+        
+        created_records.append({
+            'entity': entity,
+            'record': expected
+        })
         
         # Generate CSV report
         if self.cfg.generate_csv and created_records:
