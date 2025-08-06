@@ -748,9 +748,14 @@ def extract_preprocessing_commands(layer: str, entity: str) -> str:
 
 # Validation functions removed - moved to fill mode only
 
-def generate_expected_values(layer: str, state: str, county: str, city: str, entity_type: str) -> Dict[str, Any]:
+def generate_expected_values(layer: str, state: str | None, county: str | None, city: str | None, entity_type: str | None = None) -> Dict[str, Any]:
     """Generate expected values for a database record based on layer/state/county/city."""
     config = LAYER_CONFIGS.get(layer, {})
+    
+    # Handle None values
+    state = state or 'fl'
+    county = county or ''
+    city = city or ''
     
     # Determine entity type if not provided
     if not entity_type:
@@ -765,8 +770,8 @@ def generate_expected_values(layer: str, state: str, county: str, city: str, ent
     
     # Generate title using format_name for proper external format
     layer_external = format_name(layer, 'layer', external=True)
-    county_external = format_name(county, 'county', external=True)
-    city_external = format_name(city_std, 'city', external=True)
+    county_external = format_name(county, 'county', external=True) if county else ''
+    city_external = format_name(city_std, 'city', external=True) if city_std else ''
     state_abbrev = format_name(state, 'state', external=True) if state else 'FL'
     
     if entity_type == "city":
@@ -781,9 +786,9 @@ def generate_expected_values(layer: str, state: str, county: str, city: str, ent
     
     # Generate table name (internal format)
     layer_internal = format_name(layer, 'layer', external=False)
-    city_internal = format_name(city_std, 'city', external=False)
-    county_internal = format_name(county, 'county', external=False)
-    state_internal = state.lower()
+    city_internal = format_name(city_std, 'city', external=False) if city_std else ''
+    county_internal = format_name(county, 'county', external=False) if county else ''
+    state_internal = state.lower() if state else 'fl'
     
     if entity_type == "city":
         table_name = f"{layer_internal}_{city_internal}"
@@ -798,8 +803,8 @@ def generate_expected_values(layer: str, state: str, county: str, city: str, ent
     return {
         'title': title,
         'state': format_name(state, 'state', external=True) if state else 'FL',  # external format for database
-        'county': format_name(county, 'county', external=True),  # external format for database
-        'city': format_name(city_std, 'city', external=True),   # external format for database
+        'county': format_name(county, 'county', external=True) if county else '',  # external format for database
+        'city': format_name(city_std, 'city', external=True) if city_std else '',   # external format for database
         'layer_subgroup': layer_internal,
         'layer_group': config.get('layer_group', 'flu_zoning'),
         'category': config.get('category', ''),
@@ -1290,13 +1295,53 @@ class LayersPrescrape:
         # Validate layer
         if self.cfg.layer not in LAYER_CONFIGS:
             errors.append(f"Layer '{self.cfg.layer}' not found in LAYER_CONFIGS")
+            if errors:
+                self.logger.error("CREATE mode validation failed:")
+                for error in errors:
+                    self.logger.error(f"  - {error}")
+                return False
+            return True
         
-        # Validate state
+        # Get layer configuration
+        layer_config = LAYER_CONFIGS[self.cfg.layer]
+        layer_level = layer_config.get('level', 'state_county_city')
+        
+        # Validate based on layer level
+        if layer_level == 'state_county_city':
+            if not self.cfg.state:
+                errors.append(f"Layer '{self.cfg.layer}' requires state argument (level: {layer_level})")
+            if not self.cfg.county:
+                errors.append(f"Layer '{self.cfg.layer}' requires county argument (level: {layer_level})")
+            if not self.cfg.city:
+                errors.append(f"Layer '{self.cfg.layer}' requires city argument (level: {layer_level})")
+        elif layer_level == 'state_county':
+            if not self.cfg.state:
+                errors.append(f"Layer '{self.cfg.layer}' requires state argument (level: {layer_level})")
+            if not self.cfg.county:
+                errors.append(f"Layer '{self.cfg.layer}' requires county argument (level: {layer_level})")
+            if self.cfg.city:
+                errors.append(f"Layer '{self.cfg.layer}' does not support city argument (level: {layer_level})")
+        elif layer_level == 'state':
+            if not self.cfg.state:
+                errors.append(f"Layer '{self.cfg.layer}' requires state argument (level: {layer_level})")
+            if self.cfg.county:
+                errors.append(f"Layer '{self.cfg.layer}' does not support county argument (level: {layer_level})")
+            if self.cfg.city:
+                errors.append(f"Layer '{self.cfg.layer}' does not support city argument (level: {layer_level})")
+        elif layer_level == 'national':
+            if self.cfg.state:
+                errors.append(f"Layer '{self.cfg.layer}' does not support state argument (level: {layer_level})")
+            if self.cfg.county:
+                errors.append(f"Layer '{self.cfg.layer}' does not support county argument (level: {layer_level})")
+            if self.cfg.city:
+                errors.append(f"Layer '{self.cfg.layer}' does not support city argument (level: {layer_level})")
+        
+        # Validate state if provided
         if self.cfg.state:
             if self.cfg.state not in INTEGRATED_STATES:
                 errors.append(f"State '{self.cfg.state}' not found in INTEGRATED_STATES. Available states: {', '.join(sorted(INTEGRATED_STATES))}")
             else:
-                # Validate county if state is valid
+                # Validate county if state is valid and county is provided
                 if self.cfg.county:
                     state_counties = STATE_COUNTIES.get(self.cfg.state, set())
                     if self.cfg.county not in state_counties:
@@ -1316,11 +1361,6 @@ class LayersPrescrape:
         
         # Validate inputs
         if not self._validate_create_inputs():
-            return
-        
-        # Use positional arguments instead of parsing entities
-        if not self.cfg.state or not self.cfg.county:
-            self.logger.error("CREATE mode requires state and county to be specified")
             return
         
         # Determine if we should process multiple entities from CSV
@@ -2675,10 +2715,7 @@ def main():
         print("[ERROR] CREATE and UPDATE-STATES modes cannot be combined with DETECT or FILL")
         sys.exit(1)
     
-    # Validate CREATE mode requirements
-    if mode == "create" and (not args.state or not args.county):
-        print("[ERROR] CREATE mode requires state and county to be specified")
-        sys.exit(1)
+    # Validate CREATE mode requirements (handled by layer-specific validation)
     
     # Handle one-time state update mode
     if mode == "update_states":
