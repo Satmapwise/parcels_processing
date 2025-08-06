@@ -1421,9 +1421,15 @@ class LayersPrescrape:
         else:
             self.logger.info(f"Would create record for {entity}")
         
+        # Track if this entity was successfully created (for CSV cleanup)
+        entity_created = False
+        if self.cfg.apply_changes or self.cfg.apply_manual:
+            entity_created = True
+        
         created_records.append({
             'entity': entity,
-            'record': expected
+            'record': expected,
+            'created': entity_created
         })
         
         # Generate CSV report (living document format)
@@ -1453,13 +1459,22 @@ class LayersPrescrape:
                 except Exception as e:
                     self.logger.warning(f"Failed to read existing CSV: {e}")
             
-            # Add new records (only if not already present)
+            # Filter out entities that were successfully created in this run
+            created_entities = {creation['entity'] for creation in created_records if creation.get('created', False)}
+            if created_entities:
+                self.logger.info(f"Filtering out created entities from CSV: {created_entities}")
+                existing_rows = [row for row in existing_rows if row[0] not in created_entities]
+                existing_entities = existing_entities - created_entities
+            
+            # Add new records (only if not already present and not created)
             new_rows = []
             for creation in created_records:
                 entity = creation['entity']
                 record = creation['record']
+                was_created = creation.get('created', False)
                 
-                if entity not in existing_entities:
+                # Only add to CSV if not already present AND not successfully created
+                if entity not in existing_entities and not was_created:
                     # Create row in same format as detect mode
                     row_values = [entity]
                     for field in headers[1:]:  # Skip 'entity'
@@ -1467,6 +1482,10 @@ class LayersPrescrape:
                         row_values.append(str(value) if value else '')
                     new_rows.append(row_values)
                     existing_entities.add(entity)
+                elif was_created:
+                    self.logger.debug(f"Skipping {entity} from CSV - was successfully created")
+                elif entity in existing_entities:
+                    self.logger.debug(f"Skipping {entity} from CSV - already exists")
             
             # Combine existing and new rows, sort by entity
             all_rows = existing_rows + new_rows
