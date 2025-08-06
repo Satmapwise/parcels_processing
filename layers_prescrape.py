@@ -1346,6 +1346,8 @@ class LayersPrescrape:
                 self.logger.warning(f"  - {record.get('layer_subgroup')}_{record.get('state')}_{record.get('county')}_{record.get('city', '')}")
             self.logger.warning("Skipping creation to avoid duplicates")
             return
+        else:
+            self.logger.info(f"No existing records found for {entity} - proceeding with creation")
         
                 # Generate base record
         expected = generate_expected_values(self.cfg.layer, state, county, city, entity_type)
@@ -2054,19 +2056,41 @@ class LayersPrescrape:
     
     def _find_matching_records(self, entity: str) -> List[Dict[str, Any]]:
         """Find any records that might match this entity (broader search)."""
-        try:
-            state, county, city = split_entity(entity)
-        except ValueError:
+        # Use the positional arguments directly instead of parsing entity
+        state = self.cfg.state
+        county = self.cfg.county
+        city = self.cfg.city
+        
+        if not state or not county:
             return []
+        
+        # Convert to external format for database query
+        state_external = format_name(state, 'state', external=True) if state else None
+        county_external = format_name(county, 'county', external=True) if county else None
+        city_external = format_name(city, 'city', external=True) if city else None
+        
+        # Handle None city properly for database query
+        if city_external is None:
+            city_external = ''  # Empty string for NULL city values
         
         # Search for records with same layer, state, county, and city
         sql = """
         SELECT * FROM m_gis_data_catalog_main 
         WHERE layer_subgroup = %s AND state = %s AND county = %s AND city = %s
         """
-        params = (self.cfg.layer, state, county, city)
+        params = (self.cfg.layer, state_external, county_external, city_external)
         
-        return self.db.fetchall(sql, params) or []
+        self.logger.debug(f"Searching for records with: layer={self.cfg.layer}, state={state_external}, county={county_external}, city={city_external}")
+        results = self.db.fetchall(sql, params) or []
+        self.logger.debug(f"Found {len(results)} matching records")
+        
+        # Also check for exact entity match using _find_record_by_entity
+        exact_match = self._find_record_by_entity(entity)
+        if exact_match:
+            self.logger.debug(f"Found exact match for entity: {entity}")
+            results.append(exact_match)
+        
+        return results
     
     def _update_record(self, record: Dict[str, Any], updates: Dict[str, Any]):
         """Update database record with new values."""

@@ -380,6 +380,14 @@ def format_name(name: str, name_type: str, external: bool = False) -> str:
             }
             return city_special_reverse.get(name.lower(), _to_internal_format(name))
     
+    elif name_type == 'state':
+        if external:
+            # Convert to uppercase for state abbreviations
+            return name.upper()
+        else:
+            # Convert to lowercase for internal format
+            return name.lower()
+    
     # Default: just do basic conversion
     if external:
         return name.replace('_', ' ').title()
