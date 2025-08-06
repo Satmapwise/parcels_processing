@@ -67,15 +67,19 @@ Main production script that processes geospatial data through a clean 4-stage pi
 - **AGS/ArcGIS**: Extract from ArcGIS servers using table names
 - **Direct URLs**: Download ZIP files or direct resources
 - **NND Detection**: Detects "no new data" from server responses
+- **HTML Content Validation**: Detects PDF viewer pages masquerading as files
+- **AGS Validation**: Validates GeoJSON files for empty/corrupt content
 
 #### **Stage 2: Metadata** (`layer_metadata`)  
 - **Spatial Metadata**: Extracts EPSG, field names, geometry type
 - **Data Date Detection**: Reads modification dates from shapefiles
+- **Conservative PDF Extraction**: Smart date extraction for PDF files
 - **NND Check**: Compares data dates to prevent unnecessary processing
 
 #### **Stage 3: Processing** (`layer_processing`)
 - **Dynamic Scripts**: Generates update commands based on layer name
 - **Pre-processing**: Runs optional preprocessing commands from database
+- **Warning-Only Commands**: Commands prefixed with `WARNING:` continue on failure
 - **Format Control**: Skips processing for metadata-only formats (PDF)
 
 #### **Stage 4: Upload** (`layer_upload`)
@@ -102,7 +106,18 @@ python3 layers_scrape.py --include "streets_fl_alachua" --test
 
 # Debug with full console output
 python3 layers_scrape.py --include "zoning_*" --debug --no-log-isolation
+
+# Force processing even when no new data detected
+python3 layers_scrape.py --include "zoning_*" --process-anyway
 ```
+
+#### **Advanced Command Processing**
+- **Source Comments**: Pre-metadata commands from database with `WARNING:` support
+- **Processing Comments**: Post-metadata commands with multiple format support
+  - Bracketed: `[command1] [command2] [command3]`
+  - JSON array: `["command1", "command2", "command3"]`
+  - Legacy: newlines/semicolons
+- **Warning-Only Commands**: Commands starting with `WARNING:` generate warnings but don't fail the entity
 
 #### **State-Aware Processing**
 - **Multi-State Support**: Ready for Florida, Georgia, Delaware expansion
@@ -120,6 +135,7 @@ python3 layers_scrape.py --include "zoning_*" --debug --no-log-isolation
 - **Graceful Degradation**: Failed entities don't stop processing
 - **Detailed Logging**: Entity-specific logs with isolation options  
 - **Exception Hierarchy**: Custom exceptions for different failure types
+- **HTML Content Detection**: Prevents PDF viewer pages from being processed as data files
 
 ---
 
@@ -151,8 +167,9 @@ python3 layers_prescrape.py --include "streets_*" --fill
 python3 layers_prescrape.py --fill --all-layers
 ```
 - **Auto-Generation**: Derives `sys_raw_folder`, `table_name`, titles from entity patterns
-- **URL Validation**: Batch validates source URLs with caching
+- **URL Validation**: Batch validates source URLs with caching and concurrent processing
 - **Field Health**: Validates 19 critical database fields
+- **Manifest Integration**: Extracts commands from legacy manifest files
 
 #### **CREATE Mode**
 ```bash
@@ -170,6 +187,13 @@ python3 layers_prescrape.py --detect --fill --include "zoning_*"
 
 ### 🎯 Advanced Features
 
+#### **URL Validation Engine**
+- **Concurrent Processing**: Uses ThreadPoolExecutor for batch URL validation
+- **Caching**: Validates URLs once and caches results for performance
+- **ArcGIS Service Detection**: Specialized validation for ArcGIS REST services
+- **Deprecated URL Detection**: Identifies URLs that require authentication or are no longer accessible
+- **Status Codes**: `OK`, `MISSING`, `DEPRECATED` with detailed reasoning
+
 #### **Title Parsing Engine**
 - **Complex Extraction**: Parses layer/county/city from database titles
 - **Special Handling**: Hardcoded logic for state/national layers (`fdot_tc`, `sunbiz`, `flood_zones`)
@@ -184,6 +208,11 @@ python3 layers_prescrape.py --detect --fill --include "zoning_*"
 - **Field Statistics**: Completion rates across all database fields
 - **Issue Tracking**: Categorizes and counts different types of problems
 - **CSV Export**: Machine-readable reports for analysis
+
+#### **Manifest Integration**
+- **Legacy Support**: Extracts preprocessing commands from old manifest files
+- **Command Phasing**: Separates source_comments (pre-metadata) from processing_comments (post-metadata)
+- **Format Conversion**: Converts between new entity format and legacy manifest format
 
 ---
 
@@ -211,7 +240,13 @@ All entities follow `layer_state_county_city` format with flexible components:
 - **`resource`** (Direct downloads) - Resource path or identifier
 
 #### **⚙️ Processing Configuration**
-- **`processing_comments`** (OPTIONAL) - Pre-processing commands separated by `|`
+- **`processing_comments`** (OPTIONAL) - Post-metadata processing commands
+  - Bracketed format: `[command1] [command2] [command3]`
+  - JSON array: `["command1", "command2", "command3"]`
+  - Legacy: newlines/semicolons
+- **`source_comments`** (OPTIONAL) - Pre-metadata processing commands
+  - Same format support as processing_comments
+  - Commands prefixed with `WARNING:` continue on failure
 - **`fields_obj_transform`** (OPTIONAL) - Field mapping transformations
 
 #### **📊 Metadata (Auto-populated)**
@@ -234,7 +269,8 @@ format = 'ags'                      -- Download type
 table_name = 'zoning_plant_city'    -- ArcGIS table
 
 -- Optional  
-processing_comments = 'prep1.py|prep2.sh'
+processing_comments = '[prep1.py] [prep2.sh]'
+source_comments = '[WARNING:cleanup.sh] [validate.py]'
 ```
 
 #### **Direct Downloads** (`format` != AGS)
@@ -308,6 +344,9 @@ python3 layers_scrape.py --include "*_fl_alachua_*"
 
 # Test mode first
 python3 layers_scrape.py --include "flu_fl_orange_*" --test
+
+# Force processing even with no new data
+python3 layers_scrape.py --include "zoning_fl_*" --process-anyway
 ```
 
 #### 3. Monitoring & Analysis
@@ -343,6 +382,18 @@ python3 layers_scrape.py --include "*_ga_*"
 
 # Multi-state processing
 python3 layers_scrape.py --include "zoning_fl_*" "zoning_ga_*"
+```
+
+#### **Advanced Command Processing**
+```bash
+# Commands with warning-only support
+# In database: source_comments = "[WARNING:cleanup.sh] [validate.py]"
+# WARNING: commands continue processing even if they fail
+
+# Multiple command formats supported
+# Bracketed: [cmd1] [cmd2] [cmd3]
+# JSON: ["cmd1", "cmd2", "cmd3"]  
+# Legacy: cmd1|cmd2|cmd3
 ```
 
 ---
@@ -401,6 +452,12 @@ python3 -c "from layers_helpers import FULL_PIPELINE_FORMATS, METADATA_ONLY_FORM
 - **NND (No New Data)**: Normal - server indicates no updates available
 - **FAILED**: Actual errors requiring investigation
 - **SKIPPED**: Intentionally excluded (format rules, blacklist)
+
+### Advanced Error Handling
+- **HTML Content Detection**: Prevents PDF viewer pages from being processed as data files
+- **AGS Validation**: Checks GeoJSON files for empty/corrupt content
+- **Conservative PDF Extraction**: Smart date extraction that avoids fake freshness
+- **URL Validation**: Batch validation with caching for performance
 
 ---
 
