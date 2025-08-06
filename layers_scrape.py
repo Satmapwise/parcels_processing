@@ -728,6 +728,7 @@ def layer_download(layer: str, entity: str, state: str, county: str, city: str, 
             raise DownloadError(str(de), layer, entity) from de
         
         # Find and return newest zip file if any
+        data_date = None  # Initialize data_date
         try:
             zip_file = _find_latest_zip(work_dir, logger)
             if zip_file:
