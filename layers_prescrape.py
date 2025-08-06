@@ -256,7 +256,12 @@ def parse_title_to_entity(title: str) -> Tuple[Optional[str], Optional[str], Opt
     m_cnty_only = county_only_re.match(rest_main)
     if m_cnty_only:
         county = format_name(m_cnty_only.group(1).strip(), 'county', external=False)
-        return (layer_norm, county, None, None)
+        # Check if this is a city-level layer where "County" means "Unincorporated"
+        layer_config = LAYER_CONFIGS.get(layer_norm, {})
+        if layer_config.get('level') == 'state_county_city':
+            return (layer_norm, county, "unincorporated", "unincorporated")
+        else:
+            return (layer_norm, county, None, None)
 
     # Fallback: cannot parse
     return (None, None, None, None)
