@@ -2261,13 +2261,16 @@ class LayersPrescrape:
     
     def _find_matching_records(self, entity: str) -> List[Dict[str, Any]]:
         """Find any records that might match this entity (broader search)."""
-        # Use the positional arguments directly instead of parsing entity
-        state = self.cfg.state
-        county = self.cfg.county
-        city = self.cfg.city
-        
-        if not state or not county:
+        # Parse entity to get the correct state, county, city
+        parts = entity.split('_')
+        if len(parts) < 3:
             return []
+        
+        # Extract components from entity (layer_state_county_city)
+        layer = parts[0]
+        state = parts[1]
+        county = parts[2]
+        city = '_'.join(parts[3:]) if len(parts) > 3 else None
         
         # Convert to external format for database query
         state_external = format_name(state, 'state', external=True) if state else None
@@ -2283,9 +2286,9 @@ class LayersPrescrape:
         SELECT * FROM m_gis_data_catalog_main 
         WHERE layer_subgroup = %s AND state = %s AND county = %s AND city = %s
         """
-        params = (self.cfg.layer, state_external, county_external, city_external)
+        params = (layer, state_external, county_external, city_external)
         
-        self.logger.debug(f"Searching for records with: layer={self.cfg.layer}, state={state_external}, county={county_external}, city={city_external}")
+        self.logger.debug(f"Searching for records with: layer={layer}, state={state_external}, county={county_external}, city={city_external}")
         results = self.db.fetchall(sql, params) or []
         self.logger.debug(f"Found {len(results)} matching records")
         

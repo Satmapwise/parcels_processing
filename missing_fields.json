@@ -2385,5 +2385,9 @@
   "flu_fl_alachua_micanopy": {
     "format": "MANUAL_REQUIRED",
     "resource": "MANUAL_REQUIRED"
+  },
+  "flu_fl_alachua_new_city": {
+    "format": "MANUAL_REQUIRED",
+    "resource": "MANUAL_REQUIRED"
   }
 }
