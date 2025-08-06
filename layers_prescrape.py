@@ -1356,24 +1356,45 @@ class LayersPrescrape:
         if entity in manual_data:
             expected.update(manual_data[entity])
         
-        # Interactive prompting for manual fields
-        print(f"\n[CREATE] Creating record for: {entity}")
-        print("Enter values for manual fields (press Enter to leave blank):")
-        
-        # Prompt for format
-        format_value = input("format: ").strip()
-        if format_value:
-            expected['format'] = format_value
-        
-        # Prompt for src_url_file
-        src_url_file = input("src_url_file: ").strip()
-        if src_url_file:
-            expected['src_url_file'] = src_url_file
-        
-        # Prompt for fields_obj_transform
-        fields_obj_transform = input("fields_obj_transform: ").strip()
-        if fields_obj_transform:
-            expected['fields_obj_transform'] = fields_obj_transform
+        # Get manual field values (from CSV if applying, otherwise prompt)
+        if self.cfg.apply_changes or self.cfg.apply_manual:
+            # Try to get values from CSV
+            csv_path = REPORTS_DIR / f"{self.cfg.layer}_prescrape_create.csv"
+            if csv_path.exists():
+                try:
+                    with open(csv_path, 'r', newline='', encoding='utf-8') as f:
+                        reader = csv.DictReader(f)
+                        for row in reader:
+                            if row.get('entity') == entity:
+                                # Found matching entity in CSV
+                                if row.get('format'):
+                                    expected['format'] = row['format']
+                                if row.get('src_url_file'):
+                                    expected['src_url_file'] = row['src_url_file']
+                                if row.get('fields_obj_transform'):
+                                    expected['fields_obj_transform'] = row['fields_obj_transform']
+                                break
+                except Exception as e:
+                    self.logger.warning(f"Failed to read CSV for {entity}: {e}")
+        else:
+            # Interactive prompting for manual fields
+            print(f"\n[CREATE] Creating record for: {entity}")
+            print("Enter values for manual fields (press Enter to leave blank):")
+            
+            # Prompt for format
+            format_value = input("format: ").strip()
+            if format_value:
+                expected['format'] = format_value
+            
+            # Prompt for src_url_file
+            src_url_file = input("src_url_file: ").strip()
+            if src_url_file:
+                expected['src_url_file'] = src_url_file
+            
+            # Prompt for fields_obj_transform
+            fields_obj_transform = input("fields_obj_transform: ").strip()
+            if fields_obj_transform:
+                expected['fields_obj_transform'] = fields_obj_transform
         
         # Check for required fields after prompting
         required_manual = []
@@ -1405,27 +1426,63 @@ class LayersPrescrape:
             'record': expected
         })
         
-        # Generate CSV report
-        if self.cfg.generate_csv and created_records:
-            headers = ["entity", "field", "value", "status"]
-            csv_rows = [headers]
+        # Generate CSV report (living document format)
+        if self.cfg.generate_csv:
+            csv_path = REPORTS_DIR / f"{self.cfg.layer}_prescrape_create.csv"
             
-            # Sort created_records by entity for alphabetical CSV output
-            created_records.sort(key=lambda x: x['entity'])
+            # Define headers (same as detect mode)
+            headers = [
+                "entity", "title", "state", "county", "city", "source_org", "data_date", "publish_date", "src_url_file", 
+                "format", "format_subtype", "download", "resource", "layer_group", 
+                "layer_subgroup", "category", "sub_category", "sys_raw_folder", 
+                "table_name", "fields_obj_transform", "source_comments", "processing_comments"
+            ]
             
+            # Read existing CSV if it exists
+            existing_entities = set()
+            existing_rows = []
+            if csv_path.exists():
+                try:
+                    with open(csv_path, 'r', newline='', encoding='utf-8') as f:
+                        reader = csv.DictReader(f)
+                        for row in reader:
+                            entity = row.get('entity', '')
+                            if entity and entity != 'SUMMARY' and not entity.startswith('==='):
+                                existing_entities.add(entity)
+                                existing_rows.append([row.get(header, '') for header in headers])
+                except Exception as e:
+                    self.logger.warning(f"Failed to read existing CSV: {e}")
+            
+            # Add new records (only if not already present)
+            new_rows = []
             for creation in created_records:
                 entity = creation['entity']
                 record = creation['record']
-                status = "CREATED" if (self.cfg.apply_changes or self.cfg.apply_manual) else "PENDING"
                 
-                for field, value in record.items():
-                    csv_rows.append([entity, field, str(value), status])
+                if entity not in existing_entities:
+                    # Create row in same format as detect mode
+                    row_values = [entity]
+                    for field in headers[1:]:  # Skip 'entity'
+                        value = record.get(field, '')
+                        row_values.append(str(value) if value else '')
+                    new_rows.append(row_values)
+                    existing_entities.add(entity)
             
-            csv_path = REPORTS_DIR / f"{self.cfg.layer}_prescrape_create.csv"
-            with open(csv_path, 'w', newline='', encoding='utf-8') as f:
-                writer = csv.writer(f)
-                writer.writerows(csv_rows)
-            self.logger.info(f"Creation report written → {csv_path}")
+            # Combine existing and new rows, sort by entity
+            all_rows = existing_rows + new_rows
+            all_rows.sort(key=lambda row: row[0])  # Sort by entity
+            
+            # Write CSV
+            if all_rows or new_rows:
+                with open(csv_path, 'w', newline='', encoding='utf-8') as f:
+                    writer = csv.writer(f)
+                    writer.writerow(headers)
+                    writer.writerows(all_rows)
+                
+                if new_rows:
+                    self.logger.info(f"Creation report updated → {csv_path} ({len(new_rows)} new entities)")
+                else:
+                    self.logger.info(f"Creation report updated → {csv_path} (no new entities)")
         
         self.logger.info(f"Create complete: {len(created_records)} records processed")
     
