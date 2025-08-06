@@ -382,7 +382,7 @@ def parse_entity_pattern(pattern: str) -> tuple[str | None, str | None, str | No
     
     # Step 2: Extract state
     state = None
-    for state_abbrev in VALID_STATES.keys():
+    for state_abbrev in VALID_STATES:
         if remaining == state_abbrev or remaining.startswith(state_abbrev + '_'):
             state = state_abbrev
             remaining = remaining[len(state_abbrev):].lstrip('_')

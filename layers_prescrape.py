@@ -2643,7 +2643,7 @@ def build_arg_parser() -> argparse.ArgumentParser:
     )
     
     # Positional arguments for layer, state, county, city
-    parser.add_argument("layer", help="[CREATE] Layer name (e.g., zoning, flu, streets)")
+    parser.add_argument("layer", nargs="?", default=None, help="[CREATE] Layer name (e.g., zoning, flu, streets)")
     parser.add_argument("state", nargs="?", default=None, help="[CREATE] State abbreviation (e.g., fl)")
     parser.add_argument("county", nargs="?", default=None, help="[CREATE] County name (e.g., lee, miami_dade)")
     parser.add_argument("city", nargs="?", default=None, help="[CREATE] City name (e.g., fort_myers_beach, miami)")
@@ -2715,6 +2715,11 @@ def main():
         print("[ERROR] CREATE and UPDATE-STATES modes cannot be combined with DETECT or FILL")
         sys.exit(1)
     
+    # Validate CREATE mode requirements
+    if mode == "create" and not args.layer:
+        print("[ERROR] CREATE mode requires layer argument to be specified")
+        sys.exit(1)
+    
     # Validate CREATE mode requirements (handled by layer-specific validation)
     
     # Handle one-time state update mode
@@ -2752,35 +2757,83 @@ def main():
         
         return
     
-    # Process the specified layer
-    layer = args.layer.lower()
-    print(f"\n[INFO] ==================== Processing layer: {layer.upper()} ====================")
-    
-    # Create config for this layer
-    cfg = Config(
-        layer=layer,
-        state=args.state.lower() if args.state else None,
-        county=args.county.lower() if args.county else None,
-        city=args.city.lower() if args.city else None,
-        include_entities=[e.lower() for e in args.include] if args.include else None,
-        exclude_entities=[e.lower() for e in args.exclude] if args.exclude else None,
-        include_fields=[f.lower() for f in args.include_fields] if args.include_fields else None,
-        exclude_fields=[f.lower() for f in args.exclude_fields] if args.exclude_fields else None,
-        target_title=args.title.lower() if args.title else None,
-        mode=mode,
-        debug=args.debug,
-        generate_csv=args.generate_csv,
-        apply_changes=args.apply,
-        apply_manual=args.apply_manual,
-        manual_file=args.manual_file,
-        fill_all=args.fill_all
-    )
-    
-    # Run the processor for this layer
-    processor = LayersPrescrape(cfg)
-    processor.run()
-    
-    print(f"\n[INFO] ==================== Completed processing layer: {layer.upper()} ====================")
+    # Process layers based on mode
+    if mode == "create":
+        # CREATE mode requires a specific layer
+        layer = args.layer.lower()
+        print(f"\n[INFO] ==================== Processing layer: {layer.upper()} ====================")
+        
+        # Create config for this layer
+        cfg = Config(
+            layer=layer,
+            state=args.state.lower() if args.state else None,
+            county=args.county.lower() if args.county else None,
+            city=args.city.lower() if args.city else None,
+            include_entities=[e.lower() for e in args.include] if args.include else None,
+            exclude_entities=[e.lower() for e in args.exclude] if args.exclude else None,
+            include_fields=[f.lower() for f in args.include_fields] if args.include_fields else None,
+            exclude_fields=[f.lower() for f in args.exclude_fields] if args.exclude_fields else None,
+            target_title=args.title.lower() if args.title else None,
+            mode=mode,
+            debug=args.debug,
+            generate_csv=args.generate_csv,
+            apply_changes=args.apply,
+            apply_manual=args.apply_manual,
+            manual_file=args.manual_file,
+            fill_all=args.fill_all
+        )
+        
+        # Run the processor for this layer
+        processor = LayersPrescrape(cfg)
+        processor.run()
+        
+        print(f"\n[INFO] ==================== Completed processing layer: {layer.upper()} ====================")
+    else:
+        # DETECT/FILL modes can process all layers or a specific layer
+        if args.layer:
+            # Process specific layer
+            layer = args.layer.lower()
+            layers_to_process = [layer]
+            print(f"\n[INFO] ==================== Processing layer: {layer.upper()} ====================")
+        else:
+            # Process all layers
+            layers_to_process, excluded_layers = extract_layers_from_patterns(
+                include_patterns=args.include, 
+                exclude_patterns=args.exclude
+            )
+            print(f"\n[INFO] ==================== Processing {len(layers_to_process)} layers ====================")
+            if excluded_layers:
+                print(f"[INFO] Excluded layers: {', '.join(excluded_layers)}")
+        
+        # Process each layer
+        for layer in layers_to_process:
+            print(f"\n[INFO] ==================== Processing layer: {layer.upper()} ====================")
+            
+            # Create config for this layer
+            cfg = Config(
+                layer=layer,
+                state=args.state.lower() if args.state else None,
+                county=args.county.lower() if args.county else None,
+                city=args.city.lower() if args.city else None,
+                include_entities=[e.lower() for e in args.include] if args.include else None,
+                exclude_entities=[e.lower() for e in args.exclude] if args.exclude else None,
+                include_fields=[f.lower() for f in args.include_fields] if args.include_fields else None,
+                exclude_fields=[f.lower() for f in args.exclude_fields] if args.exclude_fields else None,
+                target_title=args.title.lower() if args.title else None,
+                mode=mode,
+                debug=args.debug,
+                generate_csv=args.generate_csv,
+                apply_changes=args.apply,
+                apply_manual=args.apply_manual,
+                manual_file=args.manual_file,
+                fill_all=args.fill_all
+            )
+            
+            # Run the processor for this layer
+            processor = LayersPrescrape(cfg)
+            processor.run()
+            
+            print(f"\n[INFO] ==================== Completed processing layer: {layer.upper()} ====================")
 
 if __name__ == "__main__":
     main()

@@ -4,56 +4,69 @@
     "fields_obj_transform": "MANUAL_REQUIRED"
   },
   "address_points_fl_collier": {
-    "src_url_file": "https://services2.arcgis.com/SlIq32SqARUHIhSx/arcgis/rest/services/Site_Address_Points_b/FeatureServer/3"
+    "src_url_file": "https://services2.arcgis.com/SlIq32SqARUHIhSx/arcgis/rest/services/Site_Address_Points_b/FeatureServer/3",
+    "state": "MANUAL_REQUIRED"
   },
   "address_points_fl_hillsborough": {
-    "src_url_file": "https://services.arcgis.com/apTfC6SUmnNfnxuF/arcgis/rest/services/Site_Address_Point/FeatureServer/0"
+    "src_url_file": "https://services.arcgis.com/apTfC6SUmnNfnxuF/arcgis/rest/services/Site_Address_Point/FeatureServer/0",
+    "state": "MANUAL_REQUIRED"
   },
   "address_points_fl_miami_dade": {
-    "src_url_file": "https://services.arcgis.com/8Pc9XBTAsYuxx9Ny/arcgis/rest/services/GeoAddressWCondo_gdb/FeatureServer/0"
+    "src_url_file": "https://services.arcgis.com/8Pc9XBTAsYuxx9Ny/arcgis/rest/services/GeoAddressWCondo_gdb/FeatureServer/0",
+    "state": "MANUAL_REQUIRED"
   },
   "address_points_fl_palm_beach": {
-    "src_url_file": "https://services1.arcgis.com/ZWOoUZbtaYePLlPw/arcgis/rest/services/Situs_Addresses/FeatureServer/0"
+    "src_url_file": "https://services1.arcgis.com/ZWOoUZbtaYePLlPw/arcgis/rest/services/Situs_Addresses/FeatureServer/0",
+    "state": "MANUAL_REQUIRED"
   },
   "address_points_fl_pinellas": {
-    "src_url_file": "https://egis.pinellas.gov/gis/rest/services/AGO/Parcels/MapServer/2"
+    "src_url_file": "https://egis.pinellas.gov/gis/rest/services/AGO/Parcels/MapServer/2",
+    "state": "MANUAL_REQUIRED"
   },
   "address_points_fl_sarasota": {
-    "src_url_file": "https://ags3.scgov.net/server/rest/services/Hosted/AddressPoint/FeatureServer/0"
+    "src_url_file": "https://ags3.scgov.net/server/rest/services/Hosted/AddressPoint/FeatureServer/0",
+    "state": "MANUAL_REQUIRED"
   },
   "address_points_fl_st_johns": {
-    "src_url_file": "https://services1.arcgis.com/t2yugAJW83eUIFui/arcgis/rest/services/Address_Sites/FeatureServer/0"
+    "src_url_file": "https://services1.arcgis.com/t2yugAJW83eUIFui/arcgis/rest/services/Address_Sites/FeatureServer/0",
+    "state": "MANUAL_REQUIRED"
   },
   "address_points_fl_st_lucie": {
-    "src_url_file": "https://slcgis.stlucieco.gov/hosting/rest/services/AddressMaster/MapServer/0"
+    "src_url_file": "https://slcgis.stlucieco.gov/hosting/rest/services/AddressMaster/MapServer/0",
+    "state": "MANUAL_REQUIRED"
   },
   "address_points_fl_volusia": {
-    "src_url_file": "https://maps5.vcgov.org/arcgis/rest/services/Open_Data/Open_Data_1/FeatureServer/2"
+    "src_url_file": "https://maps5.vcgov.org/arcgis/rest/services/Open_Data/Open_Data_1/FeatureServer/2",
+    "state": "MANUAL_REQUIRED"
   },
   "flu_fl_brevard": {
     "src_url_file": "https://gis.brevardfl.gov/gissrv/rest/services/Emergency_Management/9_1_1_Emergency_Response_Layers/MapServer/0"
   },
   "flu_fl_lee_cape_coral": {
     "src_url_file": "https://capeims.capecoral.gov/arcgis/rest/services/OpenData/DCD/MapServer/2",
-    "fields_obj_transform": "flu_code:LMFLUC, flu_desc:FLU_Desc"
+    "fields_obj_transform": "flu_code:LMFLUC, flu_desc:FLU_Desc",
+    "state": "MANUAL_REQUIRED"
   },
   "flu_fl_alachua": {
     "src_url_file": "https://services1.arcgis.com/MiBZ4u97DWldovjI/arcgis/rest/services/Future_Land_Use04/FeatureServer/14"
   },
   "flu_fl_seminole_lake_mary": {
     "src_url_file": "https://services1.arcgis.com/v0YMSb0ovdJoIQKg/arcgis/rest/services/Zoning_FLU_Query_AGO_2021/FeatureServer/5",
-    "fields_obj_transform": "flu_code:flucode, notes:ordinance"
+    "fields_obj_transform": "flu_code:flucode, notes:ordinance",
+    "state": "MANUAL_REQUIRED"
   },
   "flu_fl_lake_minneola": {
     "src_url_file": "https://gis.lakecountyfl.gov/lakegis/rest/services/LocalGov/CityFLU/MapServer/9",
-    "fields_obj_transform": "flu_code:flucode"
+    "fields_obj_transform": "flu_code:flucode",
+    "state": "MANUAL_REQUIRED"
   },
   "flu_fl_martin": {
     "src_url_file": "https://geoweb.martin.fl.us/arcgis/rest/services/Administrative_Areas/Administrative_Areas/MapServer/9"
   },
   "flu_fl_indian_river_vero_beach": {
     "src_url_file": "https://services1.arcgis.com/mK9abRqiJFkUgbPZ/arcgis/rest/services/ZoningFutureLandUse/FeatureServer/0",
-    "fields_obj_transform": "flu_code:code, flu_desc:descriptio"
+    "fields_obj_transform": "flu_code:code, flu_desc:descriptio",
+    "state": "MANUAL_REQUIRED"
   },
   "flu_fl_leon": {
     "src_url_file": "https://intervector.leoncountyfl.gov/intervector/rest/services/MapServices/TLC_OverlayFutureLandUse_D_WM/MapServer/0"
@@ -63,397 +76,511 @@
   },
   "flu_fl_pinellas_unincorporated": {
     "src_url_file": "https://egis.pinellas.gov/gis/rest/services/AGO/Planning_LandUse/MapServer/13",
-    "fields_obj_transform": "MANUAL_REQUIRED"
+    "fields_obj_transform": "MANUAL_REQUIRED",
+    "state": "MANUAL_REQUIRED"
   },
   "flu_fl_sarasota": {
     "src_url_file": "https://ags3.scgov.net/server/rest/services/Hosted/FutureLandUse/FeatureServer/0"
   },
   "streets_fl_brevard": {
-    "src_url_file": "https://gis.brevardfl.gov/gissrv/rest/services/Emergency_Management/9_1_1_Emergency_Response_Layers/MapServer/1"
+    "src_url_file": "https://gis.brevardfl.gov/gissrv/rest/services/Emergency_Management/9_1_1_Emergency_Response_Layers/MapServer/1",
+    "state": "MANUAL_REQUIRED"
   },
   "streets_fl_broward": {
-    "src_url_file": "https://bcgishub.broward.org/server/rest/services/GeoHubDownloads/Broward_County_Streets/MapServer/0"
+    "src_url_file": "https://bcgishub.broward.org/server/rest/services/GeoHubDownloads/Broward_County_Streets/MapServer/0",
+    "state": "MANUAL_REQUIRED"
   },
   "streets_fl_hillsborough": {
-    "src_url_file": "https://services.arcgis.com/apTfC6SUmnNfnxuF/arcgis/rest/services/Roads_HC1/FeatureServer/0"
+    "src_url_file": "https://services.arcgis.com/apTfC6SUmnNfnxuF/arcgis/rest/services/Roads_HC1/FeatureServer/0",
+    "state": "MANUAL_REQUIRED"
   },
   "streets_fl_lake": {
-    "src_url_file": "https://gis.lakecountyfl.gov/lakegis/rest/services/OpenData/OpenData1/FeatureServer/7"
+    "src_url_file": "https://gis.lakecountyfl.gov/lakegis/rest/services/OpenData/OpenData1/FeatureServer/7",
+    "state": "MANUAL_REQUIRED"
   },
   "streets_fl_manatee": {
-    "src_url_file": "https://www.mymanatee.org/gisits/rest/services/opendata/Transportation/FeatureServer/3"
+    "src_url_file": "https://www.mymanatee.org/gisits/rest/services/opendata/Transportation/FeatureServer/3",
+    "state": "MANUAL_REQUIRED"
   },
   "streets_fl_miami_dade": {
-    "src_url_file": "https://services.arcgis.com/8Pc9XBTAsYuxx9Ny/arcgis/rest/services/GeoStreets_gdb/FeatureServer/0"
+    "src_url_file": "https://services.arcgis.com/8Pc9XBTAsYuxx9Ny/arcgis/rest/services/GeoStreets_gdb/FeatureServer/0",
+    "state": "MANUAL_REQUIRED"
   },
   "streets_fl_orange": {
-    "src_url_file": "https://ocgis4.ocfl.net/arcgis/rest/services/AGOL_Open_Data/MapServer/1"
+    "src_url_file": "https://ocgis4.ocfl.net/arcgis/rest/services/AGOL_Open_Data/MapServer/1",
+    "state": "MANUAL_REQUIRED"
   },
   "streets_fl_palm_beach": {
-    "src_url_file": "https://maps.co.palm-beach.fl.us/arcgis/rest/services/OpenData/Transportation_Open_Data/MapServer/3"
+    "src_url_file": "https://maps.co.palm-beach.fl.us/arcgis/rest/services/OpenData/Transportation_Open_Data/MapServer/3",
+    "state": "MANUAL_REQUIRED"
   },
   "streets_fl_pasco": {
-    "src_url_file": "https://services6.arcgis.com/Mo4MddfRHpFwT7UF/arcgis/rest/services/Centerlines/FeatureServer/0"
+    "src_url_file": "https://services6.arcgis.com/Mo4MddfRHpFwT7UF/arcgis/rest/services/Centerlines/FeatureServer/0",
+    "state": "MANUAL_REQUIRED"
   },
   "streets_fl_pinellas": {
-    "src_url_file": "https://egis.pinellas.gov/gis/rest/services/AGO/Centerline/MapServer/0"
+    "src_url_file": "https://egis.pinellas.gov/gis/rest/services/AGO/Centerline/MapServer/0",
+    "state": "MANUAL_REQUIRED"
   },
   "streets_fl_sarasota": {
-    "src_url_file": "https://ags3.scgov.net/server/rest/services/Hosted/Street/FeatureServer/0"
+    "src_url_file": "https://ags3.scgov.net/server/rest/services/Hosted/Street/FeatureServer/0",
+    "state": "MANUAL_REQUIRED"
   },
   "subdivisions_fl_lake": {
-    "src_url_file": "https://gis.lakecountyfl.gov/lakegis/rest/services/OpenData/OpenData1/FeatureServer/10"
+    "src_url_file": "https://gis.lakecountyfl.gov/lakegis/rest/services/OpenData/OpenData1/FeatureServer/10",
+    "state": "MANUAL_REQUIRED"
   },
   "zoning_fl_orange_unincorporated": {
     "src_url_file": "https://ocgis4.ocfl.net/arcgis/rest/services/AGOL_Open_Data/MapServer/51",
-    "fields_obj_transform": "zon_code:zoning, zon_code2:zonetype, notes:pd_name, ord_num:p_z_date"
+    "fields_obj_transform": "zon_code:zoning, zon_code2:zonetype, notes:pd_name, ord_num:p_z_date",
+    "state": "MANUAL_REQUIRED"
   },
   "zoning_fl_st_lucie_unincorporated": {
     "src_url_file": "https://slcgis.stlucieco.gov/hosting/rest/services/LandUse/Zoning/MapServer/0",
-    "fields_obj_transform": "zon_code:zoned, notes:weblink, ord_num:resolution"
+    "fields_obj_transform": "zon_code:zoned, notes:weblink, ord_num:resolution",
+    "state": "MANUAL_REQUIRED"
   },
   "zoning_fl_alachua_unincorporated": {
-    "fields_obj_transform": "zon_code:zonedistri, zon_code2:zonecode, zon_desc:zonedefin, ord_num:app_no"
+    "fields_obj_transform": "zon_code:zonedistri, zon_code2:zonecode, zon_desc:zonedefin, ord_num:app_no",
+    "state": "MANUAL_REQUIRED"
   },
   "zoning_fl_baker_unincorporated": {
-    "fields_obj_transform": "zon_code:zone_code, zon_code2:descriptio"
+    "fields_obj_transform": "zon_code:zone_code, zon_code2:descriptio",
+    "state": "MANUAL_REQUIRED"
   },
   "zoning_fl_bay_unincorporated": {
-    "fields_obj_transform": "zon_code:zoning, zon_code2:sub_zoning, notes:comments, ord_num:ord_num"
+    "fields_obj_transform": "zon_code:zoning, zon_code2:sub_zoning, notes:comments, ord_num:ord_num",
+    "state": "MANUAL_REQUIRED"
   },
   "zoning_fl_brevard_unincorporated": {
-    "fields_obj_transform": "zon_code:zoning, notes:denscap"
+    "fields_obj_transform": "zon_code:zoning, notes:denscap",
+    "state": "MANUAL_REQUIRED"
   },
   "zoning_fl_broward_unified": {
     "src_url_file": "URL_DEPRECATED",
-    "fields_obj_transform": "MANUAL_REQUIRED"
+    "fields_obj_transform": "MANUAL_REQUIRED",
+    "state": "MANUAL_REQUIRED"
   },
   "zoning_fl_broward_county_unified": {
     "fields_obj_transform": "zon_code:zone_name, zon_desc:zoning"
   },
   "zoning_fl_charlotte_unincorporated": {
-    "fields_obj_transform": "zon_code:zone_"
+    "fields_obj_transform": "zon_code:zone_",
+    "state": "MANUAL_REQUIRED"
   },
   "zoning_fl_citrus_unincorporated": {
-    "fields_obj_transform": "zon_code:zoning_1, zon_desc:descript"
+    "fields_obj_transform": "zon_code:zoning_1, zon_desc:descript",
+    "state": "MANUAL_REQUIRED"
   },
   "zoning_fl_alachua_alachua": {
-    "fields_obj_transform": "zon_code:zonedistri, zon_code2:zonecode, zon_desc:zonedefin, ord_num:app_no"
+    "fields_obj_transform": "zon_code:zonedistri, zon_code2:zonecode, zon_desc:zonedefin, ord_num:app_no",
+    "state": "MANUAL_REQUIRED"
   },
   "zoning_fl_seminole_altamonte_springs": {
-    "fields_obj_transform": "zon_code:zoning"
+    "fields_obj_transform": "zon_code:zoning",
+    "state": "MANUAL_REQUIRED"
   },
   "zoning_fl_orange_apopka": {
-    "fields_obj_transform": "zon_code:zoning, zon_desc:usename"
+    "fields_obj_transform": "zon_code:zoning, zon_desc:usename",
+    "state": "MANUAL_REQUIRED"
   },
   "zoning_fl_alachua_archer": {
-    "fields_obj_transform": "zon_code:zonedistri, zon_code2:zonecode, zon_desc:zonedefin, ord_num:app_no"
+    "fields_obj_transform": "zon_code:zonedistri, zon_code2:zonecode, zon_desc:zonedefin, ord_num:app_no",
+    "state": "MANUAL_REQUIRED"
   },
   "zoning_fl_lake_astatula": {
-    "fields_obj_transform": "zon_code:ZoningCode"
+    "fields_obj_transform": "zon_code:ZoningCode",
+    "state": "MANUAL_REQUIRED"
   },
   "zoning_fl_pinellas_bellair": {
     "src_url_file": "URL_DEPRECATED",
-    "fields_obj_transform": "MANUAL_REQUIRED"
+    "fields_obj_transform": "MANUAL_REQUIRED",
+    "state": "MANUAL_REQUIRED"
   },
   "zoning_fl_pinellas_bellair_beach": {
     "src_url_file": "MANUAL_REQUIRED",
-    "fields_obj_transform": "MANUAL_REQUIRED"
+    "fields_obj_transform": "MANUAL_REQUIRED",
+    "state": "MANUAL_REQUIRED"
   },
   "zoning_fl_pinellas_bellair_bluffs": {
     "src_url_file": "MANUAL_REQUIRED",
-    "fields_obj_transform": "MANUAL_REQUIRED"
+    "fields_obj_transform": "MANUAL_REQUIRED",
+    "state": "MANUAL_REQUIRED"
   },
   "zoning_fl_pinellas_bellair_shore": {
     "src_url_file": "MANUAL_REQUIRED",
-    "fields_obj_transform": "MANUAL_REQUIRED"
+    "fields_obj_transform": "MANUAL_REQUIRED",
+    "state": "MANUAL_REQUIRED"
   },
   "zoning_fl_orange_belle_isle": {
     "src_url_file": "MANUAL_REQUIRED",
-    "fields_obj_transform": "MANUAL_REQUIRED"
+    "fields_obj_transform": "MANUAL_REQUIRED",
+    "state": "MANUAL_REQUIRED"
   },
   "zoning_fl_manatee_bradenton": {
-    "fields_obj_transform": "zon_code:zonlabel, zon_desc:zon_desc"
+    "fields_obj_transform": "zon_code:zonlabel, zon_desc:zon_desc",
+    "state": "MANUAL_REQUIRED"
   },
   "zoning_fl_hernando_brooksville": {
-    "fields_obj_transform": "zon_code:zoning, ord_num:ordinancen"
+    "fields_obj_transform": "zon_code:zoning, ord_num:ordinancen",
+    "state": "MANUAL_REQUIRED"
   },
   "zoning_fl_lee_cape_coral": {
-    "fields_obj_transform": "zon_code:lmluzn, zon_desc:zoning_des"
+    "fields_obj_transform": "zon_code:lmluzn, zon_desc:zoning_des",
+    "state": "MANUAL_REQUIRED"
   },
   "zoning_fl_seminole_casselberry": {
     "src_url_file": "URL_DEPRECATED",
-    "fields_obj_transform": "zon_code:zoning, ord_num:ordinance"
+    "fields_obj_transform": "zon_code:zoning, ord_num:ordinance",
+    "state": "MANUAL_REQUIRED"
   },
   "zoning_fl_pinellas_clearwater": {
     "fields_obj_transform": "zon_code:zoning, notes:special",
-    "src_url_file": "URL_DEPRECATED"
+    "src_url_file": "URL_DEPRECATED",
+    "state": "MANUAL_REQUIRED"
   },
   "zoning_fl_lake_clermont": {
-    "fields_obj_transform": "zon_code:ZoningCode"
+    "fields_obj_transform": "zon_code:ZoningCode",
+    "state": "MANUAL_REQUIRED"
   },
   "zoning_fl_pasco_dade_city": {
     "src_url_file": "MANUAL_REQUIRED",
-    "fields_obj_transform": "MANUAL_REQUIRED"
+    "fields_obj_transform": "MANUAL_REQUIRED",
+    "state": "MANUAL_REQUIRED"
   },
   "zoning_fl_volusia_daytona_beach": {
-    "fields_obj_transform": "zon_code:newzoningc, zon_desc:newzoningd, ord_num:ordno"
+    "fields_obj_transform": "zon_code:newzoningc, zon_desc:newzoningd, ord_num:ordno",
+    "state": "MANUAL_REQUIRED"
   },
   "zoning_fl_volusia_deltona": {
     "src_url_file": "MANUAL_REQUIRED",
-    "fields_obj_transform": "MANUAL_REQUIRED"
+    "fields_obj_transform": "MANUAL_REQUIRED",
+    "state": "MANUAL_REQUIRED"
   },
   "zoning_fl_pinellas_dunedin": {
-    "fields_obj_transform": "zon_code:zoneclass, zon_desc:zonedesc"
+    "fields_obj_transform": "zon_code:zoneclass, zon_desc:zonedesc",
+    "state": "MANUAL_REQUIRED"
   },
   "zoning_fl_orange_eatonville": {
-    "fields_obj_transform": "zon_code:ZONING"
+    "fields_obj_transform": "zon_code:ZONING",
+    "state": "MANUAL_REQUIRED"
   },
   "zoning_fl_orange_edgewood": {
     "src_url_file": "MANUAL_REQUIRED",
-    "fields_obj_transform": "MANUAL_REQUIRED"
+    "fields_obj_transform": "MANUAL_REQUIRED",
+    "state": "MANUAL_REQUIRED"
   },
   "zoning_fl_lake_eustis": {
     "src_url_file": "MANUAL_REQUIRED",
-    "fields_obj_transform": "MANUAL_REQUIRED"
+    "fields_obj_transform": "MANUAL_REQUIRED",
+    "state": "MANUAL_REQUIRED"
   },
   "zoning_fl_lee_fort_myers": {
-    "fields_obj_transform": "zon_code:district, zon_desc:districtna, notes:pudname"
+    "fields_obj_transform": "zon_code:district, zon_desc:districtna, notes:pudname",
+    "state": "MANUAL_REQUIRED"
   },
   "zoning_fl_lee_fort_myers_beach": {
     "src_url_file": "URL_DEPRECATED",
     "fields_obj_transform": "zon_code:zoning, zon_desc:firedistde",
     "format": "MANUAL_REQUIRED",
-    "resource": "MANUAL_REQUIRED"
+    "resource": "MANUAL_REQUIRED",
+    "state": "MANUAL_REQUIRED"
   },
   "zoning_fl_lake_fruitland_park": {
-    "fields_obj_transform": "zon_code:ZoningCode"
+    "fields_obj_transform": "zon_code:ZoningCode",
+    "state": "MANUAL_REQUIRED"
   },
   "zoning_fl_alachua_gainesville": {
-    "fields_obj_transform": "zon_code:zonedistri, zon_code2:zonecode, zon_desc:zonedefin, ord_num:app_no"
+    "fields_obj_transform": "zon_code:zonedistri, zon_code2:zonecode, zon_desc:zonedefin, ord_num:app_no",
+    "state": "MANUAL_REQUIRED"
   },
   "zoning_fl_lake_groveland": {
-    "fields_obj_transform": "zon_code:ZoningCode"
+    "fields_obj_transform": "zon_code:ZoningCode",
+    "state": "MANUAL_REQUIRED"
   },
   "zoning_fl_alachua_hawthorne": {
-    "fields_obj_transform": "zon_code:zonedistri, zon_code2:zonecode, zon_desc:zonedefin, ord_num:app_no"
+    "fields_obj_transform": "zon_code:zonedistri, zon_code2:zonecode, zon_desc:zonedefin, ord_num:app_no",
+    "state": "MANUAL_REQUIRED"
   },
   "zoning_fl_alachua_high_springs": {
-    "fields_obj_transform": "zon_code:zonedistri, zon_code2:zonecode, zon_desc:zonedefin, ord_num:app_no"
+    "fields_obj_transform": "zon_code:zonedistri, zon_code2:zonecode, zon_desc:zonedefin, ord_num:app_no",
+    "state": "MANUAL_REQUIRED"
   },
   "zoning_fl_pinellas_indian_rocks_beach": {
     "src_url_file": "URL_DEPRECATED",
-    "fields_obj_transform": "zon_code:zoning, ord_num:ordinance_"
+    "fields_obj_transform": "zon_code:zoning, ord_num:ordinance_",
+    "state": "MANUAL_REQUIRED"
   },
   "zoning_fl_pinellas_indian_shores": {
     "src_url_file": "URL_DEPRECATED",
-    "fields_obj_transform": "zon_code:zoning, ord_num:ordinance_"
+    "fields_obj_transform": "zon_code:zoning, ord_num:ordinance_",
+    "state": "MANUAL_REQUIRED"
   },
   "zoning_fl_pinellas_kenneth_city": {
     "src_url_file": "URL_DEPRECATED",
-    "fields_obj_transform": "zon_code:zoning, ord_num:ordinance_"
+    "fields_obj_transform": "zon_code:zoning, ord_num:ordinance_",
+    "state": "MANUAL_REQUIRED"
   },
   "zoning_fl_osceola_kissimmee": {
-    "fields_obj_transform": "zon_code:zoning_cod, zon_desc:summary_li"
+    "fields_obj_transform": "zon_code:zoning_cod, zon_desc:summary_li",
+    "state": "MANUAL_REQUIRED"
   },
   "zoning_fl_alachua_lacrosse": {
-    "fields_obj_transform": "zon_code:zonedistri, zon_code2:zonecode, zon_desc:zonedefin, ord_num:app_no"
+    "fields_obj_transform": "zon_code:zonedistri, zon_code2:zonecode, zon_desc:zonedefin, ord_num:app_no",
+    "state": "MANUAL_REQUIRED"
   },
   "zoning_fl_polk_lakeland": {
-    "fields_obj_transform": "zon_code:label, zon_code2:designatio, ord_num:ord"
+    "fields_obj_transform": "zon_code:label, zon_code2:designatio, ord_num:ord",
+    "state": "MANUAL_REQUIRED"
   },
   "zoning_fl_seminole_lake_mary": {
-    "fields_obj_transform": "zon_code:zoning, zon_desc:descriptio, ord_num:ord_no"
+    "fields_obj_transform": "zon_code:zoning, zon_desc:descriptio, ord_num:ord_no",
+    "state": "MANUAL_REQUIRED"
   },
   "zoning_fl_pinellas_largo": {
     "src_url_file": "MANUAL_REQUIRED",
-    "fields_obj_transform": "MANUAL_REQUIRED"
+    "fields_obj_transform": "MANUAL_REQUIRED",
+    "state": "MANUAL_REQUIRED"
   },
   "zoning_fl_lake_leesburg": {
-    "fields_obj_transform": "zon_code:USE_ZONE"
+    "fields_obj_transform": "zon_code:USE_ZONE",
+    "state": "MANUAL_REQUIRED"
   },
   "zoning_fl_sarasota_longboat_key": {
     "src_url_file": "MANUAL_REQUIRED",
-    "fields_obj_transform": "MANUAL_REQUIRED"
+    "fields_obj_transform": "MANUAL_REQUIRED",
+    "state": "MANUAL_REQUIRED"
   },
   "zoning_fl_seminole_longwood": {
     "src_url_file": "URL_DEPRECATED",
-    "fields_obj_transform": "zon_code:zoning"
+    "fields_obj_transform": "zon_code:zoning",
+    "state": "MANUAL_REQUIRED"
   },
   "zoning_fl_pinellas_madeira_beach": {
     "src_url_file": "URL_DEPRECATED",
-    "fields_obj_transform": "zon_code:zoning, ord_num:ordinance_"
+    "fields_obj_transform": "zon_code:zoning, ord_num:ordinance_",
+    "state": "MANUAL_REQUIRED"
   },
   "zoning_fl_orange_maitland": {
     "src_url_file": "MANUAL_REQUIRED",
-    "fields_obj_transform": "MANUAL_REQUIRED"
+    "fields_obj_transform": "MANUAL_REQUIRED",
+    "state": "MANUAL_REQUIRED"
   },
   "zoning_fl_collier_marco_island": {
-    "fields_obj_transform": "zon_code:zoning, zon_desc:descrip, notes:municode_l, ord_num:ord_1"
+    "fields_obj_transform": "zon_code:zoning, zon_desc:descrip, notes:municode_l, ord_num:ord_1",
+    "state": "MANUAL_REQUIRED"
   },
   "zoning_fl_lake_mascotte": {
-    "fields_obj_transform": "zon_code:ZoningCode"
+    "fields_obj_transform": "zon_code:ZoningCode",
+    "state": "MANUAL_REQUIRED"
   },
   "zoning_fl_brevard_melbourne": {
-    "fields_obj_transform": "zon_code:zoning, notes:comment, ord_num:ord_num"
+    "fields_obj_transform": "zon_code:zoning, notes:comment, ord_num:ord_num",
+    "state": "MANUAL_REQUIRED"
   },
   "zoning_fl_alachua_micanopy": {
-    "fields_obj_transform": "zon_code:zonedistri, zon_code2:zonecode, zon_desc:zonedefin, ord_num:app_no"
+    "fields_obj_transform": "zon_code:zonedistri, zon_code2:zonecode, zon_desc:zonedefin, ord_num:app_no",
+    "state": "MANUAL_REQUIRED"
   },
   "zoning_fl_lake_minneola": {
-    "fields_obj_transform": "zon_code:ZoningCode"
+    "fields_obj_transform": "zon_code:ZoningCode",
+    "state": "MANUAL_REQUIRED"
   },
   "zoning_fl_lake_mount_dora": {
-    "fields_obj_transform": "zon_code:ZoningCode"
+    "fields_obj_transform": "zon_code:ZoningCode",
+    "state": "MANUAL_REQUIRED"
   },
   "zoning_fl_collier_naples": {
     "fields_obj_transform": "zon_code:layer, zon_desc:descript, zon_gen:pd_name, ord_num:ord_1",
-    "src_url_file": "URL_DEPRECATED"
+    "src_url_file": "URL_DEPRECATED",
+    "state": "MANUAL_REQUIRED"
   },
   "zoning_fl_alachua_newberry": {
-    "fields_obj_transform": "zon_code:zonedistri, zon_code2:zonecode, zon_desc:zonedefin, ord_num:app_no"
+    "fields_obj_transform": "zon_code:zonedistri, zon_code2:zonecode, zon_desc:zonedefin, ord_num:app_no",
+    "state": "MANUAL_REQUIRED"
   },
   "zoning_fl_pasco_new_port_richey": {
     "src_url_file": "MANUAL_REQUIRED",
-    "fields_obj_transform": "MANUAL_REQUIRED"
+    "fields_obj_transform": "MANUAL_REQUIRED",
+    "state": "MANUAL_REQUIRED"
   },
   "zoning_fl_sarasota_north_port": {
-    "fields_obj_transform": "zon_code:abbreviati, zon_desc:descriptio"
+    "fields_obj_transform": "zon_code:abbreviati, zon_desc:descriptio",
+    "state": "MANUAL_REQUIRED"
   },
   "zoning_fl_pinellas_north_redington_beach": {
     "src_url_file": "URL_DEPRECATED",
-    "fields_obj_transform": "zon_code:zoning, ord_num:ordinance_"
+    "fields_obj_transform": "zon_code:zoning, ord_num:ordinance_",
+    "state": "MANUAL_REQUIRED"
   },
   "zoning_fl_marion_ocala": {
-    "fields_obj_transform": "zon_code:zoneclass, zon_desc:zonedesc, notes:developmen, ord_num:lastord"
+    "fields_obj_transform": "zon_code:zoneclass, zon_desc:zonedesc, notes:developmen, ord_num:lastord",
+    "state": "MANUAL_REQUIRED"
   },
   "zoning_fl_orange_ocoee": {
-    "fields_obj_transform": "zon_code:zoneclass, zon_desc:zonedesc, notes:adoptdate, ord_num:ordnum"
+    "fields_obj_transform": "zon_code:zoneclass, zon_desc:zonedesc, notes:adoptdate, ord_num:ordnum",
+    "state": "MANUAL_REQUIRED"
   },
   "zoning_fl_orange_orlando": {
-    "fields_obj_transform": "zon_code:zoning, notes:pd_name"
+    "fields_obj_transform": "zon_code:zoning, notes:pd_name",
+    "state": "MANUAL_REQUIRED"
   },
   "zoning_fl_seminole_oviedo": {
-    "fields_obj_transform": "zon_code:zoneclass, zon_desc:zonedesc, ord_num:ordurl"
+    "fields_obj_transform": "zon_code:zoneclass, zon_desc:zonedesc, ord_num:ordurl",
+    "state": "MANUAL_REQUIRED"
   },
   "zoning_fl_brevard_palm_bay": {
-    "fields_obj_transform": "zon_code:zoning, zon_desc:descriptio"
+    "fields_obj_transform": "zon_code:zoning, zon_desc:descriptio",
+    "state": "MANUAL_REQUIRED"
   },
   "zoning_fl_pinellas_pinellas_park": {
     "src_url_file": "URL_DEPRECATED",
-    "fields_obj_transform": "zon_code:category, zon_desc:descriptio"
+    "fields_obj_transform": "zon_code:category, zon_desc:descriptio",
+    "state": "MANUAL_REQUIRED"
   },
   "zoning_fl_hillsborough_plant_city": {
-    "fields_obj_transform": "zon_code:pczoning"
+    "fields_obj_transform": "zon_code:pczoning",
+    "state": "MANUAL_REQUIRED"
   },
   "zoning_fl_pasco_port_richey": {
     "src_url_file": "MANUAL_REQUIRED",
-    "fields_obj_transform": "MANUAL_REQUIRED"
+    "fields_obj_transform": "MANUAL_REQUIRED",
+    "state": "MANUAL_REQUIRED"
   },
   "zoning_fl_st_lucie_port_st_lucie": {
-    "fields_obj_transform": "zon_code:zoning"
+    "fields_obj_transform": "zon_code:zoning",
+    "state": "MANUAL_REQUIRED"
   },
   "zoning_fl_charlotte_punta_gorda": {
     "src_url_file": "MANUAL_REQUIRED",
-    "fields_obj_transform": "zon_code:zoning_cla, zon_code2:type, zon_desc:zoningname"
+    "fields_obj_transform": "zon_code:zoning_cla, zon_code2:type, zon_desc:zoningname",
+    "state": "MANUAL_REQUIRED"
   },
   "zoning_fl_pinellas_redington_shores": {
     "src_url_file": "URL_DEPRECATED",
-    "fields_obj_transform": "zon_code:zoning, ord_num:ordinance_"
+    "fields_obj_transform": "zon_code:zoning, ord_num:ordinance_",
+    "state": "MANUAL_REQUIRED"
   },
   "zoning_fl_pinellas_safety_harbor": {
     "src_url_file": "MANUAL_REQUIRED",
-    "fields_obj_transform": "MANUAL_REQUIRED"
+    "fields_obj_transform": "MANUAL_REQUIRED",
+    "state": "MANUAL_REQUIRED"
   },
   "zoning_fl_pasco_san_antonio": {
     "src_url_file": "MANUAL_REQUIRED",
-    "fields_obj_transform": "MANUAL_REQUIRED"
+    "fields_obj_transform": "MANUAL_REQUIRED",
+    "state": "MANUAL_REQUIRED"
   },
   "zoning_fl_seminole_sanford": {
-    "fields_obj_transform": "zon_code:zonecode"
+    "fields_obj_transform": "zon_code:zonecode",
+    "state": "MANUAL_REQUIRED"
   },
   "zoning_fl_sarasota_sarasota": {
-    "fields_obj_transform": "zon_code:zoneclass, zon_code2:zonedesc, ord_num:ord_no"
+    "fields_obj_transform": "zon_code:zoneclass, zon_code2:zonedesc, ord_num:ord_no",
+    "state": "MANUAL_REQUIRED"
   },
   "zoning_fl_pinellas_seminole": {
     "src_url_file": "URL_DEPRECATED",
-    "fields_obj_transform": "zon_code:zoning, ord_num:ordinance_"
+    "fields_obj_transform": "zon_code:zoning, ord_num:ordinance_",
+    "state": "MANUAL_REQUIRED"
   },
   "zoning_fl_pinellas_south_pasadena": {
     "src_url_file": "URL_DEPRECATED",
-    "fields_obj_transform": "zon_code:ZONING"
+    "fields_obj_transform": "zon_code:ZONING",
+    "state": "MANUAL_REQUIRED"
   },
   "zoning_fl_osceola_st_cloud": {
-    "fields_obj_transform": "zon_code:zoning"
+    "fields_obj_transform": "zon_code:zoning",
+    "state": "MANUAL_REQUIRED"
   },
   "zoning_fl_pinellas_st_pete_beach": {
     "src_url_file": "MANUAL_REQUIRED",
-    "fields_obj_transform": "MANUAL_REQUIRED"
+    "fields_obj_transform": "MANUAL_REQUIRED",
+    "state": "MANUAL_REQUIRED"
   },
   "zoning_fl_pinellas_st_petersburg": {
-    "fields_obj_transform": "zon_code:zoneclass, zon_desc:zonedesc"
+    "fields_obj_transform": "zon_code:zoneclass, zon_desc:zonedesc",
+    "state": "MANUAL_REQUIRED"
   },
   "zoning_fl_martin_stuart": {
-    "fields_obj_transform": "zon_code:zoning, zon_code2:zoning_sub"
+    "fields_obj_transform": "zon_code:zoning, zon_code2:zoning_sub",
+    "state": "MANUAL_REQUIRED"
   },
   "zoning_fl_hillsborough_tampa": {
-    "fields_obj_transform": "zon_code:zoneclass, zon_desc:zonedesc, notes:ldfilenumb, ord_num:reference"
+    "fields_obj_transform": "zon_code:zoneclass, zon_desc:zonedesc, notes:ldfilenumb, ord_num:reference",
+    "state": "MANUAL_REQUIRED"
   },
   "zoning_fl_pinellas_tarpon_springs": {
     "src_url_file": "MANUAL_REQUIRED",
-    "fields_obj_transform": "MANUAL_REQUIRED"
+    "fields_obj_transform": "MANUAL_REQUIRED",
+    "state": "MANUAL_REQUIRED"
   },
   "zoning_fl_lake_tavares": {
-    "fields_obj_transform": "zon_code:ZoningCode"
+    "fields_obj_transform": "zon_code:ZoningCode",
+    "state": "MANUAL_REQUIRED"
   },
   "zoning_fl_hillsborough_temple_terrace": {
     "src_url_file": "MANUAL_REQUIRED",
-    "fields_obj_transform": "MANUAL_REQUIRED"
+    "fields_obj_transform": "MANUAL_REQUIRED",
+    "state": "MANUAL_REQUIRED"
   },
   "zoning_fl_brevard_titusville": {
-    "fields_obj_transform": "zon_code:zone_code, ord_num:ordinance_"
+    "fields_obj_transform": "zon_code:zone_code, ord_num:ordinance_",
+    "state": "MANUAL_REQUIRED"
   },
   "zoning_fl_pinellas_treasure_island": {
     "src_url_file": "URL_DEPRECATED",
-    "fields_obj_transform": "zon_code:zoning, ord_num:ordinance_"
+    "fields_obj_transform": "zon_code:zoning, ord_num:ordinance_",
+    "state": "MANUAL_REQUIRED"
   },
   "zoning_fl_lake_umatilla": {
-    "fields_obj_transform": "zon_code:ZoningCode"
+    "fields_obj_transform": "zon_code:ZoningCode",
+    "state": "MANUAL_REQUIRED"
   },
   "zoning_fl_sarasota_venice": {
     "src_url_file": "URL_DEPRECATED",
-    "fields_obj_transform": "zon_code:map_label, zon_desc:zoning_dis, notes:notes"
+    "fields_obj_transform": "zon_code:map_label, zon_desc:zoning_dis, notes:notes",
+    "state": "MANUAL_REQUIRED"
   },
   "zoning_fl_indian_river_vero_beach": {
-    "fields_obj_transform": "zon_code:code, zon_desc:descriptio"
+    "fields_obj_transform": "zon_code:code, zon_desc:descriptio",
+    "state": "MANUAL_REQUIRED"
   },
   "zoning_fl_alachua_waldo": {
-    "fields_obj_transform": "zon_code:zonedistri, zon_code2:zonecode, zon_desc:zonedefin, ord_num:app_no"
+    "fields_obj_transform": "zon_code:zonedistri, zon_code2:zonecode, zon_desc:zonedefin, ord_num:app_no",
+    "state": "MANUAL_REQUIRED"
   },
   "zoning_fl_orange_windermere": {
     "src_url_file": "MANUAL_REQUIRED",
-    "fields_obj_transform": "MANUAL_REQUIRED"
+    "fields_obj_transform": "MANUAL_REQUIRED",
+    "state": "MANUAL_REQUIRED"
   },
   "zoning_fl_orange_winter_garden": {
     "src_url_file": "MANUAL_REQUIRED",
-    "fields_obj_transform": "MANUAL_REQUIRED"
+    "fields_obj_transform": "MANUAL_REQUIRED",
+    "state": "MANUAL_REQUIRED"
   },
   "zoning_fl_orange_winter_park": {
     "src_url_file": "MANUAL_REQUIRED",
-    "fields_obj_transform": "MANUAL_REQUIRED"
+    "fields_obj_transform": "MANUAL_REQUIRED",
+    "state": "MANUAL_REQUIRED"
   },
   "zoning_fl_seminole_winter_springs": {
-    "fields_obj_transform": "zon_code:type"
+    "fields_obj_transform": "zon_code:type",
+    "state": "MANUAL_REQUIRED"
   },
   "zoning_fl_pasco_zephyrhills": {
     "src_url_file": "MANUAL_REQUIRED",
-    "fields_obj_transform": "MANUAL_REQUIRED"
+    "fields_obj_transform": "MANUAL_REQUIRED",
+    "state": "MANUAL_REQUIRED"
   },
   "zoning_fl_clay_unincorporated": {
-    "fields_obj_transform": "zon_code:zoning, zon_code2:mp_zoning, ord_num:zoning_ord"
+    "fields_obj_transform": "zon_code:zoning, zon_code2:mp_zoning, ord_num:zoning_ord",
+    "state": "MANUAL_REQUIRED"
   },
   "zoning_fl_collier_unincorporated": {
-    "fields_obj_transform": "zon_code:zoning, zon_code2:district, notes:zonenote1"
+    "fields_obj_transform": "zon_code:zoning, zon_code2:district, notes:zonenote1",
+    "state": "MANUAL_REQUIRED"
   },
   "zoning_fl_desoto_arcadia": {
     "fields_obj_transform": "zon_code:zon, ord_num:annex_ord"
@@ -466,837 +593,1074 @@
   },
   "zoning_fl_columbia_unincorporated": {
     "src_url_file": "MANUAL_REQUIRED",
-    "fields_obj_transform": "MANUAL_REQUIRED"
+    "fields_obj_transform": "MANUAL_REQUIRED",
+    "state": "MANUAL_REQUIRED"
   },
   "zoning_fl_duval_unified": {
-    "fields_obj_transform": "MANUAL_REQUIRED"
+    "fields_obj_transform": "MANUAL_REQUIRED",
+    "state": "MANUAL_REQUIRED"
   },
   "zoning_fl_escambia_unincorporated": {
-    "fields_obj_transform": "zon_code:zoning, ord_num:case_numbe"
+    "fields_obj_transform": "zon_code:zoning, ord_num:case_numbe",
+    "state": "MANUAL_REQUIRED"
   },
   "zoning_fl_flagler_unincorporated": {
-    "fields_obj_transform": "zon_code:zonecode, zon_code2:label, zon_desc:zonename, notes:notes, "
+    "fields_obj_transform": "zon_code:zonecode, zon_code2:label, zon_desc:zonename, notes:notes, ",
+    "state": "MANUAL_REQUIRED"
   },
   "zoning_fl_hernando_unincorporated": {
-    "fields_obj_transform": "zon_code:zoning, zon_desc:zonedesc, notes:zone_notes"
+    "fields_obj_transform": "zon_code:zoning, zon_desc:zonedesc, notes:zone_notes",
+    "state": "MANUAL_REQUIRED"
   },
   "zoning_fl_highlands_unincorporated": {
-    "fields_obj_transform": "zon_code:zon"
+    "fields_obj_transform": "zon_code:zon",
+    "state": "MANUAL_REQUIRED"
   },
   "zoning_fl_hillsborough_unincorporated": {
-    "fields_obj_transform": "zon_code:nzone, zon_desc:nzone_desc, zon_gen:category, ord_num:rz"
+    "fields_obj_transform": "zon_code:nzone, zon_desc:nzone_desc, zon_gen:category, ord_num:rz",
+    "state": "MANUAL_REQUIRED"
   },
   "zoning_fl_indian_river_unincorporated": {
-    "fields_obj_transform": "zon_code:zoning, zon_code2:zoning_abv, notes:comment, ord_num:ordinance"
+    "fields_obj_transform": "zon_code:zoning, zon_code2:zoning_abv, notes:comment, ord_num:ordinance",
+    "state": "MANUAL_REQUIRED"
   },
   "zoning_fl_lake_unincorporated": {
-    "fields_obj_transform": "zon_code:Zoning, zon_code2:ZoningDist, zon_desc:ZoningNm, ord_num:OrdNum"
+    "fields_obj_transform": "zon_code:Zoning, zon_code2:ZoningDist, zon_desc:ZoningNm, ord_num:OrdNum",
+    "state": "MANUAL_REQUIRED"
   },
   "zoning_fl_lee_unincorporated": {
-    "fields_obj_transform": "zon_code:zoning"
+    "fields_obj_transform": "zon_code:zoning",
+    "state": "MANUAL_REQUIRED"
   },
   "zoning_fl_leon_unified": {
     "fields_obj_transform": "MANUAL_REQUIRED",
-    "src_url_file": "URL_DEPRECATED"
+    "src_url_file": "URL_DEPRECATED",
+    "state": "MANUAL_REQUIRED"
   },
   "zoning_fl_manatee_unincorporated": {
-    "fields_obj_transform": "zon_code:zonelabel, zon_code2:special_de, ord_num:ord_no"
+    "fields_obj_transform": "zon_code:zonelabel, zon_code2:special_de, ord_num:ord_no",
+    "state": "MANUAL_REQUIRED"
   },
   "zoning_fl_marion_unincorporated": {
-    "fields_obj_transform": "zon_code:zoneclass, zon_desc:zonedesc, ord_num:filename"
+    "fields_obj_transform": "zon_code:zoneclass, zon_desc:zonedesc, ord_num:filename",
+    "state": "MANUAL_REQUIRED"
   },
   "zoning_fl_martin_unincorporated": {
-    "fields_obj_transform": "zon_code:zoning, notes:zoning_det"
+    "fields_obj_transform": "zon_code:zoning, notes:zoning_det",
+    "state": "MANUAL_REQUIRED"
   },
   "zoning_fl_miami_dade_incorporated": {
-    "fields_obj_transform": "MANUAL_REQUIRED"
+    "fields_obj_transform": "MANUAL_REQUIRED",
+    "state": "MANUAL_REQUIRED"
   },
   "zoning_fl_miami_dade_unincorporated": {
-    "fields_obj_transform": "MANUAL_REQUIRED"
+    "fields_obj_transform": "MANUAL_REQUIRED",
+    "state": "MANUAL_REQUIRED"
   },
   "zoning_fl_nassau_unincorporated": {
-    "fields_obj_transform": "zon_code:zoning, ord_num:ord"
+    "fields_obj_transform": "zon_code:zoning, ord_num:ord",
+    "state": "MANUAL_REQUIRED"
   },
   "zoning_fl_okaloosa_unincorporated": {
     "fields_obj_transform": "zon_code:zngpy_zone, ord_num:zngpy_ord_",
-    "src_url_file": "URL_DEPRECATED"
+    "src_url_file": "URL_DEPRECATED",
+    "state": "MANUAL_REQUIRED"
   },
   "zoning_fl_osceola_unincorporated": {
     "fields_obj_transform": "zon_code:prim_zon, zon_code2:sec_zon, zon_desc:zoning_dis",
-    "src_url_file": "URL_DEPRECATED"
+    "src_url_file": "URL_DEPRECATED",
+    "state": "MANUAL_REQUIRED"
   },
   "zoning_fl_palm_beach_unified": {
-    "fields_obj_transform": "MANUAL_REQUIRED"
+    "fields_obj_transform": "MANUAL_REQUIRED",
+    "state": "MANUAL_REQUIRED"
   },
   "zoning_fl_pasco_unincorporated": {
-    "fields_obj_transform": "zon_code:zn_type"
+    "fields_obj_transform": "zon_code:zn_type",
+    "state": "MANUAL_REQUIRED"
   },
   "zoning_fl_pinellas_unincorporated": {
     "src_url_file": "URL_DEPRECATED",
-    "fields_obj_transform": "zon_code:zoneclass, zon_desc:zonedesc"
+    "fields_obj_transform": "zon_code:zoneclass, zon_desc:zonedesc",
+    "state": "MANUAL_REQUIRED"
   },
   "zoning_fl_putnam_unincorporated": {
-    "fields_obj_transform": "zon_code:zoneclass, zon_desc:zonedesc"
+    "fields_obj_transform": "zon_code:zoneclass, zon_desc:zonedesc",
+    "state": "MANUAL_REQUIRED"
   },
   "zoning_fl_santa_rosa_unincorporated": {
-    "fields_obj_transform": "zon_code:district, zon_desc:descriptio"
+    "fields_obj_transform": "zon_code:district, zon_desc:descriptio",
+    "state": "MANUAL_REQUIRED"
   },
   "zoning_fl_sarasota_unincorporated": {
-    "fields_obj_transform": "zon_code:ZoningCode, zon_code2:zoninggrou, zon_desc:zoningdesi, ord_num:ordinancen"
+    "fields_obj_transform": "zon_code:ZoningCode, zon_code2:zoninggrou, zon_desc:zoningdesi, ord_num:ordinancen",
+    "state": "MANUAL_REQUIRED"
   },
   "zoning_fl_seminole_unincorporated": {
-    "fields_obj_transform": "zon_code:zoning, ord_num:ordinance"
+    "fields_obj_transform": "zon_code:zoning, ord_num:ordinance",
+    "state": "MANUAL_REQUIRED"
   },
   "zoning_fl_st_johns_unincorporated": {
-    "fields_obj_transform": "zon_code:zoning"
+    "fields_obj_transform": "zon_code:zoning",
+    "state": "MANUAL_REQUIRED"
   },
   "zoning_fl_sumter_unincorporated": {
-    "fields_obj_transform": "zon_code:zone_type"
+    "fields_obj_transform": "zon_code:zone_type",
+    "state": "MANUAL_REQUIRED"
   },
   "zoning_fl_lake_howey_in_the_hills": {
-    "fields_obj_transform": "zon_code:ZoningCode"
+    "fields_obj_transform": "zon_code:ZoningCode",
+    "state": "MANUAL_REQUIRED"
   },
   "zoning_fl_lake_lady_lake": {
     "src_url_file": "MANUAL_REQUIRED",
-    "fields_obj_transform": "MANUAL_REQUIRED"
+    "fields_obj_transform": "MANUAL_REQUIRED",
+    "state": "MANUAL_REQUIRED"
   },
   "zoning_fl_lake_montverde": {
-    "fields_obj_transform": "zon_code:ZoningCode"
+    "fields_obj_transform": "zon_code:ZoningCode",
+    "state": "MANUAL_REQUIRED"
   },
   "zoning_fl_pasco_saint_leo": {
     "src_url_file": "MANUAL_REQUIRED",
-    "fields_obj_transform": "MANUAL_REQUIRED"
+    "fields_obj_transform": "MANUAL_REQUIRED",
+    "state": "MANUAL_REQUIRED"
   },
   "zoning_fl_volusia_countywide": {
     "fields_obj_transform": "zon_code:genl_zcode"
   },
   "zoning_fl_volusia_unincorporated": {
     "src_url_file": "URL_DEPRECATED",
-    "fields_obj_transform": "zon_code:zoncode"
+    "fields_obj_transform": "zon_code:zoncode",
+    "state": "MANUAL_REQUIRED"
   },
   "zoning_fl_walton_unincorporated": {
-    "fields_obj_transform": "zon_code:zone_class, zon_code2:plan_area, notes:Ordinance_, ord_num:Ordinanc_1"
+    "fields_obj_transform": "zon_code:zone_class, zon_code2:plan_area, notes:Ordinance_, ord_num:Ordinanc_1",
+    "state": "MANUAL_REQUIRED"
   },
   "flu_fl_alachua_unincorporated": {
     "src_url_file": "URL_DEPRECATED",
-    "fields_obj_transform": "MANUAL_REQUIRED"
+    "fields_obj_transform": "MANUAL_REQUIRED",
+    "state": "MANUAL_REQUIRED"
   },
   "flu_fl_bay_unincorporated": {
-    "fields_obj_transform": "MANUAL_REQUIRED"
+    "fields_obj_transform": "MANUAL_REQUIRED",
+    "state": "MANUAL_REQUIRED"
   },
   "flu_fl_brevard_unincorporated": {
     "src_url_file": "URL_DEPRECATED",
-    "fields_obj_transform": "flu_code:flu"
+    "fields_obj_transform": "flu_code:flu",
+    "state": "MANUAL_REQUIRED"
   },
   "flu_fl_broward_unified": {
     "fields_obj_transform": "flu_code:sluc1, flu_code2:sluc1",
-    "src_url_file": "URL_DEPRECATED"
+    "src_url_file": "URL_DEPRECATED",
+    "state": "MANUAL_REQUIRED"
   },
   "flu_fl_charlotte_unincorporated": {
-    "fields_obj_transform": "flu_code:newlu, flu_code2:newcolor, notes:petnum, dca_num:ordnum"
+    "fields_obj_transform": "flu_code:newlu, flu_code2:newcolor, notes:petnum, dca_num:ordnum",
+    "state": "MANUAL_REQUIRED"
   },
   "flu_fl_citrus_unincorporated": {
-    "fields_obj_transform": "flu_code:LANDUSE, flu_desc:DESCRIPT"
+    "fields_obj_transform": "flu_code:LANDUSE, flu_desc:DESCRIPT",
+    "state": "MANUAL_REQUIRED"
   },
   "flu_fl_seminole_altamonte_springs": {
     "src_url_file": "URL_DEPRECATED",
-    "fields_obj_transform": "flu_code:prp_label"
+    "fields_obj_transform": "flu_code:prp_label",
+    "state": "MANUAL_REQUIRED"
   },
   "flu_fl_orange_apopka": {
     "src_url_file": "MANUAL_REQUIRED",
-    "fields_obj_transform": "flu_code:land_use, dca_num:flu_ord"
+    "fields_obj_transform": "flu_code:land_use, dca_num:flu_ord",
+    "state": "MANUAL_REQUIRED"
   },
   "flu_fl_desoto_arcadia": {
     "fields_obj_transform": "flu_code:flu",
-    "src_url_file": "URL_DEPRECATED"
+    "src_url_file": "URL_DEPRECATED",
+    "state": "MANUAL_REQUIRED"
   },
   "flu_fl_polk_auburndale": {
     "src_url_file": "MANUAL_REQUIRED",
-    "fields_obj_transform": "flu_code:flu_code"
+    "fields_obj_transform": "flu_code:flu_code",
+    "state": "MANUAL_REQUIRED"
   },
   "flu_fl_polk_bartow": {
-    "fields_obj_transform": "flu_code:flu, dca_num:annex_ord"
+    "fields_obj_transform": "flu_code:flu, dca_num:annex_ord",
+    "state": "MANUAL_REQUIRED"
   },
   "flu_fl_lee_bonita_springs": {
     "src_url_file": "URL_DEPRECATED",
-    "fields_obj_transform": "flu_code:landuse, flu_code2:type, notes:notes"
+    "fields_obj_transform": "flu_code:landuse, flu_code2:type, notes:notes",
+    "state": "MANUAL_REQUIRED"
   },
   "flu_fl_manatee_bradenton": {
-    "fields_obj_transform": "flu_code:flulabel, flu_desc:flu_desc"
+    "fields_obj_transform": "flu_code:flulabel, flu_desc:flu_desc",
+    "state": "MANUAL_REQUIRED"
   },
   "flu_fl_hernando_brooksville": {
     "src_url_file": "URL_DEPRECATED",
-    "fields_obj_transform": "MANUAL_REQUIRED"
+    "fields_obj_transform": "MANUAL_REQUIRED",
+    "state": "MANUAL_REQUIRED"
   },
   "flu_fl_seminole_casselberry": {
     "src_url_file": "URL_DEPRECATED",
-    "fields_obj_transform": "flu_code:future_lan"
+    "fields_obj_transform": "flu_code:future_lan",
+    "state": "MANUAL_REQUIRED"
   },
   "flu_fl_brevard_cocoa": {
     "src_url_file": "URL_DEPRECATED",
-    "fields_obj_transform": "flu_code:flucity"
+    "fields_obj_transform": "flu_code:flucity",
+    "state": "MANUAL_REQUIRED"
   },
   "flu_fl_pasco_dade_city": {
     "src_url_file": "MANUAL_REQUIRED",
-    "fields_obj_transform": "MANUAL_REQUIRED"
+    "fields_obj_transform": "MANUAL_REQUIRED",
+    "state": "MANUAL_REQUIRED"
   },
   "flu_fl_polk_davenport": {
     "src_url_file": "MANUAL_REQUIRED",
-    "fields_obj_transform": "flu_code:flu"
+    "fields_obj_transform": "flu_code:flu",
+    "state": "MANUAL_REQUIRED"
   },
   "flu_fl_volusia_daytona_beach": {
     "src_url_file": "URL_DEPRECATED",
-    "fields_obj_transform": "MANUAL_REQUIRED"
+    "fields_obj_transform": "MANUAL_REQUIRED",
+    "state": "MANUAL_REQUIRED"
   },
   "flu_fl_polk_dundee": {
     "src_url_file": "MANUAL_REQUIRED",
-    "fields_obj_transform": "flu_code:flu, dca_num:annex_ord"
+    "fields_obj_transform": "flu_code:flu, dca_num:annex_ord",
+    "state": "MANUAL_REQUIRED"
   },
   "flu_fl_polk_eagle_lake": {
     "src_url_file": "MANUAL_REQUIRED",
-    "fields_obj_transform": "flu_code:flu_code"
+    "fields_obj_transform": "flu_code:flu_code",
+    "state": "MANUAL_REQUIRED"
   },
   "flu_fl_polk_fort_meade": {
     "src_url_file": "MANUAL_REQUIRED",
-    "fields_obj_transform": "flu_code:flu"
+    "fields_obj_transform": "flu_code:flu",
+    "state": "MANUAL_REQUIRED"
   },
   "flu_fl_lee_fort_myers_beach": {
     "src_url_file": "MANUAL_REQUIRED",
-    "fields_obj_transform": "MANUAL_REQUIRED"
+    "fields_obj_transform": "MANUAL_REQUIRED",
+    "state": "MANUAL_REQUIRED"
   },
   "flu_fl_st_lucie_fort_pierce": {
     "src_url_file": "URL_DEPRECATED",
-    "fields_obj_transform": "MANUAL_REQUIRED"
+    "fields_obj_transform": "MANUAL_REQUIRED",
+    "state": "MANUAL_REQUIRED"
   },
   "flu_fl_polk_frostproof": {
     "src_url_file": "MANUAL_REQUIRED",
-    "fields_obj_transform": "flu_code:flu"
+    "fields_obj_transform": "flu_code:flu",
+    "state": "MANUAL_REQUIRED"
   },
   "flu_fl_alachua_gainesville": {
     "src_url_file": "URL_DEPRECATED",
-    "fields_obj_transform": "MANUAL_REQUIRED"
+    "fields_obj_transform": "MANUAL_REQUIRED",
+    "state": "MANUAL_REQUIRED"
   },
   "flu_fl_lake_groveland": {
     "src_url_file": "URL_DEPRECATED",
-    "fields_obj_transform": "flu_code:flum_id"
+    "fields_obj_transform": "flu_code:flum_id",
+    "state": "MANUAL_REQUIRED"
   },
   "flu_fl_polk_haines_city": {
     "src_url_file": "MANUAL_REQUIRED",
-    "fields_obj_transform": "flu_code:flu_code"
+    "fields_obj_transform": "flu_code:flu_code",
+    "state": "MANUAL_REQUIRED"
   },
   "flu_fl_polk_highland_park": {
     "src_url_file": "MANUAL_REQUIRED",
-    "fields_obj_transform": "flu_code:flu"
+    "fields_obj_transform": "flu_code:flu",
+    "state": "MANUAL_REQUIRED"
   },
   "flu_fl_polk_hillcrest_heights": {
     "src_url_file": "MANUAL_REQUIRED",
-    "fields_obj_transform": "flu_code:flu"
+    "fields_obj_transform": "flu_code:flu",
+    "state": "MANUAL_REQUIRED"
   },
   "flu_fl_osceola_kissimmee": {
-    "fields_obj_transform": "flu_code:prop_flum"
+    "fields_obj_transform": "flu_code:prop_flum",
+    "state": "MANUAL_REQUIRED"
   },
   "flu_fl_polk_lake_alfred": {
     "src_url_file": "MANUAL_REQUIRED",
-    "fields_obj_transform": "flu_code:flu"
+    "fields_obj_transform": "flu_code:flu",
+    "state": "MANUAL_REQUIRED"
   },
   "flu_fl_polk_lake_hamilton": {
     "src_url_file": "MANUAL_REQUIRED",
-    "fields_obj_transform": "flu_code:flu"
+    "fields_obj_transform": "flu_code:flu",
+    "state": "MANUAL_REQUIRED"
   },
   "flu_fl_polk_lakeland": {
     "src_url_file": "URL_DEPRECATED",
-    "fields_obj_transform": "flu_code:label, flu_desc:designatio"
+    "fields_obj_transform": "flu_code:label, flu_desc:designatio",
+    "state": "MANUAL_REQUIRED"
   },
   "flu_fl_lake_leesburg": {
     "src_url_file": "URL_DEPRECATED",
-    "fields_obj_transform": "flu_code:flu"
+    "fields_obj_transform": "flu_code:flu",
+    "state": "MANUAL_REQUIRED"
   },
   "flu_fl_sarasota_longboat_key": {
     "src_url_file": "MANUAL_REQUIRED",
-    "fields_obj_transform": "MANUAL_REQUIRED"
+    "fields_obj_transform": "MANUAL_REQUIRED",
+    "state": "MANUAL_REQUIRED"
   },
   "flu_fl_seminole_longwood": {
     "src_url_file": "URL_DEPRECATED",
-    "fields_obj_transform": "flu_code:flu"
+    "fields_obj_transform": "flu_code:flu",
+    "state": "MANUAL_REQUIRED"
   },
   "flu_fl_collier_marco_island": {
     "src_url_file": "URL_DEPRECATED",
-    "fields_obj_transform": "flu_code:FLU"
+    "fields_obj_transform": "flu_code:FLU",
+    "state": "MANUAL_REQUIRED"
   },
   "flu_fl_lake_mount_dora": {
-    "fields_obj_transform": "flu_code:flucode"
+    "fields_obj_transform": "flu_code:flucode",
+    "state": "MANUAL_REQUIRED"
   },
   "flu_fl_polk_mulberry": {
     "src_url_file": "MANUAL_REQUIRED",
-    "fields_obj_transform": "flu_code:flu"
+    "fields_obj_transform": "flu_code:flu",
+    "state": "MANUAL_REQUIRED"
   },
   "flu_fl_collier_naples": {
     "fields_obj_transform": "flu_code:CATEGORY, flu_code2:SUBCATEGOR",
-    "src_url_file": "URL_DEPRECATED"
+    "src_url_file": "URL_DEPRECATED",
+    "state": "MANUAL_REQUIRED"
   },
   "flu_fl_alachua_newberry": {
     "src_url_file": "URL_DEPRECATED",
-    "fields_obj_transform": "MANUAL_REQUIRED"
+    "fields_obj_transform": "MANUAL_REQUIRED",
+    "state": "MANUAL_REQUIRED"
   },
   "flu_fl_pasco_new_port_richey": {
     "src_url_file": "MANUAL_REQUIRED",
-    "fields_obj_transform": "MANUAL_REQUIRED"
+    "fields_obj_transform": "MANUAL_REQUIRED",
+    "state": "MANUAL_REQUIRED"
   },
   "flu_fl_volusia_new_smyrna_beach": {
-    "fields_obj_transform": "MANUAL_REQUIRED"
+    "fields_obj_transform": "MANUAL_REQUIRED",
+    "state": "MANUAL_REQUIRED"
   },
   "flu_fl_sarasota_north_port": {
     "src_url_file": "URL_DEPRECATED",
-    "fields_obj_transform": "flu_code:FLU_CAT, flu_desc:FLUDESC"
+    "fields_obj_transform": "flu_code:FLU_CAT, flu_desc:FLUDESC",
+    "state": "MANUAL_REQUIRED"
   },
   "flu_fl_orange_oakland": {
     "src_url_file": "MANUAL_REQUIRED",
-    "fields_obj_transform": "MANUAL_REQUIRED"
+    "fields_obj_transform": "MANUAL_REQUIRED",
+    "state": "MANUAL_REQUIRED"
   },
   "flu_fl_orange_ocoee": {
-    "fields_obj_transform": "MANUAL_REQUIRED"
+    "fields_obj_transform": "MANUAL_REQUIRED",
+    "state": "MANUAL_REQUIRED"
   },
   "flu_fl_orange_orlando": {
-    "fields_obj_transform": "flu_code:landusetyp"
+    "fields_obj_transform": "flu_code:landusetyp",
+    "state": "MANUAL_REQUIRED"
   },
   "flu_fl_seminole_oviedo": {
     "src_url_file": "URL_DEPRECATED",
-    "fields_obj_transform": "flu_code:flu"
+    "fields_obj_transform": "flu_code:flu",
+    "state": "MANUAL_REQUIRED"
   },
   "flu_fl_putnam_palatka": {
-    "src_url_file": "URL_DEPRECATED"
+    "src_url_file": "URL_DEPRECATED",
+    "state": "MANUAL_REQUIRED"
   },
   "flu_fl_brevard_palm_bay": {
     "src_url_file": "MANUAL_REQUIRED",
-    "fields_obj_transform": "flu_code:flu_code, flu_desc:flu_desc, notes:comments"
+    "fields_obj_transform": "flu_code:flu_code, flu_desc:flu_desc, notes:comments",
+    "state": "MANUAL_REQUIRED"
   },
   "flu_fl_palm_beach_palm_beach_gardens": {
-    "fields_obj_transform": "flu_code:lu, flu_code2:descriptio"
+    "fields_obj_transform": "flu_code:lu, flu_code2:descriptio",
+    "state": "MANUAL_REQUIRED"
   },
   "flu_fl_flagler_palm_coast": {
     "src_url_file": "URL_DEPRECATED",
-    "fields_obj_transform": "MANUAL_REQUIRED"
+    "fields_obj_transform": "MANUAL_REQUIRED",
+    "state": "MANUAL_REQUIRED"
   },
   "flu_fl_manatee_palmetto": {
     "src_url_file": "URL_DEPRECATED",
-    "fields_obj_transform": "MANUAL_REQUIRED"
+    "fields_obj_transform": "MANUAL_REQUIRED",
+    "state": "MANUAL_REQUIRED"
   },
   "flu_fl_polk_polk_city": {
     "src_url_file": "MANUAL_REQUIRED",
-    "fields_obj_transform": "flu_code:flu"
+    "fields_obj_transform": "flu_code:flu",
+    "state": "MANUAL_REQUIRED"
   },
   "flu_fl_pasco_port_richey": {
     "src_url_file": "MANUAL_REQUIRED",
-    "fields_obj_transform": "MANUAL_REQUIRED"
+    "fields_obj_transform": "MANUAL_REQUIRED",
+    "state": "MANUAL_REQUIRED"
   },
   "flu_fl_charlotte_punta_gorda": {
     "src_url_file": "MANUAL_REQUIRED",
-    "fields_obj_transform": "flu_code:luname, notes:color"
+    "fields_obj_transform": "flu_code:luname, notes:color",
+    "state": "MANUAL_REQUIRED"
   },
   "flu_fl_pasco_san_antonio": {
     "src_url_file": "MANUAL_REQUIRED",
-    "fields_obj_transform": "MANUAL_REQUIRED"
+    "fields_obj_transform": "MANUAL_REQUIRED",
+    "state": "MANUAL_REQUIRED"
   },
   "flu_fl_seminole_sanford": {
     "src_url_file": "URL_DEPRECATED",
-    "fields_obj_transform": "flu_code:landusecod"
+    "fields_obj_transform": "flu_code:landusecod",
+    "state": "MANUAL_REQUIRED"
   },
   "flu_fl_lee_sanibel": {
     "src_url_file": "MANUAL_REQUIRED",
-    "fields_obj_transform": "MANUAL_REQUIRED"
+    "fields_obj_transform": "MANUAL_REQUIRED",
+    "state": "MANUAL_REQUIRED"
   },
   "flu_fl_sarasota_sarasota": {
     "src_url_file": "URL_DEPRECATED",
-    "fields_obj_transform": "flu_code:landusecod, flu_desc:landusedes"
+    "fields_obj_transform": "flu_code:landusecod, flu_desc:landusedes",
+    "state": "MANUAL_REQUIRED"
   },
   "flu_fl_osceola_st_cloud": {
-    "fields_obj_transform": "flu_code:flu"
+    "fields_obj_transform": "flu_code:flu",
+    "state": "MANUAL_REQUIRED"
   },
   "flu_fl_pinellas_st_petersburg": {
     "src_url_file": "MANUAL_REQUIRED",
-    "fields_obj_transform": "MANUAL_REQUIRED"
+    "fields_obj_transform": "MANUAL_REQUIRED",
+    "state": "MANUAL_REQUIRED"
   },
   "flu_fl_martin_stuart": {
     "src_url_file": "URL_DEPRECATED",
-    "fields_obj_transform": "flu_code:land_use, flu_code2:city"
+    "fields_obj_transform": "flu_code:land_use, flu_code2:city",
+    "state": "MANUAL_REQUIRED"
   },
   "flu_fl_hillsborough_tampa": {
-    "fields_obj_transform": "flu_code:FLUE, flu_desc:FLU_DESC"
+    "fields_obj_transform": "flu_code:FLUE, flu_desc:FLU_DESC",
+    "state": "MANUAL_REQUIRED"
   },
   "flu_fl_lake_tavares": {
-    "fields_obj_transform": "flu_code:flucode"
+    "fields_obj_transform": "flu_code:flucode",
+    "state": "MANUAL_REQUIRED"
   },
   "flu_fl_hillsborough_temple_terrace": {
-    "fields_obj_transform": "flu_code:FLUE, flu_desc:FLU_DESC"
+    "fields_obj_transform": "flu_code:FLUE, flu_desc:FLU_DESC",
+    "state": "MANUAL_REQUIRED"
   },
   "flu_fl_lake_umatilla": {
-    "fields_obj_transform": "flu_code:flucode"
+    "fields_obj_transform": "flu_code:flucode",
+    "state": "MANUAL_REQUIRED"
   },
   "flu_fl_sarasota_venice": {
     "src_url_file": "URL_DEPRECATED",
-    "fields_obj_transform": "flu_code:NEW_FLU"
+    "fields_obj_transform": "flu_code:NEW_FLU",
+    "state": "MANUAL_REQUIRED"
   },
   "flu_fl_palm_beach_wellington": {
-    "fields_obj_transform": "flu_code:landuse, flu_code2:landusecat, flu_desc:landusedes"
+    "fields_obj_transform": "flu_code:landuse, flu_code2:landusecat, flu_desc:landusedes",
+    "state": "MANUAL_REQUIRED"
   },
   "flu_fl_orange_winter_garden": {
     "src_url_file": "MANUAL_REQUIRED",
-    "fields_obj_transform": "flu_code:flu_code"
+    "fields_obj_transform": "flu_code:flu_code",
+    "state": "MANUAL_REQUIRED"
   },
   "flu_fl_polk_winter_haven": {
-    "fields_obj_transform": "flu_code:flu, notes:comment"
+    "fields_obj_transform": "flu_code:flu, notes:comment",
+    "state": "MANUAL_REQUIRED"
   },
   "flu_fl_seminole_winter_springs": {
     "src_url_file": "URL_DEPRECATED",
-    "fields_obj_transform": "flu_code:type"
+    "fields_obj_transform": "flu_code:type",
+    "state": "MANUAL_REQUIRED"
   },
   "flu_fl_pasco_zephyrhills": {
     "src_url_file": "MANUAL_REQUIRED",
-    "fields_obj_transform": "MANUAL_REQUIRED"
+    "fields_obj_transform": "MANUAL_REQUIRED",
+    "state": "MANUAL_REQUIRED"
   },
   "flu_fl_clay_unincorporated": {
-    "fields_obj_transform": "flu_code:flum, flu_code2:mp_flum, notes:flum_doc"
+    "fields_obj_transform": "flu_code:flum, flu_code2:mp_flum, notes:flum_doc",
+    "state": "MANUAL_REQUIRED"
   },
   "flu_fl_collier_unincorporated": {
     "src_url_file": "URL_DEPRECATED",
-    "fields_obj_transform": "flu_code:descrition, flu_code2:lu_type"
+    "fields_obj_transform": "flu_code:descrition, flu_code2:lu_type",
+    "state": "MANUAL_REQUIRED"
   },
   "flu_fl_desoto_unincorporated": {
-    "fields_obj_transform": "flu_code:flu, notes:dri"
+    "fields_obj_transform": "flu_code:flu, notes:dri",
+    "state": "MANUAL_REQUIRED"
   },
   "flu_fl_duval_unincorporated": {
-    "src_url_file": "URL_DEPRECATED"
+    "src_url_file": "URL_DEPRECATED",
+    "state": "MANUAL_REQUIRED"
   },
   "flu_fl_escambia_unincorporated": {
-    "fields_obj_transform": "flu_code:flu_label"
+    "fields_obj_transform": "flu_code:flu_label",
+    "state": "MANUAL_REQUIRED"
   },
   "flu_fl_flagler_unincorporated": {
     "src_url_file": "URL_DEPRECATED",
-    "fields_obj_transform": "MANUAL_REQUIRED"
+    "fields_obj_transform": "MANUAL_REQUIRED",
+    "state": "MANUAL_REQUIRED"
   },
   "flu_fl_glades_unincorporated": {
     "fields_obj_transform": "flu_code:flu, notes:notes"
   },
   "flu_fl_hardee_unincorporated": {
     "src_url_file": "MANUAL_REQUIRED",
-    "fields_obj_transform": "flu_code:code, flu_desc:future_lan, notes:doc"
+    "fields_obj_transform": "flu_code:code, flu_desc:future_lan, notes:doc",
+    "state": "MANUAL_REQUIRED"
   },
   "flu_fl_hernando_unincorporated": {
     "src_url_file": "URL_DEPRECATED",
-    "fields_obj_transform": "flu_code:label, flu_code2:flu"
+    "fields_obj_transform": "flu_code:label, flu_code2:flu",
+    "state": "MANUAL_REQUIRED"
   },
   "flu_fl_highlands_unincorporated": {
     "src_url_file": "URL_DEPRECATED",
-    "fields_obj_transform": "flu_code:flum"
+    "fields_obj_transform": "flu_code:flum",
+    "state": "MANUAL_REQUIRED"
   },
   "flu_fl_hillsborough_unincorporated": {
-    "fields_obj_transform": "flu_code:FLUE, flu_desc:FLU_DESC"
+    "fields_obj_transform": "flu_code:FLUE, flu_desc:FLU_DESC",
+    "state": "MANUAL_REQUIRED"
   },
   "flu_fl_lee_unincorporated": {
     "src_url_file": "URL_DEPRECATED",
-    "fields_obj_transform": "flu_code:landuse, flu_code2:flumc, notes:note_"
+    "fields_obj_transform": "flu_code:landuse, flu_code2:flumc, notes:note_",
+    "state": "MANUAL_REQUIRED"
   },
   "flu_fl_leon_unincorporated": {
     "src_url_file": "URL_DEPRECATED",
-    "fields_obj_transform": "MANUAL_REQUIRED"
+    "fields_obj_transform": "MANUAL_REQUIRED",
+    "state": "MANUAL_REQUIRED"
   },
   "flu_fl_manatee_unincorporated": {
     "src_url_file": "URL_DEPRECATED",
-    "fields_obj_transform": "flu_code:flulabel, flu_code2:specialdes, notes:ord_no"
+    "fields_obj_transform": "flu_code:flulabel, flu_code2:specialdes, notes:ord_no",
+    "state": "MANUAL_REQUIRED"
   },
   "flu_fl_marion_unincorporated": {
     "src_url_file": "URL_DEPRECATED",
-    "fields_obj_transform": "flu_code:gs_flum, flu_code2:landusecod"
+    "fields_obj_transform": "flu_code:gs_flum, flu_code2:landusecod",
+    "state": "MANUAL_REQUIRED"
   },
   "flu_fl_martin_unincorporated": {
     "src_url_file": "URL_DEPRECATED",
-    "fields_obj_transform": "flu_code:future_lan, notes:flum_detai"
+    "fields_obj_transform": "flu_code:future_lan, notes:flum_detai",
+    "state": "MANUAL_REQUIRED"
   },
   "flu_fl_miami_dade_incorporated": {
-    "fields_obj_transform": "MANUAL_REQUIRED"
+    "fields_obj_transform": "MANUAL_REQUIRED",
+    "state": "MANUAL_REQUIRED"
   },
   "flu_fl_miami_dade_unincorporated": {
-    "fields_obj_transform": "MANUAL_REQUIRED"
+    "fields_obj_transform": "MANUAL_REQUIRED",
+    "state": "MANUAL_REQUIRED"
   },
   "flu_fl_monroe_unincorporated": {
     "src_url_file": "MANUAL_REQUIRED",
-    "fields_obj_transform": "MANUAL_REQUIRED"
+    "fields_obj_transform": "MANUAL_REQUIRED",
+    "state": "MANUAL_REQUIRED"
   },
   "flu_fl_okaloosa_unincorporated": {
-    "fields_obj_transform": "flu_code:flupy_zone"
+    "fields_obj_transform": "flu_code:flupy_zone",
+    "state": "MANUAL_REQUIRED"
   },
   "flu_fl_okeechobee_unincorporated": {
     "src_url_file": "MANUAL_REQUIRED",
-    "fields_obj_transform": "MANUAL_REQUIRED"
+    "fields_obj_transform": "MANUAL_REQUIRED",
+    "state": "MANUAL_REQUIRED"
   },
   "flu_fl_orange_unincorporated": {
     "src_url_file": "URL_DEPRECATED",
-    "fields_obj_transform": "flu_code:label, flu_code2:land_use, notes:bcc_date, dca_num:amend_no"
+    "fields_obj_transform": "flu_code:label, flu_code2:land_use, notes:bcc_date, dca_num:amend_no",
+    "state": "MANUAL_REQUIRED"
   },
   "flu_fl_osceola_unincorporated": {
     "src_url_file": "URL_DEPRECATED",
-    "fields_obj_transform": "flu_code:ca_flu, flu_code2:secondary_"
+    "fields_obj_transform": "flu_code:ca_flu, flu_code2:secondary_",
+    "state": "MANUAL_REQUIRED"
   },
   "flu_fl_palm_beach_unincorporated": {
-    "fields_obj_transform": "flu_code:flu_code, flu_code2:fname, flu_desc:flu_desc"
+    "fields_obj_transform": "flu_code:flu_code, flu_code2:fname, flu_desc:flu_desc",
+    "state": "MANUAL_REQUIRED"
   },
   "flu_fl_pasco_unincorporated": {
-    "fields_obj_transform": "flu_code:flu_code"
+    "fields_obj_transform": "flu_code:flu_code",
+    "state": "MANUAL_REQUIRED"
   },
   "flu_fl_hillsborough_plant_city": {
-    "fields_obj_transform": "flu_code:FLUE, flu_desc:FLU_DESC"
+    "fields_obj_transform": "flu_code:FLUE, flu_desc:FLU_DESC",
+    "state": "MANUAL_REQUIRED"
   },
   "flu_fl_santa_rosa_unincorporated": {
     "src_url_file": "URL_DEPRECATED",
-    "fields_obj_transform": "flu_code:category, flu_desc:descriptio"
+    "fields_obj_transform": "flu_code:category, flu_desc:descriptio",
+    "state": "MANUAL_REQUIRED"
   },
   "flu_fl_sarasota_unincorporated": {
     "src_url_file": "URL_DEPRECATED",
-    "fields_obj_transform": "flu_code:FLUCode"
+    "fields_obj_transform": "flu_code:FLUCode",
+    "state": "MANUAL_REQUIRED"
   },
   "flu_fl_seminole_unincorporated": {
-    "fields_obj_transform": "flu_code:futureland, notes:Ordinance"
+    "fields_obj_transform": "flu_code:futureland, notes:Ordinance",
+    "state": "MANUAL_REQUIRED"
   },
   "flu_fl_st_johns_unincorporated": {
     "src_url_file": "URL_DEPRECATED",
-    "fields_obj_transform": "flu_code:futluse1"
+    "fields_obj_transform": "flu_code:futluse1",
+    "state": "MANUAL_REQUIRED"
   },
   "flu_fl_st_lucie_unincorporated": {
     "src_url_file": "URL_DEPRECATED",
-    "fields_obj_transform": "flu_code:flucode"
+    "fields_obj_transform": "flu_code:flucode",
+    "state": "MANUAL_REQUIRED"
   },
   "flu_fl_sumter_unincorporated": {
     "src_url_file": "MANUAL_REQUIRED",
-    "fields_obj_transform": "flu_code:conv_flu"
+    "fields_obj_transform": "flu_code:conv_flu",
+    "state": "MANUAL_REQUIRED"
   },
   "flu_fl_nassau_hilliard": {
-    "src_url_file": "URL_DEPRECATED"
+    "src_url_file": "URL_DEPRECATED",
+    "state": "MANUAL_REQUIRED"
   },
   "flu_fl_lake_howey_in_the_hills": {
     "src_url_file": "MANUAL_REQUIRED",
-    "fields_obj_transform": "MANUAL_REQUIRED"
+    "fields_obj_transform": "MANUAL_REQUIRED",
+    "state": "MANUAL_REQUIRED"
   },
   "flu_fl_lake_lady_lake": {
     "src_url_file": "MANUAL_REQUIRED",
-    "fields_obj_transform": "MANUAL_REQUIRED"
+    "fields_obj_transform": "MANUAL_REQUIRED",
+    "state": "MANUAL_REQUIRED"
   },
   "flu_fl_lake_montverde": {
     "src_url_file": "MANUAL_REQUIRED",
-    "fields_obj_transform": "MANUAL_REQUIRED"
+    "fields_obj_transform": "MANUAL_REQUIRED",
+    "state": "MANUAL_REQUIRED"
   },
   "flu_fl_pasco_saint_leo": {
     "src_url_file": "MANUAL_REQUIRED",
-    "fields_obj_transform": "MANUAL_REQUIRED"
+    "fields_obj_transform": "MANUAL_REQUIRED",
+    "state": "MANUAL_REQUIRED"
   },
   "flu_fl_volusia_unincorporated": {
     "src_url_file": "URL_DEPRECATED",
-    "fields_obj_transform": "flu_code:lucode"
+    "fields_obj_transform": "flu_code:lucode",
+    "state": "MANUAL_REQUIRED"
   },
   "flu_fl_walton_unincorporated": {
-    "fields_obj_transform": "flu_code:flu_type, flu_code2:flu_class"
+    "fields_obj_transform": "flu_code:flu_type, flu_code2:flu_class",
+    "state": "MANUAL_REQUIRED"
   },
   "streets_fl_alachua": {
-    "src_url_file": "MANUAL_REQUIRED"
+    "src_url_file": "MANUAL_REQUIRED",
+    "state": "MANUAL_REQUIRED"
   },
   "streets_fl_citrus": {
-    "src_url_file": "URL_DEPRECATED"
+    "src_url_file": "URL_DEPRECATED",
+    "state": "MANUAL_REQUIRED"
   },
   "streets_fl_collier": {
-    "src_url_file": "URL_DEPRECATED"
+    "src_url_file": "URL_DEPRECATED",
+    "state": "MANUAL_REQUIRED"
   },
   "streets_fl_columbia": {
-    "src_url_file": "URL_DEPRECATED"
+    "src_url_file": "URL_DEPRECATED",
+    "state": "MANUAL_REQUIRED"
   },
   "streets_fl_dixie": {
-    "src_url_file": "MANUAL_REQUIRED"
+    "src_url_file": "MANUAL_REQUIRED",
+    "state": "MANUAL_REQUIRED"
   },
   "streets_fl_flagler": {
-    "src_url_file": "URL_DEPRECATED"
+    "src_url_file": "URL_DEPRECATED",
+    "state": "MANUAL_REQUIRED"
   },
   "streets_fl_franklin": {
     "src_url_file": "MANUAL_REQUIRED",
-    "fields_obj_transform": "MANUAL_REQUIRED"
+    "fields_obj_transform": "MANUAL_REQUIRED",
+    "state": "MANUAL_REQUIRED"
   },
   "streets_fl_gadsden": {
     "src_url_file": "MANUAL_REQUIRED",
-    "fields_obj_transform": "MANUAL_REQUIRED"
+    "fields_obj_transform": "MANUAL_REQUIRED",
+    "state": "MANUAL_REQUIRED"
   },
   "streets_fl_gilchrist": {
     "src_url_file": "MANUAL_REQUIRED",
-    "fields_obj_transform": "MANUAL_REQUIRED"
+    "fields_obj_transform": "MANUAL_REQUIRED",
+    "state": "MANUAL_REQUIRED"
   },
   "streets_fl_glades": {
     "src_url_file": "MANUAL_REQUIRED",
-    "fields_obj_transform": "MANUAL_REQUIRED"
+    "fields_obj_transform": "MANUAL_REQUIRED",
+    "state": "MANUAL_REQUIRED"
   },
   "streets_fl_gulf": {
     "src_url_file": "MANUAL_REQUIRED",
-    "fields_obj_transform": "MANUAL_REQUIRED"
+    "fields_obj_transform": "MANUAL_REQUIRED",
+    "state": "MANUAL_REQUIRED"
   },
   "streets_fl_hamilton": {
-    "src_url_file": "MANUAL_REQUIRED"
+    "src_url_file": "MANUAL_REQUIRED",
+    "state": "MANUAL_REQUIRED"
   },
   "streets_fl_hardee": {
     "src_url_file": "MANUAL_REQUIRED",
-    "fields_obj_transform": "MANUAL_REQUIRED"
+    "fields_obj_transform": "MANUAL_REQUIRED",
+    "state": "MANUAL_REQUIRED"
   },
   "streets_fl_holmes": {
     "src_url_file": "MANUAL_REQUIRED",
-    "fields_obj_transform": "MANUAL_REQUIRED"
+    "fields_obj_transform": "MANUAL_REQUIRED",
+    "state": "MANUAL_REQUIRED"
   },
   "streets_fl_indian_river": {
-    "src_url_file": "URL_DEPRECATED"
+    "src_url_file": "URL_DEPRECATED",
+    "state": "MANUAL_REQUIRED"
   },
   "streets_fl_jackson": {
     "src_url_file": "MANUAL_REQUIRED",
-    "fields_obj_transform": "MANUAL_REQUIRED"
+    "fields_obj_transform": "MANUAL_REQUIRED",
+    "state": "MANUAL_REQUIRED"
   },
   "streets_fl_jefferson": {
-    "src_url_file": "MANUAL_REQUIRED"
+    "src_url_file": "MANUAL_REQUIRED",
+    "state": "MANUAL_REQUIRED"
   },
   "streets_fl_lafayette": {
     "src_url_file": "MANUAL_REQUIRED",
-    "fields_obj_transform": "MANUAL_REQUIRED"
+    "fields_obj_transform": "MANUAL_REQUIRED",
+    "state": "MANUAL_REQUIRED"
   },
   "streets_fl_leon": {
-    "src_url_file": "URL_DEPRECATED"
+    "src_url_file": "URL_DEPRECATED",
+    "state": "MANUAL_REQUIRED"
   },
   "streets_fl_levy": {
     "src_url_file": "MANUAL_REQUIRED",
-    "fields_obj_transform": "MANUAL_REQUIRED"
+    "fields_obj_transform": "MANUAL_REQUIRED",
+    "state": "MANUAL_REQUIRED"
   },
   "streets_fl_liberty": {
     "src_url_file": "MANUAL_REQUIRED",
-    "fields_obj_transform": "MANUAL_REQUIRED"
+    "fields_obj_transform": "MANUAL_REQUIRED",
+    "state": "MANUAL_REQUIRED"
   },
   "streets_fl_madison": {
-    "src_url_file": "MANUAL_REQUIRED"
+    "src_url_file": "MANUAL_REQUIRED",
+    "state": "MANUAL_REQUIRED"
   },
   "streets_fl_marion": {
-    "src_url_file": "URL_DEPRECATED"
+    "src_url_file": "URL_DEPRECATED",
+    "state": "MANUAL_REQUIRED"
   },
   "streets_fl_monroe": {
-    "src_url_file": "URL_DEPRECATED"
+    "src_url_file": "URL_DEPRECATED",
+    "state": "MANUAL_REQUIRED"
   },
   "streets_fl_okeechobee": {
     "src_url_file": "MANUAL_REQUIRED",
-    "fields_obj_transform": "MANUAL_REQUIRED"
+    "fields_obj_transform": "MANUAL_REQUIRED",
+    "state": "MANUAL_REQUIRED"
   },
   "streets_fl_santa_rosa": {
-    "src_url_file": "URL_DEPRECATED"
+    "src_url_file": "URL_DEPRECATED",
+    "state": "MANUAL_REQUIRED"
   },
   "streets_fl_sumter": {
-    "src_url_file": "URL_DEPRECATED"
+    "src_url_file": "URL_DEPRECATED",
+    "state": "MANUAL_REQUIRED"
   },
   "streets_fl_suwannee": {
-    "src_url_file": "MANUAL_REQUIRED"
+    "src_url_file": "MANUAL_REQUIRED",
+    "state": "MANUAL_REQUIRED"
   },
   "streets_fl_taylor": {
-    "src_url_file": "MANUAL_REQUIRED"
+    "src_url_file": "MANUAL_REQUIRED",
+    "state": "MANUAL_REQUIRED"
   },
   "streets_fl_union": {
     "src_url_file": "MANUAL_REQUIRED",
-    "fields_obj_transform": "MANUAL_REQUIRED"
+    "fields_obj_transform": "MANUAL_REQUIRED",
+    "state": "MANUAL_REQUIRED"
   },
   "streets_fl_volusia": {
-    "src_url_file": "URL_DEPRECATED"
+    "src_url_file": "URL_DEPRECATED",
+    "state": "MANUAL_REQUIRED"
   },
   "streets_fl_wakulla": {
     "src_url_file": "MANUAL_REQUIRED",
-    "fields_obj_transform": "MANUAL_REQUIRED"
+    "fields_obj_transform": "MANUAL_REQUIRED",
+    "state": "MANUAL_REQUIRED"
   },
   "streets_fl_walton": {
-    "src_url_file": "URL_DEPRECATED"
+    "src_url_file": "URL_DEPRECATED",
+    "state": "MANUAL_REQUIRED"
   },
   "address_points_fl_charlotte": {
-    "src_url_file": "URL_DEPRECATED"
+    "src_url_file": "URL_DEPRECATED",
+    "state": "MANUAL_REQUIRED"
   },
   "address_points_fl_citrus": {
-    "src_url_file": "URL_DEPRECATED"
+    "src_url_file": "URL_DEPRECATED",
+    "state": "MANUAL_REQUIRED"
   },
   "address_points_fl_palm_beach_boca_raton": {
-    "src_url_file": "URL_DEPRECATED"
+    "src_url_file": "URL_DEPRECATED",
+    "state": "MANUAL_REQUIRED"
   },
   "address_points_fl_desoto": {
-    "src_url_file": "URL_DEPRECATED"
+    "src_url_file": "URL_DEPRECATED",
+    "state": "MANUAL_REQUIRED"
   },
   "address_points_fl_state": {
     "fields_obj_transform": "MANUAL_REQUIRED"
   },
   "address_points_fl_gulf": {
-    "fields_obj_transform": "MANUAL_REQUIRED"
+    "fields_obj_transform": "MANUAL_REQUIRED",
+    "state": "MANUAL_REQUIRED"
   },
   "address_points_fl_highlands": {
-    "src_url_file": "MANUAL_REQUIRED"
+    "src_url_file": "MANUAL_REQUIRED",
+    "state": "MANUAL_REQUIRED"
   },
   "address_points_fl_indian_river": {
-    "src_url_file": "URL_DEPRECATED"
+    "src_url_file": "URL_DEPRECATED",
+    "state": "MANUAL_REQUIRED"
   },
   "address_points_fl_lake": {
-    "src_url_file": "URL_DEPRECATED"
+    "src_url_file": "URL_DEPRECATED",
+    "state": "MANUAL_REQUIRED"
   },
   "address_points_fl_lee": {
-    "src_url_file": "URL_DEPRECATED"
+    "src_url_file": "URL_DEPRECATED",
+    "state": "MANUAL_REQUIRED"
   },
   "address_points_fl_leon": {
-    "src_url_file": "URL_DEPRECATED"
+    "src_url_file": "URL_DEPRECATED",
+    "state": "MANUAL_REQUIRED"
   },
   "address_points_fl_manatee": {
-    "src_url_file": "URL_DEPRECATED"
+    "src_url_file": "URL_DEPRECATED",
+    "state": "MANUAL_REQUIRED"
   },
   "address_points_fl_marion": {
-    "src_url_file": "MANUAL_REQUIRED"
+    "src_url_file": "MANUAL_REQUIRED",
+    "state": "MANUAL_REQUIRED"
   },
   "address_points_fl_okaloosa": {
     "src_url_file": "URL_DEPRECATED",
-    "fields_obj_transform": "MANUAL_REQUIRED"
+    "fields_obj_transform": "MANUAL_REQUIRED",
+    "state": "MANUAL_REQUIRED"
   },
   "address_points_fl_orange": {
-    "src_url_file": "URL_DEPRECATED"
+    "src_url_file": "URL_DEPRECATED",
+    "state": "MANUAL_REQUIRED"
   },
   "address_points_fl_osceola": {
-    "src_url_file": "MANUAL_REQUIRED"
+    "src_url_file": "MANUAL_REQUIRED",
+    "state": "MANUAL_REQUIRED"
   },
   "address_points_fl_santa_rosa": {
-    "src_url_file": "URL_DEPRECATED"
+    "src_url_file": "URL_DEPRECATED",
+    "state": "MANUAL_REQUIRED"
   },
   "address_points_fl_walton": {
     "src_url_file": "URL_DEPRECATED",
-    "fields_obj_transform": "MANUAL_REQUIRED"
+    "fields_obj_transform": "MANUAL_REQUIRED",
+    "state": "MANUAL_REQUIRED"
   },
   "subdivisions_fl_bay": {
-    "src_url_file": "MANUAL_REQUIRED"
+    "src_url_file": "MANUAL_REQUIRED",
+    "state": "MANUAL_REQUIRED"
   },
   "subdivisions_fl_broward": {
-    "src_url_file": "URL_DEPRECATED"
+    "src_url_file": "URL_DEPRECATED",
+    "state": "MANUAL_REQUIRED"
   },
   "subdivisions_fl_citrus": {
-    "src_url_file": "MANUAL_REQUIRED"
+    "src_url_file": "MANUAL_REQUIRED",
+    "state": "MANUAL_REQUIRED"
   },
   "subdivisions_fl_collier": {
-    "src_url_file": "URL_DEPRECATED"
+    "src_url_file": "URL_DEPRECATED",
+    "state": "MANUAL_REQUIRED"
   },
   "subdivisions_fl_duval": {
     "src_url_file": "MANUAL_REQUIRED",
-    "fields_obj_transform": "MANUAL_REQUIRED"
+    "fields_obj_transform": "MANUAL_REQUIRED",
+    "state": "MANUAL_REQUIRED"
   },
   "subdivisions_fl_hernando": {
-    "src_url_file": "URL_DEPRECATED"
+    "src_url_file": "URL_DEPRECATED",
+    "state": "MANUAL_REQUIRED"
   },
   "subdivisions_fl_indian_river": {
-    "src_url_file": "URL_DEPRECATED"
+    "src_url_file": "URL_DEPRECATED",
+    "state": "MANUAL_REQUIRED"
   },
   "subdivisions_fl_lee": {
-    "src_url_file": "URL_DEPRECATED"
+    "src_url_file": "URL_DEPRECATED",
+    "state": "MANUAL_REQUIRED"
   },
   "subdivisions_fl_manatee": {
-    "src_url_file": "URL_DEPRECATED"
+    "src_url_file": "URL_DEPRECATED",
+    "state": "MANUAL_REQUIRED"
   },
   "subdivisions_fl_marion": {
-    "src_url_file": "URL_DEPRECATED"
+    "src_url_file": "URL_DEPRECATED",
+    "state": "MANUAL_REQUIRED"
   },
   "subdivisions_fl_martin": {
-    "src_url_file": "MANUAL_REQUIRED"
+    "src_url_file": "MANUAL_REQUIRED",
+    "state": "MANUAL_REQUIRED"
   },
   "subdivisions_fl_miami_dade": {
-    "src_url_file": "URL_DEPRECATED"
+    "src_url_file": "URL_DEPRECATED",
+    "state": "MANUAL_REQUIRED"
   },
   "subdivisions_fl_monroe": {
-    "src_url_file": "URL_DEPRECATED"
+    "src_url_file": "URL_DEPRECATED",
+    "state": "MANUAL_REQUIRED"
   },
   "subdivisions_fl_orange": {
-    "src_url_file": "URL_DEPRECATED"
+    "src_url_file": "URL_DEPRECATED",
+    "state": "MANUAL_REQUIRED"
   },
   "subdivisions_fl_osceola": {
     "src_url_file": "URL_DEPRECATED",
-    "fields_obj_transform": "MANUAL_REQUIRED"
+    "fields_obj_transform": "MANUAL_REQUIRED",
+    "state": "MANUAL_REQUIRED"
   },
   "subdivisions_fl_palm_beach": {
-    "src_url_file": "URL_DEPRECATED"
+    "src_url_file": "URL_DEPRECATED",
+    "state": "MANUAL_REQUIRED"
   },
   "subdivisions_fl_pasco": {
-    "src_url_file": "URL_DEPRECATED"
+    "src_url_file": "URL_DEPRECATED",
+    "state": "MANUAL_REQUIRED"
   },
   "subdivisions_fl_pinellas": {
     "src_url_file": "MANUAL_REQUIRED",
-    "fields_obj_transform": "MANUAL_REQUIRED"
+    "fields_obj_transform": "MANUAL_REQUIRED",
+    "state": "MANUAL_REQUIRED"
   },
   "subdivisions_fl_sarasota": {
-    "src_url_file": "URL_DEPRECATED"
+    "src_url_file": "URL_DEPRECATED",
+    "state": "MANUAL_REQUIRED"
   },
   "subdivisions_fl_st_johns": {
-    "src_url_file": "URL_DEPRECATED"
+    "src_url_file": "URL_DEPRECATED",
+    "state": "MANUAL_REQUIRED"
   },
   "subdivisions_fl_st_lucie": {
-    "src_url_file": "URL_DEPRECATED"
+    "src_url_file": "URL_DEPRECATED",
+    "state": "MANUAL_REQUIRED"
   },
   "subdivisions_fl_sumter": {
     "src_url_file": "MANUAL_REQUIRED",
-    "fields_obj_transform": "MANUAL_REQUIRED"
+    "fields_obj_transform": "MANUAL_REQUIRED",
+    "state": "MANUAL_REQUIRED"
   },
   "subdivisions_fl_volusia": {
-    "src_url_file": "URL_DEPRECATED"
+    "src_url_file": "URL_DEPRECATED",
+    "state": "MANUAL_REQUIRED"
   },
   "buildings_fl_alachua": {
     "src_url_file": "MANUAL_REQUIRED",
-    "fields_obj_transform": "MANUAL_REQUIRED"
+    "fields_obj_transform": "MANUAL_REQUIRED",
+    "state": "MANUAL_REQUIRED"
   },
   "buildings_fl_brevard": {
     "src_url_file": "URL_DEPRECATED",
-    "fields_obj_transform": "MANUAL_REQUIRED"
+    "fields_obj_transform": "MANUAL_REQUIRED",
+    "state": "MANUAL_REQUIRED"
   },
   "buildings_fl_charlotte": {
     "src_url_file": "MANUAL_REQUIRED",
-    "fields_obj_transform": "MANUAL_REQUIRED"
+    "fields_obj_transform": "MANUAL_REQUIRED",
+    "state": "MANUAL_REQUIRED"
   },
   "buildings_fl_palm_beach_boca_raton": {
-    "src_url_file": "URL_DEPRECATED"
+    "src_url_file": "URL_DEPRECATED",
+    "state": "MANUAL_REQUIRED"
   },
   "buildings_fl_broward_fort_lauderdale": {
-    "src_url_file": "URL_DEPRECATED"
+    "src_url_file": "URL_DEPRECATED",
+    "state": "MANUAL_REQUIRED"
   },
   "buildings_fl_duval": {
     "src_url_file": "MANUAL_REQUIRED",
-    "fields_obj_transform": "MANUAL_REQUIRED"
+    "fields_obj_transform": "MANUAL_REQUIRED",
+    "state": "MANUAL_REQUIRED"
   },
   "buildings_fl_lee": {
-    "src_url_file": "MANUAL_REQUIRED"
+    "src_url_file": "MANUAL_REQUIRED",
+    "state": "MANUAL_REQUIRED"
   },
   "buildings_fl_manatee": {
     "src_url_file": "URL_DEPRECATED",
-    "fields_obj_transform": "MANUAL_REQUIRED"
+    "fields_obj_transform": "MANUAL_REQUIRED",
+    "state": "MANUAL_REQUIRED"
   },
   "buildings_fl_miami_dade": {
-    "src_url_file": "MANUAL_REQUIRED"
+    "src_url_file": "MANUAL_REQUIRED",
+    "state": "MANUAL_REQUIRED"
   },
   "buildings_fl_pasco": {
     "src_url_file": "URL_DEPRECATED",
-    "fields_obj_transform": "MANUAL_REQUIRED"
+    "fields_obj_transform": "MANUAL_REQUIRED",
+    "state": "MANUAL_REQUIRED"
   },
   "buildings_fl_sarasota": {
     "src_url_file": "URL_DEPRECATED",
-    "fields_obj_transform": "MANUAL_REQUIRED"
+    "fields_obj_transform": "MANUAL_REQUIRED",
+    "state": "MANUAL_REQUIRED"
   },
   "subdivisions_fl_leon": {
-    "src_url_file": "URL_DEPRECATED"
+    "src_url_file": "URL_DEPRECATED",
+    "state": "MANUAL_REQUIRED"
   },
   "flu_fl_lake_unincorporated": {
-    "fields_obj_transform": "flu_code:flucode, flu_code2:label"
+    "fields_obj_transform": "flu_code:flucode, flu_code2:label",
+    "state": "MANUAL_REQUIRED"
   },
   "streets_fl_okaloosa": {
-    "src_url_file": "URL_DEPRECATED"
+    "src_url_file": "URL_DEPRECATED",
+    "state": "MANUAL_REQUIRED"
   },
   "address_points_fl_alachua": {
-    "src_url_file": "URL_DEPRECATED"
+    "src_url_file": "URL_DEPRECATED",
+    "state": "MANUAL_REQUIRED"
   },
   "subdivisions_fl_okaloosa": {
-    "src_url_file": "URL_DEPRECATED"
+    "src_url_file": "URL_DEPRECATED",
+    "state": "MANUAL_REQUIRED"
   },
   "zoning_fl_volusia_unified": {
-    "fields_obj_transform": "MANUAL_REQUIRED"
+    "fields_obj_transform": "MANUAL_REQUIRED",
+    "state": "MANUAL_REQUIRED"
   },
   "parcel_geo_fl_alachua": {
-    "fields_obj_transform": "parcel_id:name"
+    "fields_obj_transform": "parcel_id:name",
+    "state": "MANUAL_REQUIRED"
   },
   "parcel_geo_az_maricopa": {
     "state": "MANUAL_REQUIRED",
@@ -1304,143 +1668,181 @@
     "fields_obj_transform": "MANUAL_REQUIRED"
   },
   "parcel_geo_fl_bay": {
-    "fields_obj_transform": "parcel_id:a1renum, parcel_alt_key:re_label"
+    "fields_obj_transform": "parcel_id:a1renum, parcel_alt_key:re_label",
+    "state": "MANUAL_REQUIRED"
   },
   "parcel_geo_fl_brevard": {
-    "fields_obj_transform": "parcel_id2:name, parcel_alt_key:taxacct"
+    "fields_obj_transform": "parcel_id2:name, parcel_alt_key:taxacct",
+    "state": "MANUAL_REQUIRED"
   },
   "parcel_geo_fl_broward": {
     "src_url_file": "MANUAL_REQUIRED",
-    "fields_obj_transform": "parcel_id:folio"
+    "fields_obj_transform": "parcel_id:folio",
+    "state": "MANUAL_REQUIRED"
   },
   "parcel_geo_fl_charlotte": {
-    "fields_obj_transform": "parcel_id:account, parcel_alt_key:pkey"
+    "fields_obj_transform": "parcel_id:account, parcel_alt_key:pkey",
+    "state": "MANUAL_REQUIRED"
   },
   "parcel_geo_fl_citrus": {
     "src_url_file": "URL_DEPRECATED",
-    "fields_obj_transform": "parcel_alt_key:altkey"
+    "fields_obj_transform": "parcel_alt_key:altkey",
+    "state": "MANUAL_REQUIRED"
   },
   "parcel_geo_fl_clay": {
     "src_url_file": "URL_DEPRECATED",
-    "fields_obj_transform": "parcel_alt_key:pin"
+    "fields_obj_transform": "parcel_alt_key:pin",
+    "state": "MANUAL_REQUIRED"
   },
   "parcel_geo_fl_collier": {
     "src_url_file": "MANUAL_REQUIRED",
-    "fields_obj_transform": "parcel_id:fln"
+    "fields_obj_transform": "parcel_id:fln",
+    "state": "MANUAL_REQUIRED"
   },
   "parcel_geo_fl_desoto": {
     "src_url_file": "URL_DEPRECATED",
-    "fields_obj_transform": "parcel_id:parcelno"
+    "fields_obj_transform": "parcel_id:parcelno",
+    "state": "MANUAL_REQUIRED"
   },
   "parcel_geo_fl_duval": {
-    "fields_obj_transform": "parcel_id:strap, parcel_id2:re"
+    "fields_obj_transform": "parcel_id:strap, parcel_id2:re",
+    "state": "MANUAL_REQUIRED"
   },
   "parcel_geo_fl_flagler": {
     "src_url_file": "URL_DEPRECATED",
-    "fields_obj_transform": "parcel_id:parcelno"
+    "fields_obj_transform": "parcel_id:parcelno",
+    "state": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_ben_hill": {
     "src_url_file": "URL_DEPRECATED",
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "state": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_coffee": {
     "src_url_file": "URL_DEPRECATED",
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "state": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_cook": {
     "src_url_file": "URL_DEPRECATED",
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "state": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_irwin": {
     "src_url_file": "URL_DEPRECATED",
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "state": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_lowndes": {
     "src_url_file": "URL_DEPRECATED",
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "state": "MANUAL_REQUIRED"
   },
   "parcel_geo_fl_highlands": {
-    "fields_obj_transform": "parcel_id:parcelno"
+    "fields_obj_transform": "parcel_id:parcelno",
+    "state": "MANUAL_REQUIRED"
   },
   "parcel_geo_fl_indian_river": {
     "src_url_file": "URL_DEPRECATED",
-    "fields_obj_transform": "parcel_id:pp_pin, parcel_alt_key:prop_id"
+    "fields_obj_transform": "parcel_id:pp_pin, parcel_alt_key:prop_id",
+    "state": "MANUAL_REQUIRED"
   },
   "parcel_geo_fl_lake": {
-    "fields_obj_transform": "parcel_id:parcelnumb, parcel_alt_key:altkey"
+    "fields_obj_transform": "parcel_id:parcelnumb, parcel_alt_key:altkey",
+    "state": "MANUAL_REQUIRED"
   },
   "parcel_geo_fl_lee": {
     "src_url_file": "MANUAL_REQUIRED",
-    "fields_obj_transform": "parcel_id:strap, parcel_id2:trsparcel, parcel_alt_key:folioid"
+    "fields_obj_transform": "parcel_id:strap, parcel_id2:trsparcel, parcel_alt_key:folioid",
+    "state": "MANUAL_REQUIRED"
   },
   "parcel_geo_fl_leon": {
-    "fields_obj_transform": "parcel_id:id"
+    "fields_obj_transform": "parcel_id:id",
+    "state": "MANUAL_REQUIRED"
   },
   "parcel_geo_fl_martin": {
-    "fields_obj_transform": "parcel_id_clean:pcn, parcel_alt_key:ain"
+    "fields_obj_transform": "parcel_id_clean:pcn, parcel_alt_key:ain",
+    "state": "MANUAL_REQUIRED"
   },
   "parcel_geo_fl_miami_dade": {
     "src_url_file": "URL_DEPRECATED",
-    "fields_obj_transform": "MANUAL_REQUIRED"
+    "fields_obj_transform": "MANUAL_REQUIRED",
+    "state": "MANUAL_REQUIRED"
   },
   "parcel_geo_fl_okaloosa": {
     "fields_obj_transform": "parcel_id:pin",
-    "src_url_file": "URL_DEPRECATED"
+    "src_url_file": "URL_DEPRECATED",
+    "state": "MANUAL_REQUIRED"
   },
   "parcel_geo_fl_orange": {
     "src_url_file": "MANUAL_REQUIRED",
-    "fields_obj_transform": "parcel_id:parcel"
+    "fields_obj_transform": "parcel_id:parcel",
+    "state": "MANUAL_REQUIRED"
   },
   "parcel_geo_fl_osceola": {
     "src_url_file": "URL_DEPRECATED",
-    "fields_obj_transform": "parcel_id:dsp_strap, parcel_id_clean:strap"
+    "fields_obj_transform": "parcel_id:dsp_strap, parcel_id_clean:strap",
+    "state": "MANUAL_REQUIRED"
   },
   "parcel_geo_fl_palm_beach": {
     "src_url_file": "MANUAL_REQUIRED",
-    "fields_obj_transform": "parcel_id:parid"
+    "fields_obj_transform": "parcel_id:parid",
+    "state": "MANUAL_REQUIRED"
   },
   "parcel_geo_fl_pasco": {
-    "fields_obj_transform": "parcel_id:parcel"
+    "fields_obj_transform": "parcel_id:parcel",
+    "state": "MANUAL_REQUIRED"
   },
   "parcel_geo_fl_pinellas": {
-    "fields_obj_transform": "parcel_id:strap, parcel_id2:parcelid_d, parcel_id2_clean:parcelid"
+    "fields_obj_transform": "parcel_id:strap, parcel_id2:parcelid_d, parcel_id2_clean:parcelid",
+    "state": "MANUAL_REQUIRED"
   },
   "parcel_geo_fl_polk": {
     "src_url_file": "MANUAL_REQUIRED",
-    "fields_obj_transform": "parcel_id:parcelid"
+    "fields_obj_transform": "parcel_id:parcelid",
+    "state": "MANUAL_REQUIRED"
   },
   "parcel_geo_fl_santa_rosa": {
     "src_url_file": "URL_DEPRECATED",
-    "fields_obj_transform": "parcel_id:par_num"
+    "fields_obj_transform": "parcel_id:par_num",
+    "state": "MANUAL_REQUIRED"
   },
   "parcel_geo_fl_sarasota": {
     "src_url_file": "URL_DEPRECATED",
-    "fields_obj_transform": "parcel_id:id, parcel_alt_key:account"
+    "fields_obj_transform": "parcel_id:id, parcel_alt_key:account",
+    "state": "MANUAL_REQUIRED"
   },
   "parcel_geo_fl_seminole": {
-    "fields_obj_transform": "parcel_id:parcel, parcel_id2:parcel_key"
+    "fields_obj_transform": "parcel_id:parcel, parcel_id2:parcel_key",
+    "state": "MANUAL_REQUIRED"
   },
   "parcel_geo_fl_st_johns": {
-    "fields_obj_transform": "parcel_id:strap, condo_key:condo"
+    "fields_obj_transform": "parcel_id:strap, condo_key:condo",
+    "state": "MANUAL_REQUIRED"
   },
   "parcel_geo_fl_st_lucie": {
     "src_url_file": "URL_DEPRECATED",
-    "fields_obj_transform": "parcel_id:camapid, parcel_id_clean:parcel_num, parcel_alt_key:accountnum"
+    "fields_obj_transform": "parcel_id:camapid, parcel_id_clean:parcel_num, parcel_alt_key:accountnum",
+    "state": "MANUAL_REQUIRED"
   },
   "parcel_geo_fl_sumter": {
     "src_url_file": "URL_DEPRECATED",
-    "fields_obj_transform": "parcel_id:parcelno"
+    "fields_obj_transform": "parcel_id:parcelno",
+    "state": "MANUAL_REQUIRED"
   },
   "parcel_geo_fl_volusia": {
     "src_url_file": "MANUAL_REQUIRED",
-    "fields_obj_transform": "parcel_id_clean:pid, parcel_alt_key:altkey"
+    "fields_obj_transform": "parcel_id_clean:pid, parcel_alt_key:altkey",
+    "state": "MANUAL_REQUIRED"
   },
   "parcel_geo_fl_walton": {
     "src_url_file": "URL_DEPRECATED",
-    "fields_obj_transform": "parcel_id:parcelno, parcel_id_clean:gis_fig"
+    "fields_obj_transform": "parcel_id:parcelno, parcel_id_clean:gis_fig",
+    "state": "MANUAL_REQUIRED"
   },
   "address_points_fl_state_state": {
-    "fields_obj_transform": "MANUAL_REQUIRED"
+    "fields_obj_transform": "MANUAL_REQUIRED",
+    "state": "MANUAL_REQUIRED"
   },
   "flu_fl_baker_unincorporated": {
     "fields_obj_transform": "flu_code:flu"
@@ -1449,7 +1851,8 @@
     "fields_obj_transform": "flu_code:flu_code, flu_code2:label, notes:sub_flu"
   },
   "flu_fl_brevard_melbourne": {
-    "fields_obj_transform": "flu_code:flum"
+    "fields_obj_transform": "flu_code:flum",
+    "state": "MANUAL_REQUIRED"
   },
   "flu_fl_calhoun_unincorporated": {
     "fields_obj_transform": "flu_code:landuse, notes:mapbook"
@@ -1479,7 +1882,8 @@
     "fields_obj_transform": "flu_code:flu"
   },
   "flu_fl_indian_river_unincorporated": {
-    "fields_obj_transform": "flu_code:land_use"
+    "fields_obj_transform": "flu_code:land_use",
+    "state": "MANUAL_REQUIRED"
   },
   "flu_fl_jackson_unincorporated": {
     "fields_obj_transform": "flu_code:land_use, notes:id"
@@ -1488,22 +1892,28 @@
     "fields_obj_transform": "flu_code:flum_name, flu_code2:flum_id"
   },
   "flu_fl_lake_astatula": {
-    "fields_obj_transform": "flu_code:flucode"
+    "fields_obj_transform": "flu_code:flucode",
+    "state": "MANUAL_REQUIRED"
   },
   "flu_fl_lake_clermont": {
-    "fields_obj_transform": "flu_code:flucode"
+    "fields_obj_transform": "flu_code:flucode",
+    "state": "MANUAL_REQUIRED"
   },
   "flu_fl_lake_eustis": {
-    "fields_obj_transform": "flu_code:flucode"
+    "fields_obj_transform": "flu_code:flucode",
+    "state": "MANUAL_REQUIRED"
   },
   "flu_fl_lake_fruitland_park": {
-    "fields_obj_transform": "flu_code:flucode"
+    "fields_obj_transform": "flu_code:flucode",
+    "state": "MANUAL_REQUIRED"
   },
   "flu_fl_lake_mascotte": {
-    "fields_obj_transform": "flu_code:flucode"
+    "fields_obj_transform": "flu_code:flucode",
+    "state": "MANUAL_REQUIRED"
   },
   "flu_fl_lee_fort_myers": {
-    "fields_obj_transform": "flu_code:category, flu_desc:categoryna"
+    "fields_obj_transform": "flu_code:category, flu_desc:categoryna",
+    "state": "MANUAL_REQUIRED"
   },
   "flu_fl_leon_unified": {
     "fields_obj_transform": "flu_code:futurelu, flu_desc:landuse, notes:descriptio"
@@ -1518,23 +1928,28 @@
     "fields_obj_transform": "flu_code:descriptio, notes:source"
   },
   "flu_fl_nassau_unincorporated": {
-    "fields_obj_transform": "flu_code:flum, dca_num:ord"
+    "fields_obj_transform": "flu_code:flum, dca_num:ord",
+    "state": "MANUAL_REQUIRED"
   },
   "flu_fl_palm_beach_west_palm_beach": {
-    "fields_obj_transform": "flu_code:landusecod, flu_code2:landusedes"
+    "fields_obj_transform": "flu_code:landusecod, flu_code2:landusedes",
+    "state": "MANUAL_REQUIRED"
   },
   "flu_fl_pinellas_unified": {
     "fields_obj_transform": "flu_code:previous_c, flu_code2:plan_map_s, notes:plan_map_c"
   },
   "flu_fl_polk_unincorporated": {
-    "fields_obj_transform": "flu_code:fluname, notes:dev_area_d, dca_num:cpa_number"
+    "fields_obj_transform": "flu_code:fluname, notes:dev_area_d, dca_num:cpa_number",
+    "state": "MANUAL_REQUIRED"
   },
   "flu_fl_putnam_unincorporated": {
     "fields_obj_transform": "flu_code:landusecod, flu_desc:landusedes",
-    "src_url_file": "URL_DEPRECATED"
+    "src_url_file": "URL_DEPRECATED",
+    "state": "MANUAL_REQUIRED"
   },
   "flu_fl_st_lucie_port_st_lucie": {
-    "fields_obj_transform": "flu_code:lucode, flu_code2:lulegend"
+    "fields_obj_transform": "flu_code:lucode, flu_code2:lulegend",
+    "state": "MANUAL_REQUIRED"
   },
   "flu_fl_taylor_unincorporated": {
     "fields_obj_transform": "flu_code:land_use, notes:density"
@@ -1762,7 +2177,8 @@
     "fields_obj_transform": "parcel_id:parcelno"
   },
   "parcel_geo_fl_escambia": {
-    "fields_obj_transform": "parcel_id:refno, parcel_alt_key:folio"
+    "fields_obj_transform": "parcel_id:refno, parcel_alt_key:folio",
+    "state": "MANUAL_REQUIRED"
   },
   "parcel_geo_fl_franklin": {
     "fields_obj_transform": "parcel_id:parcelno"
@@ -1786,7 +2202,8 @@
     "fields_obj_transform": "parcel_id:parcelno"
   },
   "parcel_geo_fl_hendry": {
-    "fields_obj_transform": "parcel_id:parcelno"
+    "fields_obj_transform": "parcel_id:parcelno",
+    "state": "MANUAL_REQUIRED"
   },
   "parcel_geo_fl_hendry2": {
     "fields_obj_transform": "parcel_id:parcelno"
@@ -1894,7 +2311,8 @@
     "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
   },
   "parcel_geo_ga_berrien": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "state": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_bibb": {
     "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
@@ -2035,7 +2453,8 @@
     "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
   },
   "parcel_geo_ga_echols": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "state": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_effingham": {
     "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
@@ -2380,14 +2799,153 @@
     "fields_obj_transform": "zon_code:zoning, ord_num:ordinance_"
   },
   "zoning_fl_volusia_port_orange": {
-    "fields_obj_transform": "zon_code:zoning, ord_num:ordinance"
+    "fields_obj_transform": "zon_code:zoning, ord_num:ordinance",
+    "state": "MANUAL_REQUIRED"
   },
   "flu_fl_alachua_micanopy": {
     "format": "MANUAL_REQUIRED",
-    "resource": "MANUAL_REQUIRED"
+    "resource": "MANUAL_REQUIRED",
+    "state": "MANUAL_REQUIRED",
+    "fields_obj_transform": "MANUAL_REQUIRED"
   },
   "flu_fl_alachua_new_city": {
     "format": "MANUAL_REQUIRED",
     "resource": "MANUAL_REQUIRED"
+  },
+  "address_points_fl_bay": {
+    "state": "MANUAL_REQUIRED"
+  },
+  "address_points_fl_brevard": {
+    "state": "MANUAL_REQUIRED"
+  },
+  "address_points_fl_broward": {
+    "state": "MANUAL_REQUIRED"
+  },
+  "address_points_fl_clay": {
+    "state": "MANUAL_REQUIRED"
+  },
+  "address_points_fl_columbia": {
+    "state": "MANUAL_REQUIRED"
+  },
+  "address_points_fl_duval": {
+    "state": "MANUAL_REQUIRED"
+  },
+  "address_points_fl_escambia": {
+    "state": "MANUAL_REQUIRED"
+  },
+  "address_points_fl_pasco": {
+    "state": "MANUAL_REQUIRED"
+  },
+  "address_points_fl_polk": {
+    "state": "MANUAL_REQUIRED"
+  },
+  "address_points_fl_seminole": {
+    "state": "MANUAL_REQUIRED"
+  },
+  "flu_fl_alachua_alachua": {
+    "state": "MANUAL_REQUIRED",
+    "fields_obj_transform": "MANUAL_REQUIRED"
+  },
+  "flu_fl_alachua_archer": {
+    "state": "MANUAL_REQUIRED",
+    "fields_obj_transform": "MANUAL_REQUIRED"
+  },
+  "flu_fl_alachua_hawthorne": {
+    "state": "MANUAL_REQUIRED",
+    "fields_obj_transform": "MANUAL_REQUIRED"
+  },
+  "flu_fl_alachua_high_springs": {
+    "state": "MANUAL_REQUIRED",
+    "fields_obj_transform": "MANUAL_REQUIRED"
+  },
+  "flu_fl_alachua_lacrosse": {
+    "state": "MANUAL_REQUIRED",
+    "fields_obj_transform": "MANUAL_REQUIRED"
+  },
+  "flu_fl_alachua_waldo": {
+    "state": "MANUAL_REQUIRED",
+    "fields_obj_transform": "MANUAL_REQUIRED"
+  },
+  "flu_fl_collier_immokalee": {
+    "state": "MANUAL_REQUIRED",
+    "fields_obj_transform": "MANUAL_REQUIRED"
+  },
+  "flu_fl_nassau_fernandina_beach": {
+    "state": "MANUAL_REQUIRED"
+  },
+  "streets_fl_baker": {
+    "state": "MANUAL_REQUIRED"
+  },
+  "streets_fl_bay": {
+    "state": "MANUAL_REQUIRED"
+  },
+  "streets_fl_charlotte": {
+    "state": "MANUAL_REQUIRED"
+  },
+  "streets_fl_clay": {
+    "state": "MANUAL_REQUIRED"
+  },
+  "streets_fl_duval": {
+    "state": "MANUAL_REQUIRED"
+  },
+  "streets_fl_escambia": {
+    "state": "MANUAL_REQUIRED"
+  },
+  "streets_fl_hendry": {
+    "state": "MANUAL_REQUIRED"
+  },
+  "streets_fl_highlands": {
+    "state": "MANUAL_REQUIRED"
+  },
+  "streets_fl_lee": {
+    "state": "MANUAL_REQUIRED"
+  },
+  "streets_fl_martin": {
+    "state": "MANUAL_REQUIRED"
+  },
+  "streets_fl_nassau": {
+    "state": "MANUAL_REQUIRED"
+  },
+  "streets_fl_osceola": {
+    "state": "MANUAL_REQUIRED"
+  },
+  "streets_fl_polk": {
+    "state": "MANUAL_REQUIRED"
+  },
+  "streets_fl_putnam": {
+    "state": "MANUAL_REQUIRED"
+  },
+  "streets_fl_seminole": {
+    "state": "MANUAL_REQUIRED"
+  },
+  "streets_fl_st_johns": {
+    "state": "MANUAL_REQUIRED"
+  },
+  "streets_fl_st_lucie": {
+    "state": "MANUAL_REQUIRED"
+  },
+  "subdivisions_fl_alachua": {
+    "state": "MANUAL_REQUIRED"
+  },
+  "subdivisions_fl_brevard": {
+    "state": "MANUAL_REQUIRED"
+  },
+  "subdivisions_fl_charlotte": {
+    "state": "MANUAL_REQUIRED"
+  },
+  "subdivisions_fl_clay": {
+    "state": "MANUAL_REQUIRED"
+  },
+  "subdivisions_fl_escambia": {
+    "state": "MANUAL_REQUIRED"
+  },
+  "subdivisions_fl_polk": {
+    "state": "MANUAL_REQUIRED"
+  },
+  "subdivisions_fl_seminole": {
+    "state": "MANUAL_REQUIRED"
+  },
+  "zoning_fl_glades_unincorporated": {
+    "state": "MANUAL_REQUIRED"
   }
 }
