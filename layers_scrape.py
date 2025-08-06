@@ -1014,6 +1014,81 @@ def layer_upload(layer: str, entity: str, state: str, county: str, city: str, ca
 # Helper Functions (from original script)
 # ---------------------------------------------------------------------------
 
+def zip_processing(zip_file: str, work_dir: str, logger) -> str:
+    """Process a downloaded zip file: unzip it and extract data date.
+    
+    Args:
+        zip_file: Name of the zip file to process
+        work_dir: Working directory where the zip file is located
+        logger: Logger instance for logging
+        
+    Returns:
+        Data date in YYYY-MM-DD format extracted from zip_rename_date.sh
+        
+    Raises:
+        ProcessingError: If zip processing fails
+    """
+    zip_path = os.path.join(work_dir, zip_file)
+    
+    if not os.path.exists(zip_path):
+        raise ProcessingError(f"Zip file not found: {zip_path}", layer=None, entity=None)
+    
+    logger.debug(f"Processing zip file: {zip_file}")
+    
+    # Step 1: Unzip the file
+    try:
+        unzip_command = ['unzip', '-oj', zip_file]
+        logger.debug(f"Running unzip command: {' '.join(unzip_command)}")
+        
+        if CONFIG.test_mode:
+            logger.info(f"[TEST MODE] UNZIP COMMAND SKIPPED IN {work_dir}: {' '.join(unzip_command)}")
+        else:
+            process = subprocess.run(unzip_command, cwd=work_dir, capture_output=True, text=True)
+            
+            if process.returncode != 0:
+                logger.error(f"Unzip command failed: {' '.join(unzip_command)}")
+                logger.error(f"STDERR: {process.stderr}")
+                raise ProcessingError(f"Unzip failed with exit code {process.returncode}: {process.stderr.strip()}", layer=None, entity=None)
+            
+            logger.debug(f"Unzip completed successfully")
+            if process.stdout:
+                logger.debug(f"Unzip output: {process.stdout}")
+                
+    except Exception as e:
+        raise ProcessingError(f"Failed to unzip {zip_file}: {e}", layer=None, entity=None)
+    
+    # Step 2: Run zip_rename_date.sh to extract data date
+    try:
+        rename_command = ['zip_rename_date.sh', zip_file]
+        logger.debug(f"Running zip_rename_date.sh: {' '.join(rename_command)}")
+        
+        if CONFIG.test_mode:
+            logger.info(f"[TEST MODE] ZIP_RENAME_DATE COMMAND SKIPPED IN {work_dir}: {' '.join(rename_command)}")
+            # Return a test date for test mode
+            return datetime.now().strftime('%Y-%m-%d')
+        else:
+            process = subprocess.run(rename_command, cwd=work_dir, capture_output=True, text=True)
+            
+            if process.returncode != 0:
+                logger.error(f"zip_rename_date.sh command failed: {' '.join(rename_command)}")
+                logger.error(f"STDERR: {process.stderr}")
+                raise ProcessingError(f"zip_rename_date.sh failed with exit code {process.returncode}: {process.stderr.strip()}", layer=None, entity=None)
+            
+            # Extract data date from stdout (should be in YYYY-MM-DD format)
+            data_date = process.stdout.strip()
+            
+            # Validate the date format
+            try:
+                datetime.strptime(data_date, '%Y-%m-%d')
+                logger.debug(f"Extracted data date from zip: {data_date}")
+                return data_date
+            except ValueError:
+                logger.error(f"Invalid date format from zip_rename_date.sh: '{data_date}'")
+                raise ProcessingError(f"zip_rename_date.sh returned invalid date format: '{data_date}'", layer=None, entity=None)
+                
+    except Exception as e:
+        raise ProcessingError(f"Failed to run zip_rename_date.sh on {zip_file}: {e}", layer=None, entity=None)
+
 def _get_directory_state(work_dir):
     """Get snapshot of directory state (filenames and modification times)."""
     state = {}

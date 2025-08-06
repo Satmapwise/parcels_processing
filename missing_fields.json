@@ -305,7 +305,8 @@
     "fields_obj_transform": "zon_code:ZoningCode, id:OBJECTID"
   },
   "zoning_fl_collier_naples": {
-    "fields_obj_transform": "zon_code:layer, zon_desc:descript, zon_gen:pd_name, ord_num:ord_1, id:OBJECTID"
+    "fields_obj_transform": "zon_code:layer, zon_desc:descript, zon_gen:pd_name, ord_num:ord_1, id:OBJECTID",
+    "src_url_file": "URL_DEPRECATED"
   },
   "zoning_fl_alachua_newberry": {
     "fields_obj_transform": "zon_code:zonedistri, zon_code2:zonecode, zon_desc:zonedefin, ord_num:app_no, id:OBJECTID"
@@ -727,7 +728,8 @@
     "fields_obj_transform": "flu_code:flu, id:OBJECTID"
   },
   "flu_fl_collier_naples": {
-    "fields_obj_transform": "flu_code:CATEGORY, flu_code2:SUBCATEGOR, id:OBJECTID"
+    "fields_obj_transform": "flu_code:CATEGORY, flu_code2:SUBCATEGOR, id:OBJECTID",
+    "src_url_file": "URL_DEPRECATED"
   },
   "flu_fl_alachua_newberry": {
     "src_url_file": "URL_DEPRECATED",
