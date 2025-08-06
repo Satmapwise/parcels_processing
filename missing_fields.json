@@ -221,7 +221,7 @@
     "fields_obj_transform": "zon_code:district, zon_desc:districtna, notes:pudname, id:OBJECTID"
   },
   "zoning_fl_lee_fort_myers_beach": {
-    "src_url_file": "MANUAL_REQUIRED",
+    "src_url_file": "URL_DEPRECATED",
     "fields_obj_transform": "zon_code:zoning, zon_desc:firedistde, id:OBJECTID"
   },
   "zoning_fl_lake_fruitland_park": {

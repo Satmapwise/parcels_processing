@@ -1172,6 +1172,9 @@ class LayersPrescrape:
         healthy_counts = {field: 0 for field in headers[1:]}  # Skip 'entity' 
         total_records = len(valid_records)
         
+        # Sort valid_records by entity for alphabetical CSV output
+        valid_records.sort(key=lambda x: x[0])  # Sort by entity name
+        
         for entity, record in valid_records:
             # Conduct health checks and generate corrections
             row_values = [entity]
@@ -1365,6 +1368,9 @@ class LayersPrescrape:
         if self.cfg.generate_csv and created_records:
             headers = ["entity", "field", "value", "status"]
             csv_rows = [headers]
+            
+            # Sort created_records by entity for alphabetical CSV output
+            created_records.sort(key=lambda x: x['entity'])
             
             for creation in created_records:
                 entity = creation['entity']
