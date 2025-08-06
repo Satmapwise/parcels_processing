@@ -1338,6 +1338,15 @@ class LayersPrescrape:
             self.logger.warning(f"Record for {entity} already exists - skipping")
             return
         
+        # Check for any records that might match this entity (broader search)
+        matching_records = self._find_matching_records(entity)
+        if matching_records:
+            self.logger.warning(f"Found {len(matching_records)} existing record(s) that might match {entity}:")
+            for record in matching_records:
+                self.logger.warning(f"  - {record.get('layer_subgroup')}_{record.get('state')}_{record.get('county')}_{record.get('city', '')}")
+            self.logger.warning("Skipping creation to avoid duplicates")
+            return
+        
                 # Generate base record
         expected = generate_expected_values(self.cfg.layer, state, county, city, entity_type)
         
@@ -1345,7 +1354,26 @@ class LayersPrescrape:
         if entity in manual_data:
             expected.update(manual_data[entity])
         
-        # Check for required manual fields
+        # Interactive prompting for manual fields
+        print(f"\n[CREATE] Creating record for: {entity}")
+        print("Enter values for manual fields (press Enter to leave blank):")
+        
+        # Prompt for format
+        format_value = input("format: ").strip()
+        if format_value:
+            expected['format'] = format_value
+        
+        # Prompt for src_url_file
+        src_url_file = input("src_url_file: ").strip()
+        if src_url_file:
+            expected['src_url_file'] = src_url_file
+        
+        # Prompt for fields_obj_transform
+        fields_obj_transform = input("fields_obj_transform: ").strip()
+        if fields_obj_transform:
+            expected['fields_obj_transform'] = fields_obj_transform
+        
+        # Check for required fields after prompting
         required_manual = []
         if not expected.get('format') or expected['format'] == "MANUAL_REQUIRED":
             required_manual.append('format')
@@ -2023,6 +2051,22 @@ class LayersPrescrape:
         
         record = self.db.fetchone(sql, (expected_title.lower(),))
         return record
+    
+    def _find_matching_records(self, entity: str) -> List[Dict[str, Any]]:
+        """Find any records that might match this entity (broader search)."""
+        try:
+            state, county, city = split_entity(entity)
+        except ValueError:
+            return []
+        
+        # Search for records with same layer, state, county, and city
+        sql = """
+        SELECT * FROM m_gis_data_catalog_main 
+        WHERE layer_subgroup = %s AND state = %s AND county = %s AND city = %s
+        """
+        params = (self.cfg.layer, state, county, city)
+        
+        return self.db.fetchall(sql, params) or []
     
     def _update_record(self, record: Dict[str, Any], updates: Dict[str, Any]):
         """Update database record with new values."""
