@@ -36,12 +36,15 @@ from pathlib import Path
 
 # Format constants now imported from layers_helpers.py
 
-def should_process_entity(catalog_row: dict) -> tuple[bool, str]:
+def should_process_entity(catalog_row: dict, entity: str, SKIP_ENTITIES: set) -> tuple[bool, str]:
     """Determine if an entity should be processed and why.
     
     Returns:
         tuple[bool, str]: (should_process, reason)
     """
+    if entity in SKIP_ENTITIES:
+        return False, f"Entity '{entity}' is in the SKIP_ENTITIES set"
+    
     # Check if fields_obj_transform is null/empty
     fields_obj_transform = catalog_row.get('fields_obj_transform')
     if not fields_obj_transform or fields_obj_transform.strip() == '':
@@ -1569,7 +1572,7 @@ def process_layer(layer, queue, entity_components):
                 raise RuntimeError(f"Catalog row not found for {layer}/{entity}")
 
             # Check if entity should be processed based on format
-            should_process, process_reason = should_process_entity(catalog_row)
+            should_process, process_reason = should_process_entity(catalog_row, entity, SKIP_ENTITIES)
             if not should_process:
                 logging.info(f"Skipping entity {entity}: {process_reason}")
                 results.append({
