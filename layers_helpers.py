@@ -201,6 +201,7 @@ LAYER_CONFIGS = {
 SKIP_ENTITIES = {
     "zoning_fl_charlotte_punta_gorda",
     "flu_fl_charlotte_punta_gorda",
+    "flu_fl_collier_marco_island",
     "zoning_fl_pinellas_pinellas_park"
     }
 
