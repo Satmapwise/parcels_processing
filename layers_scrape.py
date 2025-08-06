@@ -498,7 +498,7 @@ def _fetch_catalog_row(layer: str, state: str, county: str, city: str):
     try:
         # Convert internal format names to external format for database query
         # Note: layer_subgroup is stored in internal format in database, so don't convert layer
-        state_external = VALID_STATES.get(state, state.upper()) if state else None
+        state_external = format_name(state, 'state', external=True) if state else None
         county_external = format_name(county, 'county', external=True) if county else None
         city_external = format_name(city, 'city', external=True) if city else None
         
