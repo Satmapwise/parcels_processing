@@ -248,9 +248,10 @@ LAYER_CONFIGS = {
 
 # Entities to skip (blacklist) - for layers_scrape.py
 SKIP_ENTITIES = {
-    "hillsborough_temple_terrace",
-    "charlotte_punta_gorda"
-}
+    "zoning_fl_hillsborough_temple_terrace",
+    "zoning_fl_charlotte_punta_gorda",
+    "zoning_fl_pinellas_pinellas_park"
+    }
 
 # Format categories for pipeline control
 FULL_PIPELINE_FORMATS = {'ags', 'arcgis', 'esri', 'ags_extract', 'shp', 'zip', 'url'}
