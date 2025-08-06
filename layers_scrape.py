@@ -391,7 +391,6 @@ def _run_command_live(command, work_dir, logger):
             output = output.rstrip()
             print(output)  # Live output to console
             stdout_lines.append(output)
-            logger.debug(output)
     
     # Wait for process to complete and get return code
     return_code = process.wait()
