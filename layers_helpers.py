@@ -200,6 +200,7 @@ LAYER_CONFIGS = {
 # Entities to skip (blacklist) - for layers_scrape.py
 SKIP_ENTITIES = {
     "zoning_fl_charlotte_punta_gorda",
+    "flu_fl_charlotte_punta_gorda",
     "zoning_fl_pinellas_pinellas_park"
     }
 
