@@ -962,7 +962,7 @@ def layer_upload(layer: str, entity: str, state: str, county: str, city: str, ca
     set_clauses = []
     placeholders = {
         'layer': layer,
-        'county': county.lower().replace('_', ' '),
+        'county': format_name(county, 'county', external=True),
         'city': format_name(city, 'city', external=True),
         'publish_date': publish_date,
     }
