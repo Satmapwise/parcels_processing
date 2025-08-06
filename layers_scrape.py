@@ -1013,7 +1013,15 @@ def layer_upload(layer: str, entity: str, state: str, county: str, city: str, ca
     
     logger.debug(f"Running upload command for {layer}/{entity}")
     try:
-        _run_command(command, work_dir, logger)
+        output = _run_command(command, work_dir, logger)
+        
+        # Check if the UPDATE actually affected any rows
+        if output and 'UPDATE 0' in output:
+            error_msg = f"No matching record found in database for layer='{layer}', county='{county}', city='{city}'"
+            logger.error(error_msg)
+            _update_csv_status(layer, entity, 'upload', 'FAILED', error_msg, entity_components=entity_components)
+            raise UploadError(error_msg, layer, entity)
+        
         data_date = metadata.get('data_date', publish_date)
         _update_csv_status(layer, entity, 'upload', 'SUCCESS', data_date=data_date, entity_components=entity_components)
         _debug_main(f"[UPLOAD] Catalog metadata updated successfully for {layer}/{entity}", logger)
