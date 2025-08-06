@@ -659,7 +659,7 @@ def layer_download(layer: str, entity: str, state: str, county: str, city: str, 
     """Handle the download phase for an entity."""
     if not CONFIG.run_download:
         logger.debug(f"[DOWNLOAD] Skipping download for {layer}/{entity} (disabled in config)")
-        return None
+        return None, None
 
     fmt = (catalog_row.get('format') or '').lower()
     resource = catalog_row.get('resource') or catalog_row.get('src_url_file')
@@ -732,14 +732,19 @@ def layer_download(layer: str, entity: str, state: str, county: str, city: str, 
             zip_file = _find_latest_zip(work_dir, logger)
             if zip_file:
                 _debug_main(f"[DOWNLOAD] Found zip file: {zip_file}", logger)
-            return zip_file
+                data_date = zip_processing(zip_file, work_dir, logger)
+                if data_date:
+                    logger.debug(f"Extracted data date from zip: {data_date}")
+                else:
+                    logger.warning("No data date found from zip processing")
+            return zip_file, data_date
         except Exception as z_err:
             logger.debug(f"Zip detection failed: {z_err}")
-            return None
+            return None, None
     else:
         logger.info(f"[TEST MODE] Skipping download validation for {layer}/{entity}")
         _update_csv_status(layer, entity, 'download', 'SUCCESS', entity_components=entity_components)  # Assume success in test mode
-        return None
+        return None, None
 
 def extract_basic_file_metadata(work_dir: str, logger) -> dict:
     """Extract basic metadata from downloaded files (for non-shapefile formats like PDF)."""
@@ -799,7 +804,7 @@ def extract_basic_file_metadata(work_dir: str, logger) -> dict:
     
     return metadata
 
-def layer_metadata(layer: str, entity: str, state: str, county: str, city: str, catalog_row: dict, work_dir: str, logger):
+def layer_metadata(layer: str, entity: str, state: str, county: str, city: str, catalog_row: dict, work_dir: str, logger, zip_date: str = None):
     """Handle the metadata extraction phase for an entity."""
     if not CONFIG.run_metadata:
         logger.debug(f"[METADATA] Skipping metadata extraction for {layer}/{entity} (disabled in config)")
@@ -814,13 +819,13 @@ def layer_metadata(layer: str, entity: str, state: str, county: str, city: str, 
         # For PDF and other non-geospatial formats, extract basic file metadata
         logger.debug(f"Extracting basic file metadata for format: {fmt}")
         metadata = extract_basic_file_metadata(work_dir, logger)
+        if zip_date: # Override data_date with zip_date if provided
+            metadata['data_date'] = zip_date
         
         if metadata:
             _debug_main(f"[METADATA] Basic metadata extracted: file:{metadata.get('shp', 'unknown')}, date:{metadata.get('data_date', 'unknown')}", logger)
         else:
             logger.warning("No basic metadata could be extracted")
-            
-        return metadata
         
     else:
         # For geospatial formats, try to find and process shapefiles
@@ -838,6 +843,10 @@ def layer_metadata(layer: str, entity: str, state: str, county: str, city: str, 
             # Log key metadata extracted
             epsg = metadata.get('epsg', 'Unknown')
             data_date = metadata.get('data_date', 'Unknown')
+            if zip_date: # Override data_date with zip_date if provided
+                data_date = zip_date
+                metadata['data_date'] = data_date
+                logger.debug(f"Overriding data_date with zip_date: {data_date}")
             field_count = len(json.loads(metadata.get('field_names', '[]')))
             _debug_main(f"[METADATA] Extracted: EPSG:{epsg}, data_date:{data_date}, {field_count} fields", logger)
             
@@ -859,10 +868,11 @@ def layer_metadata(layer: str, entity: str, state: str, county: str, city: str, 
             except Exception as e:
                 logger.debug(f"Could not check existing data date: {e}")
             
-            return metadata
         else:
             logger.warning("No shapefile found to process for metadata extraction")
             return {}
+    
+    return metadata
 
 def layer_processing(layer: str, entity: str, state: str, county: str, city: str, catalog_row: dict, work_dir: str, logger, metadata: dict, entity_components: dict = None):
     """Handle the processing phase for an entity."""
@@ -1472,13 +1482,13 @@ def process_layer(layer, queue, entity_components):
 
             # Stage 1: Download
             try:
-                raw_zip_name = layer_download(layer, entity, state, county, city, catalog_row, work_dir, entity_logger, entity_components)
+                raw_zip_name, data_date = layer_download(layer, entity, state, county, city, catalog_row, work_dir, entity_logger, entity_components)
             except SkipEntityError as e:
                 raise  # Re-raise to skip entire entity
 
             # Stage 2: Metadata
             try:
-                metadata = layer_metadata(layer, entity, state, county, city, catalog_row, work_dir, entity_logger)
+                metadata = layer_metadata(layer, entity, state, county, city, catalog_row, work_dir, entity_logger, data_date)
             except SkipEntityError as e:
                 # Handle metadata-based NND (data date unchanged)
                 if "data date unchanged" in str(e):
