@@ -702,17 +702,7 @@ def layer_download(layer: str, entity: str, state: str, county: str, city: str, 
         _update_csv_status(layer, entity, 'download', 'NND', error_msg='Download command: no new data', entity_components=entity_components)
         raise  # Re-raise skip errors
     
-    # Run source_comments commands (pre-metadata processing)
-    source_comments = catalog_row.get('source_comments', '')
-    if source_comments and source_comments.strip():
-        _debug_main(f"[DOWNLOAD] Running source_comments for {layer}/{entity}: {source_comments}", logger)
-        try:
-            _run_source_comments(source_comments, work_dir, logger)
-        except Exception as sc_err:
-            logger.warning(f"Source comments failed for {layer}/{entity}: {sc_err}")
-            # Don't fail the entire download for source comments errors
-    
-    # Validate download occurred (only in non-test mode)
+    # Validate download occurred IMMEDIATELY after download (before source_comments)
     if not CONFIG.test_mode:
         try:
             _validate_download(work_dir, logger, before_state)
@@ -726,22 +716,32 @@ def layer_download(layer: str, entity: str, state: str, county: str, city: str, 
         except DownloadError as de:
             _update_csv_status(layer, entity, 'download', 'FAILED', str(de), entity_components=entity_components)
             raise DownloadError(str(de), layer, entity) from de
-        
-        # Find and return newest zip file if any
-        data_date = None  # Initialize data_date
+    
+    # Run source_comments commands (pre-metadata processing) - AFTER validation
+    source_comments = catalog_row.get('source_comments', '')
+    if source_comments and source_comments.strip():
+        _debug_main(f"[DOWNLOAD] Running source_comments for {layer}/{entity}: {source_comments}", logger)
         try:
-            zip_file = _find_latest_zip(work_dir, logger)
-            if zip_file:
-                _debug_main(f"[DOWNLOAD] Found zip file: {zip_file}", logger)
-                data_date = zip_processing(zip_file, work_dir, logger)
-                if data_date:
-                    logger.debug(f"Extracted data date from zip: {data_date}")
-                else:
-                    logger.warning("No data date found from zip processing")
-            return zip_file, data_date
-        except Exception as z_err:
-            logger.debug(f"Zip detection failed: {z_err}")
-            return None, None
+            _run_source_comments(source_comments, work_dir, logger)
+        except Exception as sc_err:
+            logger.warning(f"Source comments failed for {layer}/{entity}: {sc_err}")
+            # Don't fail the entire download for source comments errors
+    
+    # Find and return newest zip file if any
+    data_date = None  # Initialize data_date
+    try:
+        zip_file = _find_latest_zip(work_dir, logger)
+        if zip_file:
+            _debug_main(f"[DOWNLOAD] Found zip file: {zip_file}", logger)
+            data_date = zip_processing(zip_file, work_dir, logger)
+            if data_date:
+                logger.debug(f"Extracted data date from zip: {data_date}")
+            else:
+                logger.warning("No data date found from zip processing")
+        return zip_file, data_date
+    except Exception as z_err:
+        logger.debug(f"Zip detection failed: {z_err}")
+        return None, None
     else:
         logger.info(f"[TEST MODE] Skipping download validation for {layer}/{entity}")
         _update_csv_status(layer, entity, 'download', 'SUCCESS', entity_components=entity_components)  # Assume success in test mode
