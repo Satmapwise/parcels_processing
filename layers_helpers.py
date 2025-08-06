@@ -51,58 +51,9 @@ TOOLS_DIR = os.getenv("TOOLS_DIR", "/srv/tools/python/lib")
 # ---------------------------------------------------------------------------
 
 # Valid state abbreviations for multi-state support
-VALID_STATES = {
-    'fl': 'FL',  # Florida (primary)
-    'ga': 'GA',  # Georgia (future)
-    'de': 'DE',  # Delaware (future)
-    'al': 'AL',  # Alabama
-    'ak': 'AK',  # Alaska
-    'az': 'AZ',  # Arizona
-    'ar': 'AR',  # Arkansas
-    'ca': 'CA',  # California
-    'co': 'CO',  # Colorado
-    'ct': 'CT',  # Connecticut
-    'dc': 'DC',  # District of Columbia
-    'hi': 'HI',  # Hawaii
-    'id': 'ID',  # Idaho
-    'il': 'IL',  # Illinois
-    'in': 'IN',  # Indiana
-    'ia': 'IA',  # Iowa
-    'ks': 'KS',  # Kansas
-    'ky': 'KY',  # Kentucky
-    'la': 'LA',  # Louisiana
-    'me': 'ME',  # Maine
-    'md': 'MD',  # Maryland
-    'ma': 'MA',  # Massachusetts
-    'mi': 'MI',  # Michigan
-    'mn': 'MN',  # Minnesota
-    'ms': 'MS',  # Mississippi
-    'mo': 'MO',  # Missouri
-    'mt': 'MT',  # Montana
-    'ne': 'NE',  # Nebraska
-    'nv': 'NV',  # Nevada
-    'nh': 'NH',  # New Hampshire
-    'nj': 'NJ',  # New Jersey
-    'nm': 'NM',  # New Mexico
-    'ny': 'NY',  # New York
-    'nc': 'NC',  # North Carolina
-    'nd': 'ND',  # North Dakota
-    'oh': 'OH',  # Ohio
-    'ok': 'OK',  # Oklahoma
-    'or': 'OR',  # Oregon
-    'pa': 'PA',  # Pennsylvania
-    'ri': 'RI',  # Rhode Island
-    'sc': 'SC',  # South Carolina
-    'sd': 'SD',  # South Dakota
-    'tn': 'TN',  # Tennessee
-    'tx': 'TX',  # Texas
-    'ut': 'UT',  # Utah
-    'vt': 'VT',  # Vermont
-    'va': 'VA',  # Virginia
-    'wa': 'WA',  # Washington
-    'wi': 'WI',  # Wisconsin
-    'wv': 'WV',  # West Virginia
-}
+VALID_STATES = [
+    'fl', 'ga', 'de', 'al', 'ak', 'az', 'ar', 'ca', 'co', 'ct', 'dc', 'hi', 'id', 'il', 'in', 'ia', 'ks', 'ky', 'la', 'me', 'md', 'ma', 'mi', 'mn', 'ms', 'mo', 'mt', 'ne', 'nv', 'nh', 'nj', 'nm', 'ny', 'nc', 'nd', 'oh', 'ok', 'or', 'pa', 'ri', 'sc', 'sd', 'tn', 'tx', 'ut', 'vt', 'va', 'wa', 'wi', 'wv'
+]
 
 # Florida counties
 FL_COUNTIES = {
@@ -482,7 +433,9 @@ def validate_state_abbreviation(state_value: str) -> Optional[str]:
         return None
     
     state_internal = str(state_value).strip().lower()
-    return VALID_STATES.get(state_internal)
+    if state_internal in VALID_STATES:
+        return format_name(state_internal, 'state', external=True)
+    return None
 
 
 # ---------------------------------------------------------------------------

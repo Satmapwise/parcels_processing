@@ -767,7 +767,7 @@ def generate_expected_values(layer: str, state: str, county: str, city: str, ent
     layer_external = format_name(layer, 'layer', external=True)
     county_external = format_name(county, 'county', external=True)
     city_external = format_name(city_std, 'city', external=True)
-    state_abbrev = validate_state_abbreviation(state) or 'FL'
+    state_abbrev = format_name(state, 'state', external=True) if state else 'FL'
     
     if entity_type == "city":
         # City-level: "Future Land Use - City of Gainesville FL"
@@ -797,7 +797,7 @@ def generate_expected_values(layer: str, state: str, county: str, city: str, ent
     
     return {
         'title': title,
-        'state': validate_state_abbreviation(state) or 'FL',  # external format for database
+        'state': format_name(state, 'state', external=True) if state else 'FL',  # external format for database
         'county': format_name(county, 'county', external=True),  # external format for database
         'city': format_name(city_std, 'city', external=True),   # external format for database
         'layer_subgroup': layer_internal,
@@ -1618,7 +1618,7 @@ class LayersPrescrape:
             # Check title format with state abbreviation and "County" suffix
             # Get the actual title value from the database for comparison
             actual_title = record.get('title') or ''
-            state_abbrev = validate_state_abbreviation(state) or 'FL'
+            state_abbrev = format_name(state, 'state', external=True) if state else 'FL'
             
             if entity_type == "city":
                 # Determine the correct prefix (City/Town/Village) from the original title
@@ -1657,7 +1657,7 @@ class LayersPrescrape:
                 return "" if not current_value else ""
             else:
                 # Standard county/city level layers
-                expected_state = validate_state_abbreviation(state)
+                expected_state = format_name(state, 'state', external=True) if state else None
                 if expected_state:
                     return expected_state if current_value != expected_state else ""
                 else:
