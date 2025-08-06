@@ -1368,7 +1368,7 @@ class LayersPrescrape:
                             if row.get('entity') == entity:
                                 # Found matching entity in CSV
                                 if row.get('format'):
-                                    expected['format'] = row['format']
+                                    expected['format'] = row['format'].upper()
                                 if row.get('src_url_file'):
                                     expected['src_url_file'] = row['src_url_file']
                                 if row.get('fields_obj_transform'):
@@ -1384,7 +1384,7 @@ class LayersPrescrape:
             # Prompt for format
             format_value = input("format: ").strip()
             if format_value:
-                expected['format'] = format_value
+                expected['format'] = format_value.upper()
             
             # Prompt for src_url_file
             src_url_file = input("src_url_file: ").strip()
