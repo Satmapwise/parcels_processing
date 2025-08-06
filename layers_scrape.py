@@ -246,8 +246,7 @@ class Config:
                  run_processing: bool = True,
                  run_upload: bool = True,
                  generate_summary: bool = True,
-                 process_anyway: bool = False,
-                 live_output: bool = False):
+                 process_anyway: bool = False):
         self.test_mode = test_mode
         self.debug = debug
         self.isolate_logs = isolate_logs
@@ -262,7 +261,6 @@ class Config:
         # Misc behavior flags
         self.generate_summary = generate_summary
         self.process_anyway = process_anyway
-        self.live_output = live_output
 
 # Global config object
 CONFIG = Config()
@@ -450,8 +448,8 @@ def _run_command_live(command, work_dir, logger):
 
 def _run_command(command, work_dir, logger):
     """Run a shell command in a specified directory."""
-    # Choose between live and regular output based on config
-    if CONFIG.live_output:
+    # Use live output when debug is enabled and log isolation is disabled
+    if CONFIG.debug and not CONFIG.isolate_logs:
         return _run_command_live(command, work_dir, logger)
     else:
         return _run_command_regular(command, work_dir, logger)
@@ -2328,7 +2326,6 @@ def main():
     parser.add_argument("--no-upload", action="store_true", help="Skip the upload phase.")
     parser.add_argument("--no-summary", action="store_true", help="Skip the summary generation.")
     parser.add_argument("--process-anyway", action="store_true", help="Continue processing even when download returns 'no new data'.")
-    parser.add_argument("--live-output", action="store_true", help="Show live output from commands as they run.")
     
     args = parser.parse_args()
 
@@ -2343,8 +2340,7 @@ def main():
         run_processing=not args.no_processing,
         run_upload=not args.no_upload,
         generate_summary=not args.no_summary,
-        process_anyway=args.process_anyway,
-        live_output=args.live_output
+        process_anyway=args.process_anyway
     )
     
     initialize_logging(CONFIG.debug)
