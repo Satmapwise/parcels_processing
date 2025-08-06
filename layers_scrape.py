@@ -1256,6 +1256,14 @@ def _validate_download(work_dir, logger, before_state=None):
                 return True
             raise DownloadError("No files changed during download", layer=None, entity=None)
         
+        # Validate that downloaded files are not HTML content (PDF viewer pages)
+        for filename in changed_files:
+            if filename.endswith(" (new)") or filename.endswith(" (modified)"):
+                actual_filename = filename.split(" (")[0]
+                file_path = os.path.join(work_dir, actual_filename)
+                if os.path.exists(file_path):
+                    _validate_file_content(file_path, actual_filename, logger)
+        
         changed_files_str = ", ".join(changed_files[:3])
         if len(changed_files) > 3:
             changed_files_str += f" and {len(changed_files) - 3} more"
@@ -1312,6 +1320,62 @@ def _find_shapefile(work_dir, logger):
 
     logger.debug(f"Using shapefile: {os.path.basename(newest_shp_path)} from {candidate_files[0][0].strftime('%Y-%m-%d %H:%M')}")
     return newest_shp_path
+
+def _validate_file_content(file_path: str, filename: str, logger):
+    """Validate that a downloaded file is not HTML content masquerading as another file type.
+    
+    This detects cases where PDF viewer URLs return HTML instead of the actual PDF.
+    """
+    try:
+        # Read first 1KB of the file to check for HTML content
+        with open(file_path, 'rb') as f:
+            content_start = f.read(1024)
+        
+        # Check if content starts with HTML indicators
+        content_start_str = content_start.decode('utf-8', errors='ignore').lower()
+        
+        html_indicators = [
+            '<!doctype html',
+            '<html',
+            '<head>',
+            '<body>',
+            'content-type: text/html',
+            'pdf viewer',
+            'document viewer',
+            'viewer.html',
+            'viewer.aspx'
+        ]
+        
+        is_html = any(indicator in content_start_str for indicator in html_indicators)
+        
+        if is_html:
+                # Check if the filename suggests it should be a different file type
+                expected_types = {
+                    '.pdf': 'PDF',
+                    '.shp': 'Shapefile',
+                    '.zip': 'ZIP archive',
+                    '.xlsx': 'Excel file',
+                    '.xls': 'Excel file',
+                    '.csv': 'CSV file'
+                }
+                
+                file_ext = os.path.splitext(filename)[1].lower()
+                expected_type = expected_types.get(file_ext, 'binary file')
+                
+                error_msg = f"Downloaded file '{filename}' contains HTML content instead of {expected_type}. This likely indicates a PDF viewer URL that returned the viewer page instead of the actual file."
+                
+                if not CONFIG.process_anyway:
+                    logger.error(error_msg)
+                    raise DownloadError(error_msg, layer=None, entity=None)
+                else:
+                    logger.warning(f"HTML content detected but continuing due to process_anyway=True: {error_msg}")
+        
+        logger.debug(f"File content validation passed for {filename}")
+        
+    except Exception as e:
+        logger.warning(f"Could not validate file content for {filename}: {e}")
+        # Don't fail the download if we can't read the file
+
 
 def _find_latest_zip(work_dir, logger):
     """Return the basename of the newest *.zip file in work_dir or None if none exist."""
