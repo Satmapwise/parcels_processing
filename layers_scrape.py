@@ -424,6 +424,9 @@ def _run_source_comments(source_comments: str, work_dir: str, logger):
     """Run source_comments commands (pre-metadata processing from manifest).
     
     source_comments format: "[command1] [command2] [command3]"
+    
+    Commands that start with "WARNING:" will only generate warnings on failure.
+    All other commands will fail the entity if they fail.
     """
     if not source_comments or not source_comments.strip():
         return
@@ -442,6 +445,12 @@ def _run_source_comments(source_comments: str, work_dir: str, logger):
             logger.info(f"[TEST MODE] SOURCE COMMAND SKIPPED IN {work_dir}: {cmd_str}")
             continue
         
+        # Check if this is a warning-only command
+        is_warning_only = cmd_str.startswith('WARNING:')
+        if is_warning_only:
+            cmd_str = cmd_str[8:].strip()  # Remove "WARNING:" prefix (8 characters)
+            logger.debug(f"Command marked as warning-only: {cmd_str}")
+        
         # Handle different command types
         if cmd_str.endswith('.py'):
             # Python script - run with python3
@@ -454,17 +463,26 @@ def _run_source_comments(source_comments: str, work_dir: str, logger):
             process = subprocess.run(command, cwd=work_dir, capture_output=True, text=True)
             
             if process.returncode != 0:
-                logger.warning(f"Source comment command failed: {cmd_str}")
-                logger.warning(f"STDERR: {process.stderr}")
-                # Continue with other commands rather than failing completely
+                if is_warning_only:
+                    logger.warning(f"Source comment command failed (warning-only): {cmd_str}")
+                    logger.warning(f"STDERR: {process.stderr}")
+                    # Continue with other commands for warning-only commands
+                else:
+                    logger.error(f"Source comment command failed: {cmd_str}")
+                    logger.error(f"STDERR: {process.stderr}")
+                    raise ProcessingError(f"Source comment command failed: {cmd_str}", layer=None, entity=None)
             else:
                 logger.debug(f"Source comment command succeeded: {cmd_str}")
                 if process.stdout:
                     logger.debug(f"Command output: {process.stdout}")
                     
         except Exception as e:
-            logger.warning(f"Failed to execute source comment command '{cmd_str}': {e}")
-            # Continue with other commands
+            if is_warning_only:
+                logger.warning(f"Failed to execute source comment command '{cmd_str}' (warning-only): {e}")
+                # Continue with other commands for warning-only commands
+            else:
+                logger.error(f"Failed to execute source comment command '{cmd_str}': {e}")
+                raise ProcessingError(f"Failed to execute source comment command: {e}", layer=None, entity=None)
 
 # ---------------------------------------------------------------------------
 # Database Functions
@@ -721,11 +739,7 @@ def layer_download(layer: str, entity: str, state: str, county: str, city: str, 
     source_comments = catalog_row.get('source_comments', '')
     if source_comments and source_comments.strip():
         _debug_main(f"[DOWNLOAD] Running source_comments for {layer}/{entity}: {source_comments}", logger)
-        try:
-            _run_source_comments(source_comments, work_dir, logger)
-        except Exception as sc_err:
-            logger.warning(f"Source comments failed for {layer}/{entity}: {sc_err}")
-            # Don't fail the entire download for source comments errors
+        _run_source_comments(source_comments, work_dir, logger)
     
     # Find and return newest zip file if any
     data_date = None  # Initialize data_date
@@ -899,8 +913,25 @@ def layer_processing(layer: str, entity: str, state: str, county: str, city: str
     if processing_commands:
         logger.debug(f"[PROCESSING] Running {len(processing_commands)} pre-processing commands")
         for cmd_str in processing_commands:
+            # Check if this is a warning-only command
+            is_warning_only = cmd_str.startswith('WARNING:')
+            if is_warning_only:
+                cmd_str = cmd_str[8:].strip()  # Remove "WARNING:" prefix (8 characters)
+                logger.debug(f"Processing command marked as warning-only: {cmd_str}")
+            
             command = cmd_str.split() if isinstance(cmd_str, str) else cmd_str
-            _run_command(command, work_dir, logger)
+            
+            try:
+                _run_command(command, work_dir, logger)
+            except Exception as e:
+                if is_warning_only:
+                    logger.warning(f"Processing command failed (warning-only): {cmd_str}")
+                    logger.warning(f"Error: {e}")
+                    # Continue with other commands for warning-only commands
+                else:
+                    logger.error(f"Processing command failed: {cmd_str}")
+                    logger.error(f"Error: {e}")
+                    raise ProcessingError(f"Processing command failed: {cmd_str}", layer, entity) from e
 
     # 2. Run layer-specific processing command (from config)
     layer_config = LAYER_CONFIGS.get(layer, {})
