@@ -814,6 +814,9 @@ def generate_expected_values(layer: str, state: str, county: str, city: str, ent
 @dataclass
 class Config:
     layer: str
+    state: str | None = None
+    county: str | None = None
+    city: str | None = None
     include_entities: List[str] | None = None
     exclude_entities: List[str] | None = None
     include_fields: List[str] | None = None
@@ -1281,11 +1284,12 @@ class LayersPrescrape:
         self.logger.info(f"Fill complete: {len(valid_records)} records checked, {total_issues} total issues found")
     
     def _run_create_mode(self):
-        """Create new records based on layer/county/city + manual info."""
+        """Create new records based on layer/state/county/city + manual info."""
         self.logger.info("Running CREATE mode - creating new database records.")
         
-        if not self.cfg.include_entities:
-            self.logger.error("CREATE mode requires --include entities to be specified")
+        # Use positional arguments instead of parsing entities
+        if not self.cfg.state or not self.cfg.county:
+            self.logger.error("CREATE mode requires state and county to be specified")
             return
         
         # Load manual data if available
@@ -1313,44 +1317,51 @@ class LayersPrescrape:
         
         created_records = []
         
-        for entity in self.cfg.include_entities:
-            try:
-                state, county, city = split_entity(entity)
-            except ValueError as e:
-                self.logger.error(f"Invalid entity format '{entity}': {e}")
-                continue
-            
-            # Check if record already exists
-            existing = self._find_record_by_entity(entity)
-            if existing:
-                self.logger.warning(f"Record for {entity} already exists - skipping")
-                continue
-            
-            # Generate base record
-            entity_type = "city" if city not in {"unincorporated", "unified", "incorporated", "countywide"} else city
-            expected = generate_expected_values(self.cfg.layer, state, county, city, entity_type)
-            
-            # Apply manual overrides
-            if entity in manual_data:
-                expected.update(manual_data[entity])
-            
-            # Check for required manual fields
-            required_manual = []
-            if not expected.get('format') or expected['format'] == "MANUAL_REQUIRED":
-                required_manual.append('format')
-            
-            fmt = (expected.get('format') or '').lower()
-            if fmt in ['ags', 'arcgis', 'esri', 'ags_extract']:
-                if not expected.get('table_name') or expected['table_name'] == "MANUAL_REQUIRED":
-                    required_manual.append('table_name')
-            else:
-                if not (expected.get('resource') or expected.get('src_url_file')):
-                    required_manual.append('resource')
-            
-            if required_manual:
-                self.logger.error(f"Cannot create {entity} - missing required manual fields: {required_manual}")
-                self.missing_fields[entity] = {field: "MANUAL_REQUIRED" for field in required_manual}
-                continue
+        # Generate entity name from positional arguments
+        state = self.cfg.state
+        county = self.cfg.county
+        city = self.cfg.city
+        
+        # Determine entity type based on city value
+        if not city or city in {"unincorporated", "unified", "incorporated", "countywide"}:
+            entity_type = city or "unincorporated"
+            # For county-level layers, use county as the entity
+            entity = f"{self.cfg.layer}_{state}_{county}"
+        else:
+            entity_type = "city"
+            # For city-level layers, include city in entity name
+            entity = f"{self.cfg.layer}_{state}_{county}_{city}"
+        
+        # Check if record already exists
+        existing = self._find_record_by_entity(entity)
+        if existing:
+            self.logger.warning(f"Record for {entity} already exists - skipping")
+            return
+        
+                # Generate base record
+        expected = generate_expected_values(self.cfg.layer, state, county, city, entity_type)
+        
+        # Apply manual overrides
+        if entity in manual_data:
+            expected.update(manual_data[entity])
+        
+        # Check for required manual fields
+        required_manual = []
+        if not expected.get('format') or expected['format'] == "MANUAL_REQUIRED":
+            required_manual.append('format')
+        
+        fmt = (expected.get('format') or '').lower()
+        if fmt in ['ags', 'arcgis', 'esri', 'ags_extract']:
+            if not expected.get('table_name') or expected['table_name'] == "MANUAL_REQUIRED":
+                required_manual.append('table_name')
+        else:
+            if not (expected.get('resource') or expected.get('src_url_file')):
+                required_manual.append('resource')
+        
+        if required_manual:
+            self.logger.error(f"Cannot create {entity} - missing required manual fields: {required_manual}")
+            self.missing_fields[entity] = {field: "MANUAL_REQUIRED" for field in required_manual}
+            return
             
             # Create the record
             if self.cfg.apply_changes or self.cfg.apply_manual:
@@ -2284,23 +2295,27 @@ def build_arg_parser() -> argparse.ArgumentParser:
         description="Prepare database for layers_scrape.py by detecting and fixing malformed records"
     )
     
-    # Layer argument removed - layers are now extracted from entity patterns
+    # Positional arguments for layer, state, county, city
+    parser.add_argument("layer", help="[CREATE] Layer name (e.g., zoning, flu, streets)")
+    parser.add_argument("state", nargs="?", default=None, help="[CREATE] State abbreviation (e.g., fl)")
+    parser.add_argument("county", nargs="?", default=None, help="[CREATE] County name (e.g., lee, miami_dade)")
+    parser.add_argument("city", nargs="?", default=None, help="[CREATE] City name (e.g., fort_myers_beach, miami)")
     
-    # Entity filtering options
+    # Entity filtering options (for backward compatibility)
     parser.add_argument("--include", nargs="*", metavar="ENTITY", 
-                       help="Include only entities matching these patterns (supports wildcards: *, ?, [abc], [!abc])")
+                       help="[FILL/DETECT] Include only entities matching these patterns (supports wildcards: *, ?, [abc], [!abc])")
     parser.add_argument("--exclude", nargs="*", metavar="ENTITY",
-                       help="Exclude entities matching these patterns (supports wildcards: *, ?, [abc], [!abc])")
+                       help="[FILL/DETECT] Exclude entities matching these patterns (supports wildcards: *, ?, [abc], [!abc])")
     
     # Field filtering options (for FILL mode)
     parser.add_argument("--include-fields", nargs="*", metavar="FIELD",
-                       help="Include only these fields for standardization (supports wildcards: *, ?, [abc], [!abc])")
+                       help="[FILL/DETECT] Include only these fields for standardization (supports wildcards: *, ?, [abc], [!abc])")
     parser.add_argument("--exclude-fields", nargs="*", metavar="FIELD",
-                       help="Exclude these fields from standardization (supports wildcards: *, ?, [abc], [!abc])")
+                       help="[FILL/DETECT] Exclude these fields from standardization (supports wildcards: *, ?, [abc], [!abc])")
     
     # Record targeting options
     parser.add_argument("--title", metavar="TITLE",
-                       help="Target a specific record by exact title match (case-insensitive)")
+                       help="[FILL/DETECT] Target a specific record by exact title match (case-insensitive)")
     
     # Mode selection (detect and fill can be combined)
     parser.add_argument("--detect", action="store_true", 
@@ -2311,7 +2326,7 @@ def build_arg_parser() -> argparse.ArgumentParser:
     # Exclusive modes (cannot be combined with detect/fill or each other)
     mode_group = parser.add_mutually_exclusive_group()
     mode_group.add_argument("--create", action="store_true", 
-                           help="Create new records for specified entities")
+                           help="Create new records for specified entities (see positional arguments)")
     mode_group.add_argument("--update-states", action="store_true",
                            help="One-time update: Set all NULL state values to 'FL'")
     
@@ -2354,8 +2369,8 @@ def main():
         sys.exit(1)
     
     # Validate CREATE mode requirements
-    if mode == "create" and not args.include:
-        print("[ERROR] CREATE mode requires --include entities to be specified")
+    if mode == "create" and (not args.state or not args.county):
+        print("[ERROR] CREATE mode requires state and county to be specified")
         sys.exit(1)
     
     # Handle one-time state update mode
@@ -2393,38 +2408,35 @@ def main():
         
         return
     
-    # Extract layers from entity patterns
-    layers_to_process, excluded_layers = extract_layers_from_patterns(args.include, args.exclude)
-    if excluded_layers:
-        print(f"[INFO] Excluding {', '.join(excluded_layers)}")
-    print(f"[INFO] Processing layers: {', '.join(layers_to_process)}")
+    # Process the specified layer
+    layer = args.layer.lower()
+    print(f"\n[INFO] ==================== Processing layer: {layer.upper()} ====================")
     
-    # Process each layer separately
-    for layer in layers_to_process:
-        print(f"\n[INFO] ==================== Processing layer: {layer.upper()} ====================")
-        
-        # Create config for this layer
-        cfg = Config(
-            layer=layer,
-            include_entities=[e.lower() for e in args.include] if args.include else None,
-            exclude_entities=[e.lower() for e in args.exclude] if args.exclude else None,
-            include_fields=[f.lower() for f in args.include_fields] if args.include_fields else None,
-            exclude_fields=[f.lower() for f in args.exclude_fields] if args.exclude_fields else None,
-            target_title=args.title.lower() if args.title else None,
-            mode=mode,
-            debug=args.debug,
-            generate_csv=args.generate_csv,
-            apply_changes=args.apply,
-            apply_manual=args.apply_manual,
-            manual_file=args.manual_file,
-            fill_all=args.fill_all
-        )
-        
-        # Run the processor for this layer
-        processor = LayersPrescrape(cfg)
-        processor.run()
+    # Create config for this layer
+    cfg = Config(
+        layer=layer,
+        state=args.state.lower() if args.state else None,
+        county=args.county.lower() if args.county else None,
+        city=args.city.lower() if args.city else None,
+        include_entities=[e.lower() for e in args.include] if args.include else None,
+        exclude_entities=[e.lower() for e in args.exclude] if args.exclude else None,
+        include_fields=[f.lower() for f in args.include_fields] if args.include_fields else None,
+        exclude_fields=[f.lower() for f in args.exclude_fields] if args.exclude_fields else None,
+        target_title=args.title.lower() if args.title else None,
+        mode=mode,
+        debug=args.debug,
+        generate_csv=args.generate_csv,
+        apply_changes=args.apply,
+        apply_manual=args.apply_manual,
+        manual_file=args.manual_file,
+        fill_all=args.fill_all
+    )
     
-    print(f"\n[INFO] ==================== Completed processing {len(layers_to_process)} layer(s) ====================")
+    # Run the processor for this layer
+    processor = LayersPrescrape(cfg)
+    processor.run()
+    
+    print(f"\n[INFO] ==================== Completed processing layer: {layer.upper()} ====================")
 
 if __name__ == "__main__":
     main()
