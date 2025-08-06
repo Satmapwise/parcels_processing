@@ -1283,9 +1283,40 @@ class LayersPrescrape:
         total_issues = sum(total_records - healthy_counts[field] for field in headers[1:])
         self.logger.info(f"Fill complete: {len(valid_records)} records checked, {total_issues} total issues found")
     
+    def _validate_create_inputs(self) -> bool:
+        """Validate layer, state, and county inputs for CREATE mode."""
+        errors = []
+        
+        # Validate layer
+        if self.cfg.layer not in LAYER_CONFIGS:
+            errors.append(f"Layer '{self.cfg.layer}' not found in LAYER_CONFIGS")
+        
+        # Validate state
+        if self.cfg.state:
+            if self.cfg.state not in INTEGRATED_STATES:
+                errors.append(f"State '{self.cfg.state}' not found in INTEGRATED_STATES. Available states: {', '.join(sorted(INTEGRATED_STATES))}")
+            else:
+                # Validate county if state is valid
+                if self.cfg.county:
+                    state_counties = STATE_COUNTIES.get(self.cfg.state, set())
+                    if self.cfg.county not in state_counties:
+                        errors.append(f"County '{self.cfg.county}' not found in {self.cfg.state.upper()} counties. Available counties: {', '.join(sorted(state_counties))}")
+        
+        if errors:
+            self.logger.error("CREATE mode validation failed:")
+            for error in errors:
+                self.logger.error(f"  - {error}")
+            return False
+        
+        return True
+
     def _run_create_mode(self):
         """Create new records based on layer/state/county/city + manual info."""
         self.logger.info("Running CREATE mode - creating new database records.")
+        
+        # Validate inputs
+        if not self._validate_create_inputs():
+            return
         
         # Use positional arguments instead of parsing entities
         if not self.cfg.state or not self.cfg.county:
