@@ -1068,7 +1068,8 @@
   },
   "flu_fl_palm_beach_wellington": {
     "fields_obj_transform": "flu_code:landuse, flu_code2:landusecat, flu_desc:landusedes",
-    "state": "MANUAL_REQUIRED"
+    "state": "MANUAL_REQUIRED",
+    "src_url_file": "URL_DEPRECATED"
   },
   "flu_fl_orange_winter_garden": {
     "src_url_file": "MANUAL_REQUIRED",
@@ -2947,5 +2948,19 @@
   },
   "zoning_fl_glades_unincorporated": {
     "state": "MANUAL_REQUIRED"
+  },
+  "subdivisions_fl_santa_rosa": {
+    "src_url_file": "URL_DEPRECATED"
+  },
+  "traffic_counts_fl": {
+    "src_url_file": "URL_DEPRECATED",
+    "fields_obj_transform": "MANUAL_REQUIRED"
+  },
+  "streets_fl_desoto": {
+    "src_url_file": "URL_DEPRECATED",
+    "fields_obj_transform": "MANUAL_REQUIRED"
+  },
+  "streets_fl_hernando": {
+    "src_url_file": "URL_DEPRECATED"
   }
 }

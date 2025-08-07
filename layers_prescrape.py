@@ -967,12 +967,16 @@ class LayersPrescrape:
         
         # Group records by entity to detect duplicates
         entity_groups = defaultdict(list)
+        entity_records = defaultdict(list)  # Store original records for duplicate resolution
         field_counts = {field: 0 for field in headers[1:]}  # Skip 'entity' for counting
         total_records = len(records)
         
         for record in records:
             # Generate entity from title
             entity = self._generate_entity_from_record(record)
+            
+            # Store original record for duplicate resolution
+            entity_records[entity].append(record)
             
             # Extract field values
             row_values = [entity]
@@ -996,6 +1000,7 @@ class LayersPrescrape:
         
         for entity in sorted(entity_groups.keys()):
             records_for_entity = entity_groups[entity]
+            original_records = entity_records[entity]
             
             if entity == "ERROR":
                 # Handle ERROR entities separately
@@ -1006,11 +1011,27 @@ class LayersPrescrape:
                 csv_rows.append(records_for_entity[0])
                 unique_entities += 1
             else:
-                # Multiple records (duplicates)
-                duplicate_row = [entity] + ["DUPLICATE"] * (len(headers) - 1)
-                csv_rows.append(duplicate_row)
-                duplicate_groups.append((entity, records_for_entity))
-                duplicate_entities += 1
+                # Multiple records (duplicates) - try to resolve
+                resolved_record = self._resolve_duplicates(entity, original_records)
+                if resolved_record:
+                    # Successfully resolved duplicate - treat as unique
+                    resolved_row_values = [entity]
+                    for field in headers[1:]:
+                        value = resolved_record.get(field)
+                        if value is not None and str(value).strip() and str(value).strip().upper() not in ('NULL', 'NONE'):
+                            field_counts[field] += 1
+                            resolved_row_values.append(str(value))
+                        else:
+                            resolved_row_values.append("")
+                    csv_rows.append(resolved_row_values)
+                    unique_entities += 1
+                    self.logger.info(f"Resolved duplicate entity '{entity}' - using record with valid field values")
+                else:
+                    # Could not resolve duplicate - report as duplicate
+                    duplicate_row = [entity] + ["DUPLICATE"] * (len(headers) - 1)
+                    csv_rows.append(duplicate_row)
+                    duplicate_groups.append((entity, records_for_entity))
+                    duplicate_entities += 1
         
         # Add summary row showing field completion rates and duplicate info
         csv_rows.append([])
@@ -1152,8 +1173,14 @@ class LayersPrescrape:
                 self.logger.debug(f"Skipping ERROR entity with {len(records_for_entity)} unparseable records")
                 skipped_count += len(records_for_entity)
             elif len(records_for_entity) > 1:
-                self.logger.debug(f"Skipping duplicate entity '{entity}' with {len(records_for_entity)} records")
-                skipped_count += len(records_for_entity)
+                # Try to resolve duplicates before skipping
+                resolved_record = self._resolve_duplicates(entity, records_for_entity)
+                if resolved_record:
+                    valid_records.append((entity, resolved_record))
+                    self.logger.info(f"Resolved duplicate entity '{entity}' in fill mode - using record with valid field values")
+                else:
+                    self.logger.debug(f"Skipping duplicate entity '{entity}' with {len(records_for_entity)} records - could not auto-resolve")
+                    skipped_count += len(records_for_entity)
             else:
                 valid_records.append((entity, records_for_entity[0]))
         
@@ -2567,6 +2594,113 @@ class LayersPrescrape:
         except Exception as e:
             self.logger.error(f"Failed to write {self.cfg.manual_file}: {e}")
             raise
+
+    def _resolve_duplicates(self, entity: str, records_for_entity: List[Dict[str, Any]]) -> Optional[Dict[str, Any]]:
+        """Resolve duplicates by checking if any record has valid values for key fields.
+        
+        Args:
+            entity: The entity name that has duplicates
+            records_for_entity: List of duplicate records for this entity
+            
+        Returns:
+            The single valid record if one is found, None if no resolution possible
+        """
+        if len(records_for_entity) <= 1:
+            return records_for_entity[0] if records_for_entity else None
+        
+        # Parse entity to get expected values
+        try:
+            parsed_layer, state, county, city = parse_entity_pattern(entity)
+            
+            # Determine entity type based on what was parsed
+            if city:
+                entity_type = "city" if city not in {"unincorporated", "unified", "incorporated", "countywide"} else city
+            elif county:
+                entity_type = "county"
+            else:
+                entity_type = "state"
+                
+        except Exception as e:
+            self.logger.debug(f"Could not parse entity '{entity}' for duplicate resolution: {e}")
+            return None
+        
+        # Handle countywide alias
+        if entity_type == "countywide":
+            entity_type = "unified"
+            city_std = "unified"
+        else:
+            city_std = city
+        
+        # Generate expected values
+        layer_internal = format_name(self.cfg.layer, 'layer', external=False)
+        expected_state = format_name(state, 'state', external=True) if state else None
+        expected_county = format_name(county, 'county', external=True) if county else None
+        expected_city = format_name(city_std, 'city', external=True) if city_std else None
+        expected_layer_subgroup = layer_internal
+        
+        # Special handling for state-level and national-level layers
+        if self.cfg.layer in ['fdot_tc', 'sunbiz']:
+            expected_state = 'FL'
+            expected_county = None
+            expected_city = None
+        elif self.cfg.layer == 'flood_zones':
+            expected_state = None
+            expected_county = None
+            expected_city = None
+        
+        # Check each record for valid values matching expected values
+        valid_records = []
+        
+        for i, record in enumerate(records_for_entity):
+            record_state = record.get('state')
+            record_county = record.get('county')
+            record_city = record.get('city')
+            record_layer_subgroup = record.get('layer_subgroup')
+            
+            # Check if all 4 fields have values and match expected values
+            state_valid = bool(record_state and str(record_state).strip() and 
+                              str(record_state).strip().upper() not in ('NULL', 'NONE'))
+            county_valid = bool(record_county and str(record_county).strip() and 
+                               str(record_county).strip().upper() not in ('NULL', 'NONE'))
+            city_valid = bool(record_city and str(record_city).strip() and 
+                             str(record_city).strip().upper() not in ('NULL', 'NONE'))
+            layer_subgroup_valid = bool(record_layer_subgroup and str(record_layer_subgroup).strip() and 
+                                       str(record_layer_subgroup).strip().upper() not in ('NULL', 'NONE'))
+            
+            # Check if values match expected values
+            state_matches = (not expected_state or 
+                           (state_valid and str(record_state).strip().upper() == expected_state.upper()))
+            county_matches = (not expected_county or 
+                            (county_valid and str(record_county).strip().upper() == expected_county.upper()))
+            city_matches = (not expected_city or 
+                          (city_valid and str(record_city).strip().upper() == expected_city.upper()))
+            layer_subgroup_matches = (layer_subgroup_valid and 
+                                    str(record_layer_subgroup).strip().upper() == expected_layer_subgroup.upper())
+            
+            # Record is valid if required fields have values and match expected values
+            # For county-level entities, city can be empty/null
+            required_fields_valid = state_valid and county_valid and layer_subgroup_valid
+            required_fields_match = state_matches and county_matches and layer_subgroup_matches
+            
+            # City field is optional for county-level entities
+            city_acceptable = (not expected_city) or city_valid or (not city_valid and not expected_city)
+            city_matches_acceptable = (not expected_city) or city_matches
+            
+
+            
+            if (required_fields_valid and required_fields_match and 
+                city_acceptable and city_matches_acceptable):
+                valid_records.append(record)
+        
+        if len(valid_records) == 1:
+            self.logger.debug(f"Resolved duplicate entity '{entity}' - found 1 record with valid field values")
+            return valid_records[0]
+        elif len(valid_records) > 1:
+            self.logger.debug(f"Multiple valid records found for entity '{entity}' - cannot auto-resolve")
+            return None
+        else:
+            self.logger.debug(f"No valid records found for entity '{entity}' - cannot auto-resolve")
+            return None
 
 # ---------------------------------------------------------------------------
 # Entity Pattern Processing  
