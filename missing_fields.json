@@ -2923,7 +2923,8 @@
     "state": "MANUAL_REQUIRED"
   },
   "streets_fl_st_lucie": {
-    "state": "MANUAL_REQUIRED"
+    "state": "MANUAL_REQUIRED",
+    "src_url_file": "URL_DEPRECATED"
   },
   "subdivisions_fl_alachua": {
     "state": "MANUAL_REQUIRED"

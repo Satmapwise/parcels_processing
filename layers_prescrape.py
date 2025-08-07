@@ -757,9 +757,27 @@ def generate_expected_values(layer: str, state: str | None, county: str | None, 
     county = county or ''
     city = city or ''
     
-    # Determine entity type if not provided
+    # Get layer configuration to determine entity type
+    layer_config = LAYER_CONFIGS.get(layer, {})
+    layer_level = layer_config.get('level')
+    
+    # Determine entity type based on layer level if not provided
     if not entity_type:
-        entity_type = "city" if city not in {"unincorporated", "unified", "incorporated", "countywide"} else city
+        if layer_level == 'state_county_city':
+            # For city-level layers, check if the "city" is actually a special county suffix
+            if city and city in {"unincorporated", "unified", "incorporated", "countywide"}:
+                entity_type = city  # Use the special suffix as entity type
+            else:
+                entity_type = "city"
+        elif layer_level == 'state_county':
+            entity_type = "county"
+        elif layer_level == 'state':
+            entity_type = "state"
+        elif layer_level == 'national':
+            entity_type = "national"
+        else:
+            # Fallback to parsing-based logic for unknown levels
+            entity_type = "city" if city not in {"unincorporated", "unified", "incorporated", "countywide"} else city
     
     # Handle countywide alias
     if entity_type == "countywide":
@@ -1867,39 +1885,40 @@ class LayersPrescrape:
         city_internal = ""
         city_std = None
         
-        # Special handling for state-level and national-level layers
-        if self.cfg.layer in ['fdot_tc', 'sunbiz']:
-            # State-level layers: simple format like "fdot_tc_fl"
-            state = 'fl'
-            county = None
-            city = None
-            entity_type = 'state'
-        elif self.cfg.layer == 'flood_zones':
-            # National-level layers: simple format like "flood_zones"
-            state = None
-            county = None  
-            city = None
-            entity_type = 'national'
+        # Get layer configuration to determine expected fields
+        layer_config = LAYER_CONFIGS.get(self.cfg.layer, {})
+        if not layer_config:
+            self.logger.error(f"Layer '{self.cfg.layer}' not found in LAYER_CONFIGS")
+            return ""
+        
+        layer_level = layer_config.get('level')
+        if not layer_level:
+            self.logger.error(f"Layer '{self.cfg.layer}' missing 'level' field in LAYER_CONFIGS")
+            return ""
+        
+        # Parse entity to get actual values
+        try:
+            parsed_layer, state, county, city = parse_entity_pattern(entity)
+        except Exception as e:
+            self.logger.warning(f"Could not parse entity '{entity}': {e}")
+            return ""
+        
+        # Determine entity type based on layer level and parsed values
+        if layer_level == 'state_county_city':
+            # For city-level layers, check if the "city" is actually a special county suffix
+            if city and city in {"unincorporated", "unified", "incorporated", "countywide"}:
+                entity_type = city  # Use the special suffix as entity type
+            else:
+                entity_type = "city"
+        elif layer_level == 'state_county':
+            entity_type = "county"
+        elif layer_level == 'state':
+            entity_type = "state"
+        elif layer_level == 'national':
+            entity_type = "national"
         else:
-            # Standard county/city-level layers: parse entity components using robust logic
-            try:
-                parsed_layer, state, county, city = parse_entity_pattern(entity)
-                
-                # Determine entity type based on what was parsed
-                if city:
-                    entity_type = "city" if city not in {"unincorporated", "unified", "incorporated", "countywide"} else city
-                elif county:
-                    # County-level entity (3 parts)
-                    entity_type = "county"
-                else:
-                    # State-level entity (2 parts)
-                    entity_type = "state"
-                    
-            except Exception as e:
-                # Fallback for problematic entities
-                logging.warning(f"Could not parse entity '{entity}': {e}")
-                state, county, city = None, None, None
-                entity_type = "unknown"
+            self.logger.error(f"Unknown layer level '{layer_level}' for layer '{self.cfg.layer}'")
+            return ""
             
         # Handle countywide alias for all layer types
         if entity_type == "countywide":
@@ -1937,7 +1956,7 @@ class LayersPrescrape:
             elif entity_type in ["unincorporated", "unified", "incorporated"]:
                 # City-level with special designations: "Zoning - Broward Unincorporated FL"
                 expected = f"{layer_external} - {county_external} {entity_type.capitalize()} {state_abbrev}"
-            elif entity_type == "county" or self.cfg.layer in ['streets', 'address_points', 'subdivisions', 'buildings']:
+            elif entity_type == "county" or layer_level == 'state_county':
                 # Standard county-level: "Streets - Broward County FL"
                 expected = f"{layer_external} - {county_external} County {state_abbrev}"
             else:
@@ -1950,16 +1969,9 @@ class LayersPrescrape:
             return expected if actual_title != expected else ""
         
         elif field == "state":
-            # Special handling for state-level and national-level layers
-            if self.cfg.layer in ['fdot_tc', 'sunbiz']:
-                # State-level layers default to FL
-                expected_state = 'FL'
-                return expected_state if current_value != expected_state else ""
-            elif self.cfg.layer == 'flood_zones':
-                # National layer - state should be null/empty
-                return "" if not current_value else ""
-            else:
-                # Standard county/city level layers
+            # Use layer level to determine expected state value
+            if layer_level == 'state_county_city' or layer_level == 'state_county':
+                # County/city level layers require state
                 expected_state = format_name(state, 'state', external=True) if state else None
                 if expected_state:
                     return expected_state if current_value != expected_state else ""
@@ -1967,6 +1979,17 @@ class LayersPrescrape:
                     # Invalid state - mark as manual field
                     self.missing_fields[entity]["state"] = "MANUAL_REQUIRED"
                     return "***MISSING***"
+            elif layer_level == 'state':
+                # State-level layers default to FL
+                expected_state = 'FL'
+                return expected_state if current_value != expected_state else ""
+            elif layer_level == 'national':
+                # National layer - state should be null/empty
+                return "" if not current_value else ""
+            else:
+                # Unknown layer level - error
+                self.logger.error(f"Unknown layer level '{layer_level}' for state field validation")
+                return ""
         
         elif field == "county":
             # Special handling for state-level and national-level layers
@@ -1983,7 +2006,7 @@ class LayersPrescrape:
             if self.cfg.layer in ['fdot_tc', 'sunbiz', 'flood_zones']:
                 # State/national level layers should have null city
                 return "" if not current_value else ""
-            elif self.cfg.layer in ['streets', 'address_points', 'subdivisions', 'buildings'] or entity_type == "county":
+            elif layer_level == 'state_county' or entity_type == "county":
                 # County-level layers should have null city
                 return "" if current_value else ""
             else:
@@ -2051,13 +2074,13 @@ class LayersPrescrape:
                 return "" if not current_value else ""
             else:
                 # For non-AGS formats, check resource matches pattern based on layer type
-                if self.cfg.layer in ['fdot_tc', 'sunbiz']:
+                if layer_level == 'state':
                     # State-level layers: "/data/<layer>"
                     expected = f"/data/{layer_internal}"
-                elif self.cfg.layer == 'flood_zones':
+                elif layer_level == 'national':
                     # National-level layers: "/data/<layer>"
                     expected = f"/data/{layer_internal}"
-                elif self.cfg.layer in ['streets', 'address_points', 'subdivisions', 'buildings'] or entity_type == "county":
+                elif layer_level == 'state_county' or entity_type == "county":
                     # County-level layers: "/data/<layer>/<county>"
                     expected = f"/data/{layer_internal}/{county_internal}"
                 else:
@@ -2093,10 +2116,10 @@ class LayersPrescrape:
             # Check table_name matches pattern - now includes state for better uniqueness
             state_abbrev = state.lower() if state else 'fl'
             
-            if self.cfg.layer in ['fdot_tc', 'sunbiz']:
+            if layer_level == 'state':
                 # State-level layers: "<layer>_<state>"
                 expected = f"{layer_internal}_{state_abbrev}"
-            elif self.cfg.layer == 'flood_zones':
+            elif layer_level == 'national':
                 # National-level layers: "<layer>"
                 expected = f"{layer_internal}"
             elif entity_type == "city":
@@ -2105,7 +2128,7 @@ class LayersPrescrape:
             elif entity_type in ["unincorporated", "unified", "incorporated"]:
                 # County suffixes: "<layer>_<state>_<county>_<suffix>"
                 expected = f"{layer_internal}_{state_abbrev}_{county_internal}_{entity_type}"
-            elif self.cfg.layer in ['streets', 'address_points', 'subdivisions', 'buildings'] or entity_type == "county":
+            elif layer_level == 'state_county' or entity_type == "county":
                 # County-level layers: "<layer>_<state>_<county>"
                 expected = f"{layer_internal}_{state_abbrev}_{county_internal}"
             else:
