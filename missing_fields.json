@@ -2971,5 +2971,8 @@
   "zoning_fl_miami_dade_miami": {
     "format": "MANUAL_REQUIRED",
     "resource": "MANUAL_REQUIRED"
+  },
+  "flu_de_sussex_unified": {
+    "fields_obj_transform": "MANUAL_REQUIRED"
   }
 }

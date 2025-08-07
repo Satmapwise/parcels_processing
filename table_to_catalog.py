@@ -170,7 +170,6 @@ def fetch_catalog_map(conn) -> Dict[str, Dict[str, Optional[str]]]:
         WHERE layer_subgroup = 'parcel_geo'
           AND layer_subgroup IS NOT NULL
           AND status IS DISTINCT FROM 'DELETE'
-          AND status IS DISTINCT FROM 'NO'
     """
     with conn.cursor(cursor_factory=RealDictCursor) as cur:
         cur.execute(sql)
@@ -290,6 +289,9 @@ def main():
         applied_creations = 0
         create_rows: List[List[str]] = []
 
+        # Precompute which entities are missing from catalog
+        missing_entities = {entity for entity in transform_map.keys() if entity not in catalog_map}
+
         for entity, rec in transform_map.items():
             new_transform = rec.build_new_transform()
 
@@ -312,7 +314,7 @@ def main():
                 ogc_fid = cat_info.get("ogc_fid")
                 if ogc_fid is not None:
                     updates.append((int(ogc_fid), new_transform or ""))
-            elif args.apply and args.create and not cat_info:
+            elif args.apply and args.create and entity in missing_entities:
                 planned_creations.append(entity)
                 # Actually create immediately if applying
                 try:
@@ -323,7 +325,7 @@ def main():
                     print(f"[CREATE ERROR] Failed creating {entity}: {e}")
 
             # Build create CSV row for missing catalog records when --create is used (preview or apply)
-            if args.create and not cat_info:
+            if args.create and entity in missing_entities:
                 try:
                     layer, st, co = _parse_entity(entity)
                     expected = generate_expected_values(layer, st, co, city=None)
@@ -381,7 +383,7 @@ def main():
             print(f"Created {applied_creations} new catalog record(s)")
         elif args.create:
             # Preview of which would be created if --apply was also provided
-            print(f"Would create {len(planned_creations)} new catalog record(s)")
+            print(f"Would create {len(create_rows)} new catalog record(s)")
 
     finally:
         conn.close()
