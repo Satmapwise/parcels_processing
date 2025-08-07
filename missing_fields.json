@@ -2963,5 +2963,13 @@
   },
   "streets_fl_hernando": {
     "src_url_file": "URL_DEPRECATED"
+  },
+  "zoning_fl_alachua_test_city": {
+    "format": "MANUAL_REQUIRED",
+    "resource": "MANUAL_REQUIRED"
+  },
+  "zoning_fl_miami_dade_miami": {
+    "format": "MANUAL_REQUIRED",
+    "resource": "MANUAL_REQUIRED"
   }
 }

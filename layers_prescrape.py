@@ -802,21 +802,38 @@ def generate_expected_values(layer: str, state: str | None, county: str | None, 
         # Standard county-level: "Streets - Broward County FL"
         title = f"{layer_external} - {county_external} County {state_abbrev}"
     
-    # Generate table name (internal format)
+    # Generate table name (internal format) - matches --fill logic
     layer_internal = format_name(layer, 'layer', external=False)
     city_internal = format_name(city_std, 'city', external=False) if city_std else ''
     county_internal = format_name(county, 'county', external=False) if county else ''
-    state_internal = state.lower() if state else 'fl'
+    state_abbrev = state.lower() if state else 'fl'
     
-    if entity_type == "city":
-        table_name = f"{layer_internal}_{city_internal}"
+    if layer_level == 'state':
+        # State-level layers: "<layer>_<state>"
+        table_name = f"{layer_internal}_{state_abbrev}"
+    elif layer_level == 'national':
+        # National-level layers: "<layer>"
+        table_name = f"{layer_internal}"
+    elif entity_type == "city":
+        # City-level layers: "<layer>_<state>_<county>_<city>"
+        table_name = f"{layer_internal}_{state_abbrev}_{county_internal}_{city_internal}"
     elif entity_type in ["unincorporated", "unified", "incorporated"]:
-        table_name = f"{layer_internal}_{county_internal}_{entity_type}"
+        # County suffixes: "<layer>_<state>_<county>_<suffix>"
+        table_name = f"{layer_internal}_{state_abbrev}_{county_internal}_{entity_type}"
+    elif layer_level == 'state_county' or entity_type == "county":
+        # County-level layers: "<layer>_<state>_<county>"
+        table_name = f"{layer_internal}_{state_abbrev}_{county_internal}"
     else:
-        table_name = f"{layer_internal}_{city_internal}"
+        # Fallback - determine based on available components
+        if city_internal and city_internal not in ["unincorporated", "unified", "incorporated"]:
+            table_name = f"{layer_internal}_{state_abbrev}_{county_internal}_{city_internal}"
+        elif county_internal:
+            table_name = f"{layer_internal}_{state_abbrev}_{county_internal}"
+        else:
+            table_name = f"{layer_internal}_{state_abbrev}"
     
     # Generate sys_raw_folder using layer directory pattern
-    sys_raw_folder = resolve_layer_directory(layer, state_internal, county_internal, city_internal)
+    sys_raw_folder = resolve_layer_directory(layer, state_abbrev, county_internal, city_internal)
     
     return {
         'title': title,
