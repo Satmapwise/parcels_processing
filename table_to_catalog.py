@@ -29,6 +29,7 @@ import psycopg2
 from psycopg2.extras import RealDictCursor
 
 from layers_helpers import PG_CONNECTION, format_name
+from layers_prescrape import generate_expected_values
 
 
 TRANSFORM_HEADERS = [
@@ -201,9 +202,57 @@ def write_csv(out_path: str, rows: List[Dict[str, Optional[str]]]) -> None:
             writer.writerow({k: row.get(k, "") for k in fieldnames})
 
 
+def _parse_entity(entity: str) -> Tuple[str, str, str]:
+    """Return (layer, state, county) from entity like parcel_geo_fl_alachua."""
+    parts = entity.split("_")
+    # layer can contain an underscore (parcel_geo). Reconstruct layer from first two parts.
+    if len(parts) < 4:
+        raise ValueError(f"Unexpected entity format: {entity}")
+    layer = "_".join(parts[0:2])
+    state = parts[2]
+    county = "_".join(parts[3:]) if len(parts) > 4 else parts[3]
+    return layer, state, county
+
+
+def _create_catalog_record(
+    conn,
+    layer: str,
+    state_internal: str,
+    county_internal: str,
+    new_transform: Optional[str],
+) -> None:
+    # Build base expected record using shared logic
+    expected = generate_expected_values(layer, state_internal, county_internal, city=None)
+    # Defaults similar to layers_prescrape _create_record
+    from datetime import date
+    expected.update({
+        "publish_date": date.today().strftime("%Y-%m-%d"),
+        "download": "AUTO",
+        "status": "ACTIVE",
+    })
+    # Attach fields_obj_transform
+    if new_transform:
+        expected["fields_obj_transform"] = new_transform
+    # Ensure city is NULL for county-level
+    if expected.get("city") == "":
+        expected["city"] = None
+
+    # Insert
+    fields = list(expected.keys())
+    placeholders = ", ".join(["%s"] * len(fields))
+    field_names = ", ".join(fields)
+    values = [expected[f] for f in fields]
+    with conn.cursor() as cur:
+        cur.execute(
+            f"INSERT INTO m_gis_data_catalog_main ({field_names}) VALUES ({placeholders})",
+            values,
+        )
+
+
 def main():
     parser = argparse.ArgumentParser(description="Propose and apply catalog transforms from transform tables")
     parser.add_argument("--apply", action="store_true", help="Apply updates to the catalog")
+    parser.add_argument("--create", action="store_true", help="Create missing catalog records when applying")
     parser.add_argument(
         "--out",
         default="summaries/parcel_geo_table_to_catalog.csv",
@@ -221,6 +270,8 @@ def main():
 
         output_rows: List[Dict[str, Optional[str]]] = []
         updates: List[Tuple[int, str]] = []  # (ogc_fid, new_transform)
+        planned_creations: List[str] = []
+        applied_creations = 0
 
         for entity, rec in transform_map.items():
             new_transform = rec.build_new_transform()
@@ -244,6 +295,15 @@ def main():
                 ogc_fid = cat_info.get("ogc_fid")
                 if ogc_fid is not None:
                     updates.append((int(ogc_fid), new_transform or ""))
+            elif args.apply and args.create and not cat_info:
+                planned_creations.append(entity)
+                # Actually create immediately if applying
+                try:
+                    layer, st, co = _parse_entity(entity)
+                    _create_catalog_record(conn, layer, st, co, new_transform)
+                    applied_creations += 1
+                except Exception as e:
+                    print(f"[CREATE ERROR] Failed creating {entity}: {e}")
 
         write_csv(args.out, output_rows)
 
@@ -259,6 +319,13 @@ def main():
             print(f"Applied {len(updates)} updates to catalog")
         elif args.apply:
             print("No updates to apply")
+
+        if args.apply and args.create:
+            conn.commit()
+            print(f"Created {applied_creations} new catalog record(s)")
+        elif args.create:
+            # Preview of which would be created if --apply was also provided
+            print(f"Would create {len(planned_creations)} new catalog record(s)")
 
     finally:
         conn.close()
