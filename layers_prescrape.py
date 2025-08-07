@@ -1229,6 +1229,23 @@ class LayersPrescrape:
         valid_records.sort(key=lambda x: x[0])  # Sort by entity name
         
         for entity, record in valid_records:
+            # Check for erroneous city-level records in county-level layers (fill mode only)
+            if self.cfg.mode == "fill":
+                # Parse entity to check for city component
+                try:
+                    parsed_layer, state, county, city = parse_entity_pattern(entity)
+                    layer_config = LAYER_CONFIGS.get(self.cfg.layer, {})
+                    layer_level = layer_config.get('level')
+                    
+                    # Check if this is an erroneous city-level record in a county-level layer
+                    if (layer_level == 'state_county' and 
+                        city and city not in {"unincorporated", "unified", "incorporated", "countywide"}):
+                        self.logger.warning(f"Entity '{entity}' has city component '{city}' but layer '{self.cfg.layer}' is county-level. Skipping erroneous record in fill mode.")
+                        skipped_count += 1
+                        continue
+                except Exception as e:
+                    self.logger.debug(f"Could not parse entity '{entity}' for validation: {e}")
+            
             # Conduct health checks and generate corrections
             row_values = [entity]
             
@@ -1911,6 +1928,7 @@ class LayersPrescrape:
             else:
                 entity_type = "city"
         elif layer_level == 'state_county':
+            # For county-level layers, treat as county-level
             entity_type = "county"
         elif layer_level == 'state':
             entity_type = "state"
