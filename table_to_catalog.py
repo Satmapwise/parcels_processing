@@ -40,6 +40,13 @@ TRANSFORM_HEADERS = [
     "shp_altkey",
 ]
 
+CREATE_HEADERS = [
+    "entity", "title", "state", "county", "city", "source_org", "data_date", "publish_date", "src_url_file",
+    "format", "format_subtype", "download", "resource", "layer_group",
+    "layer_subgroup", "category", "sub_category", "sys_raw_folder",
+    "table_name", "fields_obj_transform", "source_comments", "processing_comments"
+]
+
 
 @dataclass
 class TransformRecord:
@@ -202,6 +209,15 @@ def write_csv(out_path: str, rows: List[Dict[str, Optional[str]]]) -> None:
             writer.writerow({k: row.get(k, "") for k in fieldnames})
 
 
+def write_create_csv(out_path: str, rows: List[List[str]]) -> None:
+    ensure_summaries_dir(out_path)
+    rows_sorted = sorted(rows, key=lambda r: r[0] if r and len(r) > 0 else "")
+    with open(out_path, "w", newline="", encoding="utf-8") as f:
+        writer = csv.writer(f)
+        writer.writerow(CREATE_HEADERS)
+        writer.writerows(rows_sorted)
+
+
 def _parse_entity(entity: str) -> Tuple[str, str, str]:
     """Return (layer, state, county) from entity like parcel_geo_fl_alachua."""
     parts = entity.split("_")
@@ -272,6 +288,7 @@ def main():
         updates: List[Tuple[int, str]] = []  # (ogc_fid, new_transform)
         planned_creations: List[str] = []
         applied_creations = 0
+        create_rows: List[List[str]] = []
 
         for entity, rec in transform_map.items():
             new_transform = rec.build_new_transform()
@@ -305,9 +322,48 @@ def main():
                 except Exception as e:
                     print(f"[CREATE ERROR] Failed creating {entity}: {e}")
 
+            # Build create CSV row for missing catalog records when --create is used (preview or apply)
+            if args.create and not cat_info:
+                try:
+                    layer, st, co = _parse_entity(entity)
+                    expected = generate_expected_values(layer, st, co, city=None)
+                    row_values = [
+                        entity,
+                        expected.get("title", ""),
+                        expected.get("state", ""),
+                        expected.get("county", ""),
+                        expected.get("city", ""),
+                        "",  # source_org
+                        "",  # data_date
+                        "",  # publish_date
+                        "",  # src_url_file
+                        "",  # format
+                        "",  # format_subtype
+                        "",  # download
+                        "",  # resource
+                        expected.get("layer_group", ""),
+                        expected.get("layer_subgroup", ""),
+                        expected.get("category", ""),
+                        "",  # sub_category
+                        expected.get("sys_raw_folder", ""),
+                        expected.get("table_name", ""),
+                        new_transform or "",
+                        "",  # source_comments
+                        "",  # processing_comments
+                    ]
+                    create_rows.append(row_values)
+                except Exception as e:
+                    print(f"[CREATE CSV ERROR] Failed composing row for {entity}: {e}")
+
         write_csv(args.out, output_rows)
 
         print(f"Wrote {len(output_rows)} rows to {args.out}")
+
+        # When --create is set, also output a create-mode CSV similar to layers_prescrape
+        if args.create:
+            create_out = os.path.join("summaries", "parcel_geo_table_to_catalog_create.csv")
+            write_create_csv(create_out, create_rows)
+            print(f"Wrote {len(create_rows)} rows to {create_out}")
 
         if args.apply and updates:
             with conn.cursor() as cur:
