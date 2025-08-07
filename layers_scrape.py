@@ -359,6 +359,12 @@ def resolve_work_dir(layer: str, entity: str, entity_components: dict = None):
 
     # General case - use new directory resolution from LAYER_CONFIGS
     work_dir = resolve_layer_directory(layer, state, county, city)
+    # Ensure directory exists here so creation responsibility lives in layers_scrape
+    try:
+        os.makedirs(work_dir, exist_ok=True)
+    except Exception as _e:
+        # Logging will be configured later; silently ignore here
+        pass
     return work_dir
 
 def _run_command_live(command, work_dir, logger):

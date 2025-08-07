@@ -2138,15 +2138,8 @@ class LayersPrescrape:
             return expected if current_value != expected else ""
         
         elif field == "sys_raw_folder":
-            # Check sys_raw_folder matches pattern and create directory
+            # Check sys_raw_folder matches pattern; do not create directories here
             expected = resolve_layer_directory(self.cfg.layer, state, county_internal, city_internal)
-            
-            # Create directory if it doesn't exist
-            try:
-                Path(expected).mkdir(parents=True, exist_ok=True)
-            except Exception as e:
-                self.logger.debug(f"Could not create directory {expected}: {e}")
-            
             return expected if current_value != expected else ""
         
         elif field == "table_name":
