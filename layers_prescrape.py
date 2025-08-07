@@ -2608,45 +2608,53 @@ class LayersPrescrape:
         if len(records_for_entity) <= 1:
             return records_for_entity[0] if records_for_entity else None
         
-        # Parse entity to get expected values
+        # Get layer configuration to determine expected fields
+        layer_config = LAYER_CONFIGS.get(self.cfg.layer, {})
+        if not layer_config:
+            self.logger.error(f"Layer '{self.cfg.layer}' not found in LAYER_CONFIGS")
+            return None
+        
+        layer_level = layer_config.get('level')
+        if not layer_level:
+            self.logger.error(f"Layer '{self.cfg.layer}' missing 'level' field in LAYER_CONFIGS")
+            return None
+        
+        # Parse entity to get actual values
         try:
             parsed_layer, state, county, city = parse_entity_pattern(entity)
-            
-            # Determine entity type based on what was parsed
-            if city:
-                entity_type = "city" if city not in {"unincorporated", "unified", "incorporated", "countywide"} else city
-            elif county:
-                entity_type = "county"
-            else:
-                entity_type = "state"
-                
         except Exception as e:
             self.logger.debug(f"Could not parse entity '{entity}' for duplicate resolution: {e}")
             return None
         
-        # Handle countywide alias
-        if entity_type == "countywide":
-            entity_type = "unified"
-            city_std = "unified"
-        else:
-            city_std = city
-        
-        # Generate expected values
+        # Generate expected values based on layer level
         layer_internal = format_name(self.cfg.layer, 'layer', external=False)
-        expected_state = format_name(state, 'state', external=True) if state else None
-        expected_county = format_name(county, 'county', external=True) if county else None
-        expected_city = format_name(city_std, 'city', external=True) if city_std else None
         expected_layer_subgroup = layer_internal
         
-        # Special handling for state-level and national-level layers
-        if self.cfg.layer in ['fdot_tc', 'sunbiz']:
-            expected_state = 'FL'
+        # Determine expected field values based on layer level
+        if layer_level == 'state_county_city':
+            # City-level entities: require state, county, city
+            expected_state = format_name(state, 'state', external=True) if state else None
+            expected_county = format_name(county, 'county', external=True) if county else None
+            expected_city = format_name(city, 'city', external=True) if city else None
+        elif layer_level == 'state_county':
+            # County-level entities: require state, county; city optional
+            expected_state = format_name(state, 'state', external=True) if state else None
+            expected_county = format_name(county, 'county', external=True) if county else None
+            expected_city = None  # Optional for county-level
+        elif layer_level == 'state':
+            # State-level entities: require state only
+            expected_state = format_name(state, 'state', external=True) if state else None
             expected_county = None
             expected_city = None
-        elif self.cfg.layer == 'flood_zones':
+        elif layer_level == 'national':
+            # National-level entities: require none of state/county/city
             expected_state = None
             expected_county = None
             expected_city = None
+        else:
+            # Unknown layer level - this is an error
+            self.logger.error(f"Unknown layer level '{layer_level}' for layer '{self.cfg.layer}' in LAYER_CONFIGS")
+            return None
         
         # Check each record for valid values matching expected values
         valid_records = []
@@ -2677,14 +2685,35 @@ class LayersPrescrape:
             layer_subgroup_matches = (layer_subgroup_valid and 
                                     str(record_layer_subgroup).strip().upper() == expected_layer_subgroup.upper())
             
-            # Record is valid if required fields have values and match expected values
-            # For county-level entities, city can be empty/null
-            required_fields_valid = state_valid and county_valid and layer_subgroup_valid
-            required_fields_match = state_matches and county_matches and layer_subgroup_matches
-            
-            # City field is optional for county-level entities
-            city_acceptable = (not expected_city) or city_valid or (not city_valid and not expected_city)
-            city_matches_acceptable = (not expected_city) or city_matches
+            # Determine required fields based on layer level
+            if layer_level == 'state_county_city':
+                # City-level: require state, county, city, layer_subgroup
+                required_fields_valid = state_valid and county_valid and city_valid and layer_subgroup_valid
+                required_fields_match = state_matches and county_matches and city_matches and layer_subgroup_matches
+                city_acceptable = True  # City is required, so if it's valid it's acceptable
+                city_matches_acceptable = True  # City is required, so if it matches it's acceptable
+            elif layer_level == 'state_county':
+                # County-level: require state, county, layer_subgroup; city optional
+                required_fields_valid = state_valid and county_valid and layer_subgroup_valid
+                required_fields_match = state_matches and county_matches and layer_subgroup_matches
+                city_acceptable = True  # City is optional, so always acceptable
+                city_matches_acceptable = True  # City is optional, so always acceptable
+            elif layer_level == 'state':
+                # State-level: require state, layer_subgroup; county/city optional
+                required_fields_valid = state_valid and layer_subgroup_valid
+                required_fields_match = state_matches and layer_subgroup_matches
+                city_acceptable = True  # City is optional
+                city_matches_acceptable = True  # City is optional
+            elif layer_level == 'national':
+                # National-level: require only layer_subgroup; state/county/city optional
+                required_fields_valid = layer_subgroup_valid
+                required_fields_match = layer_subgroup_matches
+                city_acceptable = True  # City is optional
+                city_matches_acceptable = True  # City is optional
+            else:
+                # Unknown layer level - this is an error
+                self.logger.error(f"Unknown layer level '{layer_level}' for layer '{self.cfg.layer}' in validation logic")
+                return None
             
 
             
