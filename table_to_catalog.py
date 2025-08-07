@@ -339,7 +339,7 @@ def main():
                         "",  # src_url_file
                         "",  # format
                         "",  # format_subtype
-                        "",  # download
+                        "AUTO",  # download
                         "",  # resource
                         expected.get("layer_group", ""),
                         expected.get("layer_subgroup", ""),

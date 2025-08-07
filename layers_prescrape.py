@@ -1753,6 +1753,8 @@ class LayersPrescrape:
                     row_values = [entity]
                     for field in headers[1:]:  # Skip 'entity'
                         value = record.get(field, '')
+                        if not value and field == 'download':
+                            value = 'AUTO'
                         row_values.append(str(value) if value else '')
                     new_rows.append(row_values)
                     existing_entities.add(entity)
