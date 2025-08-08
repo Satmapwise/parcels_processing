@@ -1325,10 +1325,92 @@ def layer_upload(layer: str, entity: str, state: str, county: str, city: str, ca
         
         # Check if the UPDATE actually affected any rows
         if output and 'UPDATE 0' in output:
-            error_msg = f"No matching record found in database for layer='{layer}', county='{county}', city='{city}'"
-            logger.error(error_msg)
-            _update_csv_status(layer, entity, 'upload', 'FAILED', error_msg, entity_components=entity_components)
-            raise UploadError(error_msg, layer, entity)
+            # It's possible that 0 rows were affected because the record already matches
+            # the intended values. Verify by selecting the target row and comparing fields.
+            try:
+                fields_to_check = [clause.split(' = ')[0] for clause in set_clauses]
+
+                # Map column name -> expected value from placeholders used in UPDATE
+                column_to_expected_value = {}
+                for column_name in fields_to_check:
+                    if column_name == 'publish_date':
+                        column_to_expected_value[column_name] = placeholders.get('publish_date', '')
+                    elif column_name == 'data_date':
+                        column_to_expected_value[column_name] = placeholders.get('data_date', '')
+                    elif column_name == 'srs_epsg':
+                        column_to_expected_value[column_name] = placeholders.get('epsg', '')
+                    elif column_name == 'sys_raw_file':
+                        column_to_expected_value[column_name] = placeholders.get('shp', '')
+                    elif column_name == 'field_names':
+                        column_to_expected_value[column_name] = placeholders.get('field_names', '')
+                    elif column_name == 'sys_raw_file_zip':
+                        column_to_expected_value[column_name] = placeholders.get('raw_zip', '')
+                    else:
+                        # Fallback: do not check unknown columns
+                        column_to_expected_value[column_name] = None
+
+                select_sql = (
+                    "SELECT " + ", ".join(fields_to_check) + " FROM m_gis_data_catalog_main "
+                    "WHERE layer_subgroup = '{layer}' AND county = '{county}' AND city = '{city}';"
+                ).format(**placeholders)
+
+                # Use unaligned, tuples-only output with a safe delimiter for parsing
+                verify_cmd = ['psql', '-d', 'gisdev', '-U', 'postgres', '-t', '-A', '-F', '|', '-c', select_sql]
+                verify_output = _run_command(verify_cmd, work_dir, logger) or ''
+                verify_output = verify_output.strip()
+
+                if not verify_output:
+                    # No row matched the WHERE clause; this is a genuine failure
+                    error_msg = (
+                        f"No matching record found in database for layer='{layer}', county='{county}', city='{city}'"
+                    )
+                    logger.error(error_msg)
+                    _update_csv_status(layer, entity, 'upload', 'FAILED', error_msg, entity_components=entity_components)
+                    raise UploadError(error_msg, layer, entity)
+
+                # If multiple rows come back (unexpected), just take the first line
+                first_line = verify_output.splitlines()[0]
+                db_values = first_line.split('|') if first_line else []
+
+                # Compare values (string comparison); skip columns where expected value is None
+                all_match = True
+                for idx, column_name in enumerate(fields_to_check):
+                    expected_value = column_to_expected_value.get(column_name)
+                    if expected_value is None:
+                        continue
+                    db_value = db_values[idx] if idx < len(db_values) else ''
+                    if str(db_value) != str(expected_value):
+                        all_match = False
+                        logger.debug(
+                            f"[UPLOAD] Mismatch for column '{column_name}': db='{db_value}' vs expected='{expected_value}'"
+                        )
+                        break
+
+                if all_match:
+                    # Treat as success: record already up to date
+                    info_msg = (
+                        f"No changes applied for {layer}/{entity}: targeted record already up to date"
+                    )
+                    logger.info(info_msg)
+                    data_date = metadata.get('data_date', publish_date)
+                    _update_csv_status(layer, entity, 'upload', 'SUCCESS', data_date=data_date, entity_components=entity_components)
+                    _debug_main(f"[UPLOAD] Catalog metadata already current for {layer}/{entity}", logger)
+                    return
+                else:
+                    # Row exists but values differ — treat as failure
+                    error_msg = (
+                        f"UPDATE 0 for layer='{layer}', county='{county}', city='{city}', and values differ from intended update"
+                    )
+                    logger.error(error_msg)
+                    _update_csv_status(layer, entity, 'upload', 'FAILED', error_msg, entity_components=entity_components)
+                    raise UploadError(error_msg, layer, entity)
+
+            except Exception as inner_e:
+                # Any verification error should be treated as upload failure
+                error_msg = f"Upload verification failed: {inner_e}"
+                logger.error(error_msg)
+                _update_csv_status(layer, entity, 'upload', 'FAILED', error_msg, entity_components=entity_components)
+                raise UploadError(error_msg, layer, entity) from inner_e
         
         data_date = metadata.get('data_date', publish_date)
         _update_csv_status(layer, entity, 'upload', 'SUCCESS', data_date=data_date, entity_components=entity_components)
