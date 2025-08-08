@@ -1753,7 +1753,7 @@
     "state": "MANUAL_REQUIRED"
   },
   "parcel_geo_fl_lee": {
-    "src_url_file": "MANUAL_REQUIRED",
+    "src_url_file": "URL_DEPRECATED",
     "fields_obj_transform": "parcel_id:strap, parcel_id2:trsparcel, parcel_alt_key:folioid",
     "state": "MANUAL_REQUIRED"
   },
@@ -1959,830 +1959,1096 @@
     "fields_obj_transform": "flu_code:fluc"
   },
   "parcel_geo_al_autauga": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_al_baldwin": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_al_barbour": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_al_bibb": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_al_blount": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_al_bullock": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_al_butler": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_al_calhoun": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_al_chambers": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_al_cherokee": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_al_chilton": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_al_choctaw": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_al_clarke": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_al_clay": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_al_cleburne": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_al_coffee": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_al_colbert": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_al_conecuh": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_al_coosa": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_al_covington": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_al_crenshaw": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_al_cullman": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_al_dale": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_al_dallas": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_al_dekalb": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_al_elmore": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_al_escambia": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_al_etowah": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_al_fayette": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_al_franklin": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_al_geneva": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_al_greene": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_al_hale": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_al_henry": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_al_houston": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_al_jackson": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_al_jefferson": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_al_lamar": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_al_lauderdale": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_al_lawrence": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_al_lee": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_al_limestone": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_al_lowndes": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_al_macon": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_al_madison": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_al_marengo": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_al_marion": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_al_marshall": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_al_mobile": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_al_monroe": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_al_montgomery": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_al_morgan": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_al_perry": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_al_pickens": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_al_pike": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_al_randolph": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_al_russell": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_al_shelby": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_al_st_clair": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_al_sumter": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_al_talladega": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_al_tallapoosa": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_al_tuscaloosa": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_al_walker": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_al_washington": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_al_wilcox": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_al_winston": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_de_sussex": {
     "fields_obj_transform": "parcel_id:pin"
   },
   "parcel_geo_fl_baker": {
-    "fields_obj_transform": "parcel_id:parcelno"
+    "fields_obj_transform": "parcel_id:parcelno",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_fl_bradford": {
-    "fields_obj_transform": "parcel_id:parcelno"
+    "fields_obj_transform": "parcel_id:parcelno",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_fl_calhoun": {
-    "fields_obj_transform": "parcel_id:parcelno"
+    "fields_obj_transform": "parcel_id:parcelno",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_fl_columbia": {
-    "fields_obj_transform": "parcel_id:parcelno"
+    "fields_obj_transform": "parcel_id:parcelno",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_fl_dixie": {
-    "fields_obj_transform": "parcel_id:parcelno"
+    "fields_obj_transform": "parcel_id:parcelno",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_fl_escambia": {
     "fields_obj_transform": "parcel_id:refno, parcel_alt_key:folio",
     "state": "MANUAL_REQUIRED"
   },
   "parcel_geo_fl_franklin": {
-    "fields_obj_transform": "parcel_id:parcelno"
+    "fields_obj_transform": "parcel_id:parcelno",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_fl_gadsden": {
-    "fields_obj_transform": "parcel_id:parcelno"
+    "fields_obj_transform": "parcel_id:parcelno",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_fl_gilchrist": {
-    "fields_obj_transform": "parcel_id:parcelno"
+    "fields_obj_transform": "parcel_id:parcelno",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_fl_glades": {
-    "fields_obj_transform": "parcel_id:parcelno"
+    "fields_obj_transform": "parcel_id:parcelno",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_fl_gulf": {
-    "fields_obj_transform": "parcel_id:parcelno"
+    "fields_obj_transform": "parcel_id:parcelno",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_fl_hamilton": {
-    "fields_obj_transform": "parcel_id:parcelno"
+    "fields_obj_transform": "parcel_id:parcelno",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_fl_hardee": {
-    "fields_obj_transform": "parcel_id:parcelno"
+    "fields_obj_transform": "parcel_id:parcelno",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_fl_hendry": {
     "fields_obj_transform": "parcel_id:parcelno",
     "state": "MANUAL_REQUIRED"
   },
   "parcel_geo_fl_hendry2": {
-    "fields_obj_transform": "parcel_id:parcelno"
+    "fields_obj_transform": "parcel_id:parcelno",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_fl_hernando": {
-    "fields_obj_transform": "parcel_id:parcelno"
+    "fields_obj_transform": "parcel_id:parcelno",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_fl_hillsborough": {
-    "fields_obj_transform": "parcel_id:pin, parcel_alt_key:folio"
+    "fields_obj_transform": "parcel_id:pin, parcel_alt_key:folio",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_fl_holmes": {
-    "fields_obj_transform": "parcel_id:parcelno"
+    "fields_obj_transform": "parcel_id:parcelno",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_fl_jackson": {
-    "fields_obj_transform": "parcel_id:parcelno"
+    "fields_obj_transform": "parcel_id:parcelno",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_fl_jefferson": {
-    "fields_obj_transform": "parcel_id:parcelno"
+    "fields_obj_transform": "parcel_id:parcelno",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_fl_lafayette": {
-    "fields_obj_transform": "parcel_id:parcelno"
+    "fields_obj_transform": "parcel_id:parcelno",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_fl_levy": {
-    "fields_obj_transform": "parcel_id:parcelno"
+    "fields_obj_transform": "parcel_id:parcelno",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_fl_liberty": {
-    "fields_obj_transform": "parcel_id:parcelno"
+    "fields_obj_transform": "parcel_id:parcelno",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_fl_madison": {
-    "fields_obj_transform": "parcel_id:parcelno"
+    "fields_obj_transform": "parcel_id:parcelno",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_fl_manatee": {
     "fields_obj_transform": "parcel_id:parcelno"
   },
   "parcel_geo_fl_marion": {
-    "fields_obj_transform": "parcel_id:parcelno"
+    "fields_obj_transform": "parcel_id:parcelno",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_fl_marion2": {
-    "fields_obj_transform": "parcel_id:parcel"
+    "fields_obj_transform": "parcel_id:parcel",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_fl_miami-dade": {
     "fields_obj_transform": "parcel_id:folio"
   },
   "parcel_geo_fl_monroe": {
-    "fields_obj_transform": "parcel_id:parcelno, parcel_id2:rechar"
+    "fields_obj_transform": "parcel_id:parcelno, parcel_id2:rechar",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_fl_nassau": {
-    "fields_obj_transform": "parcel_id:parcelno"
+    "fields_obj_transform": "parcel_id:parcelno",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_fl_okeechobee": {
-    "fields_obj_transform": "parcel_id:parcelno"
+    "fields_obj_transform": "parcel_id:parcelno",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_fl_putnam": {
-    "fields_obj_transform": "parcel_id:parcelno"
+    "fields_obj_transform": "parcel_id:parcelno",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_fl_sumter3": {
-    "fields_obj_transform": "parcel_id:parcelno"
+    "fields_obj_transform": "parcel_id:parcelno",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_fl_suwannee": {
-    "fields_obj_transform": "parcel_id:parcelno"
+    "fields_obj_transform": "parcel_id:parcelno",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_fl_taylor": {
-    "fields_obj_transform": "parcel_id:parcelno"
+    "fields_obj_transform": "parcel_id:parcelno",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_fl_union": {
-    "fields_obj_transform": "parcel_id:parcelno"
+    "fields_obj_transform": "parcel_id:parcelno",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_fl_wakulla": {
-    "fields_obj_transform": "parcel_id:parcelno"
+    "fields_obj_transform": "parcel_id:parcelno",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_fl_washington": {
-    "fields_obj_transform": "parcel_id:parcelno"
+    "fields_obj_transform": "parcel_id:parcelno",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_appling": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_atkinson": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_atkinson_x": {
-    "fields_obj_transform": "parcel_id:parcel_no"
+    "fields_obj_transform": "parcel_id:parcel_no",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_bacon": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_baker": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_baldwin": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_baldwin_x": {
-    "fields_obj_transform": "parcel_id:parid"
+    "fields_obj_transform": "parcel_id:parid",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_banks": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_banks_x": {
-    "fields_obj_transform": "parcel_id:parcel_no"
+    "fields_obj_transform": "parcel_id:parcel_no",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_barrow": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_bartow": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_berrien": {
     "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
     "state": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_bibb": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_bleckley": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_bleckley_x": {
-    "fields_obj_transform": "parcel_id:parcel_no"
+    "fields_obj_transform": "parcel_id:parcel_no",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_brantley": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_brooks": {
     "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
   },
   "parcel_geo_ga_brooks_x": {
-    "fields_obj_transform": "parcel_id:skey, parcel_alt_key:realkey"
+    "fields_obj_transform": "parcel_id:skey, parcel_alt_key:realkey",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_bryan": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_bryan_x": {
-    "fields_obj_transform": "parcel_id:parcel_no"
+    "fields_obj_transform": "parcel_id:parcel_no",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_bulloch": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_burke": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_burke_x": {
-    "fields_obj_transform": "parcel_id:parcel_no"
+    "fields_obj_transform": "parcel_id:parcel_no",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_butts": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_calhoun": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_camden": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_candler": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_candler_x": {
-    "fields_obj_transform": "parcel_id:parcel_no"
+    "fields_obj_transform": "parcel_id:parcel_no",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_carroll": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_carroll_x": {
-    "fields_obj_transform": "parcel_id:parcel_no"
+    "fields_obj_transform": "parcel_id:parcel_no",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_catoosa": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_charlton": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_chatham": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_chattahoochee": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_chattooga": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_cherokee": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_clarke": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_clay": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_clay_x": {
-    "fields_obj_transform": "parcel_id:parcel_no"
+    "fields_obj_transform": "parcel_id:parcel_no",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_clayton": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_clayton_x": {
-    "fields_obj_transform": "parcel_id:parcel_no"
+    "fields_obj_transform": "parcel_id:parcel_no",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_clinch": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_clinch_x": {
-    "fields_obj_transform": "parcel_id:pin"
+    "fields_obj_transform": "parcel_id:pin",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_cobb": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_colquitt": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_columbia": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_coweta": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_crawford": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_crisp": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_dade": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_dawson": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_decatur": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_dekalb": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_dodge": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_dooly": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_dougherty": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_douglas": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_early": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_echols": {
     "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
     "state": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_effingham": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_elbert": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_emanuel": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_evans": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_fannin": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_fayette": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_floyd": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_forsyth": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_franklin": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_fulton": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_gilmer": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_glascock": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_glynn": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_gordon": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_grady": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_greene": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_gwinnett": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_habersham": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_hall": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_hancock": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_haralson": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_harris": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_hart": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_heard": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_henry": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_houston": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_jackson": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_jasper": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_jeffdavis": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_jefferson": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_jenkins": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_johnson": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_jones": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_lamar": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_lanier": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_laurens": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_lee": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_liberty": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_lincoln": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_long": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_lumpkin": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_macon": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_madison": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_marion": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_mcduffie": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_mcintosh": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_meriwether": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_miller": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_mitchell": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_monroe": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_montgomery": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_morgan": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_murray": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_muscogee": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_newton": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_oconee": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_oglethorpe": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_paulding": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_peach": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_pickens": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_pierce": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_pike": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_polk": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_pulaski": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_putnam": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_quitman": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_rabun": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_randolph": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_richmond": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_rockdale": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_schley": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_schley_x": {
-    "fields_obj_transform": "parcel_id:parcel_no"
+    "fields_obj_transform": "parcel_id:parcel_no",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_screven": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_seminole": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_spalding": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_stephens": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_stewart": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_sumter": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_talbot": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_talbot_x": {
-    "fields_obj_transform": "parcel_id:parcel_no"
+    "fields_obj_transform": "parcel_id:parcel_no",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_taliaferro": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_tattnall": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_taylor": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_telfair": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_terrell": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_thomas": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_tift": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_toombs": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_towns": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_treutlen": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_troup": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_turner": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_twiggs": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_union": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_upson": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_walker": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_walton": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_ware": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_warren": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_washington": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_wayne": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_webster": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_wheeler": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_white": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_whitfield": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_wilcox": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_wilkes": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_wilkinson": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "parcel_geo_ga_worth": {
-    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2"
+    "fields_obj_transform": "parcel_id:id, parcel_id2:apn, parcel_alt_key:apn2",
+    "src_url_file": "MANUAL_REQUIRED"
   },
   "zoning_fl_leon_county_unified": {
     "fields_obj_transform": "zon_code:zoning, zon_code2:jurisdicti, zon_desc:zoned"
@@ -2974,5 +3240,8 @@
   },
   "flu_de_sussex_unified": {
     "fields_obj_transform": "MANUAL_REQUIRED"
+  },
+  "parcel_geo_ga_jeff_davis": {
+    "src_url_file": "MANUAL_REQUIRED"
   }
 }

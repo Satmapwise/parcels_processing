@@ -203,10 +203,21 @@ def parse_title_to_entity(title: str) -> Tuple[Optional[str], Optional[str], Opt
     
     # Handle Parcel Polygons and Parcel Geometry titles
     if "parcel polygons" in title_lower or "parcel geometry" in title_lower:
-        # Parse format: "Parcel Polygons - {County}" or "Parcel Geometry - {County}"
+        # Parse format variants:
+        #   "Parcel Geometry - {County} County {ST}"
+        #   "Parcel Polygons - {County} {ST}"
+        #   "Parcel Geometry - {County}"
+        # Extract the portion after " - " and remove trailing state/suffix tokens
         try:
-            layer_part, rest = title.split(" - ", 1)
-            county = format_name(rest.strip(), 'county', external=False)
+            _, rest = title.split(" - ", 1)
+            rest_clean = rest.strip()
+            # Remove trailing state abbreviation (e.g., GA, AL) if present
+            rest_clean = re.sub(r"\s+[A-Z]{2}$", "", rest_clean)
+            # Remove trailing county-type words (County, Parish, Borough)
+            rest_clean = re.sub(r"\s+(County|Parish|Borough)$", "", rest_clean, flags=re.I)
+            # Also handle patterns like "Jeff Davis County GA"
+            rest_clean = re.sub(r"\s+(County|Parish|Borough)\s+[A-Z]{2}$", "", rest_clean, flags=re.I)
+            county = format_name(rest_clean.strip(), 'county', external=False)
             return ("parcel_geo", county, None, "county")
         except ValueError:
             # Fallback if no " - " separator
@@ -1027,6 +1038,7 @@ class LayersPrescrape:
         
         # Separate unique records, duplicates, and errors
         csv_rows = [headers]
+        rows_for_counts = []  # Only rows that represent a single printed record (unique or resolved dup)
         duplicate_groups = []
         error_records = []
         unique_entities = 0
@@ -1044,6 +1056,7 @@ class LayersPrescrape:
             elif len(records_for_entity) == 1:
                 # Single record for this entity
                 csv_rows.append(records_for_entity[0])
+                rows_for_counts.append(records_for_entity[0])
                 unique_entities += 1
             else:
                 # Multiple records (duplicates) - try to resolve
@@ -1059,6 +1072,7 @@ class LayersPrescrape:
                         else:
                             resolved_row_values.append("")
                     csv_rows.append(resolved_row_values)
+                    rows_for_counts.append(resolved_row_values)
                     unique_entities += 1
                     self.logger.info(f"Resolved duplicate entity '{entity}' - using record with valid field values")
                 else:
@@ -1070,10 +1084,16 @@ class LayersPrescrape:
         
         # Add summary row showing field completion rates and duplicate info
         csv_rows.append([])
+        # Recompute counts based on rows actually printed (unique + resolved duplicates)
+        denom = len(rows_for_counts)
         summary_row = ["SUMMARY"]
-        for field in headers[1:]:
-            count = field_counts[field]
-            summary_row.append(f"{count}/{total_records}")
+        for idx, field in enumerate(headers[1:], start=1):
+            non_empty = 0
+            for row in rows_for_counts:
+                val = row[idx] if idx < len(row) else ""
+                if val and val.strip() and val != "DUPLICATE":
+                    non_empty += 1
+            summary_row.append(f"{non_empty}/{denom}")
         csv_rows.append(summary_row)
         
         # Add entity count summary (split across multiple rows for readability)
@@ -1237,6 +1257,12 @@ class LayersPrescrape:
         # Pre-validate all URLs in batch for better performance
         self._batch_validate_urls(valid_records)
         
+        # Build a set of all existing titles (lowercased) to avoid proposing duplicate new_title values
+        try:
+            self._existing_titles_lower = {str(rec.get('title') or '').strip().lower() for rec in records}
+        except Exception:
+            self._existing_titles_lower = set()
+
         # Process each valid record
         csv_rows = [headers]
         healthy_counts = {field: 0 for field in headers[1:]}  # Skip 'entity' 
@@ -1963,6 +1989,32 @@ class LayersPrescrape:
             city_std = "unified"
         else:
             city_std = city
+
+        # Intelligent fallback for county-level layers: if parsed county is missing or not recognized,
+        # use the database county field instead of treating the token as a city.
+        if layer_level == 'state_county':
+            state_key = (state or '').lower()
+            known = STATE_COUNTIES.get(state_key, set()) if state_key else set()
+            county_is_valid = (county in known) if county else False
+            if not county_is_valid:
+                db_county_val = record.get('county') or ''
+                if db_county_val:
+                    # Convert to internal and attempt to snap to a known county by compact match
+                    candidate_internal = format_name(db_county_val, 'county', external=False)
+                    if state_key and known:
+                        def _compact(s: str) -> str:
+                            return re.sub(r'[^a-z0-9]+', '', s or '')
+                        cand_compact = _compact(candidate_internal)
+                        best = None
+                        for k in known:
+                            if _compact(k) == cand_compact:
+                                best = k
+                                break
+                        county = best or candidate_internal
+                    else:
+                        county = candidate_internal
+                    # For county-level layers, ignore any mistakenly parsed city
+                    city_std = None
         
         # Generate expected values for all layer types
         layer_internal = format_name(self.cfg.layer, 'layer', external=False)
@@ -2002,6 +2054,13 @@ class LayersPrescrape:
                     expected = f"{layer_external} - {county_external} County {state_abbrev}"
                 else:
                     expected = f"{layer_external} - {city_external} {state_abbrev}"
+            # If expected equals an existing original title anywhere in dataset, suppress to avoid duplicates
+            try:
+                if expected and hasattr(self, '_existing_titles_lower'):
+                    if expected.strip().lower() in self._existing_titles_lower:
+                        return ""
+            except Exception:
+                pass
             
             return expected if actual_title != expected else ""
         

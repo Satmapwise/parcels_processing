@@ -104,7 +104,7 @@ AL_COUNTIES = {
     "crenshaw", "cullman", "dale", "dallas", "dekalb", "elmore", "escambia", "etowah", "fayette", "franklin", 
     "geneva", "greene", "hale", "henry", "houston", "jackson", "jefferson", "lamar", "lauderdale", "lawrence", 
     "lee", "limestone", "lowndes", "macon", "madison", "marengo", "marion", "marshall", "mobile", "monroe", 
-    "montgomery", "morgan", "perry", "pickens", "pike", "randolph", "russell", "st._clair", "shelby", "sumter", 
+    "montgomery", "morgan", "perry", "pickens", "pike", "randolph", "russell", "st_clair", "shelby", "sumter", 
     "talladega", "tallapoosa", "tuscaloosa", "walker", "washington", "wilcox", "winston"
     }
 
@@ -288,7 +288,9 @@ def format_name(name: str, name_type: str, external: bool = False) -> str:
         'desoto': 'DeSoto',
         'palm_beach': 'Palm Beach',
         'santa_rosa': 'Santa Rosa',
-        'indian_river': 'Indian River'
+        'indian_river': 'Indian River',
+        'jeff_davis': 'Jeff Davis',
+        'st_clair': 'St. Clair'
     }
     
     # Reverse mapping for counties (external -> internal)
@@ -306,7 +308,13 @@ def format_name(name: str, name_type: str, external: bool = False) -> str:
             return county_special.get(name.lower(), name.replace('_', ' ').title())
         else:
             # Check reverse special cases first
-            return county_special_reverse.get(name.lower(), _to_internal_format(name))
+            base = county_special_reverse.get(name.lower(), _to_internal_format(name))
+            # Normalize common concatenations to underscored forms
+            concat_normalize = {
+                'jeffdavis': 'jeff_davis',
+                'stclair': 'st_clair',
+            }
+            return concat_normalize.get(base, base)
     
     elif name_type == 'city':
         if external:
