@@ -827,11 +827,14 @@ def layer_download(layer: str, entity: str, state: str, county: str, city: str, 
     else:
         if fmt == 'ags':
             selected_method = 'AGS'
-        elif fmt == 'selenium' or _is_arcgis_hub_opendata(resource):
-            selected_method = 'SELENIUM'
-            _debug_main(f"[DOWNLOAD] Auto-detected ArcGIS Hub/OpenData URL; using SELENIUM for {layer}/{entity}", logger)
         else:
-            selected_method = 'WGET'
+            # Auto-detect using ONLY src_url_file (download URL)
+            hub_candidate = (catalog_row.get('src_url_file') or '').strip()
+            if fmt == 'selenium' or _is_arcgis_hub_opendata(hub_candidate):
+                selected_method = 'SELENIUM'
+                _debug_main(f"[DOWNLOAD] Auto-detected ArcGIS Hub/OpenData URL; using SELENIUM for {layer}/{entity}", logger)
+            else:
+                selected_method = 'WGET'
 
     # Build command based on selected method
     if selected_method == 'AGS':
@@ -858,8 +861,10 @@ def layer_download(layer: str, entity: str, state: str, county: str, city: str, 
         # Use modular Selenium downloader when available
         if _selenium_download_opendata is None or _selenium_init is None:
             raise DownloadError('Selenium downloader not available in environment', layer, entity)
-        # Determine URL and target directory
-        sel_url = resource
+        # Determine URL and target directory (use src_url_file ONLY)
+        sel_url = (catalog_row.get('src_url_file') or '').strip()
+        if not sel_url:
+            raise DownloadError('Missing src_url_file for Selenium download', layer, entity)
         target_dir = work_dir  # use resolved work_dir as target
 
         # Initialize shared driver lazily (per process)
@@ -927,13 +932,24 @@ def layer_download(layer: str, entity: str, state: str, county: str, city: str, 
                 _debug_main(f"[DOWNLOAD] Found zip file among Selenium changes: {zip_file}", logger)
                 data_date = zip_processing(zip_file, work_dir, logger)
 
-            # Data validation on changed files (including extracted from zip if any)
-            # If we processed a zip, collect extracted files to include
+            # Data validation on changed files (including extracted/modified from zip if any)
             if zip_file:
                 post_unzip_state = _get_directory_state(work_dir)
-                extracted_files = [name for name in post_unzip_state.keys() if name not in before_state]
-                changed_files = list({*changed_files, *[os.path.join(work_dir, f) for f in extracted_files]})
-            _validate_data_files([os.path.basename(p) for p in changed_files], fmt_lower, work_dir, logger)
+                extracted_or_modified = []
+                for name, mtime in post_unzip_state.items():
+                    if name not in before_state or before_state.get(name) != mtime:
+                        extracted_or_modified.append(name)
+                changed_files = list({*changed_files, *[os.path.join(work_dir, f) for f in extracted_or_modified]})
+            try:
+                _validate_data_files([os.path.basename(p) for p in changed_files], fmt_lower, work_dir, logger)
+            except DownloadError:
+                # Fallback: scan directory for files matching expected format
+                fallback_candidates = _collect_files_matching_format(work_dir, fmt_lower)
+                if fallback_candidates:
+                    logger.debug(f"[DOWNLOAD] Fallback format scan found: {fallback_candidates}")
+                    _validate_data_files(fallback_candidates, fmt_lower, work_dir, logger)
+                else:
+                    raise
             _debug_main(f"[DOWNLOAD] Selenium download and validation passed for {layer}/{entity}", logger)
             _update_csv_status(layer, entity, 'download', 'SUCCESS', entity_components=entity_components)
         except DownloadError as de:
@@ -985,12 +1001,25 @@ def layer_download(layer: str, entity: str, state: str, county: str, city: str, 
                 data_date = zip_processing(zip_file, work_dir, logger)
                 # capture files created by unzip
                 post_unzip_state = _get_directory_state(work_dir)
-                extracted_files = [name for name in post_unzip_state.keys() if name not in pre_unzip_state]
-                # include extracted files in changed files for data validation
-                changed_files = list({*changed_files, *extracted_files})
+                # include files that are new OR modified by the unzip operation
+                extracted_or_modified = []
+                for name, mtime in post_unzip_state.items():
+                    if name not in pre_unzip_state or pre_unzip_state.get(name) != mtime:
+                        extracted_or_modified.append(name)
+                # include extracted/modified files in changed files for data validation
+                changed_files = list({*changed_files, *extracted_or_modified})
 
             # Run data validation on the changed files
-            _validate_data_files(changed_files, fmt, work_dir, logger)
+            try:
+                _validate_data_files(changed_files, fmt, work_dir, logger)
+            except DownloadError:
+                # Fallback: mtime-based change detection may miss files if unzip preserves timestamps
+                fallback_candidates = _collect_files_matching_format(work_dir, fmt)
+                if fallback_candidates:
+                    logger.debug(f"[DOWNLOAD] Fallback format scan found: {fallback_candidates}")
+                    _validate_data_files(fallback_candidates, fmt, work_dir, logger)
+                else:
+                    raise
 
             _debug_main(f"[DOWNLOAD] Download and data validation passed for {layer}/{entity}", logger)
             _update_csv_status(layer, entity, 'download', 'SUCCESS', entity_components=entity_components)
@@ -1576,6 +1605,43 @@ def _validate_download(work_dir, logger, before_state=None):
             logger.debug(f"Download validation passed – found recent files: {recent_files_str}")
         
         return True
+
+def _collect_files_matching_format(work_dir: str, fmt: str) -> list[str]:
+    """Return filenames in work_dir that match the expected format.
+
+    Used as a fallback when mtime-based change detection misses files (e.g., unzip preserves timestamps).
+    """
+    fmt_lower = (fmt or '').lower()
+    try:
+        names = os.listdir(work_dir)
+    except OSError:
+        return []
+
+    def matches(name: str) -> bool:
+        n = name.lower()
+        if fmt_lower in {'shp', 'shapefile'}:
+            return n.endswith('.shp')
+        if fmt_lower in {'gdb', 'filegdb', 'file geodatabase'}:
+            return n.endswith('.gdb') and os.path.isdir(os.path.join(work_dir, name))
+        if fmt_lower in {'geojson', 'json'}:
+            return n.endswith('.geojson') or n.endswith('.json')
+        if fmt_lower == 'pdf':
+            return n.endswith('.pdf')
+        if fmt_lower in {'kml', 'kmz'}:
+            return n.endswith('.kml') or n.endswith('.kmz')
+        if fmt_lower in {'csv'}:
+            return n.endswith('.csv')
+        if fmt_lower in {'xlsx', 'xls'}:
+            return n.endswith('.xlsx') or n.endswith('.xls')
+        if fmt_lower in {'tif', 'tiff', 'geotiff'}:
+            return n.endswith('.tif') or n.endswith('.tiff')
+        if fmt_lower in {'mdb', 'accdb'}:
+            return n.endswith('.mdb') or n.endswith('.accdb')
+        if fmt_lower in {'txt'}:
+            return n.endswith('.txt')
+        return False
+
+    return [name for name in names if matches(name)]
 
 
 def _validate_download_and_collect_changes(work_dir, logger, before_state=None):
