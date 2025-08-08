@@ -809,15 +809,27 @@ def layer_download(layer: str, entity: str, state: str, county: str, city: str, 
     resource = catalog_row.get('resource') or catalog_row.get('src_url_file')
     table_name = catalog_row.get('table_name')
 
-    # Determine download method
+    # Helper: detect ArcGIS Hub/OpenData pages
+    def _is_arcgis_hub_opendata(u: str | None) -> bool:
+        if not u:
+            return False
+        u_low = u.lower()
+        # Common Hub/OpenData domains and path hints
+        if 'opendata.arcgis.com' in u_low or 'hub.arcgis.com' in u_low:
+            return True
+        if 'arcgis.com' in u_low and '/datasets/' in u_low:
+            return True
+        return False
+
+    # Determine download method (with temporary auto-detect for Hub/OpenData)
     if download_field in {"AGS", "WGET", "SELENIUM"}:
         selected_method = download_field
     else:
-        # Fallback to format-based logic
         if fmt == 'ags':
             selected_method = 'AGS'
-        elif fmt == 'selenium':
+        elif fmt == 'selenium' or _is_arcgis_hub_opendata(resource):
             selected_method = 'SELENIUM'
+            _debug_main(f"[DOWNLOAD] Auto-detected ArcGIS Hub/OpenData URL; using SELENIUM for {layer}/{entity}", logger)
         else:
             selected_method = 'WGET'
 
