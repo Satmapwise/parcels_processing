@@ -414,7 +414,8 @@ def validate_url_batch(urls: list[str], max_workers: int = 10) -> dict[str, tupl
         for future in concurrent.futures.as_completed(future_to_url):
             url = future_to_url[future]
             try:
-                is_valid, reason = future.result(timeout=15)  # 15 second timeout per URL
+                # Rely on per-request timeouts inside validate_url for determinism
+                is_valid, reason = future.result()
                 results[url] = (is_valid, reason)
             except Exception as e:
                 # If validation fails completely, mark as deprecated
@@ -423,20 +424,14 @@ def validate_url_batch(urls: list[str], max_workers: int = 10) -> dict[str, tupl
     return results
 
 def validate_url(url: str) -> tuple[bool, str]:
-    """Check if URL still serves accessible, fresh geospatial data.
-    
-    Focus on real-world issues that affect data freshness/accessibility:
-    - Authentication now required (401/403)
-    - Data moved/redirected (301/302 chains)
-    - Site abandoned/dead (404/410)
-    - Service discontinued (error responses)
-    - ArcGIS services returning error metadata
-    
-    Returns:
-        tuple[bool, str]: (is_valid, status_reason)
-        - (True, "OK") if URL serves accessible data
-        - (False, "MISSING") if URL is empty/None
-        - (False, "DEPRECATED") if URL has accessibility/freshness issues
+    """Check if URL serves accessible, fresh geospatial data and return a richer reason code.
+
+    Returns tuple (is_valid, reason), where:
+      - True, "OK" means we can access/download
+      - False, "MISSING" means the field is empty
+      - False, reason in {"NOT_FOUND","AUTH_REQUIRED","FORBIDDEN","TEMP_UNAVAILABLE",
+                          "RATE_LIMITED","INVALID_URL","SERVICE_ERROR","INVALID_METADATA",
+                          "MOVED","ERROR"} provides more detail
     """
     import urllib.parse
     import urllib.request
@@ -444,131 +439,170 @@ def validate_url(url: str) -> tuple[bool, str]:
     import socket
     import ssl
     from urllib.error import HTTPError, URLError
-    
+
     if not url or not url.strip():
         return False, "MISSING"
-    
-    url = url.strip()
-    
-    try:
-        # Create request with reasonable timeout and proper user agent
-        req = urllib.request.Request(url)
-        req.add_header('User-Agent', 'Mozilla/5.0 (compatible; LayersPrescrape/1.0; +http://gis-data-scraper)')
-        
-        # For ArcGIS services, check metadata endpoint for service health
-        if any(x in url.lower() for x in ['arcgis', 'featureserver', 'mapserver']):
-            # Try to get service metadata to check if service is healthy
-            metadata_url = url.rstrip('/') + '?f=json'
+
+    original_url = url.strip()
+
+    # Helper to safely append/merge f=json
+    def build_metadata_url(base_url: str) -> str:
+        from urllib.parse import urlsplit, urlunsplit, parse_qsl, urlencode
+        parts = urlsplit(base_url)
+        query = dict(parse_qsl(parts.query))
+        query['f'] = 'json'
+        return urlunsplit((parts.scheme, parts.netloc, parts.path.rstrip('/'), urlencode(query), parts.fragment))
+
+    # Normalize scheme if missing and validate structure
+    def normalize_url_if_needed(u: str) -> tuple[str, bool]:
+        parsed = urllib.parse.urlparse(u)
+        if not parsed.scheme:
+            # Try https:// fallback once
+            return 'https://' + u, True
+        if parsed.scheme not in { 'http', 'https' } or not parsed.netloc:
+            return u, False
+        return u, True
+
+    # Follow limited redirects manually when required and resolve relative locations
+    def resolve_redirect(current_url: str, location: str) -> str:
+        from urllib.parse import urljoin
+        return urljoin(current_url, location)
+
+    def make_request(req: urllib.request.Request, timeout_seconds: int):
+        return urllib.request.urlopen(req, timeout=timeout_seconds)
+
+    def validate_internal(check_url: str, redirect_depth: int = 0) -> tuple[bool, str]:
+        # ArcGIS REST services: validate via metadata endpoint
+        if is_arcgis_service_url(check_url):
             try:
+                metadata_url = build_metadata_url(check_url)
                 metadata_req = urllib.request.Request(metadata_url)
                 metadata_req.add_header('User-Agent', 'Mozilla/5.0 (compatible; LayersPrescrape/1.0)')
-                
-                with urllib.request.urlopen(metadata_req, timeout=5) as response:
-                    if response.getcode() == 200:
-                        # Read more content for ArcGIS services (they can be large)
-                        content = response.read(20480).decode('utf-8', errors='ignore')  # 20KB should be enough
-                        
-                        # Quick check for obvious issues before JSON parsing
-                        content_lower = content.lower()
-                        if 'authentication' in content_lower or 'login required' in content_lower:
-                            return False, "DEPRECATED"  # Now requires auth
-                        
-                        # Check for error patterns in raw content (handles truncated JSON)
+                with make_request(metadata_req, timeout_seconds=10) as response:
+                    code = response.getcode()
+                    if code == 200:
+                        content = response.read(32768).decode('utf-8', errors='ignore')  # 32KB
+                        lower = content.lower()
+                        if 'authentication' in lower or 'login required' in lower:
+                            return False, 'AUTH_REQUIRED'
                         if '"error"' in content and 'code' in content:
-                            return False, "DEPRECATED"  # Service returns error
-                        
-                        # Look for positive indicators that suggest a working service
-                        positive_indicators = [
-                            '"name":', '"type":', '"geometryType":', '"fields":', 
-                            '"currentVersion":', '"serviceItemId":', '"defaultVisibility":'
-                        ]
-                        
-                        if any(indicator in content for indicator in positive_indicators):
+                            return False, 'SERVICE_ERROR'
+                        positive = ['"name":', '"type":', '"geometryType":', '"fields":', '"currentVersion":', '"serviceItemId":', '"defaultVisibility":', '"extent"']
+                        if any(tok in content for tok in positive):
                             try:
-                                # Try to parse JSON if it looks promising
                                 metadata = json.loads(content)
-                                
-                                # Double-check for errors in parsed JSON
                                 if 'error' in metadata:
-                                    return False, "DEPRECATED"  # Service returns error
-                                
-                                # Check if service has valid geospatial metadata  
-                                if any(key in metadata for key in ['name', 'type', 'geometryType', 'fields', 'extent']):
-                                    return True, "OK"  # Looks like healthy service
-                                else:
-                                    return False, "DEPRECATED"  # Missing expected metadata
-                                    
+                                    return False, 'SERVICE_ERROR'
+                                if any(k in metadata for k in ['name','type','geometryType','fields','extent']):
+                                    return True, 'OK'
+                                return False, 'INVALID_METADATA'
                             except json.JSONDecodeError:
-                                # JSON truncated or malformed, but has positive indicators
-                                # This is likely a valid service with large metadata
-                                return True, "OK"
-                        else:
-                            return False, "DEPRECATED"  # No positive indicators found
+                                # Truncated but looks valid
+                                return True, 'OK'
+                        return False, 'INVALID_METADATA'
+                    elif code in (401,):
+                        return False, 'AUTH_REQUIRED'
+                    elif code in (403,):
+                        return False, 'FORBIDDEN'
+                    elif code in (404, 410):
+                        return False, 'NOT_FOUND'
+                    elif code in (429,):
+                        return False, 'RATE_LIMITED'
                     else:
-                        return False, "DEPRECATED"
+                        return False, 'ERROR'
             except HTTPError as e:
-                if e.code in [401, 403]:
-                    return False, "DEPRECATED"  # Authentication required
-                else:
-                    pass  # Fall through to regular request
-            except:
-                pass  # Fall through to regular HEAD request
-        
-        # For non-ArcGIS URLs or if ArcGIS metadata failed, check basic accessibility
-        req.get_method = lambda: 'HEAD'
-        
-        with urllib.request.urlopen(req, timeout=5) as response:
-            status_code = response.getcode()
-            
-            if status_code == 200:
-                # Check for reasonable file size (avoid tiny error pages)
-                content_length = response.headers.get('content-length')
-                if content_length and int(content_length) < 50:
-                    return False, "DEPRECATED"  # Suspiciously small file
-                
-                # Check last-modified to detect stale data (optional)
-                last_modified = response.headers.get('last-modified')
-                # TODO: Could add staleness detection here if needed
-                
-                return True, "OK"
-            
-            elif status_code in [301, 302, 303, 307, 308]:
-                # Data has moved - follow redirect once to check final destination
-                location = response.headers.get('location')
-                if location and location != url:  # Avoid infinite loops
-                    return validate_url(location)
-                else:
-                    return False, "DEPRECATED"  # Redirect without location
-            
-            elif status_code in [404, 410]:
-                return False, "DEPRECATED"  # Resource not found/gone
-            
-            elif status_code in [401, 403]:
-                return False, "DEPRECATED"  # Authentication/authorization required
-            
+                if e.code == 401:
+                    return False, 'AUTH_REQUIRED'
+                if e.code == 403:
+                    return False, 'FORBIDDEN'
+                if e.code in (404, 410):
+                    return False, 'NOT_FOUND'
+                if e.code == 429:
+                    return False, 'RATE_LIMITED'
+                return False, 'ERROR'
+            except (URLError, socket.timeout, ssl.SSLError, ConnectionError):
+                return False, 'TEMP_UNAVAILABLE'
+            except Exception:
+                return False, 'ERROR'
+
+        # Non-ArcGIS or fallback: try HEAD first
+        try:
+            head_req = urllib.request.Request(check_url)
+            head_req.add_header('User-Agent', 'Mozilla/5.0 (compatible; LayersPrescrape/1.0; +http://gis-data-scraper)')
+            head_req.get_method = lambda: 'HEAD'
+            with make_request(head_req, timeout_seconds=7) as response:
+                status_code = response.getcode()
+                if status_code == 200:
+                    content_length = response.headers.get('content-length')
+                    if content_length and int(content_length) < 50:
+                        return False, 'ERROR'
+                    return True, 'OK'
+                if status_code in (301, 302, 303, 307, 308):
+                    location = response.headers.get('location')
+                    if location and redirect_depth < 3:
+                        return validate_internal(resolve_redirect(check_url, location), redirect_depth + 1)
+                    return False, 'MOVED'
+                if status_code in (404, 410):
+                    return False, 'NOT_FOUND'
+                if status_code == 401:
+                    return False, 'AUTH_REQUIRED'
+                if status_code == 403:
+                    return False, 'FORBIDDEN'
+                if status_code == 429:
+                    return False, 'RATE_LIMITED'
+                return False, 'ERROR'
+        except HTTPError as e:
+            # Some servers reject HEAD with 405 → retry with GET + Range
+            if e.code == 405:
+                try:
+                    get_req = urllib.request.Request(check_url)
+                    get_req.add_header('User-Agent', 'Mozilla/5.0 (compatible; LayersPrescrape/1.0)')
+                    get_req.add_header('Range', 'bytes=0-0')
+                    with make_request(get_req, timeout_seconds=7) as response:
+                        if response.getcode() in (200, 206):
+                            return True, 'OK'
+                        return False, 'ERROR'
+                except HTTPError as ge:
+                    if ge.code == 401:
+                        return False, 'AUTH_REQUIRED'
+                    if ge.code == 403:
+                        return False, 'FORBIDDEN'
+                    if ge.code in (404, 410):
+                        return False, 'NOT_FOUND'
+                    if ge.code == 429:
+                        return False, 'RATE_LIMITED'
+                    return False, 'ERROR'
+                except (URLError, socket.timeout, ssl.SSLError, ConnectionError):
+                    return False, 'TEMP_UNAVAILABLE'
+                except Exception:
+                    return False, 'ERROR'
+            elif e.code in (301, 302, 303, 307, 308):
+                location = e.headers.get('location') if hasattr(e, 'headers') else None
+                if location and redirect_depth < 3:
+                    return validate_internal(resolve_redirect(check_url, location), redirect_depth + 1)
+                return False, 'MOVED'
+            elif e.code == 401:
+                return False, 'AUTH_REQUIRED'
+            elif e.code == 403:
+                return False, 'FORBIDDEN'
+            elif e.code in (404, 410):
+                return False, 'NOT_FOUND'
+            elif e.code == 429:
+                return False, 'RATE_LIMITED'
             else:
-                return False, "DEPRECATED"  # Other HTTP errors
-    
-    except HTTPError as e:
-        # Handle specific HTTP errors that indicate accessibility issues
-        if e.code == 401:
-            return False, "DEPRECATED"  # Authentication required
-        elif e.code == 403:
-            return False, "DEPRECATED"  # Access denied (new restrictions)
-        elif e.code in [404, 410]:
-            return False, "DEPRECATED"  # Resource not found/gone
-        elif e.code == 429:
-            return False, "DEPRECATED"  # Rate limited (might be blocked)
-        else:
-            return False, "DEPRECATED"  # Other server errors
-    
-    except (URLError, socket.timeout, ssl.SSLError, ConnectionError) as e:
-        # Network/connectivity issues - likely service problems
-        return False, "DEPRECATED"
-    
-    except Exception as e:
-        # Any other error - treat as deprecated
-        return False, "DEPRECATED"
+                return False, 'ERROR'
+        except (URLError, socket.timeout, ssl.SSLError, ConnectionError):
+            return False, 'TEMP_UNAVAILABLE'
+        except Exception:
+            return False, 'ERROR'
+
+    # Normalize and try validation
+    normalized, ok = normalize_url_if_needed(original_url)
+    if not ok:
+        return False, 'INVALID_URL'
+    if normalized != original_url:
+        return validate_internal(normalized, redirect_depth=0)
+    return validate_internal(original_url, redirect_depth=0)
 
 def get_format_from_url(url: str) -> str:
     """Determine format from URL patterns, focusing on AGS vs non-AGS distinction.
@@ -2202,9 +2236,28 @@ class LayersPrescrape:
                 if status_reason == "MISSING":
                     self.missing_fields[entity]["src_url_file"] = "MANUAL_REQUIRED"
                     return "***MISSING***"
-                elif status_reason == "DEPRECATED":
-                    self.missing_fields[entity]["src_url_file"] = "URL_DEPRECATED"
-                    return "***DEPRECATED***"
+                else:
+                    # Map detailed reasons into markers while preserving existing DB markers
+                    temp_reasons = {"TEMP_UNAVAILABLE", "RATE_LIMITED"}
+                    manual_reasons = {"INVALID_URL"}
+                    deprecated_reasons = {
+                        "NOT_FOUND", "AUTH_REQUIRED", "FORBIDDEN", "SERVICE_ERROR",
+                        "INVALID_METADATA", "MOVED", "ERROR"
+                    }
+                    if status_reason in manual_reasons:
+                        self.missing_fields[entity]["src_url_file"] = "MANUAL_REQUIRED"
+                        return "***MISSING***"
+                    elif status_reason in temp_reasons:
+                        # Keep value as deprecated marker in DB, but annotate as temporary in report
+                        self.missing_fields[entity]["src_url_file"] = "URL_TEMP_UNAVAILABLE"
+                        return "***DEPRECATED***"
+                    elif status_reason in deprecated_reasons:
+                        self.missing_fields[entity]["src_url_file"] = "URL_DEPRECATED"
+                        return "***DEPRECATED***"
+                    else:
+                        # Fallback
+                        self.missing_fields[entity]["src_url_file"] = "URL_DEPRECATED"
+                        return "***DEPRECATED***"
             return ""
         
         elif field == "format":

@@ -434,7 +434,7 @@
     "state": "MANUAL_REQUIRED"
   },
   "zoning_fl_pinellas_pinellas_park": {
-    "src_url_file": "URL_DEPRECATED",
+    "src_url_file": "URL_TEMP_UNAVAILABLE",
     "fields_obj_transform": "zon_code:category, zon_desc:descriptio",
     "state": "MANUAL_REQUIRED"
   },
@@ -634,7 +634,7 @@
   },
   "zoning_fl_leon_unified": {
     "fields_obj_transform": "MANUAL_REQUIRED",
-    "src_url_file": "URL_DEPRECATED",
+    "src_url_file": "URL_TEMP_UNAVAILABLE",
     "state": "MANUAL_REQUIRED"
   },
   "zoning_fl_manatee_unincorporated": {
