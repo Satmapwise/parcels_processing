@@ -23,10 +23,23 @@ import os
 import csv
 import json
 import re
+from typing import Optional
 import fnmatch
 import psycopg2
 import psycopg2.extras
 from pathlib import Path
+
+# Import modular Selenium OpenData downloader (optional)
+try:
+    from download_opendata import (
+        init_selenium as _selenium_init,
+        shutdown_selenium as _selenium_shutdown,
+        download_opendata as _selenium_download_opendata,
+    )
+except Exception:
+    _selenium_init = None
+    _selenium_shutdown = None
+    _selenium_download_opendata = None
 
 # ---------------------------------------------------------------------------
 # Layer Configuration
@@ -826,8 +839,92 @@ def layer_download(layer: str, entity: str, state: str, county: str, city: str, 
         ]
         _debug_main(f"[DOWNLOAD] Running WGET-style download for {layer}/{entity} (format: {fmt}, url: {resource})", logger)
     elif selected_method == 'SELENIUM':
-        # Placeholder for future Selenium-based downloader
-        raise DownloadError('SELENIUM download method is not yet implemented', layer, entity)
+        # Use modular Selenium downloader when available
+        if _selenium_download_opendata is None or _selenium_init is None:
+            raise DownloadError('Selenium downloader not available in environment', layer, entity)
+        # Determine URL and target directory
+        sel_url = resource
+        target_dir = work_dir  # use resolved work_dir as target
+
+        # Initialize shared driver lazily (per process)
+        global _SELENIUM_DRIVER
+        if _SELENIUM_DRIVER is None:
+            try:
+                headless = True  # always headless in pipeline
+                _SELENIUM_DRIVER = _selenium_init(download_dir="/srv/datascrub/_batch_downloads", headless=headless, chromium=True, debug=CONFIG.debug)
+                logger.debug("Initialized shared Selenium driver for batch")
+            except Exception as e:
+                raise DownloadError(f"Failed to initialize Selenium driver: {e}", layer, entity)
+
+        # Perform Selenium download (module handles waiting + basic validation + transfer)
+        try:
+            # Provide existing catalog data_date (if available) to enable NND shortcut
+            existing_date = None
+            try:
+                existing_date = str(catalog_row.get('data_date') or '').strip() or None
+            except Exception:
+                existing_date = None
+            result = _selenium_download_opendata(
+                _SELENIUM_DRIVER,
+                entity=entity,
+                url=sel_url,
+                target_dir=target_dir,
+                catalog_data_date=existing_date,
+                transfer=True,
+                debug=CONFIG.debug,
+            )
+        except Exception as e:
+            raise DownloadError(f"Selenium error: {e}", layer, entity)
+
+        status = (result or {}).get('status', 'FAILED')
+        if status == 'SKIPPED_NND':
+            _update_csv_status(layer, entity, 'download', 'NND', error_msg='Selenium: no new data', entity_components=entity_components)
+            # Propagate as SkipEntityError to skip processing
+            raise SkipEntityError("No new data available (selenium)", layer=layer, entity=entity)
+        if status != 'SUCCESS':
+            msg = (result or {}).get('message', 'Unknown Selenium failure')
+            raise DownloadError(f"Selenium download failed: {msg}", layer, entity)
+
+        # For ZIP-aware follow-ups, capture zip file name if present in changes (post-transfer)
+        transferred = result.get('transferred_files', []) or []
+        changed_files = [os.path.join(target_dir, f) for f in transferred]
+
+        # Validate via existing validation step to keep behavior consistent
+        before_state = _get_directory_state(work_dir)
+        after_state = {**before_state}
+        for f in changed_files:
+            try:
+                after_state[os.path.basename(f)] = os.path.getmtime(f)
+            except Exception:
+                pass
+
+        # Run data validation against the new files
+        fmt_lower = fmt
+        zip_file = None
+        data_date = None
+        try:
+            # If a zip file among transferred files, run zip_processing
+            changed_zip_candidates = [f for f in changed_files if f.lower().endswith('.zip')]
+            if changed_zip_candidates:
+                newest_zip = max(changed_zip_candidates, key=lambda f: os.path.getmtime(f))
+                zip_file = newest_zip
+                _debug_main(f"[DOWNLOAD] Found zip file among Selenium changes: {zip_file}", logger)
+                data_date = zip_processing(zip_file, work_dir, logger)
+
+            # Data validation on changed files (including extracted from zip if any)
+            # If we processed a zip, collect extracted files to include
+            if zip_file:
+                post_unzip_state = _get_directory_state(work_dir)
+                extracted_files = [name for name in post_unzip_state.keys() if name not in before_state]
+                changed_files = list({*changed_files, *[os.path.join(work_dir, f) for f in extracted_files]})
+            _validate_data_files([os.path.basename(p) for p in changed_files], fmt_lower, work_dir, logger)
+            _debug_main(f"[DOWNLOAD] Selenium download and validation passed for {layer}/{entity}", logger)
+            _update_csv_status(layer, entity, 'download', 'SUCCESS', entity_components=entity_components)
+        except DownloadError as de:
+            _update_csv_status(layer, entity, 'download', 'FAILED', str(de), entity_components=entity_components)
+            raise DownloadError(str(de), layer, entity) from de
+
+        return zip_file, data_date
     else:
         raise DownloadError(f"Unknown download method: {selected_method}", layer, entity)
 
