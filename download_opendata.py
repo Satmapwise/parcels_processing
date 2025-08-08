@@ -226,32 +226,58 @@ def _open_download_panel(driver) -> None:
         pass
 
 
-def _click_shapefile_download(driver) -> None:
+def _click_shapefile_download(driver, debug: bool = False, max_attempts: int = 3) -> None:
     sel = OPEN_DATA_SELECTORS
-    # Ensure the list is rendered before JS traversal
-    WebDriverWait(driver, 10).until(
+    # Wait for outer list to appear
+    WebDriverWait(driver, 20).until(
         EC.presence_of_element_located((By.CSS_SELECTOR, sel["outer_shadow_selector"]))
     )
 
-    js = """
-        const outer = document.querySelector(arguments[0]);
-        if (!outer || !outer.shadowRoot) return null;
-        const inner1 = outer.shadowRoot.querySelector(arguments[1]);
-        if (!inner1 || !inner1.shadowRoot) return null;
-        const btnContainer = inner1.shadowRoot.querySelector(arguments[2]);
-        if (!btnContainer) return null;
-        const button = btnContainer.shadowRoot ? btnContainer.shadowRoot.querySelector('a,button,calcite-button') : btnContainer.querySelector('a,button,calcite-button');
-        return button;
+    # Robust search by label text across items; fallback to positional if needed
+    search_js = """
+        const host = document.querySelector(arguments[0]);
+        if (!host) return {status: 'NO_HOST'};
+        const sr = host.shadowRoot; 
+        if (!sr) return {status: 'NO_SHADOW'};
+        const items = Array.from(sr.querySelectorAll('arcgis-hub-download-list-item'));
+        const info = items.map((it, idx) => {
+            let text = '';
+            try { text = (it.innerText || it.textContent || '').trim(); } catch (e) {}
+            return {idx, text};
+        });
+        // Prefer text match for Shapefile
+        for (const it of items) {
+            const txt = (it.innerText || it.textContent || '').toLowerCase();
+            if (txt.includes('shapefile')) {
+                const root = it.shadowRoot || it;
+                const btn = root.querySelector('calcite-button, a, button');
+                if (btn) { btn.click(); return {status: 'CLICKED', by: 'label', info}; }
+            }
+        }
+        // Fallback: positional second item (historical)
+        if (items.length >= 2) {
+            const it = items[1];
+            const root = it.shadowRoot || it;
+            const btn = root.querySelector('calcite-button, a, button');
+            if (btn) { btn.click(); return {status: 'CLICKED', by: 'position', info}; }
+        }
+        return {status: 'NOT_FOUND', info};
     """
-    button = driver.execute_script(
-        js,
-        sel["outer_shadow_selector"],
-        sel["nested_shadow_selector"],
-        sel["nested_shadow_selector_2"],
-    )
-    if not button:
-        raise RuntimeError("Could not locate Shapefile download button in Shadow DOM")
-    driver.execute_script("arguments[0].click();", button)
+
+    # Try multiple attempts in case the list renders slowly
+    last_info = None
+    for attempt in range(1, max_attempts + 1):
+        result = driver.execute_script(search_js, sel["outer_shadow_selector"]) or {}
+        status = result.get('status')
+        last_info = result.get('info')
+        if debug:
+            logging.debug(f"Download list probe attempt {attempt}: status={status}; items={last_info}")
+        if status == 'CLICKED':
+            return
+        time.sleep(1.5)
+
+    # If we reached here, we did not click
+    raise RuntimeError("Could not locate Shapefile download button in Shadow DOM")
 
 
 def _list_current_files(directory: str) -> Dict[str, int]:
@@ -383,12 +409,14 @@ def download_opendata(
             }
 
     # Open download list and click Shapefile
+    # Open download panel and allow content to render
     _open_download_panel(driver)
+    time.sleep(1.5)
 
     # Snapshot baseline before clicking download
     baseline = _list_current_files(dl_dir)
 
-    _click_shapefile_download(driver)
+    _click_shapefile_download(driver, debug=debug, max_attempts=4)
 
     # Wait for completed files (generic, not ZIP-only)
     new_names = _wait_for_new_files(dl_dir, baseline, timeout=180, stabilize_secs=2, debug=debug)
