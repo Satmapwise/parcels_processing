@@ -20,6 +20,26 @@ from selenium.common.exceptions import TimeoutException, NoSuchElementException
 from layers_helpers import parse_entity_pattern, resolve_layer_directory
 
 
+def _quiet_selenium_logs():
+    """Suppress noisy Selenium/HTTP debug logs even when root logger is DEBUG."""
+    noisy = (
+        'selenium',
+        'selenium.webdriver',
+        'selenium.webdriver.remote.remote_connection',
+        'urllib3',
+        'undetected_chromedriver',
+        'websocket', 'websockets',
+        'httpcore', 'httpx',
+    )
+    for name in noisy:
+        try:
+            lg = logging.getLogger(name)
+            lg.setLevel(logging.WARNING)
+            lg.propagate = False
+        except Exception:
+            pass
+
+
 # ---------------------------------------------------------------------------
 # Constants and Selectors
 # ---------------------------------------------------------------------------
@@ -53,6 +73,7 @@ def init_selenium(
     """Initialize a Chromium-based undetected Selenium driver with download prefs."""
     if debug:
         logging.getLogger().setLevel(logging.DEBUG)
+    _quiet_selenium_logs()
 
     os.makedirs(download_dir, exist_ok=True)
 
@@ -270,8 +291,9 @@ def _click_shapefile_download(driver, debug: bool = False, max_attempts: int = 3
         result = driver.execute_script(search_js, sel["outer_shadow_selector"]) or {}
         status = result.get('status')
         last_info = result.get('info')
-        if debug:
-            logging.debug(f"Download list probe attempt {attempt}: status={status}; items={last_info}")
+        # Keep probe output silent unless explicitly enabled
+        if debug and os.getenv('SELENIUM_VERBOSE', '0') in ('1', 'true', 'TRUE'):
+            logging.debug(f"[SEL] probe {attempt}: status={status}; items={last_info}")
         if status == 'CLICKED':
             return
         time.sleep(1.5)
@@ -381,6 +403,7 @@ def download_opendata(
     """
     if debug:
         logging.getLogger().setLevel(logging.DEBUG)
+    _quiet_selenium_logs()
 
     # Determine and ensure batch download directory
     dl_dir = batch_download_dir or BATCH_DOWNLOAD_DIR
