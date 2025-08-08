@@ -37,6 +37,7 @@ from layers_helpers import (
     format_name, parse_entity_pattern, safe_catalog_val, validate_state_abbreviation,
     resolve_layer_name, resolve_layer_directory
 )
+from urllib.parse import urlparse
 
 # ---------------------------------------------------------------------------
 # Configuration and Constants
@@ -62,6 +63,80 @@ MANIFEST_PATH = Path("test/layer_manifest.json")
 # ---------------------------------------------------------------------------
 
 # safe_catalog_val now imported from layers_helpers.py
+
+# ---------------------------------------------------------------------------
+# Native URL Classification Helpers (replacing opendata_detector)
+# ---------------------------------------------------------------------------
+
+def is_arcgis_service_url(url: str) -> bool:
+    """Detect ArcGIS REST service URLs (FeatureServer/MapServer/others).
+
+    Conservative detection based on common REST patterns.
+    """
+    if not url or not isinstance(url, str):
+        return False
+    u = url.lower()
+    # Quick prefilter
+    if 'rest/services' not in u and 'featureserver' not in u and 'mapserver' not in u:
+        return False
+
+    # Valid if it contains REST and a known server type
+    has_rest = ('/arcgis/rest/services/' in u) or ('/server/rest/services/' in u) or ('/rest/services/' in u)
+    is_service_type = any(s in u for s in ['/featureserver', '/mapserver', '/imageserver', '/geoprocessingserver'])
+    return has_rest and is_service_type
+
+
+def is_opendata_portal(url: str) -> bool:
+    """Heuristically detect if a URL appears to be an open data portal dataset page.
+
+    Targets ArcGIS Hub, Socrata, CKAN, and similar municipal opendata sites.
+    Excludes direct ArcGIS REST service URLs.
+    """
+    if not url or not isinstance(url, str):
+        return False
+
+    if is_arcgis_service_url(url):  # treat as service, not portal landing
+        return False
+
+    try:
+        parsed = urlparse(url)
+        host = (parsed.netloc or '').lower()
+        path = (parsed.path or '').lower()
+        full = url.lower()
+    except Exception:
+        return False
+
+    # Known ArcGIS Hub/opendata hosts
+    if host.endswith('hub.arcgis.com') or host.endswith('opendata.arcgis.com'):
+        return True
+
+    # Common patterns indicating dataset pages on various platforms
+    dataset_path_indicators = (
+        '/dataset/', '/datasets/', '/resource/', '/datastore/', '/data/dataset/', '/catalog/dataset/'
+    )
+
+    # Socrata: data.<domain> with dataset/resource paths
+    if (host.startswith('data.') or '.socrata.com' in host) and any(s in path for s in dataset_path_indicators + ('/resource/',)):
+        return True
+
+    # CKAN: presence of /dataset/ is the strongest signal
+    if '/dataset/' in path:
+        return True
+
+    # Generic opendata indicators on municipal/county sites
+    generic_host_tokens = ('opendata', 'open-data', 'datahub', 'geoportal')
+    if any(t in host for t in generic_host_tokens) and any(s in path for s in dataset_path_indicators):
+        return True
+
+    # ArcGIS data pages sometimes live under .../datasets/<id> even on custom domains
+    if '/datasets/' in path and ('arcgis' in host or 'gis' in host or 'data' in host):
+        return True
+
+    # Exclude ArcGIS Portal admin endpoints
+    if 'arcgis.com/portal' in full or host.startswith('portal.'):
+        return False
+
+    return False
 
 def get_today_str() -> str:
     return datetime.utcnow().strftime("%Y-%m-%d")
@@ -2133,22 +2208,53 @@ class LayersPrescrape:
             return ""
         
         elif field == "format":
-            # Check format is correct using URL analysis and file analysis
-            if not current_value:
-                expected = get_format_from_url(record.get('src_url_file') or '')
-                return expected if expected else "***MISSING***"
-            
-            # Validate current format makes sense using intelligent format detection
-            url = record.get('src_url_file') or ''
-            expected = _get_best_format_detection(url, record.get('sys_raw_folder') or '')
-            if expected and str(current_value).upper() != expected.upper():
-                return expected
-            return ""
+            # Auto-generate format from download method policy
+            # - If download == AGS -> format = AGS
+            # - If download == SELENIUM -> format = SHP
+            # - If download == WGET -> default to SHP but do not overwrite an existing non-empty value
+            download_val = (record.get('download') or '').strip().upper()
+            existing = (current_value or '').strip()
+
+            if download_val == 'AGS':
+                expected = 'AGS'
+                return expected if existing.upper() != expected else ""
+            elif download_val == 'SELENIUM':
+                expected = 'SHP'
+                return expected if existing.upper() != expected else ""
+            elif download_val == 'WGET':
+                # Only fill if empty; otherwise preserve user's existing format (PDF/GDB/etc.)
+                if not existing:
+                    return 'SHP'
+                return ""
+            else:
+                # Fallback to legacy detection when download is not yet set
+                if not existing:
+                    expected = get_format_from_url(record.get('src_url_file') or '')
+                    return expected if expected else "***MISSING***"
+                # Validate current format with best detection for sanity, but don't force overwrite
+                url = record.get('src_url_file') or ''
+                expected = _get_best_format_detection(url, record.get('sys_raw_folder') or '')
+                if expected and str(existing).upper() != expected.upper():
+                    return expected
+                return ""
         
         elif field == "download":
-            # Check download is set to "AUTO"
-            expected = "AUTO"
-            return expected if current_value != expected else ""
+            # New logic: auto-set download method based on URL classification
+            # - AGS if URL is detected as ArcGIS service
+            # - SELENIUM if URL appears to be an opendata portal
+            # - WGET otherwise
+            url = (record.get('src_url_file') or '').strip()
+            if not url:
+                return ""  # nothing to infer
+
+            if is_arcgis_service_url(url):
+                expected = 'AGS'
+            elif is_opendata_portal(url):
+                expected = 'SELENIUM'
+            else:
+                expected = 'WGET'
+
+            return expected if (current_value or '').strip().upper() != expected else ""
         
         elif field == "resource":
             # Resource field should only be populated for non-AGS formats
