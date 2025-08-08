@@ -1,0 +1,1144 @@
+{
+"QPUBLIC COUNTIES": {},
+
+"madison": {
+    "url": "https://qpublic.schneidercorp.com/Application.aspx?AppID=911&LayerID=17548&PageTypeID=2&PageID=7853",
+    "selectors": {
+      "data_date": "#hlkLastUpdated",
+      "disclaimer_button": "#appBody > div.modal.in > div > div > div.modal-focus-target > div.modal-footer > a.btn.btn-primary.button-1",
+      "start_date_input": "#ctlBodyPane_ctl00_ctl01_txtStartSaleDate",
+      "end_date_input": "#ctlBodyPane_ctl00_ctl01_txtEndSaleDate",
+      "price_low_input": "#ctlBodyPane_ctl00_ctl01_txtStartSalePrice",
+      "price_high_input": "#ctlBodyPane_ctl00_ctl01_txtEndSalePrice",
+      "qualified_sales_button": "#ctlBodyPane_ctl00_ctl01_rdQualifiedSales_0",
+      "search_button": "#ctlBodyPane_ctl00_ctl01_btnSearch",
+      "dropdown_menu": "#ctlBodyPane_ctl00_ctl01_ddlFileTypes",
+      "csv_option": "#ctlBodyPane_ctl00_ctl01_ddlFileTypes > option:nth-child(2)",
+      "download_button": "#ctlBodyPane_ctl00_ctl01_btnDownload",
+      "results_tab": "#results3 > a",
+      "dropdown_menu_results": "#ctlBodyPane_ctl02_ctl01_ddlFileTypes",
+      "csv_option_results": "#ctlBodyPane_ctl02_ctl01_ddlFileTypes > option:nth-child(3)",
+      "download_button_results": "#ctlBodyPane_ctl02_ctl01_btnDownload"
+    }
+  },
+
+"holmes": {
+    "url": "https://qpublic.schneidercorp.com/Application.aspx?AppID=821&LayerID=14700&PageTypeID=2&PageID=6975",
+    "selectors": {
+      "data_date": "#hlkLastUpdated",
+      "disclaimer_button": "#appBody > div.modal.in > div > div > div.modal-focus-target > div.modal-footer > a.btn.btn-primary.button-1",
+      "start_date_input": "#ctlBodyPane_ctl00_ctl01_txtStartSaleDate",
+      "end_date_input": "#ctlBodyPane_ctl00_ctl01_txtEndSaleDate",
+      "price_low_input": "#ctlBodyPane_ctl00_ctl01_txtStartSalePrice",
+      "price_high_input": "#ctlBodyPane_ctl00_ctl01_txtEndSalePrice",
+      "qualified_sales_button": "#ctlBodyPane_ctl00_ctl01_rdQualifiedSales_0",
+      "search_button": "#ctlBodyPane_ctl00_ctl01_btnSearch",
+      "dropdown_menu": "#ctlBodyPane_ctl00_ctl01_ddlFileTypes",
+      "csv_option": "#ctlBodyPane_ctl00_ctl01_ddlFileTypes > option:nth-child(2)",
+      "download_button": "#ctlBodyPane_ctl00_ctl01_btnDownload",
+      "results_tab": "#results2 > a",
+      "show_all_owners_button": "#ctlBodyPane_ctl01_ctl01_chkShowAllOwners",
+      "dropdown_menu_results": "#ctlBodyPane_ctl01_ctl01_ddlFileTypes",
+      "csv_option_results": "#ctlBodyPane_ctl01_ctl01_ddlFileTypes > option:nth-child(3)",
+      "download_button_results": "#ctlBodyPane_ctl01_ctl01_btnDownload"
+    }
+  },
+
+"okaloosa": {
+    "url": "https://qpublic.schneidercorp.com/application.aspx?AppID=855&LayerID=15999&PageTypeID=2&PageID=7117",
+    "selectors": {
+      "data_date": "#hlkLastUpdated",
+      "disclaimer_button": "#appBody > div.modal.in > div > div > div.modal-focus-target > div.modal-footer > a.btn.btn-primary.button-1",
+      "start_date_input": "#ctlBodyPane_ctl00_ctl01_txtSaleDateLowDetail",
+      "end_date_input": "#ctlBodyPane_ctl00_ctl01_txtSaleDateHighDetail",
+      "price_low_input": "#ctlBodyPane_ctl00_ctl01_txtStartSalePrice",
+      "price_high_input": "#ctlBodyPane_ctl00_ctl01_txtEndSalePrice",
+      "qualified_sales_button": "#ctlBodyPane_ctl00_ctl01_rdQualifiedSales_0",
+      "search_button": "#ctlBodyPane_ctl00_ctl01_btnSearch",
+      "dropdown_menu": "#ctlBodyPane_ctl00_ctl01_ddlFileTypes",
+      "csv_option": "#ctlBodyPane_ctl00_ctl01_ddlFileTypes > option:nth-child(2)",
+      "download_button": "#ctlBodyPane_ctl00_ctl01_btnDownload",
+      "date_range_button": "#ctlBodyPane_ctl00_ctl01_rdbUseSaleDateRange",
+      "results_tab": "#results7 > a",
+      "dropdown_menu_results": "#ctlBodyPane_ctl01_ctl01_ddlFileTypes",
+      "csv_option_results": "#ctlBodyPane_ctl01_ctl01_ddlFileTypes > option:nth-child(3)",
+      "download_button_results": "#ctlBodyPane_ctl01_ctl01_btnDownload"
+    }
+  },
+
+"flagler": {
+    "url": "https://qpublic.schneidercorp.com/Application.aspx?AppID=598&LayerID=9801&PageTypeID=2&PageID=6890",
+    "selectors": {
+      "data_date": "#hlkLastUpdated",
+      "disclaimer_button": "#appBody > div.modal.in > div > div > div.modal-focus-target > div.modal-footer > a.btn.btn-primary.button-1",
+      "start_date_input": "#ctlBodyPane_ctl00_ctl01_txtStartSaleDate",
+      "end_date_input": "#ctlBodyPane_ctl00_ctl01_txtEndSaleDate",
+      "price_low_input": "#ctlBodyPane_ctl00_ctl01_txtStartSalePrice",
+      "price_high_input": "#ctlBodyPane_ctl00_ctl01_txtEndSalePrice",
+      "qualified_sales_button": "#ctlBodyPane_ctl00_ctl01_rdQualifiedSales_0",
+      "search_button": "#ctlBodyPane_ctl00_ctl01_btnSearch",
+      "dropdown_menu": "#ctlBodyPane_ctl00_ctl01_ddlFileTypes",
+      "csv_option": "#ctlBodyPane_ctl00_ctl01_ddlFileTypes > option:nth-child(2)",
+      "download_button": "#ctlBodyPane_ctl00_ctl01_btnDownload",
+      "results_tab": "#results3 > a",
+      "dropdown_menu_results": "#ctlBodyPane_ctl01_ctl01_ddlFileTypes",
+      "csv_option_results": "#ctlBodyPane_ctl01_ctl01_ddlFileTypes > option:nth-child(3)",
+      "download_button_results": "#ctlBodyPane_ctl01_ctl01_btnDownload"
+    }
+  },
+
+"walton": {
+    "url": "https://beacon.schneidercorp.com/Application.aspx?AppID=835&LayerID=15172&PageTypeID=2&PageID=6987",
+    "selectors": {
+      "data_date": "#hlkLastUpdated",
+      "disclaimer_button": "#appBody > div.modal.in > div > div > div.modal-focus-target > div.modal-footer > a.btn.btn-primary.button-1",
+      "start_date_input": "#ctlBodyPane_ctl00_ctl01_txtSaleDateLowDetail",
+      "end_date_input": "#ctlBodyPane_ctl00_ctl01_txtSaleDateHighDetail",
+      "price_low_input": "#ctlBodyPane_ctl00_ctl01_txtStartSalePrice",
+      "price_high_input": "#ctlBodyPane_ctl00_ctl01_txtEndSalePrice",
+      "qualified_sales_button": "#ctlBodyPane_ctl00_ctl01_rdQualifiedSales_0",
+      "search_button": "#ctlBodyPane_ctl00_ctl01_btnSearch",
+      "dropdown_menu": "#ctlBodyPane_ctl00_ctl01_ddlFileTypes",
+      "csv_option": "#ctlBodyPane_ctl00_ctl01_ddlFileTypes > option:nth-child(2)",
+      "download_button": "#ctlBodyPane_ctl00_ctl01_btnDownload",
+      "date_range_button": "#ctlBodyPane_ctl00_ctl01_rdbUseSaleDateRange",
+      "disclaimer_button_2": "#appBody > div.modal.in > div > div > div.modal-focus-target > div.modal-footer > a",
+      "results_tab": "#results4 > a",
+      "dropdown_menu_results": "#ctlBodyPane_ctl01_ctl01_ddlFileTypes",
+      "csv_option_results": "#ctlBodyPane_ctl01_ctl01_ddlFileTypes > option:nth-child(3)",
+      "download_button_results": "#ctlBodyPane_ctl01_ctl01_btnDownload"
+    }
+  },
+
+"hardee": {
+    "url": "https://qpublic.schneidercorp.com/Application.aspx?AppID=813&LayerID=14471&PageTypeID=2&PageID=6957",
+    "selectors": {
+      "data_date": "#hlkLastUpdated",
+      "disclaimer_button": "#appBody > div.modal.in > div > div > div.modal-focus-target > div.modal-footer > a.btn.btn-primary.button-1",
+      "start_date_input": "#ctlBodyPane_ctl01_ctl01_txtStartSaleDate",
+      "end_date_input": "#ctlBodyPane_ctl01_ctl01_txtEndSaleDate",
+      "price_low_input": "#ctlBodyPane_ctl01_ctl01_txtStartSalePrice",
+      "price_high_input": "#ctlBodyPane_ctl01_ctl01_txtEndSalePrice",
+      "qualified_sales_button": "#ctlBodyPane_ctl01_ctl01_rdQualifiedSales_0",
+      "search_button": "#ctlBodyPane_ctl01_ctl01_btnSearch",
+      "dropdown_menu": "#ctlBodyPane_ctl00_ctl01_ddlFileTypes",
+      "csv_option": "#ctlBodyPane_ctl00_ctl01_ddlFileTypes > option:nth-child(2)",
+      "download_button": "#ctlBodyPane_ctl00_ctl01_btnDownload",
+      "results_tab": "#results3 > a",
+      "dropdown_menu_results": "#ctlBodyPane_ctl01_ctl01_ddlFileTypes",
+      "csv_option_results": "#ctlBodyPane_ctl01_ctl01_ddlFileTypes > option:nth-child(3)",
+      "download_button_results": "#ctlBodyPane_ctl01_ctl01_btnDownload"
+    }
+  },
+
+"washington": {
+    "url": "https://qpublic.schneidercorp.com/Application.aspx?AppID=896&LayerID=16944&PageTypeID=2&PageID=7959",
+    "selectors": {
+      "data_date": "#hlkLastUpdated",
+      "disclaimer_button": "#appBody > div.modal.in > div > div > div.modal-focus-target > div.modal-footer > a.btn.btn-primary.button-1",
+      "start_date_input": "#ctlBodyPane_ctl00_ctl01_txtStartSaleDate",
+      "end_date_input": "#ctlBodyPane_ctl00_ctl01_txtEndSaleDate",
+      "price_low_input": "#ctlBodyPane_ctl00_ctl01_txtStartSalePrice",
+      "price_high_input": "#ctlBodyPane_ctl00_ctl01_txtEndSalePrice",
+      "search_button": "#ctlBodyPane_ctl00_ctl01_btnSearch",
+      "dropdown_menu": "#ctlBodyPane_ctl00_ctl01_ddlFileTypes",
+      "csv_option": "#ctlBodyPane_ctl00_ctl01_ddlFileTypes > option:nth-child(2)",
+      "download_button": "#ctlBodyPane_ctl00_ctl01_btnDownload",
+      "results_tab": "#results2 > a",
+      "dropdown_menu_results": "#ctlBodyPane_ctl01_ctl01_ddlFileTypes",
+      "csv_option_results": "#ctlBodyPane_ctl01_ctl01_ddlFileTypes > option:nth-child(3)",
+      "download_button_results": "#ctlBodyPane_ctl01_ctl01_btnDownload"
+    }
+  },
+
+"hendry": {
+    "url": "https://beacon.schneidercorp.com/Application.aspx?AppID=1105&LayerID=27399&PageTypeID=2&PageID=11145",
+    "selectors": {
+      "data_date": "#hlkLastUpdated",
+      "disclaimer_button": "#appBody > div.modal.in > div > div > div.modal-focus-target > div.modal-footer > a.btn.btn-primary.button-1",
+      "start_date_input": "#ctlBodyPane_ctl00_ctl01_txtSaleDateLowDetail",
+      "end_date_input": "#ctlBodyPane_ctl00_ctl01_txtSaleDateHighDetail",
+      "price_low_input": "#ctlBodyPane_ctl00_ctl01_txtStartSalePrice",
+      "price_high_input": "#ctlBodyPane_ctl00_ctl01_txtEndSalePrice",
+      "qualified_sales_button": "#ctlBodyPane_ctl00_ctl01_rdQualifiedSales_0",
+      "search_button": "#ctlBodyPane_ctl00_ctl01_btnSearch",
+      "dropdown_menu": "#ctlBodyPane_ctl00_ctl01_ddlFileTypes",
+      "csv_option": "#ctlBodyPane_ctl00_ctl01_ddlFileTypes > option:nth-child(2)",
+      "download_button": "#ctlBodyPane_ctl00_ctl01_btnDownload",
+      "date_range_button": "#ctlBodyPane_ctl00_ctl01_rdbUseSaleDateRange",
+      "results_tab": "#results6 > a",
+      "dropdown_menu_results": "#ctlBodyPane_ctl01_ctl01_ddlFileTypes",
+      "csv_option_results": "#ctlBodyPane_ctl01_ctl01_ddlFileTypes > option:nth-child(3)",
+      "download_button_results": "#ctlBodyPane_ctl01_ctl01_btnDownload"
+    }
+  },
+
+"levy": {
+    "url": "https://beacon.schneidercorp.com/Application.aspx?AppID=930&LayerID=18185&PageTypeID=2&PageID=8337",
+    "selectors": {
+      "data_date": "#hlkLastUpdated",
+      "disclaimer_button": "#appBody > div.modal.in > div > div > div.modal-focus-target > div.modal-footer > a.btn.btn-primary.button-1",
+      "start_date_input": "#ctlBodyPane_ctl00_ctl01_txtStartSaleDate",
+      "end_date_input": "#ctlBodyPane_ctl00_ctl01_txtEndSaleDate",
+      "price_low_input": "#ctlBodyPane_ctl00_ctl01_txtStartSalePrice",
+      "price_high_input": "#ctlBodyPane_ctl00_ctl01_txtEndSalePrice",
+      "qualified_sales_button": "#ctlBodyPane_ctl00_ctl01_rdQualifiedSales_0",
+      "search_button": "#ctlBodyPane_ctl00_ctl01_btnSearch",
+      "dropdown_menu": "#ctlBodyPane_ctl00_ctl01_ddlFileTypes",
+      "csv_option": "#ctlBodyPane_ctl00_ctl01_ddlFileTypes > option:nth-child(2)",
+      "download_button": "#ctlBodyPane_ctl00_ctl01_btnDownload",
+      "results_tab": "#results2 > a",
+      "dropdown_menu_results": "#ctlBodyPane_ctl02_ctl01_ddlFileTypes",
+      "csv_option_results": "#ctlBodyPane_ctl02_ctl01_ddlFileTypes > option:nth-child(3)",
+      "download_button_results": "#ctlBodyPane_ctl02_ctl01_btnDownload"
+    }
+  },
+
+"gilchrist": {
+    "url": "https://qpublic.schneidercorp.com/Application.aspx?AppID=820&LayerID=15174&PageTypeID=2&PageID=6902",
+    "selectors": {
+      "data_date": "#hlkLastUpdated",
+      "disclaimer_button": "#appBody > div.modal.in > div > div > div.modal-focus-target > div.modal-footer > a.btn.btn-primary.button-1",
+      "start_date_input": "#ctlBodyPane_ctl00_ctl01_txtStartSaleDate",
+      "end_date_input": "#ctlBodyPane_ctl00_ctl01_txtEndSaleDate",
+      "price_low_input": "#ctlBodyPane_ctl00_ctl01_txtStartSalePrice",
+      "price_high_input": "#ctlBodyPane_ctl00_ctl01_txtEndSalePrice",
+      "qualified_sales_button": "#ctlBodyPane_ctl00_ctl01_rdQualifiedSales_0",
+      "search_button": "#ctlBodyPane_ctl00_ctl01_btnSearch",
+      "dropdown_menu": "#ctlBodyPane_ctl00_ctl01_ddlFileTypes",
+      "csv_option": "#ctlBodyPane_ctl00_ctl01_ddlFileTypes > option:nth-child(2)",
+      "download_button": "#ctlBodyPane_ctl00_ctl01_btnDownload",
+      "results_tab": "#results2 > a",
+      "dropdown_menu_results": "#ctlBodyPane_ctl01_ctl01_ddlFileTypes",
+      "csv_option_results": "#ctlBodyPane_ctl01_ctl01_ddlFileTypes > option:nth-child(3)",
+      "download_button_results": "#ctlBodyPane_ctl01_ctl01_btnDownload"
+    }
+  },
+
+"calhoun": {
+    "url": "https://beacon.schneidercorp.com/Application.aspx?AppID=829&LayerID=15004&PageTypeID=2&PageID=6981",
+    "selectors": {
+      "data_date": "#hlkLastUpdated",
+      "disclaimer_button": "#appBody > div.modal.in > div > div > div.modal-focus-target > div.modal-footer > a.btn.btn-primary.button-1",
+      "start_date_input": "#ctlBodyPane_ctl00_ctl01_txtStartSaleDate",
+      "end_date_input": "#ctlBodyPane_ctl00_ctl01_txtEndSaleDate",
+      "price_low_input": "#ctlBodyPane_ctl00_ctl01_txtStartSalePrice",
+      "price_high_input": "#ctlBodyPane_ctl00_ctl01_txtEndSalePrice",
+      "qualified_sales_button": "#ctlBodyPane_ctl00_ctl01_rdQualifiedSales_0",
+      "search_button": "#ctlBodyPane_ctl00_ctl01_btnSearch",
+      "dropdown_menu": "#ctlBodyPane_ctl00_ctl01_ddlFileTypes",
+      "csv_option": "#ctlBodyPane_ctl00_ctl01_ddlFileTypes > option:nth-child(2)",
+      "download_button": "#ctlBodyPane_ctl00_ctl01_btnDownload",
+      "results_tab": "#results2 > a",
+      "dropdown_menu_results": "#ctlBodyPane_ctl01_ctl01_ddlFileTypes",
+      "csv_option_results": "#ctlBodyPane_ctl01_ctl01_ddlFileTypes > option:nth-child(3)",
+      "download_button_results": "#ctlBodyPane_ctl01_ctl01_btnDownload"
+    }
+  },
+
+"liberty": {
+    "url": "https://qpublic.schneidercorp.com/Application.aspx?AppID=828&LayerID=15003&PageTypeID=2&PageID=6978",
+    "selectors": {
+      "data_date": "#hlkLastUpdated",
+      "disclaimer_button": "#appBody > div.modal.in > div > div > div.modal-focus-target > div.modal-footer > a.btn.btn-primary.button-1",
+      "start_date_input": "#ctlBodyPane_ctl00_ctl01_txtStartSaleDate",
+      "end_date_input": "#ctlBodyPane_ctl00_ctl01_txtEndSaleDate",
+      "price_low_input": "#ctlBodyPane_ctl00_ctl01_txtStartSalePrice",
+      "price_high_input": "#ctlBodyPane_ctl00_ctl01_txtEndSalePrice",
+      "qualified_sales_button": "#ctlBodyPane_ctl00_ctl01_rdQualifiedSales_0",
+      "search_button": "#ctlBodyPane_ctl00_ctl01_btnSearch",
+      "dropdown_menu": "#ctlBodyPane_ctl00_ctl01_ddlFileTypes",
+      "csv_option": "#ctlBodyPane_ctl00_ctl01_ddlFileTypes > option:nth-child(2)",
+      "download_button": "#ctlBodyPane_ctl00_ctl01_btnDownload",
+      "results_tab": "#results2 > a",
+      "dropdown_menu_results": "#ctlBodyPane_ctl01_ctl01_ddlFileTypes",
+      "csv_option_results": "#ctlBodyPane_ctl01_ctl01_ddlFileTypes > option:nth-child(3)",
+      "download_button_results": "#ctlBodyPane_ctl01_ctl01_btnDownload"
+    }
+  },
+
+"dixie": {
+    "url": "https://qpublic.schneidercorp.com/Application.aspx?AppID=867&LayerID=16385&PageTypeID=2&PageID=7234",
+    "selectors": {
+      "data_date": "#hlkLastUpdated",
+      "disclaimer_button": "#appBody > div.modal.in > div > div > div.modal-focus-target > div.modal-footer > a.btn.btn-primary.button-1",
+      "start_date_input": "#ctlBodyPane_ctl00_ctl01_txtStartSaleDate",
+      "end_date_input": "#ctlBodyPane_ctl00_ctl01_txtEndSaleDate",
+      "price_low_input": "#ctlBodyPane_ctl00_ctl01_txtStartSalePrice",
+      "price_high_input": "#ctlBodyPane_ctl00_ctl01_txtEndSalePrice",
+      "qualified_sales_button": "#ctlBodyPane_ctl00_ctl01_rdQualifiedSales_0",
+      "search_button": "#ctlBodyPane_ctl00_ctl01_btnSearch",
+      "dropdown_menu": "#ctlBodyPane_ctl00_ctl01_ddlFileTypes",
+      "csv_option": "#ctlBodyPane_ctl00_ctl01_ddlFileTypes > option:nth-child(2)",
+      "download_button": "#ctlBodyPane_ctl00_ctl01_btnDownload",
+      "results_tab": "#results2 > a",
+      "dropdown_menu_results": "#ctlBodyPane_ctl01_ctl01_ddlFileTypes",
+      "csv_option_results": "#ctlBodyPane_ctl01_ctl01_ddlFileTypes > option:nth-child(3)",
+      "download_button_results": "#ctlBodyPane_ctl01_ctl01_btnDownload"
+    }
+  },
+
+"jefferson": {
+    "url": "https://qpublic.schneidercorp.com/Application.aspx?AppID=866&LayerID=16381&PageTypeID=2&PageID=7235",
+    "selectors": {
+      "data_date": "#hlkLastUpdated",
+      "disclaimer_button": "#appBody > div.modal.in > div > div > div.modal-focus-target > div.modal-footer > a.btn.btn-primary.button-1",
+      "start_date_input": "#ctlBodyPane_ctl00_ctl01_txtStartSaleDate",
+      "end_date_input": "#ctlBodyPane_ctl00_ctl01_txtEndSaleDate",
+      "price_low_input": "#ctlBodyPane_ctl00_ctl01_txtStartSalePrice",
+      "price_high_input": "#ctlBodyPane_ctl00_ctl01_txtEndSalePrice",
+      "qualified_sales_button": "#ctlBodyPane_ctl00_ctl01_rdQualifiedSales_0",
+      "search_button": "#ctlBodyPane_ctl00_ctl01_btnSearch",
+      "dropdown_menu": "#ctlBodyPane_ctl00_ctl01_ddlFileTypes",
+      "csv_option": "#ctlBodyPane_ctl00_ctl01_ddlFileTypes > option:nth-child(2)",
+      "download_button": "#ctlBodyPane_ctl00_ctl01_btnDownload",
+      "results_tab": "#results2 > a",
+      "dropdown_menu_results": "#ctlBodyPane_ctl01_ctl01_ddlFileTypes",
+      "csv_option_results": "#ctlBodyPane_ctl01_ctl01_ddlFileTypes > option:nth-child(3)",
+      "download_button_results": "#ctlBodyPane_ctl01_ctl01_btnDownload"
+    }
+  },
+
+"gulf": {
+    "url": "https://beacon.schneidercorp.com/Application.aspx?AppID=819&LayerID=15077&PageTypeID=2&PageID=6907",
+    "selectors": {
+      "data_date": "#hlkLastUpdated",
+      "disclaimer_button": "#appBody > div.modal.in > div > div > div.modal-focus-target > div.modal-footer > a.btn.btn-primary.button-1",
+      "start_date_input": "#ctlBodyPane_ctl00_ctl01_txtStartSaleDate",
+      "end_date_input": "#ctlBodyPane_ctl00_ctl01_txtEndSaleDate",
+      "price_low_input": "#ctlBodyPane_ctl00_ctl01_txtStartSalePrice",
+      "price_high_input": "#ctlBodyPane_ctl00_ctl01_txtEndSalePrice",
+      "qualified_sales_button": "#ctlBodyPane_ctl00_ctl01_rdQualifiedSales_0",
+      "search_button": "#ctlBodyPane_ctl00_ctl01_btnSearch",
+      "dropdown_menu": "#ctlBodyPane_ctl00_ctl01_ddlFileTypes",
+      "csv_option": "#ctlBodyPane_ctl00_ctl01_ddlFileTypes > option:nth-child(2)",
+      "download_button": "#ctlBodyPane_ctl00_ctl01_btnDownload",
+      "results_tab": "#results2 > a",
+      "dropdown_menu_results": "#ctlBodyPane_ctl01_ctl01_ddlFileTypes",
+      "csv_option_results": "#ctlBodyPane_ctl01_ctl01_ddlFileTypes > option:nth-child(3)",
+      "download_button_results": "#ctlBodyPane_ctl01_ctl01_btnDownload"
+    }
+  },
+
+"hamilton": {
+    "url": "https://beacon.schneidercorp.com/Application.aspx?AppID=817&LayerID=14544&PageTypeID=2&PageID=6965",
+    "selectors": {
+      "data_date": "#hlkLastUpdated",
+      "disclaimer_button": "#appBody > div.modal.in > div > div > div.modal-focus-target > div.modal-footer > a.btn.btn-primary.button-1",
+      "start_date_input": "#ctlBodyPane_ctl00_ctl01_txtStartSaleDate",
+      "end_date_input": "#ctlBodyPane_ctl00_ctl01_txtEndSaleDate",
+      "price_low_input": "#ctlBodyPane_ctl00_ctl01_txtStartSalePrice",
+      "price_high_input": "#ctlBodyPane_ctl00_ctl01_txtEndSalePrice",
+      "qualified_sales_button": "#ctlBodyPane_ctl00_ctl01_rdQualifiedSales_0",
+      "search_button": "#ctlBodyPane_ctl00_ctl01_btnSearch",
+      "dropdown_menu": "#ctlBodyPane_ctl00_ctl01_ddlFileTypes",
+      "csv_option": "#ctlBodyPane_ctl00_ctl01_ddlFileTypes > option:nth-child(2)",
+      "download_button": "#ctlBodyPane_ctl00_ctl01_btnDownload",
+      "results_tab": "#results2 > a",
+      "dropdown_menu_results": "#ctlBodyPane_ctl01_ctl01_ddlFileTypes",
+      "csv_option_results": "#ctlBodyPane_ctl01_ctl01_ddlFileTypes > option:nth-child(3)",
+      "download_button_results": "#ctlBodyPane_ctl01_ctl01_btnDownload"
+    }
+  },
+
+"taylor": {
+    "url": "https://qpublic.schneidercorp.com/Application.aspx?AppID=792&LayerID=11749&PageTypeID=2&PageID=5959",
+    "selectors": {
+      "data_date": "#hlkLastUpdated",
+      "disclaimer_button": "#appBody > div.modal.in > div > div > div.modal-focus-target > div.modal-footer > a.btn.btn-primary.button-1",
+      "start_date_input": "#ctlBodyPane_ctl00_ctl01_txtSaleDateLowDetail",
+      "end_date_input": "#ctlBodyPane_ctl00_ctl01_txtSaleDateHighDetail",
+      "price_low_input": "#ctlBodyPane_ctl00_ctl01_txtStartSalePrice",
+      "price_high_input": "#ctlBodyPane_ctl00_ctl01_txtEndSalePrice",
+      "qualified_sales_button": "#ctlBodyPane_ctl00_ctl01_rdQualifiedSales_0",
+      "search_button": "#ctlBodyPane_ctl00_ctl01_btnSearch",
+      "dropdown_menu": "#ctlBodyPane_ctl00_ctl01_ddlFileTypes",
+      "csv_option": "#ctlBodyPane_ctl00_ctl01_ddlFileTypes > option:nth-child(2)",
+      "download_button": "#ctlBodyPane_ctl00_ctl01_btnDownload",
+      "date_range_button": "#ctlBodyPane_ctl00_ctl01_rdbUseSaleDateRange",
+      "results_tab": "#results2 > a",
+      "dropdown_menu_results": "#ctlBodyPane_ctl01_ctl01_ddlFileTypes",
+      "csv_option_results": "#ctlBodyPane_ctl01_ctl01_ddlFileTypes > option:nth-child(3)",
+      "download_button_results": "#ctlBodyPane_ctl01_ctl01_btnDownload"
+    }
+  },
+
+"gadsden": {
+    "url": "https://qpublic.schneidercorp.com/Application.aspx?AppID=814&LayerID=14537&PageTypeID=2&PageID=6397",
+    "selectors": {
+      "data_date": "#hlkLastUpdated",
+      "disclaimer_button": "#appBody > div.modal.in > div > div > div.modal-focus-target > div.modal-footer > a.btn.btn-primary.button-1",
+      "start_date_input": "#ctlBodyPane_ctl00_ctl01_txtStartSaleDate",
+      "end_date_input": "#ctlBodyPane_ctl00_ctl01_txtEndSaleDate",
+      "price_low_input": "#ctlBodyPane_ctl00_ctl01_txtStartSalePrice",
+      "price_high_input": "#ctlBodyPane_ctl00_ctl01_txtEndSalePrice",
+      "qualified_sales_button": "#ctlBodyPane_ctl00_ctl01_rdQualifiedSales_0",
+      "search_button": "#ctlBodyPane_ctl00_ctl01_btnSearch",
+      "dropdown_menu": "#ctlBodyPane_ctl00_ctl01_ddlFileTypes",
+      "csv_option": "#ctlBodyPane_ctl00_ctl01_ddlFileTypes > option:nth-child(2)",
+      "download_button": "#ctlBodyPane_ctl00_ctl01_btnDownload",
+      "results_tab": "#results2 > a",
+      "dropdown_menu_results": "#ctlBodyPane_ctl01_ctl01_ddlFileTypes",
+      "csv_option_results": "#ctlBodyPane_ctl01_ctl01_ddlFileTypes > option:nth-child(3)",
+      "download_button_results": "#ctlBodyPane_ctl01_ctl01_btnDownload"
+    }
+  },
+
+"jackson": {
+    "url": "https://qpublic.schneidercorp.com/Application.aspx?AppID=851&LayerID=15884&PageTypeID=2&PageID=7089",
+    "selectors": {
+      "data_date": "#hlkLastUpdated",
+      "disclaimer_button": "#appBody > div.modal.in > div > div > div.modal-focus-target > div.modal-footer > a.btn.btn-primary.button-1",
+      "start_date_input": "#ctlBodyPane_ctl00_ctl01_txtStartSaleDate",
+      "end_date_input": "#ctlBodyPane_ctl00_ctl01_txtEndSaleDate",
+      "price_low_input": "#ctlBodyPane_ctl00_ctl01_txtStartSalePrice",
+      "price_high_input": "#ctlBodyPane_ctl00_ctl01_txtEndSalePrice",
+      "qualified_sales_button": "#ctlBodyPane_ctl00_ctl01_rdQualifiedSales_0",
+      "search_button": "#ctlBodyPane_ctl00_ctl01_btnSearch",
+      "dropdown_menu": "#ctlBodyPane_ctl00_ctl01_ddlFileTypes",
+      "csv_option": "#ctlBodyPane_ctl00_ctl01_ddlFileTypes > option:nth-child(2)",
+      "download_button": "#ctlBodyPane_ctl00_ctl01_btnDownload",
+      "results_tab": "#results2 > a",
+      "dropdown_menu_results": "#ctlBodyPane_ctl01_ctl01_ddlFileTypes",
+      "csv_option_results": "#ctlBodyPane_ctl01_ctl01_ddlFileTypes > option:nth-child(3)",
+      "download_button_results": "#ctlBodyPane_ctl01_ctl01_btnDownload"
+    }
+  },
+
+"bay": {
+    "url": "https://qpublic.schneidercorp.com/application.aspx?AppID=834&LayerID=15170&PageTypeID=2&PageID=6916",
+    "selectors": {
+      "data_date": "#hlkLastUpdated",
+      "disclaimer_button": "#appBody > div.modal.in > div > div > div.modal-focus-target > div.modal-footer > a.btn.btn-primary.button-1",
+      "start_date_input": "#ctlBodyPane_ctl00_ctl01_txtStartSaleDate",
+      "end_date_input": "#ctlBodyPane_ctl00_ctl01_txtEndSaleDate",
+      "price_low_input": "#ctlBodyPane_ctl00_ctl01_txtStartSalePrice",
+      "price_high_input": "#ctlBodyPane_ctl00_ctl01_txtEndSalePrice",
+      "qualified_sales_button": "#ctlBodyPane_ctl00_ctl01_rdQualifiedSales_0",
+      "search_button": "#ctlBodyPane_ctl00_ctl01_btnSearch",
+      "dropdown_menu": "#ctlBodyPane_ctl00_ctl01_ddlFileTypes",
+      "csv_option": "#ctlBodyPane_ctl00_ctl01_ddlFileTypes > option:nth-child(2)",
+      "download_button": "#ctlBodyPane_ctl00_ctl01_btnDownload",
+      "results_tab": "#results2 > a",
+      "dropdown_menu_results": "#ctlBodyPane_ctl01_ctl01_ddlFileTypes",
+      "csv_option_results": "#ctlBodyPane_ctl01_ctl01_ddlFileTypes > option:nth-child(3)",
+      "download_button_results": "#ctlBodyPane_ctl01_ctl01_btnDownload"
+    }
+  },
+
+"glades": {
+    "url": "https://qpublic.schneidercorp.com/Application.aspx?AppID=818&LayerID=14562&PageTypeID=2&PageID=6968",
+    "selectors": {
+      "data_date": "#hlkLastUpdated",
+      "disclaimer_button": "#appBody > div.modal.in > div > div > div.modal-focus-target > div.modal-footer > a.btn.btn-primary.button-1",
+      "start_date_input": "#ctlBodyPane_ctl00_ctl01_txtStartSaleDate",
+      "end_date_input": "#ctlBodyPane_ctl00_ctl01_txtEndSaleDate",
+      "price_low_input": "#ctlBodyPane_ctl00_ctl01_txtStartSalePrice",
+      "price_high_input": "#ctlBodyPane_ctl00_ctl01_txtEndSalePrice",
+      "qualified_sales_button": "#ctlBodyPane_ctl00_ctl01_rdQualifiedSales_0",
+      "search_button": "#ctlBodyPane_ctl00_ctl01_btnSearch",
+      "dropdown_menu": "#ctlBodyPane_ctl00_ctl01_ddlFileTypes",
+      "csv_option": "#ctlBodyPane_ctl00_ctl01_ddlFileTypes > option:nth-child(2)",
+      "download_button": "#ctlBodyPane_ctl00_ctl01_btnDownload",
+      "results_tab": "#results10 > a",
+      "dropdown_menu_results": "#ctlBodyPane_ctl01_ctl01_ddlFileTypes",
+      "csv_option_results": "#ctlBodyPane_ctl01_ctl01_ddlFileTypes > option:nth-child(3)",
+      "download_button_results": "#ctlBodyPane_ctl01_ctl01_btnDownload"
+    }
+  },
+
+"sumter": {
+    "url": "https://qpublic.schneidercorp.com/Application.aspx?AppID=1207&LayerID=36374&PageTypeID=2&PageID=13881",
+    "selectors": {
+      "data_date": "#hlkLastUpdated",
+      "disclaimer_button": "#appBody > div.modal.in > div > div > div.modal-focus-target > div.modal-footer > a.btn.btn-primary.button-1",
+      "start_date_input": "#ctlBodyPane_ctl00_ctl01_txtSaleDateLowDetail",
+      "end_date_input": "#ctlBodyPane_ctl00_ctl01_txtSaleDateHighDetail",
+      "price_low_input": "#ctlBodyPane_ctl00_ctl01_txtStartSalePrice",
+      "price_high_input": "#ctlBodyPane_ctl00_ctl01_txtEndSalePrice",
+      "qualified_sales_button": "#ctlBodyPane_ctl00_ctl01_rdQualifiedSales_0",
+      "search_button": "#ctlBodyPane_ctl00_ctl01_btnSearch",
+      "dropdown_menu": "#ctlBodyPane_ctl00_ctl01_ddlFileTypes",
+      "csv_option": "#ctlBodyPane_ctl00_ctl01_ddlFileTypes > option:nth-child(2)",
+      "download_button": "#ctlBodyPane_ctl00_ctl01_btnDownload",
+      "date_range_button": "#ctlBodyPane_ctl00_ctl01_rdbUseSaleDateRange",
+      "results_tab": "#results11 > a",
+      "dropdown_menu_results": "#ctlBodyPane_ctl01_ctl01_ddlFileTypes",
+      "csv_option_results": "#ctlBodyPane_ctl01_ctl01_ddlFileTypes > option:nth-child(3)",
+      "download_button_results": "#ctlBodyPane_ctl01_ctl01_btnDownload"
+    }
+  },
+
+"clay": {
+    "url": "https://qpublic.schneidercorp.com/Application.aspx?AppID=830&LayerID=15008&PageTypeID=2&PageID=6984",
+    "selectors": {
+      "data_date": "#hlkLastUpdated",
+      "disclaimer_button": "#appBody > div.modal.in > div > div > div.modal-focus-target > div.modal-footer > a.btn.btn-primary.button-1",
+      "start_date_input": "#ctlBodyPane_ctl00_ctl01_txtStartSaleDate",
+      "end_date_input": "#ctlBodyPane_ctl00_ctl01_txtEndSaleDate",
+      "price_low_input": "#ctlBodyPane_ctl00_ctl01_txtStartSalePrice",
+      "price_high_input": "#ctlBodyPane_ctl00_ctl01_txtEndSalePrice",
+      "qualified_sales_button": "#ctlBodyPane_ctl00_ctl01_rdQualifiedSales_0",
+      "search_button": "#ctlBodyPane_ctl00_ctl01_btnSearch",
+      "dropdown_menu": "#ctlBodyPane_ctl00_ctl01_ddlFileTypes",
+      "csv_option": "#ctlBodyPane_ctl00_ctl01_ddlFileTypes > option:nth-child(2)",
+      "download_button": "#ctlBodyPane_ctl00_ctl01_btnDownload",
+      "results_tab": "#results2 > a",
+      "dropdown_menu_results": "#ctlBodyPane_ctl01_ctl01_ddlFileTypes",
+      "csv_option_results": "#ctlBodyPane_ctl01_ctl01_ddlFileTypes > option:nth-child(3)",
+      "download_button_results": "#ctlBodyPane_ctl01_ctl01_btnDownload"
+    }
+  },
+
+"GRIZZLY COUNTIES": {},
+
+"union": {
+    "url": "https://union.floridapa.com/gis/",
+    "selectors": {
+      "disclaimer_button": "#button1",
+      "sales_report": "a[href='./?showForm=2']",
+      "sales_price_box": "input[name='SalePriceFrom']",
+      "last_sale_box": "input[name='LastSaleOnly']",
+      "search_year": "input[name='chk_year']",
+      "entire_year": "input[name='SaleReport_Month'][value='0']",
+      "generate_report": "input[type='submit'][value='Generate Report >>']",
+      "download_print_report": "input[value='Download / Print Report']",
+      "tab_delim_ascii": "input[type='radio'][name='DownloadType'][value='ASCII']",
+      "get_mailing": "input[type='submit'][name*='Mailing'][value='Get']",
+      "get_det_sales": "input[type='submit'][name='Detailed_Sales'][value='Get']"
+    },
+    "frames": {
+      "sales_report_frame": "recordSearchContent_1_iframe"
+    }
+  },
+
+"columbia": {
+    "url": "https://columbia.floridapa.com/gis/",
+    "selectors": {
+      "disclaimer_button": "#button1",
+      "sales_report": "a[href='./?showForm=2']",
+      "sales_price_box": "input[name='SalePriceFrom']",
+      "last_sale_box": "input[name='LastSaleOnly']",
+      "search_year": "input[name='chk_year']",
+      "entire_year": "input[name='SaleReport_Month'][value='0']",
+      "generate_report": "input[type='submit'][value='Generate Report >>']",
+      "download_print_report": "input[value='Download / Print Report']",
+      "tab_delim_ascii": "input[type='radio'][name='DownloadType'][value='ASCII']",
+      "get_mailing": "input[type='submit'][name*='Mailing'][value='Get']",
+      "get_det_sales": "input[type='submit'][name='Detailed_Sales'][value='Get']"
+    },
+    "frames": {
+      "sales_report_frame": "recordSearchContent_1_iframe"
+    }
+  },
+
+"suwannee": {
+    "url": "https://www.suwanneepa.com/gis/",
+    "selectors": {
+      "disclaimer_button": "#button1",
+      "sales_report": "a[href='./?showForm=2']",
+      "sales_price_box": "input[name='SalePriceFrom']",
+      "last_sale_box": "input[name='LastSaleOnly']",
+      "search_year": "input[name='chk_year']",
+      "entire_year": "input[name='SaleReport_Month'][value='0']",
+      "generate_report": "input[type='submit'][value='Generate Report >>']",
+      "download_print_report": "input[value='Download / Print Report']",
+      "tab_delim_ascii": "input[type='radio'][name='DownloadType'][value='ASCII']",
+      "get_mailing": "input[type='submit'][name*='Mailing'][value='Get']",
+      "get_det_sales": "input[type='submit'][name='Detailed_Sales'][value='Get']"
+    },
+    "frames": {
+      "sales_report_frame": "recordSearchContent_1_iframe"
+    }
+  },
+
+"okeechobee": {
+    "url": "https://www.okeechobeepa.com/gis/",
+    "selectors": {
+      "disclaimer_button": "#button1",
+      "sales_report": "a[href='./?showForm=2']",
+      "sales_price_box": "input[name='SalePriceFrom']",
+      "last_sale_box": "input[name='LastSaleOnly']",
+      "search_year": "input[name='chk_year']",
+      "entire_year": "input[name='SaleReport_Month'][value='0']",
+      "generate_report": "input[type='submit'][value='Generate Report >>']",
+      "download_print_report": "input[value='Download / Print Report']",
+      "tab_delim_ascii": "input[type='radio'][name='DownloadType'][value='ASCII']",
+      "get_mailing": "input[type='submit'][name*='Mailing'][value='Get']",
+      "get_det_sales": "input[type='submit'][name='Detailed_Sales'][value='Get']"
+    },
+    "frames": {
+      "sales_report_frame": "recordSearchContent_1_iframe"
+    }
+  },
+  
+"desoto": {
+    "url": "https://www.desotopa.com/gis/",
+    "selectors": {
+      "disclaimer_button": "#button1",
+      "sales_report": "a[href='./?showForm=2']",
+      "sales_price_box": "input[name='SalePriceFrom']",
+      "last_sale_box": "input[name='LastSaleOnly']",
+      "search_year": "input[name='chk_year']",
+      "entire_year": "input[name='SaleReport_Month'][value='0']",
+      "generate_report": "input[type='submit'][value='Generate Report >>']",
+      "download_print_report": "input[value='Download / Print Report']",
+      "tab_delim_ascii": "input[type='radio'][name='DownloadType'][value='ASCII']",
+      "get_mailing": "input[type='submit'][name*='Mailing'][value='Get']",
+      "get_det_sales": "input[type='submit'][name='Detailed_Sales'][value='Get']"
+    },
+    "frames": {
+      "sales_report_frame": "recordSearchContent_1_iframe"
+    }
+  },
+
+"bradford": {
+    "url": "https://www.bradfordappraiser.com/gis/",
+    "selectors": {
+      "disclaimer_button": "#button1",
+      "sales_report": "a[href='./?showForm=2']",
+      "sales_price_box": "input[name='SalePriceFrom']",
+      "last_sale_box": "input[name='LastSaleOnly']",
+      "search_year": "input[name='chk_year']",
+      "entire_year": "input[name='SaleReport_Month'][value='0']",
+      "generate_report": "input[type='submit'][value='Generate Report >>']",
+      "download_print_report": "input[value='Download / Print Report']",
+      "tab_delim_ascii": "input[type='radio'][name='DownloadType'][value='ASCII']",
+      "get_mailing": "input[type='submit'][name*='Mailing'][value='Get']",
+      "get_det_sales": "input[type='submit'][name='Detailed_Sales'][value='Get']"
+    },
+    "frames": {
+      "sales_report_frame": "recordSearchContent_1_iframe"
+    }
+  },
+
+"lafayette": {
+    "url": "https://www.lafayettepa.com/gis/",
+    "selectors": {
+      "disclaimer_button": "#button1",
+      "sales_report": "a[href='./?showForm=2']",
+      "sales_price_box": "input[name='SalePriceFrom']",
+      "last_sale_box": "input[name='LastSaleOnly']",
+      "search_year": "input[name='chk_year']",
+      "entire_year": "input[name='SaleReport_Month'][value='0']",
+      "generate_report": "input[type='submit'][value='Generate Report >>']",
+      "download_print_report": "input[value='Download / Print Report']",
+      "tab_delim_ascii": "input[type='radio'][name='DownloadType'][value='ASCII']",
+      "get_mailing": "input[type='submit'][name*='Mailing'][value='Get']",
+      "get_det_sales": "input[type='submit'][name='Detailed_Sales'][value='Get']"
+    },
+    "frames": {
+      "sales_report_frame": "recordSearchContent_1_iframe"
+    }
+  },
+
+"GSA CORP COUNTIES": {},
+
+"wakulla": {
+  "url": "https://search.mywakullapa.com/search/adv",
+  "filename": {
+    "sale_file": "Sale Search Export*.csv"
+  },
+  "selectors": {
+    "start_date_input": "#tab-search-adv > div > form > div.form-fields > div:nth-child(3) > label:nth-child(4) > div > input[type=date]:nth-child(1)",
+    "end_date_input": "#tab-search-adv > div > form > div.form-fields > div:nth-child(3) > label:nth-child(4) > div > input[type=date]:nth-child(3)",
+    "price_low_input": "#query_sale_price_min",
+    "price_high_input": "#tab-search-adv > div > form > div.form-fields > div:nth-child(3) > label:nth-child(3) > div > input:nth-child(3)",
+    "sale_search": "#tab-search-adv > div > form > div:nth-child(2) > div > button:nth-child(2)",
+    "csv_option": "#export-options > label:nth-child(2) > select > option:nth-child(1)",
+    "export": "#export-options > button"
+  }
+},
+
+"nassau": {
+  "url": "https://search.ncpafl.com/#tab-search-adv",
+  "filename": {
+    "sale_file": "Sale Search Export*.csv"
+  },
+  "selectors": {
+    "start_date_input": "#tab-search-adv > div > form > div.form-fields > div:nth-child(3) > label:nth-child(4) > div > input[type=date]:nth-child(1)",
+    "end_date_input": "#tab-search-adv > div > form > div.form-fields > div:nth-child(3) > label:nth-child(4) > div > input[type=date]:nth-child(3)",
+    "price_low_input": "#query_sale_price_min",
+    "price_high_input": "#tab-search-adv > div > form > div.form-fields > div:nth-child(3) > label:nth-child(3) > div > input:nth-child(3)",
+    "sale_search": "#tab-search-adv > div > form > div:nth-child(2) > div > button:nth-child(2)",
+    "csv_option": "#export-options > label:nth-child(2) > select > option:nth-child(1)",
+    "export": "#export-options > button"
+  }
+},
+
+"franklin": {
+  "url": "https://franklin-search.gsacorp.io/#tab-search-adv",
+  "filename": {
+    "sale_file": "Sale Search Export*.csv"
+  },
+  "selectors": {
+    "start_date_input": "#tab-search-adv > div > form > div.form-fields > div:nth-child(3) > label:nth-child(4) > div > input[type=date]:nth-child(1)",
+    "end_date_input": "#tab-search-adv > div > form > div.form-fields > div:nth-child(3) > label:nth-child(4) > div > input[type=date]:nth-child(3)",
+    "price_low_input": "#query_sale_price_min",
+    "price_high_input": "#tab-search-adv > div > form > div.form-fields > div:nth-child(3) > label:nth-child(3) > div > input:nth-child(3)",
+    "sale_search": "#tab-search-adv > div > form > div:nth-child(2) > div > button:nth-child(2)",
+    "csv_option": "#export-options > label:nth-child(2) > select > option:nth-child(1)",
+    "export": "#export-options > button"
+  }
+},
+
+"OTHER COUNTIES": {},
+
+"indian_river": {
+    "url": "https://www.ircpa.org/site-links/pro-tools-page/",
+    "selectors": {
+      "cama_extract": "body > div.body-partial-absolute > div:nth-child(2) > div > ul:nth-child(13) > li:nth-child(1) > span > strong > a"
+    }
+},
+
+"santa_rosa": {
+    "url": "https://srcpa.gov/search",
+    "selectors": {
+      "help_box": "#cogbot_widget > div.chatbotWrap.dis-block > div.chatbotHeader.whiteIcons > div > button > svg",
+      "sales_tab": "#search-tabs > a:nth-child(3)",
+      "start_date_input": "#saleDateFrom",
+      "end_date_input": "#saleDateTo",
+      "search_button": "#queryParameters > div.flex.flex-col.lg\\:flex-row.justify-between.gap-4.pt-4 > div > button",
+      "dropdown_menu": "#format",
+      "csv_option": "#format > option:nth-child(2)",
+      "export_all": "body > div > div.flex.justify-center.gap-4.mb-3.flex-wrap.mt-4 > div > div.grid.sm\\:grid-cols-2.pt-4.gap-3 > form:nth-child(1) > button"
+    },
+    "frames": {
+      "frame0": "search-frame"
+    }
+},
+
+"collier": {
+    "url": "https://www.collierappraiser.com/Main_Data/MainData.html",
+    "selectors": {
+      "privacy_disclaimer": "body > div.ui-dialog.ui-corner-all.ui-widget.ui-widget-content.ui-front.ui-dialog-buttons > div.ui-dialog-buttonpane.ui-widget-content.ui-helper-clearfix > div > button",
+      "wait_for_download_page": "td > a.btn.navbtn[href=\"/disclaimer_dd.html\"]",
+      "download_page": "#AutoNumber3 > tbody > tr > td > table > tbody > tr:nth-child(6) > td > a",
+      "disclaimer_button": "#submit",
+      "download_tab": "#ui-id-1",
+      "csv_files": "#ui-id-2 > table > tbody > tr:nth-child(7) > td:nth-child(3) > a",
+      "download_disclaimer": "input[type='submit'][value='Download anyway']"
+    }
+},
+
+"palm_beach": {
+  "parcels": {
+    "url": "https://opendata2-pbcgov.opendata.arcgis.com/datasets/property-information-table/explore",
+    "filename": "Property_Information_Table*.csv",
+    "selectors": {
+      "data_date": "li.metadata-item[data-test=\"modified\"] > div:nth-child(2)",
+      "wait_for_selector": ".hub-toolbar-inner.hide-overflow > button:nth-child(4)",
+      "download_tab": "button.btn.btn-default.btn-block",
+      "download_button": "button.button-padding--shrunk.content--slotted.icon-end-empty",
+      "outer_shadow_selector": "arcgis-hub-download-list",
+      "nested_shadow_selector": "arcgis-hub-download-list-item",
+      "nested_shadow_selector_2": "calcite-button",
+      "DOWNLOAD_TAB_OLD": ".hub-toolbar-inner.hide-overflow > button:nth-child(3)"
+    }
+  },
+  "flu": {
+    "url": "https://opendata2-pbcgov.opendata.arcgis.com/datasets/b51f020933414fe0b4ced4b8cebbc47f_6/explore?location=26.635979%2C-80.440400%2C9.85",
+    "filename": "Future_Land_Use.zip",
+    "selectors": {
+      "data_date": "li.metadata-item[data-test=\"modified\"] > div:nth-child(2)",
+      "wait_for_selector": ".hub-toolbar-inner.hide-overflow > button:nth-child(4)",
+      "download_tab": "button.btn.btn-default.btn-block",
+      "download_button": "button.button-padding--shrunk.content--slotted.icon-end-empty",
+      "outer_shadow_selector": "arcgis-hub-download-list",
+      "nested_shadow_selector": "arcgis-hub-download-list-item:nth-of-type(2)",
+      "nested_shadow_selector_2": "calcite-button"
+    }
+  },
+  "zoning": {
+    "url": "https://opendata2-pbcgov.opendata.arcgis.com/datasets/38bec210586e4b828f2601b20d1f0dd3_9/explore",
+    "filename": "Zoning.zip",
+    "selectors": {
+      "data_date": "li.metadata-item[data-test=\"modified\"] > div:nth-child(2)",
+      "wait_for_selector": ".hub-toolbar-inner.hide-overflow > button:nth-child(4)",
+      "download_tab": "button.btn.btn-default.btn-block",
+      "download_button": "button.button-padding--shrunk.content--slotted.icon-end-empty",
+      "outer_shadow_selector": "arcgis-hub-download-list",
+      "nested_shadow_selector": "arcgis-hub-download-list-item:nth-of-type(2)",
+      "nested_shadow_selector_2": "calcite-button"
+    }
+  }
+},
+
+"duval": {
+  "url": "https://www.jacksonville.gov/departments/property-appraiser/information-offerings",
+  "filename": {
+    "download_I": "DCPAO-REAL-ESTATE-PIPE-DELIMITED-TEXT-UNCERTIFIED-AS-OF*.zip",
+    "download_II": "DCPAO-REAL-ESTATE-SALES-FIXED-FORMAT-TEXT-FILE*.zip"
+  },
+  "selectors": {
+    "download_button_I": "#aspnetForm > div.page > div.contentWrapper > div > div > div.content > div > div > div.pageContent > main > table:nth-child(6) > tbody > tr:nth-child(5) > td:nth-child(1) > span > a:nth-child(2)",
+    "download_button_II": "#aspnetForm > div.page > div.contentWrapper > div > div > div.content > div > div > div.pageContent > main > table:nth-child(7) > tbody > tr:nth-child(4) > td:nth-child(2) > a"
+  }
+},
+
+"pinellas": {
+  "url": "https://www.pcpao.gov/tools-data/data-downloads/raw-database-files",
+  "filename": {
+    "RP_BUILDING": "RP_BUILDING*.zip",
+    "RP_LAND": "RP_LAND*.zip",
+    "RP_PROPERTY_INFO": "RP_PROPERTY_INFO*.zip",
+    "RP_SALES": "RP_SALES*.zip",
+    "RP_OS_SALES": "RP_OS_SALES*.zip"
+  },
+  "selectors": {
+    "expand_all": "#collapse-first > div > p > button.expandAll.btn",
+    "data_date": "#collapse-1 > div > div:nth-child(2) > ul > li:nth-child(1) > span",
+    "os_sales_tab": "#heading-legacy-9",
+    "RP_BUILDING": "#collapse-1 > div > div:nth-child(2) > ul > li:nth-child(1) > i > span",
+    "RP_LAND": "#collapse-5 > div > div:nth-child(2) > ul > li:nth-child(1) > i > span",
+    "RP_PROPERTY_INFO": "#collapse-9 > div > div:nth-child(2) > ul > li:nth-child(1) > i > span",
+    "RP_SALES": "#collapse-11 > div > div:nth-child(2) > ul > li:nth-child(1) > i > span",
+    "RP_OS_SALES": "#collapse-legacy-9 > div > div:nth-child(2) > ul > li:nth-child(1) > i > span"
+}
+},
+
+"osceola": {
+  "url": {
+    "url_csv": "https://www.dropbox.com/scl/fo/k0lklflgqmyezrbe3q62p/ABQqIExbTlq-sfcEtELctVk?rlkey=24xwh1bf2somtaoud26dklw5l&e=1&dl=0",
+    "url_zip": "https://www.dropbox.com/scl/fo/ncotvgzpoii7j445mcewp/AI3y73wJ-kmBXBbgbp5ypNA?rlkey=2rheyqbskjeveytacszf3gnbo&e=2&dl=0"
+  },
+  "filenames": {
+    "csv_files": ["vw_MDlnd_a", "vw_MDmail", "vw_MDowner", "vw_MDSales1930"],
+    "zip_file": "OsceolaTaxParcels"
+  },
+  "selectors": {
+    "data_date": {
+      "vw_MDlnd_a": "#embedded-app > span > div > div > div > div._sl-page-container_cgd0f_15 > div._sl-page-body-container_cgd0f_48 > div > div._leo-redesign-sl-body_cgd0f_136 > span > div > div > div.dig-Table-body.dig-cwil8c4_21-9-0 > div:nth-child(16) > div:nth-child(2) > span",
+      "vw_MDmail": "div._sl-list--spacing_1xh7o_1.dig-Table-cell.dig-Table-cell--spacing-standard.dig-Table-cell--valign-center.dig-Table-cell--spacing-medium > span",
+      "vw_MDowner": "div._sl-list--spacing_1xh7o_1.dig-Table-cell.dig-Table-cell--spacing-standard.dig-Table-cell--valign-center.dig-Table-cell--spacing-medium.dig-cwil8cg_21-9-0.dig-cwil8ch_21-9-0.dig-cwil8cl_21-9-0.dig-cwil8cp_21-9-0 > span",
+      "vw_MDSales1930": "#embedded-app > span > div > div > div > div._sl-page-container_cgd0f_15 > div._sl-page-body-container_cgd0f_48 > div > div._leo-redesign-sl-body_cgd0f_136 > span > div > div > div.dig-Table-body.dig-cwil8c4_21-9-0 > div:nth-child(24) > div:nth-child(2) > span",
+      "OsceolaTaxParcels": "#embedded-app > span > div > div > div > div._sl-page-container_cgd0f_15 > div._sl-page-body-container_cgd0f_48 > div > div._leo-redesign-sl-body_cgd0f_136 > span > div > div > div.dig-Table-body.dig-cwil8c4_21-9-0 > div:nth-child(3) > div:nth-child(2) > span"
+    },
+    "download_button": {
+      "vw_MDlnd_a": "a[href*='vw_MDlnd_a']",
+      "vw_MDmail": "a[href*='vw_MDmail']",
+      "vw_MDowner": "a[href*='vw_MDowner']",
+      "vw_MDSales1930": "a[href*='vw_MDSales1930']",
+      "OsceolaTaxParcels": "a[href*='OsceolaTaxParcels']"
+    }
+  }
+},
+
+"escambia": {
+  "url": "https://www.escpa.org/CAMA/SaleSearch.aspx",
+  "filename": {
+    "grid_file_name": "sales_2015.csv",
+    "mailing_file_name": "sales_owners_2015.csv"
+  },
+  "selectors": {
+    "start_date_input": "#ctl00_MasterPlaceHolder_txtSDate",
+    "end_date_input": "#ctl00_MasterPlaceHolder_txtEDate",
+    "price_low_input": "#ctl00_MasterPlaceHolder_txtPrStart",
+    "price_high_input": "#ctl00_MasterPlaceHolder_txtPrEnd",
+    "improvement_status": "#ctl00_MasterPlaceHolder_rbAll",
+    "qualification_status": "#ctl00_MasterPlaceHolder_rbAllQ",
+    "property_use": "#ctl00_MasterPlaceHolder_chkUsePU",
+    "instrument_type": "#ctl00_MasterPlaceHolder_chkTransType",
+    "search_button": "#ctl00_MasterPlaceHolder_btnSubmit",
+    "grid_data_button": "#ctl00_MasterPlaceHolder_lnkDLGrid",
+    "mailing_addresses_button": "#ctl00_MasterPlaceHolder_lnkDLAddr"
+  }
+},
+
+"putnam": {
+  "url": "https://apps.putnam-fl.com/pa/property/",
+  "filename": "PropertySearch.xlsx",
+  "selectors": {
+    "disclaimer_button": "#btnAccept",
+    "sales_tab": "#tab-Advanced",
+    "sales_price_low": "#sale_price_from",
+    "sales_price_high": "#sale_price_to",
+    "sales_date_low": "#sale_date_from",
+    "sales_date_high": "#sale_date_to",
+    "search_button": "#btnSearch",
+    "download_button": "#btnDownload",
+    "download_close_button": "#download-results-dialog > div > div > div.modal-footer > button",
+    "record_number": "body > div.container-fluid.propertySearch > div:nth-child(2) > div.col-sm-12.col-xl-3.pb-3.pl-md-3.results-section > div > div.card.results-card > div.results-summary.pt-2.pb-2 > div.record-count > div > div.col-shrink-0.ml-3 > span"
+  }
+},
+
+"opendata": {
+  "selectors": {
+    "data_date": "li.metadata-item[data-test=\"modified\"] > div:nth-child(2)",
+    "data_date_alt": "li.metadata-item[data-test=\"modified\"] > div:nth-child(3)",
+    "wait_for_selector": ".hub-toolbar-inner.hide-overflow > button:nth-child(4)",
+    "download_tab": "button.btn.btn-default.btn-block",
+    "download_button": "button.button-padding--shrunk.content--slotted.icon-end-empty",
+    "outer_shadow_selector": "arcgis-hub-download-list",
+    "nested_shadow_selector": "arcgis-hub-download-list-item:nth-of-type(2)",
+    "nested_shadow_selector_2": "calcite-button",
+    "info_tab": ".hub-toolbar-inner.hide-overflow > button:nth-child(1)",
+    "DOWNLOAD_TAB_OLD": ".hub-toolbar-inner.hide-overflow > button:nth-child(3)"
+  }
+},
+
+"WGET COUNTIES": {},
+
+
+
+"polk": {
+  "cwd": "/srv/mapwise_dev/county/polk/processing/database/current/source_data",
+  "pre_commands": [],
+  "download_commands": [
+    "wget -N -O ftp_bldg.zip \"https://www.polkpa.org/FTPPage/downloader.ashx?filename=ftp_bldg.zip&dir=%5CAppraisalData%5C\" -U \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/98.0.4758.82 Safari/537.36\"",
+    "wget -N -O ftp_land.zip \"https://www.polkpa.org/FTPPage/downloader.ashx?filename=ftp_land.zip&dir=%5CAppraisalData%5C\" -U \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/98.0.4758.82 Safari/537.36\"",
+    "wget -N -O ftp_legal.zip \"https://www.polkpa.org/FTPPage/downloader.ashx?filename=ftp_legal.zip&dir=%5CAppraisalData%5C\" -U \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/98.0.4758.82 Safari/537.36\"",
+    "wget -N -O ftp_owner.zip \"https://www.polkpa.org/FTPPage/downloader.ashx?filename=ftp_owner.zip&dir=%5CAppraisalData%5C\" -U \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/98.0.4758.82 Safari/537.36\"",
+    "wget -N -O ftp_parcel.zip \"https://www.polkpa.org/FTPPage/downloader.ashx?filename=ftp_parcel.zip&dir=%5CAppraisalData%5C\" -U \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/98.0.4758.82 Safari/537.36\"",
+    "wget -N -O ftp_parceltax.zip \"https://www.polkpa.org/FTPPage/downloader.ashx?filename=ftp_parceltax.zip&dir=%5CAppraisalData%5C\" -U \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/98.0.4758.82 Safari/537.36\"",
+    "wget -N -O ftp_sales.zip \"https://www.polkpa.org/FTPPage/downloader.ashx?filename=ftp_sales.zip&dir=%5CAppraisalData%5C\" -U \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/98.0.4758.82 Safari/537.36\"",
+    "wget -N -O ftp_site.zip \"https://www.polkpa.org/FTPPage/downloader.ashx?filename=ftp_site.zip&dir=%5CAppraisalData%5C\" -U \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/98.0.4758.82 Safari/537.36\"",
+    "wget -N -O ftp_sub.zip \"https://www.polkpa.org/FTPPage/downloader.ashx?filename=ftp_sub.zip&dir=%5CAppraisalData%5C\" -U \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/98.0.4758.82 Safari/537.36\""
+  ],
+  "post_commands": [
+    "unzip -oj '*.zip'",
+    "python3 /srv/tools/python/lib/get_file_date.py ftp_parcel.txt"
+  ]
+},
+"alachua": {
+  "cwd": "/srv/mapwise_dev/county/alachua/processing/database/current/source_data",
+  "pre_commands": [],
+  "download_commands": [
+    "wget -N https://s3.amazonaws.com/acpa.cama/ACPA_CAMAData.zip"
+  ],
+  "post_commands": [
+    "unzip -o ACPA_CAMAData.zip",
+    "python3 /srv/tools/python/lib/get_file_date.py Sales.txt"
+  ]
+},
+
+"brevard": {
+  "cwd": "/srv/mapwise_dev/county/brevard/processing/database/current/source_data",
+  "pre_commands": [],
+  "download_commands": [
+    "wget -N https://www.bcpao.us/Docs/PublicDownload/PropData/WebData.zip"
+  ],
+  "post_commands": [
+    "unzip -o WebData.zip",
+    "python3 /srv/tools/python/lib/get_file_date.py BCPAOWebData.accdb"
+  ]
+},
+
+"charlotte": {
+  "cwd": "/srv/mapwise_dev/county/charlotte/processing/database/current/source_data",
+  "pre_commands": [],
+  "download_commands": [
+    "wget -N https://www.ccappraiser.com/downloads/charlotte.zip",
+    "wget -N https://www.ccappraiser.com/downloads/sales.zip"
+  ],
+  "post_commands": [
+    "unzip -o '*.zip'",
+    "python3 /srv/tools/python/lib/get_file_date.py cd.txt"
+  ]
+},
+
+"citrus": {
+  "cwd": "/srv/mapwise_dev/county/citrus/processing/database/current/source_data/",
+  "pre_commands": [],
+  "download_commands": [
+    "wget -N ftp://ftp.citruspa.org/data/updated_vendor_dump/Citrus_CAMA_Curr.zip"
+  ],
+  "post_commands": [
+    "unzip -oj Citrus_CAMA_Curr.zip",
+    "python3 /srv/tools/python/lib/get_file_date.py VD_SALES.TXT"
+  ]
+},
+
+"clay_wget": {
+  "cwd": "/srv/mapwise_dev/county/clay/processing/database/current/source_data",
+  "pre_commands": [
+    "rmdir --ignore-fail-on-non-empty OwnerDataCurrentYear"
+  ],
+  "download_commands": [
+    "wget -N https://www.ccpao.com/wp-content/uploads/sites/19/2024/05/OwnerDataCurrentYear.zip"
+  ],
+  "post_commands": [
+    "unzip -o OwnerDataCurrentYear.zip",
+    "zip_rename_date.sh OwnerDataCurrentYear.zip",
+    "python3 /srv/tools/python/lib/get_file_date.py view_FLClayView4Sales.csv"
+  ]
+},
+
+"hernando": {
+  "cwd": "/srv/mapwise_dev/county/hernando/processing/database/current/source_data",
+  "pre_commands": [],
+  "download_commands": [
+    "wget -N https://downloadfiles.hernandopa-fl.us/ERAFILE-FULL.zip"
+  ],
+  "post_commands": [
+    "unzip -o 'ERAFILE-FULL.zip'",
+    "python3 /srv/tools/python/lib/get_file_date.py ERAFILE-FULL.TXT"
+  ]
+},
+
+"highlands": {
+  "cwd": "/srv/mapwise_dev/county/highlands/processing/database/current/source_data",
+  "pre_commands": [],
+  "download_commands": [
+    "wget -N http://www.hcpao.org/files/all.zip",
+    "wget -N http://www.hcpao.org/files/sales.zip"
+  ],
+  "post_commands": [
+    "unzip -o '*.zip'",
+    "python3 /srv/tools/python/lib/get_file_date.py sales.txt"
+  ]
+},
+
+"hillsborough": {
+  "cwd": "/srv/mapwise_dev/county/hillsborough/processing/vector/propapp/current/source_data",
+  "pre_commands": [],
+  "download_commands": [
+    "wget -N ftp://public:access@ftp.hcpafl.org/shapefiles/parcel*.*",
+    "wget -N ftp://public:access@ftp.hcpafl.org/shapefiles/allsale*.*"
+  ],
+  "post_commands": [
+    "ls -t *.zip | head -n 2 | xargs -I{} unzip -o {}",
+    "zip_rename_date.sh $(ls -t *.zip | head -n 1)",
+    "python3 /srv/tools/python/lib/get_file_date.py allsales.dbf"
+  ]
+},
+
+"leon": {
+  "cwd": "/srv/mapwise_dev/county/leon/processing/database/current/source_data",
+  "pre_commands": [],
+  "download_commands": [
+    "wget -N https://search.leonpa.gov/Downloads/Certified_Data.csv",
+    "wget -N https://search.leonpa.gov/Downloads/BuildingData2023.zip",
+    "wget -N https://search.leonpa.gov/Downloads/SalesData.csv",
+    "wget -N https://search.leonpa.gov/Downloads/SalesHistory.csv",
+    "wget -N https://search.leonpa.gov/Downloads/Subdivisions.zip"
+  ],
+  "post_commands": [
+    "unzip -o BuildingData*.zip",
+    "zip_rename_date.sh $(ls -t *.zip | head -n 1)",
+    "python3 /srv/tools/python/lib/get_file_date.py SalesData.csv"
+  ]
+},
+
+"manatee": {
+  "cwd": "/srv/mapwise_dev/county/manatee/processing/database/current/source_data",
+  "pre_commands": [
+    "rm *.doc",
+    "rm *.csv",
+    "rm AA407.zip"
+  ],
+  "download_commands": [
+    "wget -N https://www.manateepao.com/data/aa407.zip"
+  ],
+  "post_commands": [
+    "unzip -o 'aa407.zip'",
+    "python3 /srv/tools/python/lib/get_file_date.py SALES.DAT"
+  ]
+},
+
+"martin": {
+  "cwd": "/srv/mapwise_dev/county/martin/processing/database/current/source_data",
+  "pre_commands": [],
+  "download_commands": [
+    "wget -N https://www.pa.martin.fl.us/tools-resources/data-downloads/38-real-improvement/download -O real_improv.zip",
+    "wget -N https://www.pa.martin.fl.us/tools-resources/data-downloads/46-real-master/download -O real_master.zip",
+    "wget -N https://www.pa.martin.fl.us/tools-resources/data-downloads/44-real-land/download -O real_land.zip",
+    "wget -N https://www.pa.martin.fl.us/tools-resources/data-downloads/48-current-value-summary-fka-ucav/download -O ucav.zip",
+    "wget -N https://www.pa.martin.fl.us/tools-resources/data-downloads/39-real-transfers/download -O real_transfers.zip",
+    "wget -N https://www.pa.martin.fl.us/tools-resources/data-downloads/37-full-legal/download -O fulllegal.zip",
+    "wget -N https://www.pa.martin.fl.us/tools-resources/data-downloads/1169-real-owners/download -O real_owners.zip"
+  ],
+  "post_commands": [
+    "unzip -o '*.zip'",
+    "python3 /srv/tools/python/lib/get_file_date.py real_land.csv"
+  ]
+},
+
+"okaloosa_wget": {
+  "cwd": "/srv/mapwise_dev/county/okaloosa/processing/vector/propapp/current/source_data",
+  "pre_commands": [],
+  "download_commands": [
+    "wget -N https://gis.myokaloosa.com/gisdata/Property_Appraiser/Shapefiles/parcel.zip"
+  ],
+  "post_commands": [
+    "mv Public_Data/public* .",
+    "unzip -o parcel.zip",
+    "zip_rename_date.sh parcel.zip",
+    "python3 /srv/tools/python/lib/get_file_date.py parcel.zip"
+  ]
+},
+
+"pasco": {
+  "cwd": "/srv/mapwise_dev/county/pasco/processing/database/current/source_data",
+  "pre_commands": [],
+  "download_commands": [
+    "wget -N ftp://ftp01.pascopa.com/real_estate/building.zip",
+    "wget -N ftp://ftp01.pascopa.com/real_estate/extrafeatures.zip",
+    "wget -N ftp://ftp01.pascopa.com/real_estate/land.zip",
+    "wget -N ftp://ftp01.pascopa.com/real_estate/legal.zip",
+    "wget -N ftp://ftp01.pascopa.com/real_estate/parcel.zip",
+    "wget -N ftp://ftp01.pascopa.com/real_estate/parcel_summary.zip",
+    "wget -N ftp://ftp01.pascopa.com/real_estate/owners.zip",
+    "wget -N ftp://ftp01.pascopa.com/real_estate/sales.zip",
+    "wget -N ftp://ftp01.pascopa.com/real_estate/site_addresses.zip",
+    "wget -N ftp://ftp01.pascopa.com/real_estate/subarea.zip",
+    "wget -N ftp://ftp01.pascopa.com/real_estate/subdivision_index.zip"
+  ],
+  "post_commands": [
+    "unzip -o '*.zip'",
+    "python3 /srv/tools/python/lib/get_file_date.py owners.csv"
+  ]
+},
+
+"seminole": {
+  "cwd": "/srv/mapwise_dev/county/seminole/processing/database/current/source_data",
+  "pre_commands": [],
+  "download_commands": [
+    "wget -N https://files.scpafl.org/data/SeminoleCountyParcelData.zip"
+  ],
+  "post_commands": [
+    "unzip -oj SeminoleCountyParcelData.zip",
+    "python3 /srv/tools/python/lib/get_file_date.py SeminoleCountyParcelData.accdb"
+  ]
+},
+
+"st_johns": {
+  "cwd": "/srv/mapwise_dev/county/st_johns/processing/database/current/source_data",
+  "pre_commands": [],
+  "download_commands": [
+    "wget -N https://sftp.sjcpa.us/CAMAData.zip",
+    "wget -N https://sftp.sjcpa.us/CAMADataSup.zip"
+  ],
+  "post_commands": [
+    "unzip -o CAMAData.zip",
+    "unzip -o CAMADataSup.zip",
+    "python3 /srv/tools/python/lib/get_file_date.py CAMAData.mdb"
+  ]
+},
+
+"st_lucie": {
+  "cwd": "/srv/mapwise_dev/county/st_lucie/processing/database/current/source_data",
+  "pre_commands": [],
+  "download_commands": [
+    "wget -N https://www.paslc.org/downloads/StLucieCAMA_Summary.zip"
+  ],
+  "post_commands": [
+    "unzip -o 'StLucieCAMA_Summary.zip'",
+    "/srv/tools/bash/zip_rename_date.sh StLucieCAMA_Summary.zip",
+    "python3 /srv/tools/python/lib/get_file_date.py Transactions.csv"
+  ]
+},
+
+"volusia": {
+  "cwd": "/srv/mapwise_dev/county/volusia/processing/database/current/source_data",
+  "pre_commands": [],
+  "download_commands": [
+    "wget -N https://vcpa.vcgov.org/files/database/CAMA_DATA_EXPORT.zip"
+  ],
+  "post_commands": [
+    "unzip -o 'CAMA_DATA_EXPORT.zip'",
+    "/srv/tools/bash/zip_rename_date.sh CAMA_DATA_EXPORT.zip",
+    "python3 /srv/tools/python/lib/get_file_date.py CAMA_DATA_EXPORT_WEB.accdb"
+  ]
+}
+}
