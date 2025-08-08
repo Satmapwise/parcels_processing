@@ -41,6 +41,10 @@ except Exception:
     _selenium_shutdown = None
     _selenium_download_opendata = None
 
+# Shared Selenium state across layers
+_SELENIUM_DRIVER = None
+_SELENIUM_REMAINING = set()
+
 # ---------------------------------------------------------------------------
 # Layer Configuration
 # ---------------------------------------------------------------------------
@@ -1883,7 +1887,12 @@ def extract_shp_metadata(shp_path, logger):
 # ---------------------------------------------------------------------------
 
 def process_layer(layer, queue, entity_components):
-    """Process a layer for entities in the queue using the 4-stage pipeline."""
+    """Process a layer for entities in the queue using the 4-stage pipeline.
+
+    Queue adjustment: move SELENIUM entities to the front so they execute first
+    within the layer, enabling us to initialize/close the Selenium driver only once
+    across the entire run while still grouping by layer.
+    """
     if CONFIG.run_download:
         logging.info(f"Starting processing for layer '{layer}' with {len(queue)} entities")
     else:
@@ -1892,7 +1901,32 @@ def process_layer(layer, queue, entity_components):
     # Initialize CSV status tracking for entities in queue
     _initialize_csv_status(layer, queue, entity_components)
     
+    # Reorder queue: SELENIUM-first within this layer
+    try:
+        def _is_selenium_entity(ent: str) -> bool:
+            comps = entity_components.get(ent, {})
+            cached = comps.get('db_fields') if isinstance(comps, dict) else None
+            dl = (cached.get('download') if cached else None) or ''
+            return str(dl).strip().upper() == 'SELENIUM'
+        selenium_entities = [e for e in queue if _is_selenium_entity(e)]
+        non_selenium_entities = [e for e in queue if not _is_selenium_entity(e)]
+        queue = selenium_entities + non_selenium_entities
+    except Exception:
+        # If anything goes wrong, fall back to original order
+        pass
+
     results = []
+    # Track SELENIUM entities from this layer; add to global remaining set
+    try:
+        for e in queue:
+            comps = entity_components.get(e, {})
+            cached = comps.get('db_fields') if isinstance(comps, dict) else None
+            dl = (cached.get('download') if cached else None) or ''
+            if str(dl).strip().upper() == 'SELENIUM':
+                _SELENIUM_REMAINING.add(e)
+    except Exception:
+        pass
+
     for entity in queue:
         entity_start_time = datetime.now()
         try:
@@ -1977,6 +2011,27 @@ def process_layer(layer, queue, entity_components):
             results.append(result_entry)
             logging.info(f"--- Successfully processed entity: {entity} ---")
 
+            # If this entity was a SELENIUM entity, mark it as processed
+            try:
+                comps = entity_components.get(entity, {})
+                cached = comps.get('db_fields') if isinstance(comps, dict) else None
+                dl = (cached.get('download') if cached else None) or ''
+                if str(dl).strip().upper() == 'SELENIUM':
+                    if entity in _SELENIUM_REMAINING:
+                        _SELENIUM_REMAINING.discard(entity)
+                        logging.debug(f"Marked SELENIUM entity complete: {entity}; remaining: {len(_SELENIUM_REMAINING)}")
+                    # If none remain anywhere, shutdown the driver now
+                    if _selenium_shutdown and _SELENIUM_DRIVER and len(_SELENIUM_REMAINING) == 0:
+                        try:
+                            _selenium_shutdown(_SELENIUM_DRIVER)
+                        except Exception:
+                            pass
+                        finally:
+                            globals()['_SELENIUM_DRIVER'] = None
+                            logging.info("Closed shared Selenium driver (all SELENIUM entities completed)")
+            except Exception:
+                pass
+
         except SkipEntityError as e:
             # Handle NND cases with publish date update
             logging.info(f"Skipping entity {entity} for layer {layer}: {e}")
@@ -1995,6 +2050,24 @@ def process_layer(layer, queue, entity_components):
                 'layer': layer, 'entity': entity, 'status': 'skipped', 
                 'warning': str(e), 'data_date': None, 'runtime_seconds': entity_runtime
             })
+            # On skip, also mark selenium completion if applicable
+            try:
+                comps = entity_components.get(entity, {})
+                cached = comps.get('db_fields') if isinstance(comps, dict) else None
+                dl = (cached.get('download') if cached else None) or ''
+                if str(dl).strip().upper() == 'SELENIUM':
+                    if entity in _SELENIUM_REMAINING:
+                        _SELENIUM_REMAINING.discard(entity)
+                    if _selenium_shutdown and _SELENIUM_DRIVER and len(_SELENIUM_REMAINING) == 0:
+                        try:
+                            _selenium_shutdown(_SELENIUM_DRIVER)
+                        except Exception:
+                            pass
+                        finally:
+                            globals()['_SELENIUM_DRIVER'] = None
+                            logging.info("Closed shared Selenium driver (all SELENIUM entities completed)")
+            except Exception:
+                pass
         except LayerProcessingError as e:
             logging.error(f"Failed to process entity {entity} for layer {layer}: {e}")
             entity_end_time = datetime.now()
@@ -2003,6 +2076,24 @@ def process_layer(layer, queue, entity_components):
                 'layer': layer, 'entity': entity, 'status': 'failure', 
                 'error': str(e), 'data_date': None, 'runtime_seconds': entity_runtime
             })
+            # On failure, also mark selenium completion if applicable
+            try:
+                comps = entity_components.get(entity, {})
+                cached = comps.get('db_fields') if isinstance(comps, dict) else None
+                dl = (cached.get('download') if cached else None) or ''
+                if str(dl).strip().upper() == 'SELENIUM':
+                    if entity in _SELENIUM_REMAINING:
+                        _SELENIUM_REMAINING.discard(entity)
+                    if _selenium_shutdown and _SELENIUM_DRIVER and len(_SELENIUM_REMAINING) == 0:
+                        try:
+                            _selenium_shutdown(_SELENIUM_DRIVER)
+                        except Exception:
+                            pass
+                        finally:
+                            globals()['_SELENIUM_DRIVER'] = None
+                            logging.info("Closed shared Selenium driver (all SELENIUM entities completed)")
+            except Exception:
+                pass
 
     # Calculate stats
     total_entities = len(results)
@@ -2603,8 +2694,20 @@ def main():
             logging.info("No entities to process after applying filters.")
             return
 
-        # Group entities by layer for processing
+        # Group entities by layer for processing. Also seed the global selenium remaining set.
         entities_by_layer = group_entities_by_layer(all_entities, entity_components)
+        try:
+            global _SELENIUM_REMAINING
+            _SELENIUM_REMAINING.clear()
+            for layer_name, ents in entities_by_layer.items():
+                for e in ents:
+                    comps = entity_components.get(e, {})
+                    cached = comps.get('db_fields') if isinstance(comps, dict) else None
+                    dl = (cached.get('download') if cached else None) or ''
+                    if str(dl).strip().upper() == 'SELENIUM':
+                        _SELENIUM_REMAINING.add(e)
+        except Exception:
+            pass
         
         # Process each layer separately
         for layer, entities in entities_by_layer.items():
@@ -2625,6 +2728,12 @@ def main():
         sys.exit(1)
     finally:
         end_time = datetime.now()
+        # Ensure Selenium driver is closed if still open
+        try:
+            if _selenium_shutdown and _SELENIUM_DRIVER:
+                _selenium_shutdown(_SELENIUM_DRIVER)
+        except Exception:
+            pass
         logging.info(f"Script finished at {end_time.strftime('%Y-%m-%d %H:%M:%S')}. Total runtime: {end_time - CONFIG.start_time}")
 
 if __name__ == "__main__":
