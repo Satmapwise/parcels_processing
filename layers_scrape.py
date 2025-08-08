@@ -775,18 +775,37 @@ def _parse_processing_comments(text):
 # ---------------------------------------------------------------------------
 
 def layer_download(layer: str, entity: str, state: str, county: str, city: str, catalog_row: dict, work_dir: str, logger, entity_components: dict = None):
-    """Handle the download phase for an entity."""
+    """Handle the download phase for an entity.
+    
+    Refactored to:
+    - Select download method primarily via `download` field with fallback to `format`
+    - Perform download validation (detect changed files)
+    - If any changed file is a .zip, process it
+    - Perform data validation on all changed files (including any extracted from zip)
+    """
     if not CONFIG.run_download:
         logger.debug(f"[DOWNLOAD] Skipping download for {layer}/{entity} (disabled in config)")
         return None, None
 
     fmt = (catalog_row.get('format') or '').lower()
+    download_field = (catalog_row.get('download') or '').strip().upper()
     resource = catalog_row.get('resource') or catalog_row.get('src_url_file')
     table_name = catalog_row.get('table_name')
 
-    # Simple AGS vs non-AGS distinction for tool selection
-    if fmt == 'ags':
-        # Use ags_extract_data2.py for ArcGIS Server services
+    # Determine download method
+    if download_field in {"AGS", "WGET", "SELENIUM"}:
+        selected_method = download_field
+    else:
+        # Fallback to format-based logic
+        if fmt == 'ags':
+            selected_method = 'AGS'
+        elif fmt == 'selenium':
+            selected_method = 'SELENIUM'
+        else:
+            selected_method = 'WGET'
+
+    # Build command based on selected method
+    if selected_method == 'AGS':
         if not table_name:
             raise DownloadError('Missing table_name for AGS download', layer, entity)
         command = [
@@ -797,9 +816,7 @@ def layer_download(layer: str, entity: str, state: str, county: str, city: str, 
             '15'
         ]
         _debug_main(f"[DOWNLOAD] Running AGS download for {layer}/{entity} (table: {table_name})", logger)
-    else:
-        # Use download_data.py for all other formats (SHP, CSV, PDF, etc.)
-        # Most non-AGS downloads are ZIP files containing shapefiles
+    elif selected_method == 'WGET':
         if not resource:
             raise DownloadError('Missing resource/url for download_data.py', layer, entity)
         command = [
@@ -807,60 +824,77 @@ def layer_download(layer: str, entity: str, state: str, county: str, city: str, 
             os.path.join(TOOLS_DIR, 'download_data.py'),
             resource
         ]
-        _debug_main(f"[DOWNLOAD] Running file download for {layer}/{entity} (format: {fmt}, url: {resource})", logger)
+        _debug_main(f"[DOWNLOAD] Running WGET-style download for {layer}/{entity} (format: {fmt}, url: {resource})", logger)
+    elif selected_method == 'SELENIUM':
+        # Placeholder for future Selenium-based downloader
+        raise DownloadError('SELENIUM download method is not yet implemented', layer, entity)
+    else:
+        raise DownloadError(f"Unknown download method: {selected_method}", layer, entity)
 
     logger.debug(f"Running download for {layer}/{entity}")
-    
+
     # Capture directory state before download for validation
     before_state = _get_directory_state(work_dir)
-    
+
     try:
         _run_command(command, work_dir, logger)
     except SkipEntityError as e:
         # Handle "no new data" case - from download command
         _update_csv_status(layer, entity, 'download', 'NND', error_msg='Download command: no new data', entity_components=entity_components)
         raise  # Re-raise skip errors
-    
-    # Validate download occurred IMMEDIATELY after download (before source_comments)
+
+    # Validate download and collect changed files
+    changed_files = []
+    zip_file = None
+    data_date = None
+
     if not CONFIG.test_mode:
         try:
-            _validate_download(work_dir, logger, before_state)
-            
+            changed_files, after_state = _validate_download_and_collect_changes(work_dir, logger, before_state)
+
             # Additional validation for AGS downloads - check for empty/corrupt files
-            if fmt in {'ags', 'arcgis', 'esri', 'ags_extract'}:
+            if fmt in {'ags', 'arcgis', 'esri', 'ags_extract'} or selected_method == 'AGS':
                 _validate_ags_download(work_dir, table_name, logger)
-            
-            _debug_main(f"[DOWNLOAD] Download validation passed for {layer}/{entity}", logger)
+
+            # If a zip file was among the changed files, process the newest one and include extracted files in changed set
+            changed_zip_candidates = [f for f in changed_files if f.lower().endswith('.zip')]
+            if changed_zip_candidates:
+                # pick the newest by mtime
+                newest_zip = max(
+                    changed_zip_candidates,
+                    key=lambda f: after_state.get(f, 0.0)
+                )
+                zip_file = newest_zip
+
+                # snapshot before unzip (after download)
+                pre_unzip_state = dict(after_state)
+                _debug_main(f"[DOWNLOAD] Found zip file among changes: {zip_file}", logger)
+                data_date = zip_processing(zip_file, work_dir, logger)
+                # capture files created by unzip
+                post_unzip_state = _get_directory_state(work_dir)
+                extracted_files = [name for name in post_unzip_state.keys() if name not in pre_unzip_state]
+                # include extracted files in changed files for data validation
+                changed_files = list({*changed_files, *extracted_files})
+
+            # Run data validation on the changed files
+            _validate_data_files(changed_files, fmt, work_dir, logger)
+
+            _debug_main(f"[DOWNLOAD] Download and data validation passed for {layer}/{entity}", logger)
             _update_csv_status(layer, entity, 'download', 'SUCCESS', entity_components=entity_components)
         except DownloadError as de:
             _update_csv_status(layer, entity, 'download', 'FAILED', str(de), entity_components=entity_components)
             raise DownloadError(str(de), layer, entity) from de
-    
+    else:
+        logger.info(f"[TEST MODE] Skipping download validation for {layer}/{entity}")
+        _update_csv_status(layer, entity, 'download', 'SUCCESS', entity_components=entity_components)
+
     # Run source_comments commands (pre-metadata processing) - AFTER validation
     source_comments = catalog_row.get('source_comments', '')
     if source_comments and source_comments.strip():
         _debug_main(f"[DOWNLOAD] Running source_comments for {layer}/{entity}: {source_comments}", logger)
         _run_source_comments(source_comments, work_dir, logger)
-    
-    # Find and return newest zip file if any
-    data_date = None  # Initialize data_date
-    try:
-        zip_file = _find_latest_zip(work_dir, logger)
-        if zip_file:
-            _debug_main(f"[DOWNLOAD] Found zip file: {zip_file}", logger)
-            data_date = zip_processing(zip_file, work_dir, logger)
-            if data_date:
-                logger.debug(f"Extracted data date from zip: {data_date}")
-            else:
-                logger.warning("No data date found from zip processing")
-        return zip_file, data_date
-    except Exception as z_err:
-        logger.debug(f"Zip detection failed: {z_err}")
-        return None, None
-    else:
-        logger.info(f"[TEST MODE] Skipping download validation for {layer}/{entity}")
-        _update_csv_status(layer, entity, 'download', 'SUCCESS', entity_components=entity_components)  # Assume success in test mode
-        return None, None
+
+    return zip_file, data_date
 
 def extract_basic_file_metadata(work_dir: str, logger) -> dict:
     """Extract basic metadata from downloaded files (for non-shapefile formats like PDF)."""
@@ -1429,6 +1463,122 @@ def _validate_download(work_dir, logger, before_state=None):
             logger.debug(f"Download validation passed – found recent files: {recent_files_str}")
         
         return True
+
+
+def _validate_download_and_collect_changes(work_dir, logger, before_state=None):
+    """Validate that a download occurred and return the changed file list and new directory state.
+
+    Returns tuple: (changed_files, current_state)
+    - changed_files: list of filenames (no annotations)
+    - current_state: mapping filename -> mtime
+    """
+    current_state = _get_directory_state(work_dir)
+
+    if before_state is not None:
+        changed_files = []
+        for filename, current_mtime in current_state.items():
+            if filename not in before_state or current_mtime != before_state[filename]:
+                changed_files.append(filename)
+
+        if not changed_files:
+            if CONFIG.process_anyway:
+                logger.warning("No files changed during download, but continuing due to process_anyway=True")
+                return [], current_state
+            raise DownloadError("No files changed during download", layer=None, entity=None)
+
+        # Validate not HTML masquerading as binary for each changed file
+        for filename in changed_files:
+            file_path = os.path.join(work_dir, filename)
+            if os.path.exists(file_path) and os.path.isfile(file_path):
+                _validate_file_content(file_path, filename, logger)
+
+        # Log a short summary
+        preview = ", ".join(changed_files[:3]) + (f" and {len(changed_files)-3} more" if len(changed_files) > 3 else "")
+        logger.debug(f"Download validation passed - changed files: {preview}")
+        return changed_files, current_state
+
+    # Fallback: last 24 hours
+    now = datetime.now()
+    day_ago = now - timedelta(days=1)
+    recent_files = []
+    for filename in os.listdir(work_dir):
+        file_path = os.path.join(work_dir, filename)
+        try:
+            mtime = os.path.getmtime(file_path)
+            mod_time = datetime.fromtimestamp(mtime)
+            if mod_time >= day_ago:
+                recent_files.append(filename)
+        except OSError:
+            continue
+
+    if not recent_files:
+        if CONFIG.process_anyway:
+            logger.warning("No files found modified within the last 24 hours, but continuing due to process_anyway=True")
+            return [], current_state
+        raise DownloadError("No files found modified within the last 24 hours", layer=None, entity=None)
+
+    preview = ", ".join(sorted(recent_files)[:3]) + (f" and {len(recent_files)-3} more" if len(recent_files) > 3 else "")
+    logger.debug(f"Download validation passed – recent files: {preview}")
+    return recent_files, current_state
+
+def _validate_data_files(changed_files, fmt: str, work_dir: str, logger):
+    """Validate that the changed files include at least one file matching the record's format.
+
+    For AGS/service formats, this check is skipped because a separate AGS validation is used.
+    """
+    if not changed_files:
+        if CONFIG.process_anyway:
+            logger.warning("No changed files found for data validation, continuing due to process_anyway=True")
+            return True
+        raise DownloadError("No changed files found for data validation", layer=None, entity=None)
+
+    fmt_lower = (fmt or '').lower()
+
+    # Skip for AGS/service-style formats
+    if fmt_lower in {'ags', 'arcgis', 'esri', 'ags_extract', 'wms', 'wmts'}:
+        return True
+
+    # Build predicates by expected format
+    def is_match(filename: str) -> bool:
+        name_lower = filename.lower()
+        if fmt_lower in {'shp', 'shapefile'}:
+            return name_lower.endswith('.shp')
+        if fmt_lower in {'gdb', 'filegdb', 'file geodatabase'}:
+            # allow directories with .gdb as well as files
+            path = os.path.join(work_dir, filename)
+            return name_lower.endswith('.gdb') and os.path.isdir(path)
+        if fmt_lower in {'geojson', 'json'}:
+            return name_lower.endswith('.geojson') or name_lower.endswith('.json')
+        if fmt_lower == 'pdf':
+            return name_lower.endswith('.pdf')
+        if fmt_lower in {'kml', 'kmz'}:
+            return name_lower.endswith('.kml') or name_lower.endswith('.kmz')
+        if fmt_lower in {'csv'}:
+            return name_lower.endswith('.csv')
+        if fmt_lower in {'xlsx', 'xls'}:
+            return name_lower.endswith('.xlsx') or name_lower.endswith('.xls')
+        if fmt_lower in {'tif', 'tiff', 'geotiff'}:
+            return name_lower.endswith('.tif') or name_lower.endswith('.tiff')
+        if fmt_lower in {'mdb', 'accdb'}:
+            return name_lower.endswith('.mdb') or name_lower.endswith('.accdb')
+        if fmt_lower in {'txt'}:
+            return name_lower.endswith('.txt')
+        # Fallback: accept common geodata types
+        return any(name_lower.endswith(ext) for ext in ('.shp', '.geojson', '.gdb', '.kml', '.kmz', '.csv', '.xlsx', '.xls', '.tif', '.tiff', '.pdf'))
+
+    matching = [f for f in changed_files if is_match(f)]
+    if matching:
+        logger.debug(f"Data validation: found files matching format '{fmt_lower}': {', '.join(matching[:3])}{'...' if len(matching) > 3 else ''}")
+        return True
+
+    message = (
+        f"No files matching expected format '{fmt_lower}' were found among changed files. "
+        f"Changed: {', '.join(changed_files[:5])}{'...' if len(changed_files) > 5 else ''}"
+    )
+    if CONFIG.process_anyway:
+        logger.warning(message + " (continuing due to process_anyway=True)")
+        return True
+    raise DownloadError(message, layer=None, entity=None)
 
 def _find_shapefile(work_dir, logger):
     """Find the most recent shapefile in work_dir."""
