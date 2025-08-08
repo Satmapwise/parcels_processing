@@ -347,6 +347,7 @@ def download_opendata(
     catalog_data_date: Optional[str] = None,
     transfer: bool = True,
     debug: bool = False,
+    batch_download_dir: Optional[str] = None,
 ) -> dict:
     """
     Navigate to OpenData URL, extract data_date, perform NND check, click Shapefile download,
@@ -355,8 +356,9 @@ def download_opendata(
     if debug:
         logging.getLogger().setLevel(logging.DEBUG)
 
-    # Ensure batch dir exists
-    os.makedirs(BATCH_DOWNLOAD_DIR, exist_ok=True)
+    # Determine and ensure batch download directory
+    dl_dir = batch_download_dir or BATCH_DOWNLOAD_DIR
+    os.makedirs(dl_dir, exist_ok=True)
 
     logging.info(f"[SELENIUM] {entity}: Opening {url}")
     driver.get(url)
@@ -384,13 +386,13 @@ def download_opendata(
     _open_download_panel(driver)
 
     # Snapshot baseline before clicking download
-    baseline = _list_current_files(BATCH_DOWNLOAD_DIR)
+    baseline = _list_current_files(dl_dir)
 
     _click_shapefile_download(driver)
 
     # Wait for completed files (generic, not ZIP-only)
-    new_names = _wait_for_new_files(BATCH_DOWNLOAD_DIR, baseline, timeout=180, stabilize_secs=2, debug=debug)
-    valid_paths = _basic_validate_files(BATCH_DOWNLOAD_DIR, new_names)
+    new_names = _wait_for_new_files(dl_dir, baseline, timeout=180, stabilize_secs=2, debug=debug)
+    valid_paths = _basic_validate_files(dl_dir, new_names)
     if not valid_paths:
         return {
             "status": "FAILED",
@@ -439,20 +441,29 @@ def main_cli():
     if args.debug:
         logging.getLogger().setLevel(logging.DEBUG)
 
-    os.makedirs(BATCH_DOWNLOAD_DIR, exist_ok=True)
+    # Choose a local-friendly default batch dir if /srv is not writable
+    default_dl = BATCH_DOWNLOAD_DIR
+    try:
+        os.makedirs(default_dl, exist_ok=True)
+    except Exception:
+        # Fallback to ~/Downloads/_batch_downloads locally
+        home_dl = os.path.expanduser("~/Downloads/_batch_downloads")
+        os.makedirs(home_dl, exist_ok=True)
+        default_dl = home_dl
 
     headless = not args.headful
     driver = None
     try:
-        driver = init_selenium(download_dir=BATCH_DOWNLOAD_DIR, headless=headless, chromium=True, debug=args.debug)
+        driver = init_selenium(download_dir=default_dl, headless=headless, chromium=True, debug=args.debug)
         result = download_opendata(
             driver,
             entity=args.entity,
             url=args.url,
-            target_dir=args.target_dir,
+            target_dir=os.path.expanduser(args.target_dir) if args.target_dir else None,
             catalog_data_date=args.catalog_date,
             transfer=True,
             debug=args.debug,
+            batch_download_dir=default_dl,
         )
         status = result.get("status", "FAILED")
         if status != "SUCCESS" and status != "SKIPPED_NND":
