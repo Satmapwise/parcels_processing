@@ -1664,8 +1664,9 @@ def process_layer(layer, queue, entity_components):
             
             logging.info(f"--- Processing entity: {entity} ---")
             
-            # Get catalog row
-            catalog_row = _fetch_catalog_row(layer, state, county, city)
+            # Get catalog row (prefer cached dependent fields when available)
+            cached_row = components.get('db_fields') if isinstance(components, dict) else None
+            catalog_row = dict(cached_row) if cached_row else _fetch_catalog_row(layer, state, county, city)
             if catalog_row is None:
                 raise RuntimeError(f"Catalog row not found for {layer}/{entity}")
 
@@ -2166,27 +2167,18 @@ def _write_csv_file(filepath, headers, data_dict):
 # ---------------------------------------------------------------------------
 
 def get_all_entities_from_db() -> dict[str, dict]:
-    """Get all entities from database with their component parts.
-    
+    """Get all entities from database with their component parts and dependent fields.
+
     Returns:
-        Dictionary mapping entity strings to their component parts:
-        {
-            'zoning_fl_leon_tallahassee': {
-                'layer': 'zoning',
-                'state': 'fl', 
-                'county': 'leon',
-                'city': 'tallahassee'
-            },
-            ...
-        }
+        Dictionary mapping entity strings to their component parts plus cached DB fields.
     """
     entity_dict = {}
     conn = psycopg2.connect(PG_CONNECTION)
     cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
     try:
-        # Get all valid records with populated layer_subgroup
+        # Get all valid records with populated layer_subgroup; fetch full rows for dependent field cache
         sql = (
-            "SELECT layer_subgroup, state, county, city FROM m_gis_data_catalog_main "
+            "SELECT * FROM m_gis_data_catalog_main "
             "WHERE status IS DISTINCT FROM 'DELETE' "
             "AND layer_subgroup IS NOT NULL"
         )
@@ -2201,7 +2193,7 @@ def get_all_entities_from_db() -> dict[str, dict]:
             county = row['county'] 
             city = row['city']
             
-            # Convert to internal format
+            # Convert to internal format for entity construction
             state_internal = format_name(state, 'state', external=False) if state else None
             county_internal = format_name(county, 'county', external=False) if county else None
             city_internal = format_name(city, 'city', external=False) if city else None
@@ -2209,12 +2201,13 @@ def get_all_entities_from_db() -> dict[str, dict]:
             # Build entity string
             entity = _entity_from_parts(layer, state_internal, county_internal, city_internal)
             
-            # Store with component parts
+            # Store with component parts and full DB row for dependent fields
             entity_dict[entity] = {
                 'layer': layer,
                 'state': state_internal,
                 'county': county_internal, 
-                'city': city_internal
+                'city': city_internal,
+                'db_fields': dict(row),
             }
             
     except Exception as exc:
