@@ -474,127 +474,153 @@ def validate_url(url: str) -> tuple[bool, str]:
     def validate_internal(check_url: str, redirect_depth: int = 0) -> tuple[bool, str]:
         # ArcGIS REST services: validate via metadata endpoint
         if is_arcgis_service_url(check_url):
-            try:
-                metadata_url = build_metadata_url(check_url)
-                metadata_req = urllib.request.Request(metadata_url)
-                metadata_req.add_header('User-Agent', 'Mozilla/5.0 (compatible; LayersPrescrape/1.0)')
-                with make_request(metadata_req, timeout_seconds=10) as response:
-                    code = response.getcode()
-                    if code == 200:
-                        content = response.read(32768).decode('utf-8', errors='ignore')  # 32KB
-                        lower = content.lower()
-                        if 'authentication' in lower or 'login required' in lower:
-                            return False, 'AUTH_REQUIRED'
-                        if '"error"' in content and 'code' in content:
-                            return False, 'SERVICE_ERROR'
-                        positive = ['"name":', '"type":', '"geometryType":', '"fields":', '"currentVersion":', '"serviceItemId":', '"defaultVisibility":', '"extent"']
-                        if any(tok in content for tok in positive):
-                            try:
-                                metadata = json.loads(content)
-                                if 'error' in metadata:
-                                    return False, 'SERVICE_ERROR'
-                                if any(k in metadata for k in ['name','type','geometryType','fields','extent']):
+            for attempt in range(2):
+                try:
+                    metadata_url = build_metadata_url(check_url)
+                    metadata_req = urllib.request.Request(metadata_url)
+                    metadata_req.add_header('User-Agent', 'Mozilla/5.0 (compatible; LayersPrescrape/1.0)')
+                    with make_request(metadata_req, timeout_seconds=10) as response:
+                        code = response.getcode()
+                        if code == 200:
+                            content = response.read(32768).decode('utf-8', errors='ignore')  # 32KB
+                            lower = content.lower()
+                            if 'authentication' in lower or 'login required' in lower:
+                                return False, 'AUTH_REQUIRED'
+                            if '"error"' in content and 'code' in content:
+                                return False, 'SERVICE_ERROR'
+                            positive = ['"name":', '"type":', '"geometryType":', '"fields":', '"currentVersion":', '"serviceItemId":', '"defaultVisibility":', '"extent"']
+                            if any(tok in content for tok in positive):
+                                try:
+                                    metadata = json.loads(content)
+                                    if 'error' in metadata:
+                                        return False, 'SERVICE_ERROR'
+                                    if any(k in metadata for k in ['name','type','geometryType','fields','extent']):
+                                        return True, 'OK'
+                                    return False, 'INVALID_METADATA'
+                                except json.JSONDecodeError:
+                                    # Truncated but looks valid
                                     return True, 'OK'
-                                return False, 'INVALID_METADATA'
-                            except json.JSONDecodeError:
-                                # Truncated but looks valid
-                                return True, 'OK'
-                        return False, 'INVALID_METADATA'
-                    elif code in (401,):
+                            return False, 'INVALID_METADATA'
+                        elif code in (401,):
+                            return False, 'AUTH_REQUIRED'
+                        elif code in (403,):
+                            return False, 'FORBIDDEN'
+                        elif code in (404, 410):
+                            return False, 'NOT_FOUND'
+                        elif code in (429,):
+                            return False, 'RATE_LIMITED'
+                        elif code in (502, 503, 504):
+                            # transient server errors → retry once
+                            if attempt == 0:
+                                continue
+                            return False, 'TEMP_UNAVAILABLE'
+                        else:
+                            return False, 'ERROR'
+                except HTTPError as e:
+                    if e.code == 401:
                         return False, 'AUTH_REQUIRED'
-                    elif code in (403,):
+                    if e.code == 403:
                         return False, 'FORBIDDEN'
-                    elif code in (404, 410):
+                    if e.code in (404, 410):
                         return False, 'NOT_FOUND'
-                    elif code in (429,):
+                    if e.code == 429:
+                        return False, 'RATE_LIMITED'
+                    if e.code in (502, 503, 504):
+                        if attempt == 0:
+                            continue
+                        return False, 'TEMP_UNAVAILABLE'
+                    return False, 'ERROR'
+                except (URLError, socket.timeout, ssl.SSLError, ConnectionError):
+                    if attempt == 0:
+                        continue
+                    return False, 'TEMP_UNAVAILABLE'
+                except Exception:
+                    return False, 'ERROR'
+            # If both attempts failed with transient issues, we reached here
+            return False, 'TEMP_UNAVAILABLE'
+
+        # Non-ArcGIS or fallback: try HEAD first
+        for attempt in range(2):
+            try:
+                head_req = urllib.request.Request(check_url)
+                head_req.add_header('User-Agent', 'Mozilla/5.0 (compatible; LayersPrescrape/1.0; +http://gis-data-scraper)')
+                head_req.get_method = lambda: 'HEAD'
+                with make_request(head_req, timeout_seconds=7) as response:
+                    status_code = response.getcode()
+                    if status_code == 200:
+                        content_length = response.headers.get('content-length')
+                        if content_length and int(content_length) < 50:
+                            return False, 'ERROR'
+                        return True, 'OK'
+                    elif status_code in (301, 302, 303, 307, 308):
+                        location = response.headers.get('location')
+                        if location and redirect_depth < 3:
+                            return validate_internal(resolve_redirect(check_url, location), redirect_depth + 1)
+                        return False, 'MOVED'
+                    elif status_code in (404, 410):
+                        return False, 'NOT_FOUND'
+                    elif status_code == 401:
+                        return False, 'AUTH_REQUIRED'
+                    elif status_code == 403:
+                        return False, 'FORBIDDEN'
+                    elif status_code == 429:
                         return False, 'RATE_LIMITED'
                     else:
                         return False, 'ERROR'
             except HTTPError as e:
-                if e.code == 401:
-                    return False, 'AUTH_REQUIRED'
-                if e.code == 403:
-                    return False, 'FORBIDDEN'
-                if e.code in (404, 410):
-                    return False, 'NOT_FOUND'
-                if e.code == 429:
-                    return False, 'RATE_LIMITED'
-                return False, 'ERROR'
-            except (URLError, socket.timeout, ssl.SSLError, ConnectionError):
-                return False, 'TEMP_UNAVAILABLE'
-            except Exception:
-                return False, 'ERROR'
-
-        # Non-ArcGIS or fallback: try HEAD first
-        try:
-            head_req = urllib.request.Request(check_url)
-            head_req.add_header('User-Agent', 'Mozilla/5.0 (compatible; LayersPrescrape/1.0; +http://gis-data-scraper)')
-            head_req.get_method = lambda: 'HEAD'
-            with make_request(head_req, timeout_seconds=7) as response:
-                status_code = response.getcode()
-                if status_code == 200:
-                    content_length = response.headers.get('content-length')
-                    if content_length and int(content_length) < 50:
+                # Some servers reject HEAD with 405 → retry with GET + Range
+                if e.code == 405:
+                    try:
+                        get_req = urllib.request.Request(check_url)
+                        get_req.add_header('User-Agent', 'Mozilla/5.0 (compatible; LayersPrescrape/1.0)')
+                        get_req.add_header('Range', 'bytes=0-0')
+                        with make_request(get_req, timeout_seconds=7) as response:
+                            if response.getcode() in (200, 206):
+                                return True, 'OK'
+                            return False, 'ERROR'
+                    except HTTPError as ge:
+                        if ge.code == 401:
+                            return False, 'AUTH_REQUIRED'
+                        if ge.code == 403:
+                            return False, 'FORBIDDEN'
+                        if ge.code in (404, 410):
+                            return False, 'NOT_FOUND'
+                        if ge.code == 429:
+                            return False, 'RATE_LIMITED'
+                        if ge.code in (502, 503, 504):
+                            if attempt == 0:
+                                continue
+                            return False, 'TEMP_UNAVAILABLE'
                         return False, 'ERROR'
-                    return True, 'OK'
-                if status_code in (301, 302, 303, 307, 308):
-                    location = response.headers.get('location')
+                    except (URLError, socket.timeout, ssl.SSLError, ConnectionError):
+                        if attempt == 0:
+                            continue
+                        return False, 'TEMP_UNAVAILABLE'
+                    except Exception:
+                        return False, 'ERROR'
+                elif e.code in (301, 302, 303, 307, 308):
+                    location = e.headers.get('location') if hasattr(e, 'headers') else None
                     if location and redirect_depth < 3:
                         return validate_internal(resolve_redirect(check_url, location), redirect_depth + 1)
                     return False, 'MOVED'
-                if status_code in (404, 410):
-                    return False, 'NOT_FOUND'
-                if status_code == 401:
+                elif e.code == 401:
                     return False, 'AUTH_REQUIRED'
-                if status_code == 403:
+                elif e.code == 403:
                     return False, 'FORBIDDEN'
-                if status_code == 429:
+                elif e.code in (404, 410):
+                    return False, 'NOT_FOUND'
+                elif e.code == 429:
                     return False, 'RATE_LIMITED'
-                return False, 'ERROR'
-        except HTTPError as e:
-            # Some servers reject HEAD with 405 → retry with GET + Range
-            if e.code == 405:
-                try:
-                    get_req = urllib.request.Request(check_url)
-                    get_req.add_header('User-Agent', 'Mozilla/5.0 (compatible; LayersPrescrape/1.0)')
-                    get_req.add_header('Range', 'bytes=0-0')
-                    with make_request(get_req, timeout_seconds=7) as response:
-                        if response.getcode() in (200, 206):
-                            return True, 'OK'
-                        return False, 'ERROR'
-                except HTTPError as ge:
-                    if ge.code == 401:
-                        return False, 'AUTH_REQUIRED'
-                    if ge.code == 403:
-                        return False, 'FORBIDDEN'
-                    if ge.code in (404, 410):
-                        return False, 'NOT_FOUND'
-                    if ge.code == 429:
-                        return False, 'RATE_LIMITED'
+                else:
                     return False, 'ERROR'
-                except (URLError, socket.timeout, ssl.SSLError, ConnectionError):
-                    return False, 'TEMP_UNAVAILABLE'
-                except Exception:
-                    return False, 'ERROR'
-            elif e.code in (301, 302, 303, 307, 308):
-                location = e.headers.get('location') if hasattr(e, 'headers') else None
-                if location and redirect_depth < 3:
-                    return validate_internal(resolve_redirect(check_url, location), redirect_depth + 1)
-                return False, 'MOVED'
-            elif e.code == 401:
-                return False, 'AUTH_REQUIRED'
-            elif e.code == 403:
-                return False, 'FORBIDDEN'
-            elif e.code in (404, 410):
-                return False, 'NOT_FOUND'
-            elif e.code == 429:
-                return False, 'RATE_LIMITED'
-            else:
+            except (URLError, socket.timeout, ssl.SSLError, ConnectionError):
+                if attempt == 0:
+                    continue
+                return False, 'TEMP_UNAVAILABLE'
+            except Exception:
                 return False, 'ERROR'
-        except (URLError, socket.timeout, ssl.SSLError, ConnectionError):
-            return False, 'TEMP_UNAVAILABLE'
-        except Exception:
-            return False, 'ERROR'
+        # Both attempts failed with transient issues
+        return False, 'TEMP_UNAVAILABLE'
 
     # Normalize and try validation
     normalized, ok = normalize_url_if_needed(original_url)

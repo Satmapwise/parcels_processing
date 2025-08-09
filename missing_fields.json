@@ -799,7 +799,7 @@
     "state": "MANUAL_REQUIRED"
   },
   "flu_fl_hernando_brooksville": {
-    "src_url_file": "URL_DEPRECATED",
+    "src_url_file": "URL_TEMP_UNAVAILABLE",
     "fields_obj_transform": "MANUAL_REQUIRED",
     "state": "MANUAL_REQUIRED"
   },
@@ -987,7 +987,7 @@
     "state": "MANUAL_REQUIRED"
   },
   "flu_fl_flagler_palm_coast": {
-    "src_url_file": "URL_DEPRECATED",
+    "src_url_file": "URL_TEMP_UNAVAILABLE",
     "fields_obj_transform": "MANUAL_REQUIRED",
     "state": "MANUAL_REQUIRED"
   },
@@ -1062,7 +1062,7 @@
     "state": "MANUAL_REQUIRED"
   },
   "flu_fl_sarasota_venice": {
-    "src_url_file": "URL_DEPRECATED",
+    "src_url_file": "URL_TEMP_UNAVAILABLE",
     "fields_obj_transform": "flu_code:NEW_FLU",
     "state": "MANUAL_REQUIRED"
   },
@@ -1125,7 +1125,7 @@
     "state": "MANUAL_REQUIRED"
   },
   "flu_fl_hernando_unincorporated": {
-    "src_url_file": "URL_DEPRECATED",
+    "src_url_file": "URL_TEMP_UNAVAILABLE",
     "fields_obj_transform": "flu_code:label, flu_code2:flu",
     "state": "MANUAL_REQUIRED"
   },
@@ -1144,7 +1144,7 @@
     "state": "MANUAL_REQUIRED"
   },
   "flu_fl_leon_unincorporated": {
-    "src_url_file": "URL_DEPRECATED",
+    "src_url_file": "URL_TEMP_UNAVAILABLE",
     "fields_obj_transform": "MANUAL_REQUIRED",
     "state": "MANUAL_REQUIRED"
   },
@@ -1186,7 +1186,7 @@
     "state": "MANUAL_REQUIRED"
   },
   "flu_fl_orange_unincorporated": {
-    "src_url_file": "URL_DEPRECATED",
+    "src_url_file": "MANUAL_REQUIRED",
     "fields_obj_transform": "flu_code:label, flu_code2:land_use, notes:bcc_date, dca_num:amend_no",
     "state": "MANUAL_REQUIRED"
   },
@@ -1274,7 +1274,7 @@
     "state": "MANUAL_REQUIRED"
   },
   "streets_fl_citrus": {
-    "src_url_file": "URL_DEPRECATED",
+    "src_url_file": "URL_TEMP_UNAVAILABLE",
     "state": "MANUAL_REQUIRED"
   },
   "streets_fl_collier": {
@@ -1282,7 +1282,7 @@
     "state": "MANUAL_REQUIRED"
   },
   "streets_fl_columbia": {
-    "src_url_file": "URL_DEPRECATED",
+    "src_url_file": "URL_TEMP_UNAVAILABLE",
     "state": "MANUAL_REQUIRED"
   },
   "streets_fl_dixie": {
@@ -1373,7 +1373,7 @@
     "state": "MANUAL_REQUIRED"
   },
   "streets_fl_monroe": {
-    "src_url_file": "URL_DEPRECATED",
+    "src_url_file": "MANUAL_REQUIRED",
     "state": "MANUAL_REQUIRED"
   },
   "streets_fl_okeechobee": {
@@ -1416,15 +1416,15 @@
     "state": "MANUAL_REQUIRED"
   },
   "address_points_fl_charlotte": {
-    "src_url_file": "URL_DEPRECATED",
+    "src_url_file": "MANUAL_REQUIRED",
     "state": "MANUAL_REQUIRED"
   },
   "address_points_fl_citrus": {
-    "src_url_file": "URL_DEPRECATED",
+    "src_url_file": "URL_TEMP_UNAVAILABLE",
     "state": "MANUAL_REQUIRED"
   },
   "address_points_fl_palm_beach_boca_raton": {
-    "src_url_file": "URL_DEPRECATED",
+    "src_url_file": "URL_TEMP_UNAVAILABLE",
     "state": "MANUAL_REQUIRED"
   },
   "address_points_fl_desoto": {
@@ -1443,11 +1443,11 @@
     "state": "MANUAL_REQUIRED"
   },
   "address_points_fl_indian_river": {
-    "src_url_file": "URL_DEPRECATED",
+    "src_url_file": "URL_TEMP_UNAVAILABLE",
     "state": "MANUAL_REQUIRED"
   },
   "address_points_fl_lake": {
-    "src_url_file": "URL_DEPRECATED",
+    "src_url_file": "MANUAL_REQUIRED",
     "state": "MANUAL_REQUIRED"
   },
   "address_points_fl_lee": {
@@ -1510,11 +1510,11 @@
     "state": "MANUAL_REQUIRED"
   },
   "subdivisions_fl_hernando": {
-    "src_url_file": "URL_DEPRECATED",
+    "src_url_file": "URL_TEMP_UNAVAILABLE",
     "state": "MANUAL_REQUIRED"
   },
   "subdivisions_fl_indian_river": {
-    "src_url_file": "URL_DEPRECATED",
+    "src_url_file": "MANUAL_REQUIRED",
     "state": "MANUAL_REQUIRED"
   },
   "subdivisions_fl_lee": {
@@ -1538,11 +1538,11 @@
     "state": "MANUAL_REQUIRED"
   },
   "subdivisions_fl_monroe": {
-    "src_url_file": "URL_DEPRECATED",
+    "src_url_file": "MANUAL_REQUIRED",
     "state": "MANUAL_REQUIRED"
   },
   "subdivisions_fl_orange": {
-    "src_url_file": "URL_DEPRECATED",
+    "src_url_file": "URL_TEMP_UNAVAILABLE",
     "state": "MANUAL_REQUIRED"
   },
   "subdivisions_fl_osceola": {
@@ -1555,7 +1555,7 @@
     "state": "MANUAL_REQUIRED"
   },
   "subdivisions_fl_pasco": {
-    "src_url_file": "URL_DEPRECATED",
+    "src_url_file": "MANUAL_REQUIRED",
     "state": "MANUAL_REQUIRED"
   },
   "subdivisions_fl_pinellas": {
@@ -1568,7 +1568,7 @@
     "state": "MANUAL_REQUIRED"
   },
   "subdivisions_fl_st_johns": {
-    "src_url_file": "URL_DEPRECATED",
+    "src_url_file": "URL_TEMP_UNAVAILABLE",
     "state": "MANUAL_REQUIRED"
   },
   "subdivisions_fl_st_lucie": {
@@ -1600,11 +1600,11 @@
     "state": "MANUAL_REQUIRED"
   },
   "buildings_fl_palm_beach_boca_raton": {
-    "src_url_file": "URL_DEPRECATED",
+    "src_url_file": "URL_TEMP_UNAVAILABLE",
     "state": "MANUAL_REQUIRED"
   },
   "buildings_fl_broward_fort_lauderdale": {
-    "src_url_file": "URL_DEPRECATED",
+    "src_url_file": "URL_TEMP_UNAVAILABLE",
     "state": "MANUAL_REQUIRED"
   },
   "buildings_fl_duval": {
@@ -1631,12 +1631,12 @@
     "state": "MANUAL_REQUIRED"
   },
   "buildings_fl_sarasota": {
-    "src_url_file": "URL_DEPRECATED",
+    "src_url_file": "MANUAL_REQUIRED",
     "fields_obj_transform": "MANUAL_REQUIRED",
     "state": "MANUAL_REQUIRED"
   },
   "subdivisions_fl_leon": {
-    "src_url_file": "URL_DEPRECATED",
+    "src_url_file": "URL_TEMP_UNAVAILABLE",
     "state": "MANUAL_REQUIRED"
   },
   "flu_fl_lake_unincorporated": {
@@ -1781,7 +1781,7 @@
     "state": "MANUAL_REQUIRED"
   },
   "parcel_geo_fl_osceola": {
-    "src_url_file": "URL_DEPRECATED",
+    "src_url_file": "URL_TEMP_UNAVAILABLE",
     "fields_obj_transform": "parcel_id:dsp_strap, parcel_id_clean:strap",
     "state": "MANUAL_REQUIRED"
   },
@@ -3228,7 +3228,7 @@
     "fields_obj_transform": "MANUAL_REQUIRED"
   },
   "streets_fl_hernando": {
-    "src_url_file": "URL_DEPRECATED"
+    "src_url_file": "URL_TEMP_UNAVAILABLE"
   },
   "zoning_fl_alachua_test_city": {
     "format": "MANUAL_REQUIRED",
@@ -3239,7 +3239,8 @@
     "resource": "MANUAL_REQUIRED"
   },
   "flu_de_sussex_unified": {
-    "fields_obj_transform": "MANUAL_REQUIRED"
+    "fields_obj_transform": "MANUAL_REQUIRED",
+    "src_url_file": "URL_TEMP_UNAVAILABLE"
   },
   "parcel_geo_ga_jeff_davis": {
     "src_url_file": "MANUAL_REQUIRED"
