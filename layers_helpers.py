@@ -12,7 +12,8 @@ This module contains all common functionality used by both scripts:
 import os
 import re
 from pathlib import Path
-from typing import Optional, Dict, Any, Tuple
+from typing import Optional, Dict, Any, Tuple, List
+import datetime
 
 
 # ---------------------------------------------------------------------------
@@ -547,3 +548,144 @@ LAYER_NAME_ALIASES = {
 
 # Reverse mapping for new name -> old name  
 LAYER_NAME_REVERSE_ALIASES = {v: k for k, v in LAYER_NAME_ALIASES.items()}
+
+
+# ---------------------------------------------------------------------------
+# Date parsing and normalization utilities
+# ---------------------------------------------------------------------------
+
+_MONTHS_MAP = {
+    'jan': 1, 'january': 1,
+    'feb': 2, 'february': 2,
+    'mar': 3, 'march': 3,
+    'apr': 4, 'april': 4,
+    'may': 5,
+    'jun': 6, 'june': 6,
+    'jul': 7, 'july': 7,
+    'aug': 8, 'august': 8,
+    'sep': 9, 'sept': 9, 'september': 9,
+    'oct': 10, 'october': 10,
+    'nov': 11, 'november': 11,
+    'dec': 12, 'december': 12,
+}
+
+def _safe_date(year: int, month: int, day: int) -> Optional[datetime.date]:
+    try:
+        return datetime.date(year, month, day)
+    except Exception:
+        return None
+
+def _strip_ordinal_suffix(s: str) -> str:
+    return re.sub(r"\b(\d{1,2})(st|nd|rd|th)\b", r"\1", s, flags=re.IGNORECASE)
+
+def parse_string_to_date(input_str: str) -> Optional[datetime.date]:
+    """Parse a single date string in many common formats to a date object.
+
+    Supported examples:
+    - 2025-03-01, 2025-03-01T12:34:56Z
+    - 03/01/2025, 3/1/2025, 03-01-2025
+    - March 1, 2025, Mar 1, 2025 (with or without ordinal suffixes)
+    - 20250301 (YYYYMMDD), 03012025 (MMDDYYYY)
+    """
+    if not input_str:
+        return None
+
+    s = _strip_ordinal_suffix(str(input_str)).strip()
+
+    # ISO datetime or date
+    iso_dt_match = re.search(r"\b\d{4}-\d{2}-\d{2}(?:[T\s]\S+)?\b", s)
+    if iso_dt_match:
+        iso_candidate = iso_dt_match.group(0)
+        try:
+            if 'T' in iso_candidate or ' ' in iso_candidate:
+                # Normalize to date component
+                return datetime.datetime.fromisoformat(iso_candidate.replace('Z', '+00:00')).date()
+            return datetime.datetime.strptime(iso_candidate, '%Y-%m-%d').date()
+        except Exception:
+            pass
+
+    # Month name, e.g., March 1, 2025 or Mar 1, 2025
+    mn = re.search(r"\b([A-Za-z]{3,9})\s+(\d{1,2}),?\s+(\d{4})\b", s)
+    if mn:
+        mon_name, day_str, year_str = mn.groups()
+        mon = _MONTHS_MAP.get(mon_name.strip().lower())
+        if mon:
+            dt = _safe_date(int(year_str), int(mon), int(day_str))
+            if dt:
+                return dt
+
+    # US numeric with separators: MM/DD/YYYY or M/D/YYYY (also dashes)
+    us = re.search(r"\b(\d{1,2})[\/-](\d{1,2})[\/-](\d{2,4})\b", s)
+    if us:
+        m_str, d_str, y_str = us.groups()
+        year = int(y_str)
+        if year < 100:
+            year += 2000 if year < 70 else 1900
+        dt = _safe_date(year, int(m_str), int(d_str))
+        if dt:
+            return dt
+
+    # Compact YYYYMMDD
+    ymd = re.search(r"\b(\d{4})(\d{2})(\d{2})\b", s)
+    if ymd:
+        y, m, d = ymd.groups()
+        dt = _safe_date(int(y), int(m), int(d))
+        if dt:
+            return dt
+
+    # Compact MMDDYYYY
+    mdy = re.search(r"\b(\d{2})(\d{2})(\d{4})\b", s)
+    if mdy:
+        m, d, y = mdy.groups()
+        dt = _safe_date(int(y), int(m), int(d))
+        if dt:
+            return dt
+
+    return None
+
+def extract_dates_from_text(text: str) -> List[datetime.date]:
+    """Extract all recognizable dates from arbitrary text and return unique sorted dates."""
+    if not text:
+        return []
+    # Find potential date substrings by regex windows and parse each
+    candidates: List[str] = []
+    # Gather various patterns
+    candidates += re.findall(r"\b\d{4}-\d{2}-\d{2}(?:[T\s]\S+)?\b", text)
+    candidates += re.findall(r"\b\d{1,2}[\/-]\d{1,2}[\/-]\d{2,4}\b", text)
+    candidates += re.findall(r"\b(?:Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:t|tember)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)\s+\d{1,2}(?:st|nd|rd|th)?,?\s+\d{4}\b", text, flags=re.IGNORECASE)
+    candidates += re.findall(r"\b\d{8}\b", text)
+
+    dates: List[datetime.date] = []
+    seen = set()
+    for cand in candidates:
+        dt = parse_string_to_date(cand)
+        if dt and dt not in seen:
+            dates.append(dt)
+            seen.add(dt)
+    dates.sort()
+    return dates
+
+def normalize_data_date(text: str, prefer_recent: bool = True, max_years_back: int = 15) -> Optional[str]:
+    """Normalize any date found in text to ISO 'YYYY-MM-DD'.
+
+    - Scans the text for any recognizable date format.
+    - Picks the most recent date by default (prefer_recent=True).
+    - Ensures date is not in the future and not older than max_years_back.
+    """
+    today = datetime.date.today()
+    earliest = today - datetime.timedelta(days=365 * max_years_back)
+    dates = extract_dates_from_text(text)
+    if not dates:
+        # Try parsing the whole string directly if extract failed
+        d = parse_string_to_date(text)
+        dates = [d] if d else []
+    if not dates:
+        return None
+
+    # Filter by reasonableness
+    candidates = [d for d in dates if earliest <= d <= today]
+    if not candidates:
+        return None
+
+    chosen = max(candidates) if prefer_recent else min(candidates)
+    return chosen.strftime('%Y-%m-%d')

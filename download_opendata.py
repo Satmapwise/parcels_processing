@@ -176,13 +176,15 @@ def shutdown_selenium(driver) -> None:
 
 def _parse_date_any(fmt_str: str) -> Optional[datetime.date]:
     """Parse a date string in either MM/DD/YYYY or YYYY-MM-DD."""
-    from datetime import datetime as _dt
     for fmt in ("%m/%d/%Y", "%Y-%m-%d", "%m/%d/%y"):
         try:
-            return _dt.strptime(fmt_str.strip(), fmt).date()
+            return datetime.strptime(fmt_str.strip(), fmt).date()
         except Exception:
             continue
     return None
+
+
+from layers_helpers import normalize_data_date
 
 
 def _extract_data_date(driver, debug: bool = False) -> str:
@@ -207,21 +209,11 @@ def _extract_data_date(driver, debug: bool = False) -> str:
             WebDriverWait(driver, 5).until(EC.visibility_of_element_located((By.CSS_SELECTOR, sel["data_date_alt"])) )
             text = driver.find_element(By.CSS_SELECTOR, sel["data_date_alt"]).text
 
-    # Text format like "March 31, 2025" -> MM/DD/YYYY
-    import re as _re
-    m = _re.search(r"([A-Za-z]+)\s+(\d{1,2}),\s+(\d{4})", text)
-    if not m:
+    # Normalize to ISO date string
+    normalized = normalize_data_date(text)
+    if not normalized:
         raise RuntimeError(f"Could not extract date from: '{text}'")
-
-    month_name, day, year = m.groups()
-    month_map = {
-        'January': '01', 'February': '02', 'March': '03', 'April': '04',
-        'May': '05', 'June': '06', 'July': '07', 'August': '08',
-        'September': '09', 'October': '10', 'November': '11', 'December': '12'
-    }
-    month = month_map.get(month_name, '01')
-    day = day.zfill(2)
-    return f"{month}/{day}/{year}"
+    return normalized
 
 
 def _open_download_panel(driver) -> None:

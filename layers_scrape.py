@@ -239,6 +239,8 @@ from layers_helpers import (
     format_name, safe_catalog_val, 
     resolve_layer_name, resolve_layer_directory,
     DATA_ROOT, TOOLS_DIR,
+    # Date helpers
+    normalize_data_date, parse_string_to_date,
     # Backwards compatibility aliases
     counties, layers
 )
@@ -953,16 +955,14 @@ def layer_download(layer: str, entity: str, state: str, county: str, city: str, 
             # Prefer the newer of: zip-derived data_date vs page-reported date
             try:
                 page_date_raw = (result.get('data_date') or '').strip()
-                def _parse_any(d: str):
-                    from datetime import datetime as _dt
-                    for fmt in ("%Y-%m-%d", "%m/%d/%Y", "%m/%d/%y"):
-                        try:
-                            return _dt.strptime(d, fmt).date()
-                        except Exception:
-                            continue
-                    return None
-                zip_d = _parse_any(data_date) if data_date else None
-                page_d = _parse_any(page_date_raw) if page_date_raw else None
+                # Normalize both dates using centralized parser
+                def _to_date(d: str):
+                    if not d:
+                        return None
+                    parsed = parse_string_to_date(d)
+                    return parsed
+                zip_d = _to_date(data_date) if data_date else None
+                page_d = _to_date(page_date_raw) if page_date_raw else None
                 if page_d and (not zip_d or page_d > zip_d):
                     # Override with newer page date in YYYY-MM-DD for consistency
                     data_date = page_d.strftime("%Y-%m-%d")
@@ -1533,44 +1533,28 @@ def _get_directory_state(work_dir):
     return state
 
 def _extract_date_from_filename(pdf_path):
-    """Extract date from PDF filename using common patterns."""
-    filename = Path(pdf_path).stem.lower()
-    
-    patterns = [
-        r'(\d{4}[-_]\d{2}[-_]\d{2})',  # YYYY-MM-DD or YYYY_MM_DD
-        r'(\d{2}[-_]\d{2}[-_]\d{4})',  # MM-DD-YYYY or MM_DD_YYYY
-        r'(\d{4})',  # Just year (will use Jan 1st)
-    ]
-    
-    for pattern in patterns:
-        match = re.search(pattern, filename)
-        if match:
-            date_str = match.group(1)
-            try:
-                # Try different date formats
-                if len(date_str) == 4:  # Just year
-                    return f"{date_str}-01-01"
-                elif '-' in date_str or '_' in date_str:
-                    normalized = date_str.replace('_', '-')
-                    if len(normalized.split('-')[0]) == 4:  # YYYY-MM-DD
-                        return normalized
-                    else:  # MM-DD-YYYY, convert to YYYY-MM-DD
-                        parts = normalized.split('-')
-                        return f"{parts[2]}-{parts[0].zfill(2)}-{parts[1].zfill(2)}"
-            except (ValueError, IndexError):
-                continue
-    
+    """Extract date from filename using broad patterns and normalize to ISO."""
+    filename = Path(pdf_path).stem
+    # Try centralized parsing on several candidate tokens
+    # 1) Whole name
+    from layers_helpers import normalize_data_date
+    iso = normalize_data_date(filename)
+    if iso:
+        return iso
+    # 2) Replace separators to spaces and try again
+    cleaned = re.sub(r'[._-]', ' ', filename)
+    iso = normalize_data_date(cleaned)
+    if iso:
+        return iso
     return None
 
 def _is_reasonable_date(date_str):
-    """Check if date is within reasonable range (last 10 years to last week)."""
+    """Check if date is within reasonable range (last 10-15 years up to today)."""
     try:
-        date_obj = datetime.strptime(date_str, '%Y-%m-%d')
-        now = datetime.now()
-        ten_years_ago = now - timedelta(days=365*10)
-        one_week_ago = now - timedelta(days=7)
-        
-        return ten_years_ago <= date_obj <= one_week_ago
+        date_obj = datetime.strptime(date_str, '%Y-%m-%d').date()
+        today = datetime.now().date()
+        ten_years_ago = today - timedelta(days=365*15)
+        return ten_years_ago <= date_obj <= today
     except (ValueError, TypeError):
         return False
 
