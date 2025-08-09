@@ -950,6 +950,25 @@ def layer_download(layer: str, entity: str, state: str, county: str, city: str, 
                     _validate_data_files(fallback_candidates, fmt_lower, work_dir, logger)
                 else:
                     raise
+            # Prefer the newer of: zip-derived data_date vs page-reported date
+            try:
+                page_date_raw = (result.get('data_date') or '').strip()
+                def _parse_any(d: str):
+                    from datetime import datetime as _dt
+                    for fmt in ("%Y-%m-%d", "%m/%d/%Y", "%m/%d/%y"):
+                        try:
+                            return _dt.strptime(d, fmt).date()
+                        except Exception:
+                            continue
+                    return None
+                zip_d = _parse_any(data_date) if data_date else None
+                page_d = _parse_any(page_date_raw) if page_date_raw else None
+                if page_d and (not zip_d or page_d > zip_d):
+                    # Override with newer page date in YYYY-MM-DD for consistency
+                    data_date = page_d.strftime("%Y-%m-%d")
+            except Exception:
+                pass
+
             _debug_main(f"[DOWNLOAD] Selenium download and validation passed for {layer}/{entity}", logger)
             _update_csv_status(layer, entity, 'download', 'SUCCESS', entity_components=entity_components)
         except DownloadError as de:
