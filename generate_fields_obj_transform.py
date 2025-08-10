@@ -42,6 +42,8 @@ from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
 from typing import Dict, Iterable, List, Optional, Tuple
+import tempfile
+import zipfile
 
 import psycopg2
 from psycopg2.extras import RealDictCursor
@@ -119,6 +121,34 @@ def is_valid_field_names_json(value: Optional[str]) -> Tuple[bool, List[str]]:
         return False, []
 
 
+def coerce_field_names_from_text(value: Optional[str]) -> Tuple[List[str], str]:
+    """Try to derive field names from a non-standard field_names string.
+
+    Returns (names, source_tag) where source_tag in {"json","bracket","ogrinfo","none"}.
+    """
+    if not value or not str(value).strip():
+        return [], "none"
+    s = str(value)
+    ok, data = is_valid_field_names_json(s)
+    if ok:
+        return data, "json"
+    m = re.search(r"\[(.*?)\]", s, flags=re.DOTALL)
+    if m:
+        inner = m.group(1)
+        parts = [p.strip().strip('\"\'') for p in inner.split(',')]
+        tokens = [p for p in parts if p and re.fullmatch(r"[A-Za-z0-9_]+", p)]
+        if len(tokens) >= 2:
+            return tokens, "bracket"
+    names: List[str] = []
+    for line in s.splitlines():
+        lm = re.match(r"^\s*([A-Za-z0-9_]+)\s*:\s*(String|Integer|Real|Date|Time|DateTime|Logical|Integer64|Float|Double)\b", line)
+        if lm:
+            names.append(lm.group(1))
+    if len(names) >= 2:
+        return names, "ogrinfo"
+    return [], "none"
+
+
 def build_entity(layer: str, state: Optional[str], county: Optional[str], city: Optional[str]) -> str:
     """Build entity string similar to layers_scrape._entity_from_parts.
 
@@ -148,6 +178,7 @@ def try_extract_field_names(
     city: Optional[str],
     sys_raw_file: Optional[str],
     sys_raw_folder: Optional[str],
+    sys_raw_file_zip: Optional[str],
     debug: bool,
 ) -> List[str]:
     """Attempt to extract field names from a local shapefile using pyshp.
@@ -179,6 +210,36 @@ def try_extract_field_names(
                 break
 
     if shp_path is None or not os.path.exists(shp_path):
+        # Attempt to read from a local zip if present
+        candidate_zip = None
+        if sys_raw_file_zip:
+            if os.path.isabs(sys_raw_file_zip):
+                candidate_zip = sys_raw_file_zip
+            else:
+                candidate_zip = os.path.join(base_dir or "", sys_raw_file_zip)
+            if candidate_zip and not os.path.exists(candidate_zip) and base_dir:
+                alt = os.path.join(base_dir, os.path.basename(sys_raw_file_zip))
+                if os.path.exists(alt):
+                    candidate_zip = alt
+        if candidate_zip and os.path.exists(candidate_zip):
+            try:
+                with tempfile.TemporaryDirectory(prefix="fot_zip_") as tmpd:
+                    with zipfile.ZipFile(candidate_zip) as zf:
+                        shp_members = [m for m in zf.namelist() if m.lower().endswith('.shp')]
+                        if shp_members:
+                            shp_member = shp_members[0]
+                            stem = os.path.splitext(shp_member)[0]
+                            for m in zf.namelist():
+                                if m.startswith(stem + '.'):
+                                    zf.extract(m, tmpd)
+                            shp_local = os.path.join(tmpd, shp_member)
+                            import shapefile
+                            sf = shapefile.Reader(shp_local)
+                            names = [f[0] for f in sf.fields[1:]]
+                            debug_print(debug, f"Extracted {len(names)} field names via pyshp from {candidate_zip} -> {shp_member}")
+                            return names
+            except Exception as e:
+                debug_print(debug, f"zip extraction failed for {candidate_zip}: {e}")
         debug_print(debug, f"No .shp found in {base_dir}")
         return []
 
@@ -207,6 +268,7 @@ class CatalogRow:
     field_names: Optional[str]
     sys_raw_file: Optional[str]
     sys_raw_folder: Optional[str]
+    sys_raw_file_zip: Optional[str]
 
     def entity(self) -> str:
         return build_entity(self.layer_subgroup, self.state, self.county, self.city)
@@ -219,7 +281,7 @@ def fetch_catalog_rows(conn, restrict_missing: bool) -> List[CatalogRow]:
         else ""
     )
     sql = (
-        "SELECT layer_subgroup, state, county, city, fields_obj_transform, field_names, sys_raw_file, sys_raw_folder "
+        "SELECT layer_subgroup, state, county, city, fields_obj_transform, field_names, sys_raw_file, sys_raw_folder, sys_raw_file_zip "
         "FROM m_gis_data_catalog_main "
         "WHERE status IS DISTINCT FROM 'DELETE' "
         "AND layer_subgroup IS NOT NULL "
@@ -240,6 +302,7 @@ def fetch_catalog_rows(conn, restrict_missing: bool) -> List[CatalogRow]:
                 field_names=r.get("field_names"),
                 sys_raw_file=r.get("sys_raw_file"),
                 sys_raw_folder=r.get("sys_raw_folder"),
+                sys_raw_file_zip=r.get("sys_raw_file_zip"),
             )
         )
     return result
@@ -288,9 +351,14 @@ def propose_transform_for_row(
         return "", "", ["no_aliases_for_layer"]
 
     # Determine field names list
-    valid, field_list = is_valid_field_names_json(row.field_names)
+    field_list: List[str] = []
     field_src = "existing"
-    if not valid:
+    if row.field_names and str(row.field_names).strip():
+        coerced, src = coerce_field_names_from_text(row.field_names)
+        if coerced:
+            field_list = coerced
+            field_src = src
+    if not field_list:
         field_list = try_extract_field_names(
             layer,
             row.state,
@@ -298,9 +366,10 @@ def propose_transform_for_row(
             row.city,
             row.sys_raw_file,
             row.sys_raw_folder,
+            row.sys_raw_file_zip,
             debug,
         )
-        field_src = "extracted"
+        field_src = "extracted" if field_list else "none"
     if not field_list:
         return "", "", ["no_field_names"]
 
