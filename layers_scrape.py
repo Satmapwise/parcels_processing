@@ -895,7 +895,8 @@ def layer_download(layer: str, entity: str, state: str, county: str, city: str, 
         return None, None
 
     fmt = (catalog_row.get('format') or '').lower()
-    download_field = (catalog_row.get('download') or '').strip().upper()
+    # Use download_method exclusively (legacy 'download' is AUTO and ignored)
+    method_field = (catalog_row.get('download_method') or '').strip().upper()
     resource = catalog_row.get('resource') or catalog_row.get('src_url_file')
     table_name = catalog_row.get('table_name')
 
@@ -911,9 +912,9 @@ def layer_download(layer: str, entity: str, state: str, county: str, city: str, 
             return True
         return False
 
-    # Determine download method (with temporary auto-detect for Hub/OpenData)
-    if download_field in {"AGS", "WGET", "SELENIUM"}:
-        selected_method = download_field
+    # Determine download method (prefer download_method; else fallback by format/URL)
+    if method_field in {"AGS", "WGET", "SELENIUM"}:
+        selected_method = method_field
     else:
         if fmt == 'ags':
             selected_method = 'AGS'

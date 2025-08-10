@@ -1141,7 +1141,7 @@ class LayersPrescrape:
         # CSV headers - specific fields requested by user
         headers = [
             "entity", "title", "state", "county", "city", "source_org", "data_date", "publish_date", "src_url_file", 
-            "format", "format_subtype", "download", "resource", "layer_group", 
+            "format", "format_subtype", "download_method", "download", "resource", "layer_group", 
             "layer_subgroup", "category", "sub_category", "sys_raw_folder", 
             "table_name", "fields_obj_transform", "source_comments", "processing_comments"
         ]
@@ -2291,7 +2291,7 @@ class LayersPrescrape:
             # - If download == AGS -> format = AGS
             # - If download == SELENIUM -> format = SHP
             # - If download == WGET -> default to SHP but do not overwrite an existing non-empty value
-            download_val = (record.get('download') or '').strip().upper()
+            download_val = (record.get('download_method') or '').strip().upper()
             existing = (current_value or '').strip()
 
             if download_val == 'AGS':
@@ -2308,7 +2308,12 @@ class LayersPrescrape:
             else:
                 # Fallback to legacy detection when download is not yet set
                 if not existing:
-                    expected = get_format_from_url(record.get('src_url_file') or '')
+                    url = (record.get('src_url_file') or '')
+                    # Prefer SHP for OpenData/Hub pages
+                    if is_opendata_portal(url):
+                        expected = 'SHP'
+                    else:
+                        expected = get_format_from_url(url)
                     return expected if expected else "***MISSING***"
                 # Validate current format with best detection for sanity, but don't force overwrite
                 url = record.get('src_url_file') or ''
@@ -2317,23 +2322,33 @@ class LayersPrescrape:
                     return expected
                 return ""
         
-        elif field == "download":
-            # New logic: auto-set download method based on URL classification
-            # - AGS if URL is detected as ArcGIS service
-            # - SELENIUM if URL appears to be an opendata portal
-            # - WGET otherwise
+        elif field == "download_method":
+            # Determine download method when missing (non-manual):
+            # 1) If format is set:
+            #    - AGS -> AGS
+            #    - Otherwise -> SELENIUM if opendata URL, else WGET
+            # 2) If format is missing, infer from URL (AGS/opendata/WGET)
+            existing = (current_value or '').strip().upper()
+            if existing:
+                return ""  # keep existing value
+
+            fmt_val = (record.get('format') or '').strip().upper()
             url = (record.get('src_url_file') or '').strip()
-            if not url:
-                return ""  # nothing to infer
 
-            if is_arcgis_service_url(url):
+            if fmt_val == 'AGS':
                 expected = 'AGS'
-            elif is_opendata_portal(url):
-                expected = 'SELENIUM'
+            elif url:
+                if is_arcgis_service_url(url):
+                    expected = 'AGS'
+                elif is_opendata_portal(url):
+                    expected = 'SELENIUM'
+                else:
+                    expected = 'WGET'
             else:
-                expected = 'WGET'
+                # No format and no URL; can't infer
+                return ""
 
-            return expected if (current_value or '').strip().upper() != expected else ""
+            return expected
         
         elif field == "resource":
             # Resource field should only be populated for non-AGS formats
