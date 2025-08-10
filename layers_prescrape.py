@@ -1378,7 +1378,7 @@ class LayersPrescrape:
         
         # Define CSV headers - core conditions + optional conditions
         core_headers = [
-            "entity", "og_title", "new_title", "state", "county", "city", "src_url_file", "format", "download", 
+            "entity", "og_title", "new_title", "state", "county", "city", "src_url_file", "format", "download_method", "download", 
             "resource", "layer_group", "category", "sys_raw_folder", "table_name", 
             "fields_obj_transform", "layer_subgroup", "source_comments", "processing_comments", "distrib_comments"
         ]
@@ -1873,10 +1873,10 @@ class LayersPrescrape:
             
             # Define headers (same as detect mode)
             headers = [
-                "entity", "title", "state", "county", "city", "source_org", "data_date", "publish_date", "src_url_file", 
-                "format", "format_subtype", "download", "resource", "layer_group", 
-                "layer_subgroup", "category", "sub_category", "sys_raw_folder", 
-                "table_name", "fields_obj_transform", "source_comments", "processing_comments"
+            "entity", "title", "state", "county", "city", "source_org", "data_date", "publish_date", "src_url_file", 
+            "format", "format_subtype", "download_method", "download", "resource", "layer_group", 
+            "layer_subgroup", "category", "sub_category", "sys_raw_folder", 
+            "table_name", "fields_obj_transform", "source_comments", "processing_comments"
             ]
             
             # Read existing CSV if it exists
