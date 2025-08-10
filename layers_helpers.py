@@ -592,10 +592,14 @@ def parse_string_to_date(input_str: str) -> Optional[datetime.date]:
 
     s = _strip_ordinal_suffix(str(input_str)).strip()
 
-    # ISO datetime or date
-    iso_dt_match = re.search(r"\b\d{4}-\d{2}-\d{2}(?:[T\s]\S+)?\b", s)
+    # ISO datetime or date (allow within underscores; avoid digit-adjacent)
+    iso_dt_match = re.search(r"(?<!\d)\d{4}-\d{2}-\d{2}(?:[T\s]\S+)?(?!\d)", s)
     if iso_dt_match:
         iso_candidate = iso_dt_match.group(0)
+        # Normalize common phrasing like "YYYY-MM-DD at HH:MM" to ISO
+        iso_candidate = iso_candidate.replace(" at ", "T")
+        # Trim trailing punctuation not part of ISO
+        iso_candidate = iso_candidate.rstrip(".,);]")
         try:
             if 'T' in iso_candidate or ' ' in iso_candidate:
                 # Normalize to date component
@@ -650,7 +654,7 @@ def extract_dates_from_text(text: str) -> List[datetime.date]:
     # Find potential date substrings by regex windows and parse each
     candidates: List[str] = []
     # Gather various patterns
-    candidates += re.findall(r"\b\d{4}-\d{2}-\d{2}(?:[T\s]\S+)?\b", text)
+    candidates += re.findall(r"(?<!\d)\d{4}-\d{2}-\d{2}(?:[T\s]\S+)?(?!\d)", text)
     candidates += re.findall(r"\b\d{1,2}[\/-]\d{1,2}[\/-]\d{2,4}\b", text)
     candidates += re.findall(r"\b(?:Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:t|tember)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)\s+\d{1,2}(?:st|nd|rd|th)?,?\s+\d{4}\b", text, flags=re.IGNORECASE)
     candidates += re.findall(r"\b\d{8}\b", text)
