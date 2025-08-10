@@ -28,6 +28,8 @@ import fnmatch
 import psycopg2
 import psycopg2.extras
 from pathlib import Path
+import shutil
+import shlex
 
 # Import modular Selenium OpenData downloader (optional)
 try:
@@ -558,23 +560,31 @@ def _run_source_comments(source_comments: str, work_dir: str, logger):
         # Fallback to old pipe format for backwards compatibility
         commands = [cmd.strip() for cmd in source_comments.split('|') if cmd.strip()]
     
-    for i, cmd_str in enumerate(commands):
-        logger.debug(f"Running source comment command {i+1}/{len(commands)}: {cmd_str}")
-        
+    for i, raw_cmd in enumerate(commands):
+        logger.debug(f"Evaluating source comment command {i+1}/{len(commands)}: {raw_cmd}")
+
         if CONFIG.test_mode:
-            logger.info(f"[TEST MODE] SOURCE COMMAND SKIPPED IN {work_dir}: {cmd_str}")
+            logger.info(f"[TEST MODE] SOURCE COMMAND SKIPPED IN {work_dir}: {raw_cmd}")
             continue
-        
+
         # Check if this is a warning-only command
-        is_warning_only = cmd_str.startswith('WARNING:')
+        is_warning_only = str(raw_cmd).startswith('WARNING:')
+        cmd_str = raw_cmd[8:].strip() if is_warning_only else str(raw_cmd).strip()
         if is_warning_only:
-            cmd_str = cmd_str[8:].strip()  # Remove "WARNING:" prefix (8 characters)
             logger.debug(f"Command marked as warning-only: {cmd_str}")
-        
+
+        # Validate whether it looks like a command; skip notes
+        if not _looks_like_command(cmd_str):
+            logger.info(f"Skipping non-command note in source_comments: {raw_cmd}")
+            continue
+
         # Handle different command types
-        if cmd_str.endswith('.py'):
-            # Python script - run with python3
-            command = ['python3', cmd_str]
+        if cmd_str.endswith('.py') or cmd_str.lower().startswith(('python ', 'python3 ')):
+            # Python script - run with python3 if not explicitly specified
+            if cmd_str.lower().startswith(('python ', 'python3 ')):
+                command = ['bash', '-c', cmd_str]
+            else:
+                command = ['python3', cmd_str]
         else:
             # Shell command - run through shell
             command = ['bash', '-c', cmd_str]
@@ -757,6 +767,71 @@ def _entity_from_parts(layer: str, state: str | None, county: str, city: str | N
             city_internal = 'countywide'  # Default for county-only records
         return f"{layer}_{state_internal}_{county_internal}_{city_internal}"
 
+def _looks_like_command(command_text: str) -> bool:
+    """Heuristically determine whether a string is an executable command vs a human note.
+
+    Rules (order matters):
+    - Empty/whitespace -> False
+    - Strip WARNING: prefix before calling this
+    - Accept if first token resolves on PATH (shutil.which) or is in builtin whitelist
+    - Accept if command starts with python/python3 or ends with .py
+    - Accept if it starts with ./, ../, or /
+    - Accept if it contains common shell operators (|, &&, ||, >, <)
+    - Otherwise reject (likely a free-form note)
+    """
+    if not command_text or not str(command_text).strip():
+        return False
+
+    s = str(command_text).strip()
+
+    # Skip likely prose: sentence ending with a period and no shell-ish characters
+    if s.endswith('.') and ' -' not in s and '/' not in s and '\\' not in s and '"' not in s and "'" not in s:
+        return False
+
+    # Shell pipelines or logical operators are likely commands
+    if any(tok in s for tok in ['|', '&&', '||', '>', '<']):
+        return True
+
+    # Explicit script indications
+    if s.lower().startswith(('python ', 'python3 ')) or s.lower().endswith('.py'):
+        return True
+
+    # Path-like invocation
+    if s.startswith(('./', '../', '/')):
+        return True
+
+    # Tokenize conservatively
+    try:
+        tokens = shlex.split(s)
+    except Exception:
+        tokens = s.split()
+    if not tokens:
+        return False
+
+    # Ignore leading sudo
+    first = tokens[0]
+    if first == 'sudo' and len(tokens) > 1:
+        first = tokens[1]
+
+    # Common builtins that won't resolve via which but are valid under bash -c
+    shell_builtins = {'cd', 'echo', 'true', 'false', 'test', 'exit'}
+    if first in shell_builtins:
+        return True
+
+    # Common CLI tools used in this pipeline
+    common_tools = {
+        'rm', 'mv', 'cp', 'mkdir', 'rmdir', 'unzip', 'zip', 'ogr2ogr', 'ogrinfo', 'gdal_translate', 'gdalwarp',
+        'sed', 'awk', 'grep', 'find', 'psql', 'bash', 'sh', 'chmod', 'ls', 'cat', 'head', 'tail'
+    }
+    if first in common_tools:
+        return True
+
+    # PATH resolution
+    if shutil.which(first):
+        return True
+
+    return False
+
 def _parse_processing_comments(text):
     """Parse the processing_comments field into a list of command strings.
     
@@ -768,24 +843,33 @@ def _parse_processing_comments(text):
     if not text:
         return []
     
+    # Helper to strip WARNING: prefix for validation
+    def _strip_warning_prefix(s: str) -> str:
+        return s[8:].strip() if isinstance(s, str) and s.startswith('WARNING:') else s
+
     # Try bracketed format first: [cmd1] [cmd2] -> ['cmd1', 'cmd2']
     bracketed_commands = re.findall(r'\[([^\]]+)\]', text.strip())
     if bracketed_commands:
-        return [cmd.strip() for cmd in bracketed_commands if cmd.strip()]
+        cmds = [cmd.strip() for cmd in bracketed_commands if cmd.strip()]
+        # Validate – only keep things that look like real commands
+        cmds = [c for c in cmds if _looks_like_command(_strip_warning_prefix(c))]
+        return cmds
     
     # Try JSON array format
     try:
         data = json.loads(text)
         if isinstance(data, list):
-            return [str(cmd).strip() for cmd in data if str(cmd).strip()]
+            cmds = [str(cmd).strip() for cmd in data if str(cmd).strip()]
+            cmds = [c for c in cmds if _looks_like_command(_strip_warning_prefix(c))]
+            return cmds
     except Exception:
         pass
     
-    # Fallback – split on newlines/semicolons
+    # Fallback – split on newlines/semicolons, but filter out non-commands
     commands = []
     for piece in re.split(r'[\n;]+', text):
         piece = piece.strip()
-        if piece:
+        if piece and _looks_like_command(_strip_warning_prefix(piece)):
             commands.append(piece)
     return commands
 
@@ -1208,14 +1292,23 @@ def layer_processing(layer: str, entity: str, state: str, county: str, city: str
     processing_commands = _parse_processing_comments(catalog_row.get('processing_comments'))
     if processing_commands:
         logger.debug(f"[PROCESSING] Running {len(processing_commands)} pre-processing commands")
-        for cmd_str in processing_commands:
+        for raw_cmd in processing_commands:
             # Check if this is a warning-only command
-            is_warning_only = cmd_str.startswith('WARNING:')
+            is_warning_only = str(raw_cmd).startswith('WARNING:')
+            cmd_str = raw_cmd[8:].strip() if is_warning_only else str(raw_cmd).strip()
             if is_warning_only:
-                cmd_str = cmd_str[8:].strip()  # Remove "WARNING:" prefix (8 characters)
                 logger.debug(f"Processing command marked as warning-only: {cmd_str}")
-            
-            command = cmd_str.split() if isinstance(cmd_str, str) else cmd_str
+
+            # Validate whether it looks like a command; skip notes
+            if not _looks_like_command(cmd_str):
+                logger.info(f"Skipping non-command note in processing_comments: {raw_cmd}")
+                continue
+
+            # Tokenize for direct execution
+            try:
+                command = shlex.split(cmd_str)
+            except Exception:
+                command = cmd_str.split()
             
             try:
                 _run_command(command, work_dir, logger)
@@ -1223,7 +1316,6 @@ def layer_processing(layer: str, entity: str, state: str, county: str, city: str
                 if is_warning_only:
                     logger.warning(f"Processing command failed (warning-only): {cmd_str}")
                     logger.warning(f"Error: {e}")
-                    # Continue with other commands for warning-only commands
                 else:
                     logger.error(f"Processing command failed: {cmd_str}")
                     logger.error(f"Error: {e}")
