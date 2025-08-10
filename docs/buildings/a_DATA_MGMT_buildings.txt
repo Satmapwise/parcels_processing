@@ -1,0 +1,527 @@
+DATA MANAGEMENT - BUILDINGS
+
+- Standard template for documenting data mangement per data set.
+
+===============================================================================
+Data Management Tasks
+
+- Research data
+- Acquire data
+- Document data
+- Process data
+- Edit data
+- Publish data
+
+-------------------------------------------------------------------------------
+RESEARCH DATA
+-------------------------------------------------------------------------------
+
+Start out with a pilot project!
+
+- Load buildings into 3 counties to start
+	- good representation of buildings from county that have not been imported into OSM
+	- Miami-Dade
+		- good mix of county and OSM buildings
+		- import already happened
+	- Lee?
+		- good buildings from county
+	- Martin
+		- no county data
+
+Document where buildings are available
+	- can be county and/or city
+
+-------------------------------------------------------------------------------
+ACQUIRE DATA
+-------------------------------------------------------------------------------
+
+-------------------------------------------------------------------------------
+DOCUMENT DATA
+-------------------------------------------------------------------------------
+
+cd /mnt/ntfs_red/m_drive/datascrub/05_Parcels/buildings/county/miami_dade
+
+ogrinfo Building_Footprint_2D.shp Building_Footprint_2D|less
+
+---------------------------------------
+Buildings ms 2017
+---------------------------------------
+- parts of:
+	- Alachua, Brevard, Duval, Hillsborough, Leon, Orange, Osceola, Pinellas, Volusia
+
+buildings_fl_ms - 2018
+- all FL MS buildings
+- its ONLY geometry
+6903772 records
+
+---------------------------------------
+Buildings_fl
+---------------------------------------
+
+1437742
+
+78125;"CLAY"
+559422;"MIAMI-DADE"
+63154;"MARTIN"
+619080;"LEE"
+117961;"ST_LUCIE"
+
+
+- county first
+- OSM next
+- MS next
+- addresses
+- parcel ids
+- land use
+- year built
+	- match building data in poarcels with addresses / buildings?
+- building id?
+- COLOR CODE BUILDINGS by use, year built, stories, in/out of flood plain, etc
+	- Lee GIS maps have color coded buildings
+	
+- Initial schema of buildings is identical to addresses
+	
+-- DROP TABLE buildings_fl;
+CREATE TABLE bigdata.buildings_fl
+(
+  ogc_fid serial NOT NULL,
+  wkb_geometry geometry,
+  address_id text,
+  fullname text,
+  aliasname text,
+  buildingname text,
+  landmarkname text,
+  s_number text,
+  s_pdir text,
+  s_name text,
+  s_type text,
+  s_sdir text,
+  s_unit text,
+  s_address text,
+  s_city text,
+  s_city_orig text,
+  s_state text,
+  s_zipcode text,
+  s_zipcode4 text,
+  pin text,
+  altkey text,
+  bldg_num_pa text,
+  type_orig text,
+  type2_orig text,
+  date_created text,
+  date_edited text,
+  addr_status text,
+  luse text,
+  lusedor text,
+  sqft_htd integer,
+  sqft_tot integer,
+  sqft_adj integer,
+  stories smallint,
+  res_units int,
+  yrblt_act smallint,
+  yrblt_eff smallint,
+  flood_zone text,  
+  elevation real,
+  d_county text,
+  source text
+  CONSTRAINT enforce_dims_the_geom CHECK (st_ndims(wkb_geometry) = 2),
+  CONSTRAINT enforce_srid_the_geom CHECK (st_srid(wkb_geometry) = 32767)
+);
+
+
+CREATE INDEX geom_buildings_fl_idx
+  ON buildings_fl
+  USING gist
+  (wkb_geometry );
+
+-- DROP INDEX pin_buildings_fl_idx;
+CREATE UNIQUE INDEX pin_buildings_fl_idx
+  ON buildings_fl
+  USING btree
+  (pin );
+  
+ -- DROP INDEX ogc_fid_buildings_fl_idx;
+CREATE UNIQUE INDEX ogc_fid_buildings_fl_idx
+  ON buildings_fl
+  USING btree
+  (ogc_fid );
+  
+-- DROP INDEX s_name_buildings_fl_idx;
+CREATE INDEX s_name_buildings_fl_idx
+  ON buildings_fl
+  USING btree
+  (s_name COLLATE pg_catalog."default" );
+
+	
+
+-------------------------------------------------------------------------------
+PROCESS DATA
+-------------------------------------------------------------------------------
+
+
+Process Overview:
+
+Load building data into buildings_fl 
+- Manual effort
+    - Load County data
+        - Assess by county whether county data is available - if it is, load it.
+    - Load OSM data
+    - Load Microsoft data
+
+update_buildings.py lee . county
+update_buildings.py lee . osm
+update_buildings.py lee . ms
+
+update_buildings.py martin . osm
+update_buildings.py martin . ms
+
+update_buildings.py miami-dade . county
+update_buildings.py miami-dade . osm
+update_buildings.py miami-dade . ms
+
+update_buildings.py st_lucie . osm
+update_buildings.py st_lucie . ms
+
+update_buildings.py indian_river . ms
+update_buildings.py indian_river . osm
+
+update_buildings.py brevard . ms
+update_buildings.py brevard . osm
+
+update_buildings.py palm_beach . ms
+update_buildings.py palm_beach . osm
+
+
+update_buildings.py volusia . ms
+update_buildings.py volusia . osm
+
+update_buildings.py orange . ms
+update_buildings.py orange . osm
+
+update_buildings.py osceola . ms
+update_buildings.py osceola . osm
+
+update_buildings.py polk . ms
+update_buildings.py polk . osm
+
+update_buildings.py lake . ms
+update_buildings.py lake . osm
+
+update_buildings.py seminole . ms
+update_buildings.py seminole . osm
+
+update_buildings.py marion . ms
+update_buildings.py marion . osm
+
+update_buildings.py pasco . ms
+update_buildings.py pasco . osm
+
+update_buildings.py hillsborough . ms
+update_buildings.py hillsborough . osm
+
+update_buildings.py pinellas . ms
+update_buildings.py pinellas . osm
+
+update_buildings.py manatee . ms
+update_buildings.py manatee . osm
+
+update_buildings.py sarasota . ms
+update_buildings.py sarasota . osm
+
+update_buildings.py charlotte . ms
+update_buildings.py charlotte . osm
+
+update_buildings.py lee . ms
+update_buildings.py lee . osm
+
+update_buildings.py collier . ms
+update_buildings.py collier . osm
+
+update_buildings.py monroe . ms
+update_buildings.py monroe . osm
+
+update_buildings.py broward . ms
+update_buildings.py broward . osm
+
+update_buildings.py flagler . ms
+update_buildings.py flagler . osm
+
+update_buildings.py st_johns . ms
+update_buildings.py st_johns . osm
+
+update_buildings.py duval . ms
+update_buildings.py duval . osm
+
+update_buildings.py nassau . ms
+update_buildings.py nassau . osm
+
+update_buildings.py escambia . ms
+update_buildings.py escambia . osm
+
+update_buildings.py santa_rosa . ms
+update_buildings.py santa_rosa . osm
+
+update_buildings.py walton . ms
+update_buildings.py walton . osm
+
+update_buildings.py bay . ms
+update_buildings.py bay . osm
+
+update_buildings.py leon . ms
+update_buildings.py leon . osm
+
+update_buildings.py hernando . ms
+update_buildings.py hernando . osm
+
+update_buildings.py citrus . ms
+update_buildings.py citrus . osm
+
+update_buildings.py columbia . ms
+update_buildings.py columbia . osm
+
+update_buildings.py suwannee . ms
+update_buildings.py suwannee . osm
+
+update_buildings.py baker . ms
+update_buildings.py baker . osm
+
+update_buildings.py hendry . ms
+update_buildings.py hendry . osm
+
+update_buildings.py desoto . ms
+update_buildings.py desoto . osm
+
+update_buildings.py hardee . ms
+update_buildings.py hardee . osm
+
+update_buildings.py okeechobee . ms
+update_buildings.py okeechobee . osm
+
+update_buildings.py glades . ms
+update_buildings.py glades . osm
+
+update_buildings.py okaloosa . ms
+update_buildings.py okaloosa . osm
+
+update_buildings.py alachua . ms
+update_buildings.py alachua . osm
+
+
+update_buildings.py bradford . ms
+update_buildings.py bradford . osm
+
+update_buildings.py gilchrist . ms
+update_buildings.py gilchrist . osm
+
+update_buildings.py gulf . ms
+update_buildings.py gulf . osm
+
+update_buildings.py hamilton . ms
+update_buildings.py hamilton . osm
+
+update_buildings.py highlands . ms
+update_buildings.py highlands . osm
+
+update_buildings.py putnam . ms
+update_buildings.py putnam . osm
+
+update_buildings.py holmes . ms
+update_buildings.py holmes . osm
+
+update_buildings.py calhoun . ms
+update_buildings.py calhoun . osm
+
+update_buildings.py dixie . ms
+update_buildings.py dixie . osm
+
+update_buildings.py franklin . ms
+update_buildings.py franklin . osm
+
+update_buildings.py gadsden . ms
+update_buildings.py gadsden . osm
+
+update_buildings.py jackson . ms
+update_buildings.py jackson . osm
+
+update_buildings.py jefferson . ms
+update_buildings.py jefferson . osm
+
+update_buildings.py lafayette . ms
+update_buildings.py lafayette . osm
+
+update_buildings.py levy . ms
+update_buildings.py levy . osm
+
+update_buildings.py liberty . ms
+update_buildings.py liberty . osm
+
+update_buildings.py madison . ms
+update_buildings.py madison . osm
+
+update_buildings.py sumter . ms
+update_buildings.py sumter . osm
+
+update_buildings.py suwannee . ms
+update_buildings.py suwannee . osm
+
+update_buildings.py taylor . ms
+update_buildings.py taylor . osm
+
+update_buildings.py union . ms
+update_buildings.py union . osm
+
+update_buildings.py wakulla . ms
+update_buildings.py wakulla . osm
+
+update_buildings.py washington . ms
+update_buildings.py washington . osm
+
+
+    
+palm_beach
+
+
+
+Once building data is initially loaded, then:
+- run building update script - around line 270
+    
+
+
+CHANGES!
+
+- add owner name field
+- add luse_d field
+- add lusedor_d field
+- redo lee to load altkey values into altkey fields + other changes
+
+
+
+copy existing update_address_points to do buildings
+
+- do overlays to add attributes
+
+
+
+Process Overview
+
+Load buildings intoi buildings_fl
+- county - update_buildings.py lee county
+- OSM - update_buildings.py lee osm
+- MS - update_buildings.py lee ms
+	
+At this point some info is assigned based on attributes available in county and OSM data. No info in MS data.
+
+- Next add PIN to buildings so we can tie to parcels.
+	- Do we even need to use address point data?
+		- inconsistent / not always available
+		- we are after the parcel pin and its going to be one pin per parcel
+		- and once you have the parcel, you have everything!
+	- Use building centroid inside parcel polygon technique
+	
+select * from parcels_std_project, 
+	(SELECT st_centroid(wkb_geometry) as wkb_geometry,* FROM buildings_fl) as b
+	limit 10
+
+
+-------------------------------------------------------------------------------
+Update counties with buildings with PINs
+-------------------------------------------------------------------------------
+
+Which counties have PINs?
+- Lee
+
+select min(pin),max(pin),d_county from buildings_fl group by d_county -- limit 10
+
+-- 1/20 altkey is in pin field of buildings_fl
+UPDATE buildings_fl as b SET
+		luse = p.luse, 
+		lusedor = p.lusedor,
+		sqft_htd = p.sqft_htd,
+		sqft_tot = p.sqft_tot,
+		sqft_adj = p.sqft_adj,
+		stories = p.stories,
+		res_units = p.res_units,
+		yrblt_act = p.yrblt_act,
+		yrblt_eff = p.yrblt_eff
+	FROM parcels_std_project as p
+	WHERE b.pin = p.altkey;
+	
+	
+-------------------------------------------------------------------------------
+Update buildings with parcel info using county address points with PINs
+-------------------------------------------------------------------------------
+
+select min(pin),max(pin),d_county from address_points group by d_county limit 10
+
+"0";"NEAR 6798";"ALACHUA"
+"09155-010-000";"36459-394-140";"BAY"
+"0";"3011231";"BREVARD"
+"104016000020";"N/A";"BROWARD"
+"402101101001";"999999999999";"CHARLOTTE"
+"0101000000020";"3660170170020";"MIAMI-DADE"
+"272001000000003";"342428000000023";"ORANGE"
+"00354319000001020";"ROW";"PALM_BEACH"
+"012715000002200100";"820";"PINELLAS"
+
+-- first, set pin of building using addresses
+	- will miss some since not all address points will overlay building
+
+
+-------------------------------------------------------------------------------
+Update buildings with parcel info using building centroid points
+-------------------------------------------------------------------------------
+
+** THIS IS MAIN THING! **
+
+Do point in polygon using building centroid as point.
+
+SELECT * FROM parcels_std_project, 
+	(SELECT ST_Centroid(wkb_geometry) as wkb_geometry FROM buildings_fl) as b
+	LIMIT 10;
+	
+-- do this for each county!
+-- building data must be loaded first.
+UPDATE buildings_fl as b SET
+	luse = p.luse,
+	lusedor = p.lusedor,
+	sqft_htd = p.sqft_htd,
+	sqft_tot = p.sqft_tot,
+	sqft_adj = p.sqft_adj,
+	stories = p.stories,
+	res_units = p.res_units,
+	yrblt_act = p.yrblt_act,
+	yrblt_eff = p.yrblt_eff
+	FROM parcels_std_project as p
+	WHERE ST_Intersects(ST_Centroid(b.wkb_geometry),p.wkb_geometry)
+	and b.d_county = 'MIAMI-DADE';
+	
+-------------------------------------------------------------------------------
+Update buildings with parcel info using parcel centroids????
+-------------------------------------------------------------------------------
+
+select min(pin),max(pin),d_county from address_points group by d_county limit 10
+
+"";"";"CLAY"
+"";"";"OSCEOLA"
+"";"";"ST_LUCIE"
+"";"";"VOLUSIA"
+
+-------------------------------------------------------------------------------
+EDIT DATA
+-------------------------------------------------------------------------------
+
+
+-------------------------------------------------------------------------------
+PUBLISH DATA
+-------------------------------------------------------------------------------
+
+pg_dump -p 5432 -U postgres -F custom -v -f "/var/www/apps/mapwise/htdocs/x342/buildings_fl.backup" -t "bigdata.buildings_fl" gisdev
+
+ftp to main server
+
+# drop existing table
+psql -U postgres -d gislib -c "DROP TABLE buildings_fl"
+
+# load new table
+pg_restore -U postgres -d gislib -v "/home/bmay/incoming/buildings_fl.backup"
+
