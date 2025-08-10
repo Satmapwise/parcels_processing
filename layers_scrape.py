@@ -1137,11 +1137,7 @@ def layer_download(layer: str, entity: str, state: str, county: str, city: str, 
         logger.info(f"[TEST MODE] Skipping download validation for {layer}/{entity}")
         _update_csv_status(layer, entity, 'download', 'SUCCESS', entity_components=entity_components)
 
-    # Run source_comments commands (pre-metadata processing) - AFTER validation
-    source_comments = catalog_row.get('source_comments', '')
-    if source_comments and source_comments.strip():
-        _debug_main(f"[DOWNLOAD] Running source_comments for {layer}/{entity}: {source_comments}", logger)
-        _run_source_comments(source_comments, work_dir, logger)
+    # Note: source_comments moved to run within layer_metadata before extraction
 
     return zip_file, data_date
 
@@ -1212,6 +1208,12 @@ def layer_metadata(layer: str, entity: str, state: str, county: str, city: str, 
     _debug_main(f"[METADATA] Extracting metadata for {layer}/{entity}", logger)
     
     fmt = (catalog_row.get('format') or '').lower()
+    
+    # Run source_comments commands (pre-metadata processing) BEFORE extraction
+    source_comments = catalog_row.get('source_comments', '')
+    if source_comments and str(source_comments).strip():
+        _debug_main(f"[METADATA] Running source_comments for {layer}/{entity}: {source_comments}", logger)
+        _run_source_comments(source_comments, work_dir, logger)
     
     # Handle different formats differently
     if fmt in METADATA_ONLY_FORMATS:
