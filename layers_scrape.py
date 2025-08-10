@@ -64,11 +64,6 @@ def should_process_entity(catalog_row: dict, entity: str, SKIP_ENTITIES: set) ->
     if entity in SKIP_ENTITIES:
         return False, f"Entity '{entity}' is in the SKIP_ENTITIES set"
     
-    # Check if fields_obj_transform is null/empty
-    fields_obj_transform = catalog_row.get('fields_obj_transform')
-    if not fields_obj_transform or fields_obj_transform.strip() == '':
-        return False, "fields_obj_transform is null or empty"
-    
     fmt = (catalog_row.get('format') or '').lower()
     
     if fmt in FULL_PIPELINE_FORMATS:
@@ -78,13 +73,22 @@ def should_process_entity(catalog_row: dict, entity: str, SKIP_ENTITIES: set) ->
     else:
         return False, f"Format '{fmt}' is excluded from pipeline"
 
-def should_run_processing(catalog_row: dict) -> bool:
-    """Determine if an entity should run the processing stage.
+def should_run_processing(catalog_row: dict) -> tuple[bool, str]:
+    """Determine if an entity should run the processing stage and why.
     
-    Processing is skipped for metadata-only formats like PDF.
+    Returns:
+        tuple[bool, str]: (should_run, reason)
+    
+    Processing is skipped for metadata-only formats like PDF or when
+    fields_obj_transform is missing.
     """
     fmt = (catalog_row.get('format') or '').lower()
-    return fmt not in METADATA_ONLY_FORMATS
+    if fmt in METADATA_ONLY_FORMATS:
+        return False, f"Format '{fmt}' skips processing stage"
+    fields_obj_transform = catalog_row.get('fields_obj_transform')
+    if not fields_obj_transform or str(fields_obj_transform).strip() == '':
+        return False, 'fields_obj_transform is null or empty'
+    return True, 'Processing enabled'
 
 # ---------------------------------------------------------------------------
 # Name Formatting Utilities - now imported from layers_helpers.py
@@ -2238,8 +2242,14 @@ def process_layer(layer, queue, entity_components):
                 raise  # Re-raise to skip entire entity
 
             # Stage 3: Processing
-            if should_run_processing(catalog_row):
+            processing_skipped = False
+            should_proc, proc_reason = should_run_processing(catalog_row)
+            if should_proc:
                 layer_processing(layer, entity, state, county, city, catalog_row, work_dir, entity_logger, metadata, entity_components)
+            else:
+                entity_logger.info(f"[PROCESSING] Skipping processing for {layer}/{entity}: {proc_reason}")
+                _update_csv_status(layer, entity, 'processing', 'SKIPPED', error_msg=proc_reason, entity_components=entity_components)
+                processing_skipped = True
 
             # Stage 4: Upload
             layer_upload(layer, entity, state, county, city, catalog_row, work_dir, entity_logger, metadata, raw_zip_name, entity_components)
@@ -2254,6 +2264,8 @@ def process_layer(layer, queue, entity_components):
                 'data_date': metadata.get('data_date') or datetime.now().date(),
                 'runtime_seconds': f'{entity_runtime}s',
             }
+            if processing_skipped:
+                result_entry['processing_skipped'] = True
             if metadata.get('epsg'):
                 result_entry['epsg'] = metadata['epsg']
             if metadata.get('shp'):
@@ -2455,16 +2467,25 @@ def generate_summary(results, entity_components: dict = None):
                 row['upload_status'] = 'SKIPPED'
                 row['error_message'] = str(error_msg)
             elif status == 'skipped' and 'fields_obj_transform is null or empty' in str(error_msg):
-                # fields_obj_transform is null/empty
-                row['download_status'] = 'SKIPPED'
+                # fields_obj_transform is null/empty → only processing is skipped now
+                # Preserve download status from prior updates if present; default to SUCCESS
+                if not row.get('download_status'):
+                    row['download_status'] = existing_data.get(entity, {}).get('download_status') or 'SUCCESS'
                 row['processing_status'] = 'SKIPPED'
-                row['upload_status'] = 'SKIPPED'
+                # Allow upload to proceed; will be set by later logic if needed
+                row['upload_status'] = row.get('upload_status', '')
                 row['error_message'] = str(error_msg)
             elif status == 'success':
-                # Full success
-                row['download_status'] = 'SUCCESS'
-                row['processing_status'] = 'SUCCESS'
-                row['upload_status'] = 'SUCCESS'
+                # Full success; preserve prior stage statuses when present
+                # - Keep 'NND' or 'SUCCESS' for download if already set
+                # - Keep 'SKIPPED' for processing if it was intentionally skipped
+                # - Keep upload status if already recorded
+                if result.get('processing_skipped'):
+                    row['processing_status'] = 'SKIPPED'
+                else:
+                    row['processing_status'] = row.get('processing_status') or 'SUCCESS'
+                row['download_status'] = row.get('download_status') or 'SUCCESS'
+                row['upload_status'] = row.get('upload_status') or 'SUCCESS'
                 row['error_message'] = ''
                 row['data_date'] = result.get('data_date', '')
             else:
