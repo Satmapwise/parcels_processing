@@ -1,12 +1,15 @@
 #!/usr/bin/env python3
 """
-Generate and optionally apply catalog field transform updates from a transform table.
+Generate and optionally apply catalog field transform updates from transform tables.
 
-This script builds proposed `fields_obj_transform` values for the `parcel_geo` layer by
-reading from `parcel_shp_fields` and mapping the following headers to their actual
-field names when present: shp_pin, shp_pin_clean, shp_pin2, shp_pin2_clean, shp_altkey.
+Primary behavior:
+  - For `parcel_geo`, build proposed `fields_obj_transform` values from
+    `parcel_shp_fields` and output a CSV preview. With --apply, update catalog rows.
 
-It outputs a CSV of proposed changes and, with --apply, updates the catalog.
+Create-mode extension:
+  - With `--create`, discover missing catalog records and generate a create CSV.
+  - Also supports creating missing catalog records for `zoning` and `flu` based on
+    `support.zoning_transform` and `support.flu_transform` tables (Florida only).
 
 CSV columns:
   - entity
@@ -14,7 +17,10 @@ CSV columns:
   - existing_fields_obj_transform
   - new_fields_obj_transform
 
-Entity format used: parcel_geo_<state>_<county>
+Entity formats:
+  - parcel_geo_<state>_<county>
+  - zoning_fl_<county>_<city>
+  - flu_fl_<county>_<city>
 """
 
 from __future__ import annotations
@@ -157,7 +163,7 @@ def fetch_transform_rows(conn) -> Dict[str, TransformRecord]:
     return chosen
 
 
-def fetch_catalog_map(conn) -> Dict[str, Dict[str, Optional[str]]]:
+def fetch_catalog_map_parcel(conn) -> Dict[str, Dict[str, Optional[str]]]:
     """Fetch parcel_geo catalog rows keyed by entity."""
     sql = """
         SELECT ogc_fid,
@@ -179,7 +185,6 @@ def fetch_catalog_map(conn) -> Dict[str, Dict[str, Optional[str]]]:
     for row in rows:
         state_internal = format_name(row.get("state") or "", "state", external=False)
         county_internal = format_name(row.get("county") or "", "county", external=False)
-        # parcel_geo is a county-level layer; city is typically NULL
         if not state_internal or not county_internal:
             continue
         entity = f"parcel_geo_{state_internal}_{county_internal}"
@@ -190,6 +195,102 @@ def fetch_catalog_map(conn) -> Dict[str, Dict[str, Optional[str]]]:
             "existing_transform": row.get("fields_obj_transform") or "",
         }
     return result
+
+
+def fetch_catalog_map_for_layers(conn, layers: List[str]) -> Dict[str, Dict[str, Optional[str]]]:
+    """Fetch catalog rows keyed by entity for the given layer_subgroup values.
+
+    Supports city-level layers like `zoning` and `flu`.
+    """
+    if not layers:
+        return {}
+    placeholders = ", ".join(["%s"] * len(layers))
+    sql = f"""
+        SELECT ogc_fid,
+               layer_subgroup,
+               state,
+               county,
+               city,
+               fields_obj_transform
+        FROM m_gis_data_catalog_main
+        WHERE layer_subgroup IN ({placeholders})
+          AND layer_subgroup IS NOT NULL
+          AND status IS DISTINCT FROM 'DELETE'
+    """
+    with conn.cursor(cursor_factory=RealDictCursor) as cur:
+        cur.execute(sql, layers)
+        rows = cur.fetchall()
+
+    result: Dict[str, Dict[str, Optional[str]]] = {}
+    for row in rows:
+        layer = (row.get("layer_subgroup") or "").strip().lower()
+        state_internal = format_name(row.get("state") or "", "state", external=False)
+        county_internal = format_name(row.get("county") or "", "county", external=False)
+        city_internal = format_name(row.get("city") or "", "city", external=False)
+        if not state_internal or not county_internal:
+            continue
+        # Default to 'unincorporated' if city is empty for city-level layers
+        if layer in {"zoning", "flu"}:
+            city_internal = city_internal or "unincorporated"
+            entity = f"{layer}_{state_internal}_{county_internal}_{city_internal}"
+        else:
+            entity = f"{layer}_{state_internal}_{county_internal}"
+        result[entity] = {
+            "ogc_fid": row.get("ogc_fid"),
+            "state": state_internal,
+            "county": county_internal,
+            "city": city_internal,
+            "existing_transform": row.get("fields_obj_transform") or "",
+        }
+    return result
+
+
+def _city_from_transform_value(raw_city: Optional[str]) -> str:
+    """Normalize city value from transform tables to internal format.
+
+    Returns 'unincorporated' when raw_city is None/empty/'none'.
+    """
+    if not raw_city or str(raw_city).strip().lower() in {"none", "null", ""}:
+        return "unincorporated"
+    return format_name(str(raw_city), "city", external=False)
+
+
+def discover_zoning_entities(conn) -> List[Tuple[str, str, str, str]]:
+    """Return list of (layer, state, county, city) discovered from support.zoning_transform."""
+    sql = """
+        SELECT county, city_name
+        FROM support.zoning_transform
+        ORDER BY county, city_name
+    """
+    out: List[Tuple[str, str, str, str]] = []
+    with conn.cursor(cursor_factory=RealDictCursor) as cur:
+        cur.execute(sql)
+        for row in cur.fetchall():
+            county_internal = format_name(row.get("county") or "", "county", external=False)
+            if not county_internal:
+                continue
+            city_internal = _city_from_transform_value(row.get("city_name"))
+            out.append(("zoning", "fl", county_internal, city_internal))
+    return out
+
+
+def discover_flu_entities(conn) -> List[Tuple[str, str, str, str]]:
+    """Return list of (layer, state, county, city) discovered from support.flu_transform."""
+    sql = """
+        SELECT county, city_name
+        FROM support.flu_transform
+        ORDER BY county, city_name
+    """
+    out: List[Tuple[str, str, str, str]] = []
+    with conn.cursor(cursor_factory=RealDictCursor) as cur:
+        cur.execute(sql)
+        for row in cur.fetchall():
+            county_internal = format_name(row.get("county") or "", "county", external=False)
+            if not county_internal:
+                continue
+            city_internal = _city_from_transform_value(row.get("city_name"))
+            out.append(("flu", "fl", county_internal, city_internal))
+    return out
 
 
 def write_csv(out_path: str, rows: List[Dict[str, Optional[str]]]) -> None:
@@ -217,16 +318,30 @@ def write_create_csv(out_path: str, rows: List[List[str]]) -> None:
         writer.writerows(rows_sorted)
 
 
-def _parse_entity(entity: str) -> Tuple[str, str, str]:
-    """Return (layer, state, county) from entity like parcel_geo_fl_alachua."""
+def _parse_entity(entity: str) -> Tuple[str, str, str, Optional[str]]:
+    """Return (layer, state, county, city) from entity.
+
+    Supports:
+      - parcel_geo_fl_<county>
+      - zoning_fl_<county>_<city>
+      - flu_fl_<county>_<city>
+    """
     parts = entity.split("_")
-    # layer can contain an underscore (parcel_geo). Reconstruct layer from first two parts.
-    if len(parts) < 4:
+    if len(parts) < 3:
         raise ValueError(f"Unexpected entity format: {entity}")
-    layer = "_".join(parts[0:2])
-    state = parts[2]
-    county = "_".join(parts[3:]) if len(parts) > 4 else parts[3]
-    return layer, state, county
+    if parts[0] == "parcel" and len(parts) >= 4 and parts[1] == "geo":
+        layer = "parcel_geo"
+        state = parts[2]
+        county = "_".join(parts[3:]) if len(parts) > 4 else parts[3]
+        return layer, state, county, None
+    else:
+        layer = parts[0]
+        if len(parts) < 4:
+            raise ValueError(f"Unexpected entity format: {entity}")
+        state = parts[1]
+        county = parts[2]
+        city = "_".join(parts[3:]) if len(parts) > 3 else "unincorporated"
+        return layer, state, county, city
 
 
 def _create_catalog_record(
@@ -234,10 +349,11 @@ def _create_catalog_record(
     layer: str,
     state_internal: str,
     county_internal: str,
+    city_internal: Optional[str],
     new_transform: Optional[str],
 ) -> None:
     # Build base expected record using shared logic
-    expected = generate_expected_values(layer, state_internal, county_internal, city=None)
+    expected = generate_expected_values(layer, state_internal, county_internal, city_internal)
     # Defaults similar to layers_prescrape _create_record
     from datetime import date
     expected.update({
@@ -248,7 +364,7 @@ def _create_catalog_record(
     # Attach fields_obj_transform
     if new_transform:
         expected["fields_obj_transform"] = new_transform
-    # Ensure city is NULL for county-level
+    # Normalize city for county-level layers
     if expected.get("city") == "":
         expected["city"] = None
 
@@ -281,7 +397,12 @@ def main():
     conn = psycopg2.connect(PG_CONNECTION)
     try:
         transform_map = fetch_transform_rows(conn)
-        catalog_map = fetch_catalog_map(conn)
+        catalog_map = fetch_catalog_map_parcel(conn)
+
+        # Discover zoning/flu entities for create-mode
+        zoning_entities = discover_zoning_entities(conn)
+        flu_entities = discover_flu_entities(conn)
+        catalog_city_layers = fetch_catalog_map_for_layers(conn, ["zoning", "flu"]) if True else {}
 
         output_rows: List[Dict[str, Optional[str]]] = []
         updates: List[Tuple[int, str]] = []  # (ogc_fid, new_transform)
@@ -289,8 +410,18 @@ def main():
         applied_creations = 0
         create_rows: List[List[str]] = []
 
-        # Precompute which entities are missing from catalog
-        missing_entities = {entity for entity in transform_map.keys() if entity not in catalog_map}
+        # Precompute which parcel entities are missing from catalog
+        missing_parcel_entities = {entity for entity in transform_map.keys() if entity not in catalog_map}
+
+        # Build entity strings for zoning/flu discovered
+        def _entity_str(layer: str, state: str, county: str, city: str) -> str:
+            return f"{layer}_{state}_{county}_{city}" if layer in {"zoning", "flu"} else f"{layer}_{state}_{county}"
+
+        missing_city_layer_entities: List[Tuple[str, str, str, str]] = []
+        for (layer, st, co, ci) in zoning_entities + flu_entities:
+            entity = _entity_str(layer, st, co, ci)
+            if entity not in catalog_city_layers:
+                missing_city_layer_entities.append((layer, st, co, ci))
 
         for entity, rec in transform_map.items():
             new_transform = rec.build_new_transform()
@@ -314,21 +445,21 @@ def main():
                 ogc_fid = cat_info.get("ogc_fid")
                 if ogc_fid is not None:
                     updates.append((int(ogc_fid), new_transform or ""))
-            elif args.apply and args.create and entity in missing_entities:
+            elif args.apply and args.create and entity in missing_parcel_entities:
                 planned_creations.append(entity)
                 # Actually create immediately if applying
                 try:
-                    layer, st, co = _parse_entity(entity)
-                    _create_catalog_record(conn, layer, st, co, new_transform)
+                    layer, st, co, ci = _parse_entity(entity)
+                    _create_catalog_record(conn, layer, st, co, ci, new_transform)
                     applied_creations += 1
                 except Exception as e:
                     print(f"[CREATE ERROR] Failed creating {entity}: {e}")
 
             # Build create CSV row for missing catalog records when --create is used (preview or apply)
-            if args.create and entity in missing_entities:
+            if args.create and entity in missing_parcel_entities:
                 try:
-                    layer, st, co = _parse_entity(entity)
-                    expected = generate_expected_values(layer, st, co, city=None)
+                    layer, st, co, ci = _parse_entity(entity)
+                    expected = generate_expected_values(layer, st, co, city=ci)
                     row_values = [
                         entity,
                         expected.get("title", ""),
@@ -359,11 +490,51 @@ def main():
 
         write_csv(args.out, output_rows)
 
+        # Handle create-mode for city-level layers (zoning, flu)
+        if args.create and missing_city_layer_entities:
+            for layer, st, co, ci in missing_city_layer_entities:
+                entity = f"{layer}_{st}_{co}_{ci}"
+                try:
+                    expected = generate_expected_values(layer, st, co, city=ci)
+                    row_values = [
+                        entity,
+                        expected.get("title", ""),
+                        expected.get("state", ""),
+                        expected.get("county", ""),
+                        expected.get("city", ""),
+                        "",  # source_org
+                        "",  # data_date
+                        "",  # publish_date
+                        "",  # src_url_file
+                        "",  # format
+                        "",  # format_subtype
+                        "AUTO",  # download
+                        "",  # resource
+                        expected.get("layer_group", ""),
+                        expected.get("layer_subgroup", ""),
+                        expected.get("category", ""),
+                        "",  # sub_category
+                        expected.get("sys_raw_folder", ""),
+                        expected.get("table_name", ""),
+                        "",  # fields_obj_transform (left blank)
+                        "",  # source_comments
+                        "",  # processing_comments
+                    ]
+                    create_rows.append(row_values)
+                    if args.apply:
+                        try:
+                            _create_catalog_record(conn, layer, st, co, ci, new_transform=None)
+                            applied_creations += 1
+                        except Exception as e:
+                            print(f"[CREATE ERROR] Failed creating {entity}: {e}")
+                except Exception as e:
+                    print(f"[CREATE CSV ERROR] Failed composing row for {entity}: {e}")
+
         print(f"Wrote {len(output_rows)} rows to {args.out}")
 
         # When --create is set, also output a create-mode CSV similar to layers_prescrape
         if args.create:
-            create_out = os.path.join("summaries", "parcel_geo_table_to_catalog_create.csv")
+            create_out = os.path.join("summaries", "table_to_catalog_create.csv")
             write_create_csv(create_out, create_rows)
             print(f"Wrote {len(create_rows)} rows to {create_out}")
 
