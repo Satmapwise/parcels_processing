@@ -1785,8 +1785,11 @@ class LayersPrescrape:
                     expected['fields_obj_transform'] = row['fields_obj_transform']
                 if row.get('download_method'):
                     expected['download_method'] = row['download_method'].upper()
-                if row.get('resource'):
-                    expected['resource'] = row['resource']
+
+                # If format indicates AGS, force download_method to AGS
+                fmt_upper = (expected.get('format') or '').strip().upper()
+                if fmt_upper in ['AGS', 'ARCGIS', 'ESRI', 'AGS_EXTRACT']:
+                    expected['download_method'] = 'AGS'
                 
                 # Autofill missing fields using FILL logic (download_method/format/resource/new_title)
                 expected = self._autofill_create_fields(entity, expected)
@@ -1873,8 +1876,10 @@ class LayersPrescrape:
                                         expected['fields_obj_transform'] = row['fields_obj_transform']
                                     if row.get('download_method'):
                                         expected['download_method'] = row['download_method'].upper()
-                                    if row.get('resource'):
-                                        expected['resource'] = row['resource']
+                                    # If format indicates AGS, force download_method to AGS
+                                    fmt_upper = (expected.get('format') or '').strip().upper()
+                                    if fmt_upper in ['AGS', 'ARCGIS', 'ESRI', 'AGS_EXTRACT']:
+                                        expected['download_method'] = 'AGS'
                                     break
                     except Exception as e:
                         self.logger.warning(f"Failed to read CSV for {entity}: {e}")
@@ -1888,25 +1893,26 @@ class LayersPrescrape:
                 if format_value:
                     expected['format'] = format_value.upper()
                 
-                # Prompt for src_url_file
+                # Prompt for src_url_file (always allowed to be empty)
                 src_url_file = input("src_url_file: ").strip()
                 if src_url_file:
                     expected['src_url_file'] = src_url_file
                 
-                # Prompt for download_method
-                download_method = input("download_method (AGS|SELENIUM|WGET): ").strip()
-                if download_method:
-                    expected['download_method'] = download_method.upper()
+                # Set download_method automatically to AGS if format is AGS-like; otherwise prompt
+                fmt_upper = (expected.get('format') or '').strip().upper()
+                if fmt_upper in ['AGS', 'ARCGIS', 'ESRI', 'AGS_EXTRACT']:
+                    expected['download_method'] = 'AGS'
+                else:
+                    download_method = input("download_method (SELENIUM|WGET): ").strip()
+                    if download_method:
+                        expected['download_method'] = download_method.upper()
 
                 # Prompt for fields_obj_transform
                 fields_obj_transform = input("fields_obj_transform: ").strip()
                 if fields_obj_transform:
                     expected['fields_obj_transform'] = fields_obj_transform
 
-                # Prompt for resource
-                resource = input("resource: ").strip()
-                if resource:
-                    expected['resource'] = resource
+                # Do not prompt for resource; it is auto-generated when download_method == WGET
             
             # Autofill missing fields using FILL logic before required checks
             expected = self._autofill_create_fields(entity, expected)
