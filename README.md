@@ -173,11 +173,23 @@ python3 layers_prescrape.py --fill --all-layers
 
 #### **CREATE Mode**
 ```bash
-# Create new database records
-python3 layers_prescrape.py --include "new_layer_fl_county_city" --create
+# Create a new record using comma-separated input (no positional args)
+# Format depends on layer level:
+#   national:            layer
+#   state:               layer, state
+#   state_county:        layer, state, county
+#   state_county_city:   layer, state, county, city
+
+# Examples:
+python3 layers_prescrape.py --create "zoning, fl, alachua, gainesville" --debug
+python3 layers_prescrape.py --create "parcel_geo, fl, alachua" --debug
+python3 layers_prescrape.py --create "traffic_counts, fl" --debug
+python3 layers_prescrape.py --create "fema_flood" --debug
 ```
-- **New Records**: Creates entries in `m_gis_data_catalog_main`
-- **Manual Integration**: Reads `missing_fields.json` for required manual data
+- **New Records**: Inserts into `m_gis_data_catalog_main` with standardized values (`title`, `layer_group`, `category`, `layer_subgroup`, `sys_raw_folder`, `table_name`, `download='AUTO'`).
+- **Manual Inputs (Prompted)**: `format`, `download_method`, `src_url_file`, and `fields_obj_transform` are prompted; pressing Enter leaves them null. `resource` is auto-generated only when `download_method` is `WGET`.
+- **Auto-Generated (Same as FILL)**: Suggests `new_title` and applies to `title`; computes `sys_raw_folder`, `table_name`, `layer_group`, and `category` from config.
+- **Input Parts by Level**: The required number of comma-separated parts is inferred from the layer’s `level` in `LAYER_CONFIGS`.
 
 #### **Combined Mode**
 ```bash
