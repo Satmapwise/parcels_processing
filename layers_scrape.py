@@ -426,21 +426,28 @@ def _run_command_live(command, work_dir, logger):
     # Wait for process to complete and get return code
     return_code = process.wait()
     
-    # Handle download_data.py no-new-data conditions
+    # Handle download_data.py no-new-data vs error conditions
     if len(command) > 1 and 'download_data.py' in command[1]:
+        stdout_combined = '\n'.join(stdout_lines)
+        stdout_lower = stdout_combined.lower()
+        nnd_phrases = [
+            '304 not modified',
+            'not modified on server',
+            'omitting download',
+            'no new data available from server',
+            'no new data available',
+        ]
         if return_code == 1:
-            if CONFIG.process_anyway:
-                logger.warning("download_data.py returned exit code 1 - no new data available, but continuing due to process_anyway=True")
-                return '\n'.join(stdout_lines)
-            else:
-                logger.info("download_data.py returned exit code 1 - no new data available - skipping entity")
-                raise SkipEntityError("No new data available from server", layer=None, entity=None)
+            # Only treat rc=1 as NND if output contains a known NND phrase; otherwise fall through to error handling
+            if any(phrase in stdout_lower for phrase in nnd_phrases):
+                if CONFIG.process_anyway:
+                    logger.warning("download_data.py returned exit code 1 - no new data available, but continuing due to process_anyway=True")
+                    return stdout_combined
+                else:
+                    logger.info("download_data.py returned exit code 1 - no new data available - skipping entity")
+                    raise SkipEntityError("No new data available from server", layer=None, entity=None)
         elif return_code == 0:
-            stdout_lower = '\n'.join(stdout_lines).lower()
-            if any(phrase in stdout_lower for phrase in [
-                '304 not modified', 'not modified on server', 'omitting download', 
-                'no new data available from server'
-            ]):
+            if any(phrase in stdout_lower for phrase in nnd_phrases):
                 if CONFIG.process_anyway:
                     logger.warning("download_data.py indicates no new data available, but continuing due to process_anyway=True")
                 else:
@@ -494,21 +501,27 @@ def _run_command_regular(command, work_dir, logger):
     
     process = subprocess.run(command, cwd=work_dir, capture_output=True, text=True)
 
-    # Handle download_data.py no-new-data conditions
+    # Handle download_data.py no-new-data vs error conditions
     if len(command) > 1 and 'download_data.py' in command[1]:
+        combined_lower = f"{process.stdout}\n{process.stderr}".lower()
+        nnd_phrases = [
+            '304 not modified',
+            'not modified on server',
+            'omitting download',
+            'no new data available from server',
+            'no new data available',
+        ]
         if process.returncode == 1:
-            if CONFIG.process_anyway:
-                logger.warning("download_data.py returned exit code 1 - no new data available, but continuing due to process_anyway=True")
-                return process.stdout
-            else:
-                logger.info("download_data.py returned exit code 1 - no new data available - skipping entity")
-                raise SkipEntityError("No new data available from server", layer=None, entity=None)
+            # Only treat rc=1 as NND if output contains a known NND phrase; otherwise let general error handling proceed
+            if any(phrase in combined_lower for phrase in nnd_phrases):
+                if CONFIG.process_anyway:
+                    logger.warning("download_data.py returned exit code 1 - no new data available, but continuing due to process_anyway=True")
+                    return process.stdout
+                else:
+                    logger.info("download_data.py returned exit code 1 - no new data available - skipping entity")
+                    raise SkipEntityError("No new data available from server", layer=None, entity=None)
         elif process.returncode == 0:
-            stdout_lower = process.stdout.lower()
-            if any(phrase in stdout_lower for phrase in [
-                '304 not modified', 'not modified on server', 'omitting download', 
-                'no new data available from server'
-            ]):
+            if any(phrase in combined_lower for phrase in nnd_phrases):
                 if CONFIG.process_anyway:
                     logger.warning("download_data.py indicates no new data available, but continuing due to process_anyway=True")
                 else:
@@ -956,6 +969,15 @@ def layer_download(layer: str, entity: str, state: str, county: str, city: str, 
     elif selected_method == 'WGET':
         if not resource:
             raise DownloadError('Missing resource/url for download_data.py', layer, entity)
+        # Pre-validate manual vs auto-generated DB fields to classify skip vs error clearly
+        src_url_file_val = (catalog_row.get('src_url_file') or '').strip()
+        sys_raw_folder_val = (catalog_row.get('sys_raw_folder') or '').strip() if catalog_row.get('sys_raw_folder') else ''
+        # Missing manual field: treat as skip (not an error)
+        if not src_url_file_val:
+            raise SkipEntityError('Missing src_url_file (manual field)', layer=layer, entity=entity)
+        # Missing auto-generated field: treat as error
+        if not sys_raw_folder_val:
+            raise DownloadError('Missing sys_raw_folder (auto-generated path) for this record', layer, entity)
         command = [
             'python3',
             os.path.join(TOOLS_DIR, 'download_data.py'),
