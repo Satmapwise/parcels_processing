@@ -3342,14 +3342,40 @@ def main():
             'state_county_city': 4,
         }
         expected_len = expected_by_level.get(level, 4)
-        if len(parts) < expected_len:
+        # Allow relaxed input sizes for batch CSV creation when applying changes
+        relaxed_ok = False
+        if (args.apply or args.apply_manual):
+            # Any of: layer; layer,state; layer,county; layer,state,county are acceptable for batch
+            if len(parts) >= 1:
+                relaxed_ok = True
+        if len(parts) < expected_len and not relaxed_ok:
             print(f"[ERROR] --create for layer '{layer}' (level={level}) expects {expected_len} parts: 'layer, state, county[, city]'")
             sys.exit(1)
 
-        # Assign state/county/city based on available parts
-        state = parts[1].lower() if len(parts) > 1 and parts[1] else None
-        county = parts[2].lower() if len(parts) > 2 and parts[2] else None
-        city = parts[3].lower() if len(parts) > 3 and parts[3] else None
+        # Assign state/county/city using tolerant parsing with 'none' placeholders
+        def _nz(token: str | None) -> str | None:
+            if token is None:
+                return None
+            t = token.strip().lower()
+            return None if t in ('', 'none', 'null', '-') else t
+
+        state = county = city = None
+        tail = parts[1:]
+        if len(tail) >= 1:
+            first = _nz(tail[0])
+            if first and first in VALID_STATES:
+                state = first
+                if len(tail) >= 2:
+                    county = _nz(tail[1])
+                if len(tail) >= 3:
+                    city = _nz(tail[2])
+            else:
+                # Treat first as county, leaving state unspecified (wildcard across states)
+                county = first
+                if len(tail) >= 2:
+                    city = _nz(tail[1])
+
+        # For batch create, missing parts (None) act as wildcards in CSV filtering
 
         print(f"\n[INFO] ==================== Processing layer: {layer.upper()} ====================")
 
