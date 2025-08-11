@@ -1608,37 +1608,41 @@ class LayersPrescrape:
         layer_config = LAYER_CONFIGS[self.cfg.layer]
         layer_level = layer_config.get('level', 'state_county_city')
         
-        # Validate based on layer level
-        if layer_level == 'state_county_city':
-            if not self.cfg.state:
-                errors.append(f"Layer '{self.cfg.layer}' requires state argument (level: {layer_level})")
-            if not self.cfg.county:
-                errors.append(f"Layer '{self.cfg.layer}' requires county argument (level: {layer_level})")
-            if not self.cfg.city:
-                errors.append(f"Layer '{self.cfg.layer}' requires city argument (level: {layer_level})")
-        elif layer_level == 'state_county':
-            if not self.cfg.state:
-                errors.append(f"Layer '{self.cfg.layer}' requires state argument (level: {layer_level})")
-            if not self.cfg.county:
-                errors.append(f"Layer '{self.cfg.layer}' requires county argument (level: {layer_level})")
-            if self.cfg.city:
-                errors.append(f"Layer '{self.cfg.layer}' does not support city argument (level: {layer_level})")
-        elif layer_level == 'state':
-            if not self.cfg.state:
-                errors.append(f"Layer '{self.cfg.layer}' requires state argument (level: {layer_level})")
-            if self.cfg.county:
-                errors.append(f"Layer '{self.cfg.layer}' does not support county argument (level: {layer_level})")
-            if self.cfg.city:
-                errors.append(f"Layer '{self.cfg.layer}' does not support city argument (level: {layer_level})")
-        elif layer_level == 'national':
-            if self.cfg.state:
-                errors.append(f"Layer '{self.cfg.layer}' does not support state argument (level: {layer_level})")
-            if self.cfg.county:
-                errors.append(f"Layer '{self.cfg.layer}' does not support county argument (level: {layer_level})")
-            if self.cfg.city:
-                errors.append(f"Layer '{self.cfg.layer}' does not support city argument (level: {layer_level})")
+        # Relax validation for batch create (apply/apply_manual): allow missing parts
+        is_batch_create = (self.cfg.mode == 'create') and (self.cfg.apply_changes or self.cfg.apply_manual)
+
+        # Validate based on layer level for single-entity create only
+        if not is_batch_create:
+            if layer_level == 'state_county_city':
+                if not self.cfg.state:
+                    errors.append(f"Layer '{self.cfg.layer}' requires state argument (level: {layer_level})")
+                if not self.cfg.county:
+                    errors.append(f"Layer '{self.cfg.layer}' requires county argument (level: {layer_level})")
+                if not self.cfg.city:
+                    errors.append(f"Layer '{self.cfg.layer}' requires city argument (level: {layer_level})")
+            elif layer_level == 'state_county':
+                if not self.cfg.state:
+                    errors.append(f"Layer '{self.cfg.layer}' requires state argument (level: {layer_level})")
+                if not self.cfg.county:
+                    errors.append(f"Layer '{self.cfg.layer}' requires county argument (level: {layer_level})")
+                if self.cfg.city:
+                    errors.append(f"Layer '{self.cfg.layer}' does not support city argument (level: {layer_level})")
+            elif layer_level == 'state':
+                if not self.cfg.state:
+                    errors.append(f"Layer '{self.cfg.layer}' requires state argument (level: {layer_level})")
+                if self.cfg.county:
+                    errors.append(f"Layer '{self.cfg.layer}' does not support county argument (level: {layer_level})")
+                if self.cfg.city:
+                    errors.append(f"Layer '{self.cfg.layer}' does not support city argument (level: {layer_level})")
+            elif layer_level == 'national':
+                if self.cfg.state:
+                    errors.append(f"Layer '{self.cfg.layer}' does not support state argument (level: {layer_level})")
+                if self.cfg.county:
+                    errors.append(f"Layer '{self.cfg.layer}' does not support county argument (level: {layer_level})")
+                if self.cfg.city:
+                    errors.append(f"Layer '{self.cfg.layer}' does not support city argument (level: {layer_level})")
         
-        # Validate state if provided
+        # Validate state if provided (both single and batch)
         if self.cfg.state:
             if self.cfg.state not in INTEGRATED_STATES:
                 errors.append(f"State '{self.cfg.state}' not found in INTEGRATED_STATES. Available states: {', '.join(sorted(INTEGRATED_STATES))}")
@@ -1647,7 +1651,7 @@ class LayersPrescrape:
                 if self.cfg.county:
                     state_counties = STATE_COUNTIES.get(self.cfg.state, set())
                     if self.cfg.county not in state_counties:
-                        errors.append(f"County '{self.cfg.county}' not found in {self.cfg.state.upper()} counties. Available counties: {', '.join(sorted(state_counties))}")
+                        errors.append(f"County '{self.cfg.county}' not found in {self.cfg.state.UPPER()} counties. Available counties: {', '.join(sorted(state_counties))}")
         
         if errors:
             self.logger.error("CREATE mode validation failed:")
@@ -1709,27 +1713,38 @@ class LayersPrescrape:
                         entity = row.get('entity', '')
                         if not entity or entity == 'SUMMARY' or entity.startswith('==='):
                             continue
-                        
-                        # Parse entity to check if it matches our criteria
+
+                        # Parse entity to check if it matches our criteria (allow wildcards when cfg has None)
                         parts = entity.split('_')
-                        if len(parts) >= 3:  # layer_state_county_city
+                        if len(parts) >= 2:  # at least layer_state
                             csv_layer = parts[0]
-                            csv_state = parts[1]
-                            csv_county = parts[2]
+                            csv_state = parts[1] if len(parts) > 1 else None
+                            csv_county = parts[2] if len(parts) > 2 else None
                             csv_city = '_'.join(parts[3:]) if len(parts) > 3 else None
-                            
-                            # Check if this entity matches our criteria
-                            if csv_layer == self.cfg.layer and csv_state == self.cfg.state and csv_county == self.cfg.county:
-                                entities_to_process.append({
-                                    'entity': entity,
-                                    'row': row,
-                                    'state': csv_state,
-                                    'county': csv_county,
-                                    'city': csv_city
-                                })
+
+                            if csv_layer != self.cfg.layer:
+                                continue
+                            if self.cfg.state is not None and csv_state != self.cfg.state:
+                                continue
+                            if self.cfg.county is not None and csv_county != self.cfg.county:
+                                continue
+                            if self.cfg.city is not None and csv_city != self.cfg.city:
+                                continue
+
+                            entities_to_process.append({
+                                'entity': entity,
+                                'row': row,
+                                'state': csv_state,
+                                'county': csv_county,
+                                'city': csv_city
+                            })
                 
                 if not entities_to_process:
-                    self.logger.info(f"No entities found in CSV matching {self.cfg.layer}_{self.cfg.state}_{self.cfg.county}")
+                    self.logger.info(
+                        "No entities found in CSV matching filter: "
+                        f"layer={self.cfg.layer}, state={self.cfg.state or '*'}, "
+                        f"county={self.cfg.county or '*'}, city={self.cfg.city or '*'}"
+                    )
                     return
                 
                 self.logger.info(f"Found {len(entities_to_process)} entities to process from CSV")
