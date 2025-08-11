@@ -1055,6 +1055,65 @@ class LayersPrescrape:
         
         # URL validation cache for performance
         self.url_validation_cache: Dict[str, tuple[bool, str]] = {}
+
+    def _autofill_create_fields(self, entity: str, record: Dict[str, Any]) -> Dict[str, Any]:
+        """Autofill fields for CREATE mode using the same logic as FILL.
+
+        - Only fills when the field is missing/empty.
+        - For title, consumes 'new_title' suggestion and writes to 'title'.
+        - Never writes manual markers (***MISSING***/***DEPRECATED***).
+        """
+        if not entity:
+            return record
+
+        # Ensure keys exist
+        for k in ("format", "download_method", "resource"):
+            record.setdefault(k, "")
+
+        # Fields to consider for autofill in create mode
+        # IMPORTANT: Do NOT autofill 'format' or 'download_method' in CREATE mode;
+        # these are intentionally manual to avoid ambiguity.
+        fields_to_autofill = [
+            "new_title",
+        ]
+
+        for field in fields_to_autofill:
+            suggestion = self._check_field_health(record, entity, field)
+            if not suggestion or suggestion.startswith("***"):
+                continue
+            if field == "new_title":
+                # Always set title if suggestion differs
+                if (record.get("title") or "") != suggestion:
+                    record["title"] = suggestion
+
+        # Auto-generate resource only if download_method is WGET and resource is empty
+        try:
+            dl = (record.get("download_method") or "").strip().upper()
+        except Exception:
+            dl = ""
+        if dl == "WGET":
+            current_resource = (record.get("resource") or "").strip()
+            if not current_resource:
+                # Compute expected resource path using same pattern as FILL
+                try:
+                    _, state, county, city = parse_entity_pattern(entity)
+                except Exception:
+                    state = county = city = None
+                layer_internal = format_name(self.cfg.layer, 'layer', external=False)
+                county_internal = format_name(county, 'county', external=False) if county else ''
+                city_internal = format_name(city, 'city', external=False) if city else ''
+                layer_config = LAYER_CONFIGS.get(self.cfg.layer, {})
+                layer_level = layer_config.get('level')
+
+                if layer_level in ['state', 'national']:
+                    expected_resource = f"/data/{layer_internal}"
+                elif layer_level == 'state_county' or (city_internal == '' or city_internal in {"unincorporated", "unified", "incorporated", "countywide"}):
+                    expected_resource = f"/data/{layer_internal}/{county_internal}"
+                else:
+                    expected_resource = f"/data/{layer_internal}/{county_internal}/{city_internal}"
+                record['resource'] = expected_resource
+
+        return record
     
     def run(self):
         """Execute the configured mode."""
@@ -1724,24 +1783,25 @@ class LayersPrescrape:
                     expected['src_url_file'] = row['src_url_file']
                 if row.get('fields_obj_transform'):
                     expected['fields_obj_transform'] = row['fields_obj_transform']
+                if row.get('download_method'):
+                    expected['download_method'] = row['download_method'].upper()
+                if row.get('resource'):
+                    expected['resource'] = row['resource']
                 
-                # Check for required fields
-                required_manual = []
+                # Autofill missing fields using FILL logic (download_method/format/resource/new_title)
+                expected = self._autofill_create_fields(entity, expected)
+
+                # No required manual fields; allow nulls. Log advisories only.
+                advisories = []
                 if not expected.get('format') or expected['format'] == "MANUAL_REQUIRED":
-                    required_manual.append('format')
-                
+                    advisories.append('format is empty')
+                if not expected.get('src_url_file'):
+                    advisories.append('src_url_file is empty')
                 fmt = (expected.get('format') or '').lower()
-                if fmt in ['ags', 'arcgis', 'esri', 'ags_extract']:
-                    if not expected.get('table_name') or expected['table_name'] == "MANUAL_REQUIRED":
-                        required_manual.append('table_name')
-                else:
-                    if not (expected.get('resource') or expected.get('src_url_file')):
-                        required_manual.append('resource')
-                
-                if required_manual:
-                    self.logger.error(f"Cannot create {entity} - missing required manual fields: {required_manual}")
-                    self.missing_fields[entity] = {field: "MANUAL_REQUIRED" for field in required_manual}
-                    continue
+                if fmt in ['ags', 'arcgis', 'esri', 'ags_extract'] and (not expected.get('table_name') or expected['table_name'] == "MANUAL_REQUIRED"):
+                    advisories.append('table_name is empty for AGS-like format')
+                if advisories:
+                    self.logger.warning(f"[CREATE] {entity}: " + "; ".join(advisories))
                 
                 # Create the record
                 self._create_record(expected)
@@ -1811,6 +1871,10 @@ class LayersPrescrape:
                                         expected['src_url_file'] = row['src_url_file']
                                     if row.get('fields_obj_transform'):
                                         expected['fields_obj_transform'] = row['fields_obj_transform']
+                                    if row.get('download_method'):
+                                        expected['download_method'] = row['download_method'].upper()
+                                    if row.get('resource'):
+                                        expected['resource'] = row['resource']
                                     break
                     except Exception as e:
                         self.logger.warning(f"Failed to read CSV for {entity}: {e}")
@@ -1829,28 +1893,35 @@ class LayersPrescrape:
                 if src_url_file:
                     expected['src_url_file'] = src_url_file
                 
+                # Prompt for download_method
+                download_method = input("download_method (AGS|SELENIUM|WGET): ").strip()
+                if download_method:
+                    expected['download_method'] = download_method.upper()
+
                 # Prompt for fields_obj_transform
                 fields_obj_transform = input("fields_obj_transform: ").strip()
                 if fields_obj_transform:
                     expected['fields_obj_transform'] = fields_obj_transform
+
+                # Prompt for resource
+                resource = input("resource: ").strip()
+                if resource:
+                    expected['resource'] = resource
             
-            # Check for required fields after prompting
-            required_manual = []
+            # Autofill missing fields using FILL logic before required checks
+            expected = self._autofill_create_fields(entity, expected)
+
+            # No required manual fields; allow nulls. Log advisories only.
+            advisories = []
             if not expected.get('format') or expected['format'] == "MANUAL_REQUIRED":
-                required_manual.append('format')
-            
+                advisories.append('format is empty')
+            if not expected.get('src_url_file'):
+                advisories.append('src_url_file is empty')
             fmt = (expected.get('format') or '').lower()
-            if fmt in ['ags', 'arcgis', 'esri', 'ags_extract']:
-                if not expected.get('table_name') or expected['table_name'] == "MANUAL_REQUIRED":
-                    required_manual.append('table_name')
-            else:
-                if not (expected.get('resource') or expected.get('src_url_file')):
-                    required_manual.append('resource')
-            
-            if required_manual:
-                self.logger.error(f"Cannot create {entity} - missing required manual fields: {required_manual}")
-                self.missing_fields[entity] = {field: "MANUAL_REQUIRED" for field in required_manual}
-                return
+            if fmt in ['ags', 'arcgis', 'esri', 'ags_extract'] and (not expected.get('table_name') or expected['table_name'] == "MANUAL_REQUIRED"):
+                advisories.append('table_name is empty for AGS-like format')
+            if advisories:
+                self.logger.warning(f"[CREATE] {entity}: " + "; ".join(advisories))
             
             # Create the record
             if self.cfg.apply_changes or self.cfg.apply_manual:
@@ -3175,7 +3246,7 @@ def build_arg_parser() -> argparse.ArgumentParser:
                        help="Include optional conditions in FILL mode")
     parser.add_argument("--no-csv", dest="generate_csv", action="store_false",
                        help="Skip CSV report generation")
-    
+
     return parser
 
 def main():
