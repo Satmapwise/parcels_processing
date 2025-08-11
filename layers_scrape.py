@@ -2393,6 +2393,9 @@ def process_layer(layer, queue, entity_components):
                 'status': 'success',
                 'data_date': metadata.get('data_date') or datetime.now().date(),
                 'runtime_seconds': f'{entity_runtime}s',
+                'start_time_iso': entity_start_time.isoformat(),
+                'end_time_iso': entity_end_time.isoformat(),
+                'start_time_display': entity_start_time.strftime('%m/%d/%y %I:%M %p'),
             }
             if processing_skipped:
                 result_entry['processing_skipped'] = True
@@ -2626,8 +2629,15 @@ def generate_summary(results, entity_components: dict = None):
                 row['upload_status'] = upload_status
                 row['error_message'] = str(error_msg)
             
-            # Set timestamp
-            row['timestamp'] = datetime.now().strftime('%m/%d/%y %I:%M %p')
+            # Preserve per-entity timestamp: set from result if provided; do not overwrite otherwise
+            if not row.get('timestamp'):
+                # Prefer the per-entity start time from results
+                ts = result.get('start_time_display')
+                if ts:
+                    row['timestamp'] = ts
+                else:
+                    # Fallback only for legacy rows that lack a timestamp
+                    row['timestamp'] = datetime.now().strftime('%m/%d/%y %I:%M %p')
             existing_data[entity_key] = row
         
         # Sort data by entity
@@ -2642,9 +2652,27 @@ def generate_summary(results, entity_components: dict = None):
         upload_success = len([r for r in sorted_data if r['upload_status'] == 'SUCCESS'])
         upload_total = len([r for r in sorted_data if r['upload_status'] in ['SUCCESS', 'FAILED']])
         
-        # Format runtime
+        # Per-layer runtime: compute from earliest start_time among this layer's results
         end_time = datetime.now()
-        total_runtime = (end_time - CONFIG.start_time).total_seconds()
+        try:
+            start_times = []
+            for r in results:
+                st_iso = r.get('start_time_iso')
+                if st_iso:
+                    try:
+                        # Handle possible timezone suffix Z by replacing with +00:00
+                        st = datetime.fromisoformat(st_iso.replace('Z', '+00:00'))
+                        start_times.append(st)
+                    except Exception:
+                        pass
+            if start_times:
+                earliest = min(start_times)
+                total_runtime = (end_time - earliest).total_seconds()
+            else:
+                # Fallback to script runtime if per-entity starts are missing
+                total_runtime = (end_time - CONFIG.start_time).total_seconds()
+        except Exception:
+            total_runtime = (end_time - CONFIG.start_time).total_seconds()
         runtime_str = _format_runtime_detailed(total_runtime)
         
         # Create summary row
@@ -2875,9 +2903,6 @@ def _update_csv_status(layer, entity, stage, status, error_msg='', data_date='',
                 row['error_message'] = str(error_msg)
             elif status == 'SUCCESS':
                 row['error_message'] = ''
-            
-            # Update timestamp
-            row['timestamp'] = datetime.now().strftime('%m/%d/%y %I:%M %p')
             
             existing_data[entity_key] = row
             
