@@ -2338,10 +2338,12 @@ class LayersPrescrape:
             if fmt_val == 'AGS':
                 expected = 'AGS'
             elif url:
+                url_lower = url.lower()
                 if is_arcgis_service_url(url):
                     expected = 'AGS'
                 elif is_opendata_portal(url):
-                    expected = 'SELENIUM'
+                    # Special-case: OpenData links that directly end with .zip should use WGET
+                    expected = 'WGET' if url_lower.endswith('.zip') else 'SELENIUM'
                 else:
                     expected = 'WGET'
             else:
