@@ -271,7 +271,8 @@ class Config:
                  run_processing: bool = True,
                  run_upload: bool = True,
                  generate_summary: bool = True,
-                 process_anyway: bool = False):
+                 process_anyway: bool = False,
+                 slow_threshold_seconds: int | None = None):
         self.test_mode = test_mode
         self.debug = debug
         self.isolate_logs = isolate_logs
@@ -286,6 +287,7 @@ class Config:
         # Misc behavior flags
         self.generate_summary = generate_summary
         self.process_anyway = process_anyway
+        self.slow_threshold_seconds = slow_threshold_seconds
 
 # Global config object
 CONFIG = Config()
@@ -2397,6 +2399,12 @@ def process_layer(layer, queue, entity_components):
                 'end_time_iso': entity_end_time.isoformat(),
                 'start_time_display': entity_start_time.strftime('%m/%d/%y %I:%M %p'),
             }
+            # Flag slow entities if threshold configured
+            try:
+                if CONFIG.slow_threshold_seconds is not None and entity_runtime >= int(CONFIG.slow_threshold_seconds):
+                    result_entry['slow'] = True
+            except Exception:
+                pass
             if processing_skipped:
                 result_entry['processing_skipped'] = True
             if metadata.get('epsg'):
@@ -3093,6 +3101,7 @@ def main():
     parser.add_argument("--no-upload", action="store_true", help="Skip the upload phase.")
     parser.add_argument("--no-summary", action="store_true", help="Skip the summary generation.")
     parser.add_argument("--process-anyway", action="store_true", help="Continue processing even when download returns 'no new data'.")
+    parser.add_argument("--slow-threshold", type=int, default=None, help="Flag entities taking >= this many seconds as slow in the summary.")
     
     args = parser.parse_args()
 
@@ -3107,7 +3116,8 @@ def main():
         run_processing=not args.no_processing,
         run_upload=not args.no_upload,
         generate_summary=not args.no_summary,
-        process_anyway=args.process_anyway
+        process_anyway=args.process_anyway,
+        slow_threshold_seconds=args.slow_threshold
     )
     
     initialize_logging(CONFIG.debug)
