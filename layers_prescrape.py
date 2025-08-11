@@ -3199,11 +3199,7 @@ def build_arg_parser() -> argparse.ArgumentParser:
         description="Prepare database for layers_scrape.py by detecting and fixing malformed records"
     )
     
-    # Positional arguments for layer, state, county, city
-    parser.add_argument("layer", nargs="?", default=None, help="[CREATE] Layer name (e.g., zoning, flu, streets)")
-    parser.add_argument("state", nargs="?", default=None, help="[CREATE] State abbreviation (e.g., fl)")
-    parser.add_argument("county", nargs="?", default=None, help="[CREATE] County name (e.g., lee, miami_dade)")
-    parser.add_argument("city", nargs="?", default=None, help="[CREATE] City name (e.g., fort_myers_beach, miami)")
+    # Positional arguments removed for CREATE; use --create with CSV-style input instead
     
     # Entity filtering options (for backward compatibility)
     parser.add_argument("--include", nargs="*", metavar="ENTITY", 
@@ -3229,8 +3225,13 @@ def build_arg_parser() -> argparse.ArgumentParser:
     
     # Exclusive modes (cannot be combined with detect/fill or each other)
     mode_group = parser.add_mutually_exclusive_group()
-    mode_group.add_argument("--create", action="store_true", 
-                           help="Create new records for specified entities (see positional arguments)")
+    mode_group.add_argument(
+        "--create",
+        metavar="LAYER,STATE,COUNTY[,CITY]",
+        help="Create new records for a single entity using comma-separated input, e.g., 'flu, fl, flagler, bunnell'",
+        type=str,
+        nargs='?'
+    )
     mode_group.add_argument("--update-states", action="store_true",
                            help="One-time update: Set all NULL state values to 'FL'")
     
@@ -3254,7 +3255,7 @@ def main():
     args = parser.parse_args()
     
     # Determine mode(s)
-    if args.create:
+    if args.create is not None:
         mode = "create"
     elif args.update_states:
         mode = "update_states"
@@ -3273,8 +3274,8 @@ def main():
         sys.exit(1)
     
     # Validate CREATE mode requirements
-    if mode == "create" and not args.layer:
-        print("[ERROR] CREATE mode requires layer argument to be specified")
+    if mode == "create" and (args.create is None or not str(args.create).strip()):
+        print("[ERROR] --create requires comma-separated input: 'layer, state, county[, city]'")
         sys.exit(1)
     
     # Validate CREATE mode requirements (handled by layer-specific validation)
@@ -3316,16 +3317,42 @@ def main():
     
     # Process layers based on mode
     if mode == "create":
-        # CREATE mode requires a specific layer
-        layer = args.layer.lower()
+        # Parse comma-separated create input: layer, state, county[, city]
+        parts = [p.strip() for p in str(args.create).split(',')]
+        if not parts or not parts[0]:
+            print("[ERROR] --create expects 'layer, state, county[, city]' (first part must be layer)")
+            sys.exit(1)
+
+        # Resolve layer and expected input length from configuration
+        raw_layer = parts[0].lower()
+        layer = resolve_layer_name(raw_layer)
+        layer_config = LAYER_CONFIGS.get(layer, {})
+        level = layer_config.get('level', 'state_county_city')
+
+        expected_by_level = {
+            'national': 1,
+            'state': 2,
+            'state_county': 3,
+            'state_county_city': 4,
+        }
+        expected_len = expected_by_level.get(level, 4)
+        if len(parts) < expected_len:
+            print(f"[ERROR] --create for layer '{layer}' (level={level}) expects {expected_len} parts: 'layer, state, county[, city]'")
+            sys.exit(1)
+
+        # Assign state/county/city based on available parts
+        state = parts[1].lower() if len(parts) > 1 and parts[1] else None
+        county = parts[2].lower() if len(parts) > 2 and parts[2] else None
+        city = parts[3].lower() if len(parts) > 3 and parts[3] else None
+
         print(f"\n[INFO] ==================== Processing layer: {layer.upper()} ====================")
-        
+
         # Create config for this layer
         cfg = Config(
             layer=layer,
-            state=args.state.lower() if args.state else None,
-            county=args.county.lower() if args.county else None,
-            city=args.city.lower() if args.city else None,
+            state=state,
+            county=county,
+            city=city,
             include_entities=[e.lower() for e in args.include] if args.include else None,
             exclude_entities=[e.lower() for e in args.exclude] if args.exclude else None,
             include_fields=[f.lower() for f in args.include_fields] if args.include_fields else None,
@@ -3339,11 +3366,11 @@ def main():
             manual_file=args.manual_file,
             fill_all=args.fill_all
         )
-        
+
         # Run the processor for this layer
         processor = LayersPrescrape(cfg)
         processor.run()
-        
+
         print(f"\n[INFO] ==================== Completed processing layer: {layer.upper()} ====================")
     else:
         # DETECT/FILL modes can process all layers or a specific layer
