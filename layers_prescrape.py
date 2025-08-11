@@ -1086,6 +1086,24 @@ class LayersPrescrape:
                 if (record.get("title") or "") != suggestion:
                     record["title"] = suggestion
 
+        # If municipality_type is provided for city-level entities, enforce title prefix accordingly
+        try:
+            mun_type = (record.get('municipality_type') or '').strip()
+        except Exception:
+            mun_type = ''
+        if mun_type:
+            try:
+                parsed_layer, state, county, city = parse_entity_pattern(entity)
+                layer_config = LAYER_CONFIGS.get(self.cfg.layer, {})
+                if layer_config.get('level') == 'state_county_city' and city:
+                    layer_external = format_name(self.cfg.layer, 'layer', external=True)
+                    city_external = format_name(city, 'city', external=True)
+                    state_abbrev = format_name(state, 'state', external=True) if state else 'FL'
+                    enforced_title = f"{layer_external} - {mun_type.title()} of {city_external} {state_abbrev}"
+                    record['title'] = enforced_title
+            except Exception:
+                pass
+
         # Auto-generate resource only if download_method is WGET and resource is empty
         try:
             dl = (record.get("download_method") or "").strip().upper()
@@ -1928,6 +1946,17 @@ class LayersPrescrape:
                     expected['fields_obj_transform'] = fields_obj_transform
 
                 # Do not prompt for resource; it is auto-generated when download_method == WGET
+
+                # For city-level layers, allow user to specify municipality type for title generation
+                try:
+                    layer_config = LAYER_CONFIGS.get(self.cfg.layer, {})
+                    if layer_config.get('level') == 'state_county_city':
+                        municipality_type = input("municipality_type (City/Town/Village): ").strip()
+                        if municipality_type:
+                            # Stash into record so _check_field_health can use it for new_title
+                            expected['municipality_type'] = municipality_type.title()
+                except Exception:
+                    pass
             
             # Autofill missing fields using FILL logic before required checks
             expected = self._autofill_create_fields(entity, expected)
@@ -2262,13 +2291,17 @@ class LayersPrescrape:
             state_abbrev = format_name(state, 'state', external=True) if state else 'FL'
             
             if entity_type == "city":
-                # Determine the correct prefix (City/Town/Village) from the original title
-                title_prefix = "City"
-                if actual_title:
-                    if "Town of" in actual_title:
-                        title_prefix = "Town"
-                    elif "Village of" in actual_title:
-                        title_prefix = "Village"
+                # Determine municipality type (City/Town/Village/etc.)
+                title_prefix = (record.get('municipality_type') or '').strip()
+                if not title_prefix:
+                    # Try to infer from original title if present
+                    if actual_title:
+                        if "Town of" in actual_title:
+                            title_prefix = "Town"
+                        elif "Village of" in actual_title:
+                            title_prefix = "Village"
+                if not title_prefix:
+                    title_prefix = "City"
                 
                 # City-level: "Future Land Use - City of Gainesville FL"
                 expected = f"{layer_external} - {title_prefix} of {city_external} {state_abbrev}"
