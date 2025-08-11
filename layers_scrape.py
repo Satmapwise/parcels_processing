@@ -1236,10 +1236,60 @@ def extract_basic_file_metadata(work_dir: str, logger) -> dict:
     
     return metadata
 
+def _catalog_fallback_metadata_from_row(catalog_row: dict, logger) -> dict:
+    """Build fallback metadata from an existing catalog row.
+
+    Returns keys compatible with pipeline metadata: 'data_date', 'epsg', 'shp', and 'raw_zip'.
+    """
+    fallback: dict = {}
+    if not catalog_row:
+        return fallback
+
+    # Data date: normalize to YYYY-MM-DD when possible
+    try:
+        raw_date = (catalog_row.get('data_date') or '').strip()
+        if raw_date:
+            parsed = parse_string_to_date(raw_date)
+            if parsed:
+                fallback['data_date'] = parsed.strftime('%Y-%m-%d')
+            else:
+                if re.match(r'^\d{4}-\d{2}-\d{2}$', raw_date):
+                    fallback['data_date'] = raw_date
+    except Exception:
+        pass
+
+    # EPSG
+    try:
+        epsg_val = catalog_row.get('srs_epsg') or catalog_row.get('epsg')
+        if epsg_val is not None and str(epsg_val).strip():
+            fallback['epsg'] = str(epsg_val).strip()
+    except Exception:
+        pass
+
+    # Filenames
+    try:
+        shp_name = (catalog_row.get('sys_raw_file') or '').strip()
+        if shp_name:
+            fallback['shp'] = shp_name
+    except Exception:
+        pass
+
+    try:
+        raw_zip = (catalog_row.get('sys_raw_file_zip') or '').strip()
+        if raw_zip:
+            fallback['raw_zip'] = raw_zip
+    except Exception:
+        pass
+
+    if fallback:
+        logger.debug(f"[FALLBACK] Built catalog fallback: keys={list(fallback.keys())}")
+    return fallback
+
 def layer_metadata(layer: str, entity: str, state: str, county: str, city: str, catalog_row: dict, work_dir: str, logger, zip_date: str = None):
     """Handle the metadata extraction phase for an entity."""
     if not CONFIG.run_metadata:
         logger.debug(f"[METADATA] Skipping metadata extraction for {layer}/{entity} (disabled in config)")
+        # Return empty metadata; downstream will attempt catalog fallback
         return {}
 
     _debug_main(f"[METADATA] Extracting metadata for {layer}/{entity}", logger)
@@ -1308,8 +1358,24 @@ def layer_metadata(layer: str, entity: str, state: str, county: str, city: str, 
             
         else:
             logger.warning("No shapefile found to process for metadata extraction")
-            return {}
+            # Fall through to catalog fallback below
+            metadata = {}
     
+    # Catalog fallback: if required fields are missing, attempt to use existing catalog values
+    try:
+        fallback = _catalog_fallback_metadata_from_row(catalog_row, logger)
+        # Only fill fields that are missing
+        for key in ("data_date", "epsg", "shp"):
+            if key not in metadata or not metadata.get(key):
+                val = fallback.get(key)
+                if val:
+                    metadata[key] = val
+        if metadata:
+            _debug_main(f"[METADATA] Applied catalog fallback where needed for {layer}/{entity}", logger)
+    except Exception as _e:
+        # Non-fatal; proceed with whatever metadata we have
+        pass
+
     return metadata
 
 def layer_processing(layer: str, entity: str, state: str, county: str, city: str, catalog_row: dict, work_dir: str, logger, metadata: dict, entity_components: dict = None):
@@ -1330,6 +1396,21 @@ def layer_processing(layer: str, entity: str, state: str, county: str, city: str
 
     _debug_main(f"[PROCESSING] Starting processing for {layer}/{entity}", logger)
     logger.debug(f"Running processing for {layer}/{entity}")
+
+    # If metadata is missing critical values due to skipped earlier stages, merge from catalog
+    try:
+        if metadata is None:
+            metadata = {}
+        fallback = _catalog_fallback_metadata_from_row(catalog_row, logger)
+        filled_any = False
+        for key in ("data_date", "epsg", "shp"):
+            if not metadata.get(key) and fallback.get(key):
+                metadata[key] = fallback[key]
+                filled_any = True
+        if filled_any:
+            _debug_main(f"[PROCESSING] Filled missing metadata from catalog for {layer}/{entity}", logger)
+    except Exception:
+        pass
 
     # 1. Run pre-processing commands from database
     processing_commands = _parse_processing_comments(catalog_row.get('processing_comments'))
@@ -2290,6 +2371,16 @@ def process_layer(layer, queue, entity_components):
                 _update_csv_status(layer, entity, 'processing', 'SKIPPED', error_msg=proc_reason, entity_components=entity_components)
                 processing_skipped = True
 
+            # If no raw_zip_name from download (e.g., download skipped), use catalog fallback when available
+            try:
+                if not raw_zip_name:
+                    cz = (catalog_row.get('sys_raw_file_zip') or '').strip()
+                    if cz:
+                        raw_zip_name = cz
+                        entity_logger.debug(f"[UPLOAD PREP] Using catalog sys_raw_file_zip as fallback: {raw_zip_name}")
+            except Exception:
+                pass
+
             # Stage 4: Upload
             layer_upload(layer, entity, state, county, city, catalog_row, work_dir, entity_logger, metadata, raw_zip_name, entity_components)
 
@@ -2995,6 +3086,11 @@ def main():
     )
     
     initialize_logging(CONFIG.debug)
+
+    # Prevent running with download, metadata, and processing all disabled
+    if (not CONFIG.run_download) and (not CONFIG.run_metadata) and (not CONFIG.run_processing):
+        logging.critical("Invalid options: cannot disable download, metadata, and processing all at once. Nothing to do.")
+        sys.exit(2)
 
     logging.info(f"Script started at {CONFIG.start_time.strftime('%Y-%m-%d %H:%M:%S')}")
     if CONFIG.test_mode:
