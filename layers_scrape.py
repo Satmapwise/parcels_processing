@@ -898,6 +898,7 @@ def layer_download(layer: str, entity: str, state: str, county: str, city: str, 
     # Use download_method exclusively (legacy 'download' is AUTO and ignored)
     method_field = (catalog_row.get('download_method') or '').strip().upper()
     resource = catalog_row.get('resource') or catalog_row.get('src_url_file')
+    src_url_file_lower = ((catalog_row.get('src_url_file') or '').strip().lower())
     table_name = catalog_row.get('table_name')
 
     # Helper: detect ArcGIS Hub/OpenData pages
@@ -907,6 +908,9 @@ def layer_download(layer: str, entity: str, state: str, county: str, city: str, 
         u_low = u.lower()
         # Common Hub/OpenData domains and path hints
         if 'opendata.arcgis.com' in u_low or 'hub.arcgis.com' in u_low:
+            # Exclude direct API download endpoints and direct ZIPs → handle via WGET
+            if '/api/download/' in u_low or u_low.endswith('.zip'):
+                return False
             return True
         if 'arcgis.com' in u_low and '/datasets/' in u_low:
             return True
@@ -914,7 +918,17 @@ def layer_download(layer: str, entity: str, state: str, county: str, city: str, 
 
     # Determine download method (prefer download_method; else fallback by format/URL)
     if method_field in {"AGS", "WGET", "SELENIUM"}:
-        selected_method = method_field
+        # Safety override: if explicitly marked SELENIUM but the URL is a direct ZIP or Hub API download, use WGET
+        if method_field == 'SELENIUM':
+            is_direct_zip = src_url_file_lower.endswith('.zip') or ('.zip?' in src_url_file_lower) or ('.zip&' in src_url_file_lower)
+            is_hub_api = '/api/download/' in src_url_file_lower or src_url_file_lower.startswith('https://hub.arcgis.com/api/download') or src_url_file_lower.startswith('http://hub.arcgis.com/api/download')
+            if is_direct_zip or is_hub_api:
+                selected_method = 'WGET'
+                _debug_main(f"[DOWNLOAD] Overriding SELENIUM → WGET for direct download URL: {resource}", logger)
+            else:
+                selected_method = method_field
+        else:
+            selected_method = method_field
     else:
         if fmt == 'ags':
             selected_method = 'AGS'

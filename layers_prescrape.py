@@ -106,8 +106,11 @@ def is_opendata_portal(url: str) -> bool:
     except Exception:
         return False
 
-    # Known ArcGIS Hub/opendata hosts
+    # Known ArcGIS Hub/opendata hosts (exclude API download endpoints)
     if host.endswith('hub.arcgis.com') or host.endswith('opendata.arcgis.com'):
+        # API-style direct download endpoints are not portal landing pages
+        if '/api/download/' in path or path.startswith('/api/download'):
+            return False
         return True
 
     # Common patterns indicating dataset pages on various platforms
@@ -2342,8 +2345,14 @@ class LayersPrescrape:
                 if is_arcgis_service_url(url):
                     expected = 'AGS'
                 elif is_opendata_portal(url):
-                    # Special-case: OpenData links that directly end with .zip should use WGET
-                    expected = 'WGET' if url_lower.endswith('.zip') else 'SELENIUM'
+                    # Special-case: OpenData links that directly point to a ZIP should use WGET
+                    try:
+                        parsed = urlparse(url)
+                        path_only = (parsed.path or '').lower()
+                    except Exception:
+                        path_only = url_lower
+                    direct_zip = path_only.endswith('.zip') or ('.zip?' in url_lower) or ('.zip&' in url_lower)
+                    expected = 'WGET' if direct_zip else 'SELENIUM'
                 else:
                     expected = 'WGET'
             else:
