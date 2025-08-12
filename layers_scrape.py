@@ -62,8 +62,17 @@ def should_process_entity(catalog_row: dict, entity: str, SKIP_ENTITIES: set) ->
     Returns:
         tuple[bool, str]: (should_process, reason)
     """
-    if entity in SKIP_ENTITIES:
-        return False, f"Entity '{entity}' is in the SKIP_ENTITIES set"
+    # New rule: honor 'download' field; only process when set to AUTO.
+    try:
+        dl_flag_raw = (catalog_row.get('download') or '').strip()
+        dl_flag = dl_flag_raw.upper() if dl_flag_raw else ''
+        if dl_flag != 'AUTO':
+            if CONFIG.process_anyway:
+                return True, f"download='{dl_flag_raw or 'NULL'}' but continuing due to --process-anyway"
+            return False, f"download flag is '{dl_flag_raw or 'NULL'}' (only 'AUTO' is processed)"
+    except Exception:
+        # If we can't read the flag, fall through to existing logic
+        pass
     
     fmt = (catalog_row.get('format') or '').lower()
     
@@ -2487,9 +2496,14 @@ def process_layer(layer, queue, entity_components):
             should_process, process_reason = should_process_entity(catalog_row, entity, SKIP_ENTITIES)
             if not should_process:
                 logging.info(f"Skipping entity {entity}: {process_reason}")
+                # Persist skip reason in summary error_message
+                try:
+                    _update_csv_status(layer, entity, 'download', 'SKIPPED', error_msg=process_reason, entity_components=entity_components)
+                except Exception:
+                    pass
                 results.append({
                     'layer': layer, 'entity': entity, 'status': 'skipped',
-                    'warning': f"Format excluded: {process_reason}", 'data_date': None, 'runtime_seconds': 0
+                    'warning': process_reason, 'data_date': None, 'runtime_seconds': 0
                 })
                 continue
 
