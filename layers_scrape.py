@@ -18,6 +18,7 @@ import logging
 import argparse
 import subprocess
 import shapefile  # pyshp
+import zipfile
 from datetime import datetime, timedelta
 import os
 import csv
@@ -1035,16 +1036,16 @@ def layer_download(layer: str, entity: str, state: str, county: str, city: str, 
             msg = (result or {}).get('message', 'Unknown Selenium failure')
             raise DownloadError(f"Selenium download failed: {msg}", layer, entity)
 
-        # For ZIP-aware follow-ups, capture zip file name if present in changes (post-transfer)
+        # For ZIP-aware follow-ups, capture changed files as basenames (post-transfer)
         transferred = result.get('transferred_files', []) or []
-        changed_files = [os.path.join(target_dir, f) for f in transferred]
+        changed_files = [os.path.basename(f) for f in transferred]
 
         # Validate via existing validation step to keep behavior consistent
         before_state = _get_directory_state(work_dir)
         after_state = {**before_state}
-        for f in changed_files:
+        for name in changed_files:
             try:
-                after_state[os.path.basename(f)] = os.path.getmtime(f)
+                after_state[name] = os.path.getmtime(os.path.join(work_dir, name))
             except Exception:
                 pass
 
@@ -1053,11 +1054,37 @@ def layer_download(layer: str, entity: str, state: str, county: str, city: str, 
         zip_file = None
         data_date = None
         try:
+            # If a file is actually a ZIP (regardless of extension), rename to {entity}.zip
+            def _safe_name(name: str) -> str:
+                base = re.sub(r'[^A-Za-z0-9._-]+', '_', name).strip('_')
+                return base or 'download.zip'
+            renamed_any = False
+            new_changed_files = []
+            for name in changed_files:
+                try:
+                    full_path = os.path.join(work_dir, name)
+                    if os.path.isfile(full_path) and zipfile.is_zipfile(full_path):
+                        new_name = _safe_name(f"{entity}.zip")
+                        new_path = os.path.join(work_dir, new_name)
+                        if name != new_name:
+                            os.rename(full_path, new_path)
+                            logger.debug(f"Renamed ZIP file: {name} -> {new_name}")
+                            new_changed_files.append(new_name)
+                            renamed_any = True
+                        else:
+                            new_changed_files.append(name)
+                    else:
+                        new_changed_files.append(name)
+                except Exception:
+                    new_changed_files.append(name)
+            if renamed_any:
+                changed_files = new_changed_files
+
             # If a zip file among transferred files, run zip_processing
-            changed_zip_candidates = [f for f in changed_files if f.lower().endswith('.zip')]
+            changed_zip_candidates = [n for n in changed_files if n.lower().endswith('.zip')]
             if changed_zip_candidates:
-                newest_zip = max(changed_zip_candidates, key=lambda f: os.path.getmtime(f))
-                zip_file = newest_zip
+                newest_zip = max(changed_zip_candidates, key=lambda n: os.path.getmtime(os.path.join(work_dir, n)))
+                zip_file = newest_zip  # basename
                 _debug_main(f"[DOWNLOAD] Found zip file among Selenium changes: {zip_file}", logger)
                 data_date = zip_processing(zip_file, work_dir, logger)
 
@@ -1130,6 +1157,32 @@ def layer_download(layer: str, entity: str, state: str, county: str, city: str, 
             # Additional validation for AGS downloads - check for empty/corrupt files
             if fmt in {'ags', 'arcgis', 'esri', 'ags_extract'} or selected_method == 'AGS':
                 _validate_ags_download(work_dir, table_name, logger)
+
+            # If a file is actually a ZIP (regardless of extension), rename to {entity}.zip
+            def _safe_name(name: str) -> str:
+                base = re.sub(r'[^A-Za-z0-9._-]+', '_', name).strip('_')
+                return base or f"{entity}.zip"
+            renamed_any = False
+            normalized_changed_files = []
+            for fname in changed_files:
+                path = os.path.join(work_dir, fname)
+                try:
+                    if os.path.isfile(path) and zipfile.is_zipfile(path):
+                        new_name = _safe_name(f"{entity}.zip")
+                        new_path = os.path.join(work_dir, new_name)
+                        if fname != new_name:
+                            os.rename(path, new_path)
+                            logger.debug(f"Renamed ZIP file: {fname} -> {new_name}")
+                            normalized_changed_files.append(new_name)
+                            renamed_any = True
+                        else:
+                            normalized_changed_files.append(fname)
+                    else:
+                        normalized_changed_files.append(fname)
+                except Exception:
+                    normalized_changed_files.append(fname)
+            if renamed_any:
+                changed_files = normalized_changed_files
 
             # If a zip file was among the changed files, process the newest one and include extracted files in changed set
             changed_zip_candidates = [f for f in changed_files if f.lower().endswith('.zip')]
