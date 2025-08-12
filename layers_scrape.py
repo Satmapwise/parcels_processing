@@ -1131,19 +1131,15 @@ def layer_download(layer: str, entity: str, state: str, county: str, city: str, 
                     _validate_data_files(fallback_candidates, fmt_lower, work_dir, logger)
                 else:
                     raise
-            # Prefer the newer of: zip-derived data_date vs page-reported date
+            # Prefer page-reported date over any other dates for Selenium downloads
             try:
                 page_date_raw = (result.get('data_date') or '').strip()
-                # Normalize both dates using centralized parser
                 def _to_date(d: str):
                     if not d:
                         return None
-                    parsed = parse_string_to_date(d)
-                    return parsed
-                zip_d = _to_date(data_date) if data_date else None
+                    return parse_string_to_date(d)
                 page_d = _to_date(page_date_raw) if page_date_raw else None
-                if page_d and (not zip_d or page_d > zip_d):
-                    # Override with newer page date in YYYY-MM-DD for consistency
+                if page_d:
                     data_date = page_d.strftime("%Y-%m-%d")
             except Exception:
                 pass
@@ -1154,8 +1150,8 @@ def layer_download(layer: str, entity: str, state: str, county: str, city: str, 
             _update_csv_status(layer, entity, 'download', 'FAILED', str(de), entity_components=entity_components)
             raise DownloadError(str(de), layer, entity) from de
 
-        # Do not override data_date in metadata for Selenium downloads
-        return zip_file, None
+        # Override with page-derived date when present; otherwise fall back to zip-derived date
+        return zip_file, data_date
     else:
         raise DownloadError(f"Unknown download method: {selected_method}", layer, entity)
 
