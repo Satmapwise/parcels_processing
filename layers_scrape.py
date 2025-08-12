@@ -1054,30 +1054,14 @@ def layer_download(layer: str, entity: str, state: str, county: str, city: str, 
         zip_file = None
         data_date = None
         try:
-            # If a file is actually a ZIP (regardless of extension), rename to {entity}.zip
+            # If a file is actually a ZIP (or image/pdf) regardless of extension, normalize names to {entity}.{ext}
             def _safe_name(name: str) -> str:
                 base = re.sub(r'[^A-Za-z0-9._-]+', '_', name).strip('_')
                 return base or 'download.zip'
             renamed_any = False
-            new_changed_files = []
-            for name in changed_files:
-                try:
-                    full_path = os.path.join(work_dir, name)
-                    if os.path.isfile(full_path) and zipfile.is_zipfile(full_path):
-                        new_name = _safe_name(f"{entity}.zip")
-                        new_path = os.path.join(work_dir, new_name)
-                        if name != new_name:
-                            os.rename(full_path, new_path)
-                            logger.debug(f"Renamed ZIP file: {name} -> {new_name}")
-                            new_changed_files.append(new_name)
-                            renamed_any = True
-                        else:
-                            new_changed_files.append(name)
-                    else:
-                        new_changed_files.append(name)
-                except Exception:
-                    new_changed_files.append(name)
-            if renamed_any:
+            new_changed_files = _normalize_changed_files_extensions(changed_files, fmt_lower, work_dir, logger)
+            if new_changed_files != changed_files:
+                renamed_any = True
                 changed_files = new_changed_files
 
             # If a zip file among transferred files, run zip_processing
@@ -1158,30 +1142,14 @@ def layer_download(layer: str, entity: str, state: str, county: str, city: str, 
             if fmt in {'ags', 'arcgis', 'esri', 'ags_extract'} or selected_method == 'AGS':
                 _validate_ags_download(work_dir, table_name, logger)
 
-            # If a file is actually a ZIP (regardless of extension), rename to {entity}.zip
+            # If a file is a ZIP or image/pdf, normalize names to {entity}.{ext}
             def _safe_name(name: str) -> str:
                 base = re.sub(r'[^A-Za-z0-9._-]+', '_', name).strip('_')
                 return base or f"{entity}.zip"
             renamed_any = False
-            normalized_changed_files = []
-            for fname in changed_files:
-                path = os.path.join(work_dir, fname)
-                try:
-                    if os.path.isfile(path) and zipfile.is_zipfile(path):
-                        new_name = _safe_name(f"{entity}.zip")
-                        new_path = os.path.join(work_dir, new_name)
-                        if fname != new_name:
-                            os.rename(path, new_path)
-                            logger.debug(f"Renamed ZIP file: {fname} -> {new_name}")
-                            normalized_changed_files.append(new_name)
-                            renamed_any = True
-                        else:
-                            normalized_changed_files.append(fname)
-                    else:
-                        normalized_changed_files.append(fname)
-                except Exception:
-                    normalized_changed_files.append(fname)
-            if renamed_any:
+            normalized_changed_files = _normalize_changed_files_extensions(changed_files, fmt, work_dir, logger)
+            if normalized_changed_files != changed_files:
+                renamed_any = True
                 changed_files = normalized_changed_files
 
             # If a zip file was among the changed files, process the newest one and include extracted files in changed set
@@ -2220,6 +2188,103 @@ def _validate_file_content(file_path: str, filename: str, logger):
         logger.warning(f"Could not validate file content for {filename}: {e}")
         # Don't fail the download if we can't read the file
 
+
+def _detect_binary_type(file_path: str) -> str | None:
+    """Return a short type id based on magic bytes: 'zip','pdf','jpeg','png','gif' or None."""
+    try:
+        with open(file_path, 'rb') as fh:
+            sig = fh.read(8)
+        if not sig:
+            return None
+        # ZIP (PK\x03\x04 or similar)
+        if sig[:2] == b'\x50\x4b':
+            return 'zip'
+        # PDF
+        if sig.startswith(b'%PDF'):
+            return 'pdf'
+        # JPEG
+        if sig.startswith(b'\xff\xd8\xff'):
+            return 'jpeg'
+        # PNG
+        if sig.startswith(b'\x89PNG\r\n\x1a\n'):
+            return 'png'
+        # GIF
+        if sig[:6] in (b'GIF87a', b'GIF89a'):
+            return 'gif'
+    except Exception:
+        return None
+    return None
+
+
+def _normalize_changed_files_extensions(changed_files: list[str], fmt: str, work_dir: str, logger) -> list[str]:
+    """Ensure downloaded files have a recognizable extension by renaming to {entity}.{ext} when needed.
+
+    Currently supports: zip, jpg/jpeg, png, gif, pdf.
+    """
+    fmt_lower = (fmt or '').lower()
+    expected_ext = None
+    if fmt_lower in {'zip'}:
+        expected_ext = '.zip'
+    elif fmt_lower in {'jpg', 'jpeg'}:
+        expected_ext = '.jpeg'
+    elif fmt_lower == 'png':
+        expected_ext = '.png'
+    elif fmt_lower == 'gif':
+        expected_ext = '.gif'
+    elif fmt_lower == 'pdf':
+        expected_ext = '.pdf'
+
+    if not expected_ext:
+        return changed_files
+
+    normalized: list[str] = []
+    for name in changed_files:
+        try:
+            path = os.path.join(work_dir, name) if not os.path.isabs(name) else name
+            base_dir = os.path.dirname(path) or work_dir
+            base_name = os.path.basename(path)
+
+            # If already has correct extension, keep
+            if base_name.lower().endswith(expected_ext):
+                normalized.append(base_name)
+                continue
+
+            # Detect actual type to avoid mis-renaming
+            detected = _detect_binary_type(path)
+            if detected is None:
+                normalized.append(base_name)
+                continue
+
+            # Map detection to extension
+            det_to_ext = {'zip': '.zip', 'pdf': '.pdf', 'jpeg': '.jpeg', 'png': '.png', 'gif': '.gif'}
+            detected_ext = det_to_ext.get(detected)
+
+            # If expected matches detected, rename to sanitized original + expected ext
+            if detected_ext and (
+                (fmt_lower == 'zip' and detected == 'zip') or
+                (fmt_lower in {'jpg','jpeg'} and detected == 'jpeg') or
+                (fmt_lower == 'png' and detected == 'png') or
+                (fmt_lower == 'gif' and detected == 'gif') or
+                (fmt_lower == 'pdf' and detected == 'pdf')
+            ):
+                stem = os.path.splitext(base_name)[0]
+                stem_sanitized = stem.replace('.', '')
+                new_name = f"{stem_sanitized}{expected_ext}"
+                new_path = os.path.join(base_dir, new_name)
+                if base_name != new_name:
+                    try:
+                        os.replace(path, new_path)
+                        logger.debug(f"Renamed file to expected extension: {base_name} -> {new_name}")
+                        normalized.append(new_name)
+                    except Exception:
+                        normalized.append(base_name)
+                else:
+                    normalized.append(new_name)
+            else:
+                normalized.append(base_name)
+        except Exception:
+            normalized.append(name if isinstance(name, str) else base_name)
+    return normalized
 
 def _find_latest_zip(work_dir, logger):
     """Return the basename of the newest *.zip file in work_dir or None if none exist."""
