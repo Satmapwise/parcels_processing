@@ -2560,7 +2560,7 @@ def process_layer(layer, queue, entity_components):
     # Calculate stats
     total_entities = len(results)
     successful_entities = len([r for r in results if r.get('status') == 'success'])
-    logging.info(f"{successful_entities}/{total_entities} entities processed successfully")
+    logging.info(f"{successful_entities}/{total_entities} entities processed successfully for {layer}")
     return results
 
 # ---------------------------------------------------------------------------
@@ -3228,6 +3228,13 @@ def main():
         sys.exit(1)
     finally:
         end_time = datetime.now()
+        # Report total successes across all layers
+        try:
+            total_processed = len(results)
+            total_success = len([r for r in results if r.get('status') == 'success'])
+            logging.info(f"{total_success}/{total_processed} entities processed successfully across all layers")
+        except Exception:
+            pass
         # Ensure Selenium driver is closed if still open
         try:
             if _selenium_shutdown and _SELENIUM_DRIVER:
