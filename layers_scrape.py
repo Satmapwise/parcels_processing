@@ -1154,7 +1154,8 @@ def layer_download(layer: str, entity: str, state: str, county: str, city: str, 
             _update_csv_status(layer, entity, 'download', 'FAILED', str(de), entity_components=entity_components)
             raise DownloadError(str(de), layer, entity) from de
 
-        return zip_file, data_date
+        # Do not override data_date in metadata for Selenium downloads
+        return zip_file, None
     else:
         raise DownloadError(f"Unknown download method: {selected_method}", layer, entity)
 
