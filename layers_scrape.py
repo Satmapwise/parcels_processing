@@ -56,7 +56,7 @@ _SELENIUM_REMAINING = set()
 
 # Format constants now imported from layers_helpers.py
 
-def should_process_entity(catalog_row: dict, entity: str, SKIP_ENTITIES: set) -> tuple[bool, str]:
+def should_process_entity(catalog_row: dict, entity: str) -> tuple[bool, str]:
     """Determine if an entity should be processed and why.
     
     Returns:
@@ -251,7 +251,7 @@ def _to_internal_format(name: str) -> str:
 # Import shared utilities and constants
 from layers_helpers import (
     PG_CONNECTION, VALID_STATES, FL_COUNTIES, LAYER_CONFIGS,
-    SKIP_ENTITIES, FULL_PIPELINE_FORMATS, METADATA_ONLY_FORMATS,
+    FULL_PIPELINE_FORMATS, METADATA_ONLY_FORMATS,
     format_name, safe_catalog_val, 
     resolve_layer_name, resolve_layer_directory,
     DATA_ROOT, TOOLS_DIR,
@@ -2493,7 +2493,7 @@ def process_layer(layer, queue, entity_components):
                 raise RuntimeError(f"Catalog row not found for {layer}/{entity}")
 
             # Check if entity should be processed based on format
-            should_process, process_reason = should_process_entity(catalog_row, entity, SKIP_ENTITIES)
+            should_process, process_reason = should_process_entity(catalog_row, entity)
             if not should_process:
                 logging.info(f"Skipping entity {entity}: {process_reason}")
                 # Persist skip reason in summary error_message

@@ -198,11 +198,7 @@ LAYER_CONFIGS = {
     }
 }
 
-# Entities to skip (blacklist) - for layers_scrape.py
-SKIP_ENTITIES = {
-    "flu_fl_collier_marco_island",
-    "zoning_fl_pinellas_pinellas_park"
-    }
+# Blacklist removed; skipping now controlled by 'download' flag in catalog
 
 # Format categories for pipeline control
 FULL_PIPELINE_FORMATS = {
