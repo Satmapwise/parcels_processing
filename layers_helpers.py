@@ -207,7 +207,12 @@ SKIP_ENTITIES = {
     }
 
 # Format categories for pipeline control
-FULL_PIPELINE_FORMATS = {'ags', 'arcgis', 'esri', 'ags_extract', 'shp', 'zip', 'url'}
+FULL_PIPELINE_FORMATS = {
+    'ags', 'arcgis', 'esri', 'ags_extract',
+    'shp', 'zip', 'url',
+    # File Geodatabase support
+    'gdb', 'filegdb', 'file geodatabase', 'geodatabase', 'fgdb'
+}
 METADATA_ONLY_FORMATS = {'pdf'}
 
 

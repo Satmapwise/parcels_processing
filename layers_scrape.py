@@ -1683,7 +1683,8 @@ def zip_processing(zip_file: str, work_dir: str, logger) -> str:
     
     # Step 1: Unzip the file
     try:
-        unzip_command = ['unzip', '-oj', zip_file]
+        # Preserve directory hierarchy so *.gdb directories remain intact
+        unzip_command = ['unzip', '-o', zip_file]
         logger.debug(f"Running unzip command: {' '.join(unzip_command)}")
         
         if CONFIG.test_mode:
@@ -1924,7 +1925,7 @@ def _collect_files_matching_format(work_dir: str, fmt: str) -> list[str]:
         n = name.lower()
         if fmt_lower in {'shp', 'shapefile'}:
             return n.endswith('.shp')
-        if fmt_lower in {'gdb', 'filegdb', 'file geodatabase'}:
+        if fmt_lower in {'gdb', 'filegdb', 'file geodatabase', 'geodatabase', 'fgdb'}:
             return n.endswith('.gdb') and os.path.isdir(os.path.join(work_dir, name))
         if fmt_lower in {'geojson', 'json'}:
             return n.endswith('.geojson') or n.endswith('.json')
@@ -2025,7 +2026,7 @@ def _validate_data_files(changed_files, fmt: str, work_dir: str, logger):
         name_lower = filename.lower()
         if fmt_lower in {'shp', 'shapefile'}:
             return name_lower.endswith('.shp')
-        if fmt_lower in {'gdb', 'filegdb', 'file geodatabase'}:
+        if fmt_lower in {'gdb', 'filegdb', 'file geodatabase', 'geodatabase', 'fgdb'}:
             # allow directories with .gdb as well as files
             path = os.path.join(work_dir, filename)
             return name_lower.endswith('.gdb') and os.path.isdir(path)
