@@ -211,7 +211,11 @@ FULL_PIPELINE_FORMATS = {
     # File Geodatabase support
     'gdb', 'filegdb', 'file geodatabase', 'geodatabase', 'fgdb'
 }
-METADATA_ONLY_FORMATS = {'pdf'}
+METADATA_ONLY_FORMATS = {
+    'pdf',
+    # Basic image formats treated like PDF (metadata-only)
+    'jpg', 'jpeg', 'png', 'gif', 'image'
+}
 
 
 # ---------------------------------------------------------------------------

@@ -1255,8 +1255,31 @@ def extract_basic_file_metadata(work_dir: str, logger) -> dict:
         
         if largest_file:
             file_path = os.path.join(work_dir, largest_file)
-            
-            # Use conservative PDF metadata extraction for PDF files
+
+            # Normalize: if file is an image with missing extension, detect and rename
+            try:
+                name_lower = largest_file.lower()
+                if not any(name_lower.endswith(ext) for ext in ('.jpg', '.jpeg', '.png', '.gif', '.pdf')):
+                    # Detect common image magic headers
+                    with open(file_path, 'rb') as fh:
+                        sig = fh.read(8)
+                    new_name = None
+                    if sig.startswith(b'\xff\xd8\xff'):
+                        new_name = os.path.splitext(largest_file)[0] + '.jpeg'
+                    elif sig.startswith(b'\x89PNG\r\n\x1a\n'):
+                        new_name = os.path.splitext(largest_file)[0] + '.png'
+                    elif sig[:6] in (b'GIF87a', b'GIF89a'):
+                        new_name = os.path.splitext(largest_file)[0] + '.gif'
+                    if new_name and new_name != largest_file:
+                        new_path = os.path.join(work_dir, new_name)
+                        os.rename(file_path, new_path)
+                        logger.debug(f"Renamed image without extension: {largest_file} -> {new_name}")
+                        largest_file = new_name
+                        file_path = new_path
+            except Exception:
+                pass
+
+            # Use conservative metadata extraction
             data_date = None
             if largest_file.lower().endswith('.pdf'):
                 pdf_metadata = _extract_pdf_metadata_conservative(file_path, logger)
@@ -1264,10 +1287,9 @@ def extract_basic_file_metadata(work_dir: str, logger) -> dict:
                     data_date = pdf_metadata['data_date']
                     logger.debug(f"PDF metadata extracted using {pdf_metadata['method']}: {data_date}")
                 else:
-                    # No reasonable date found - don't fake freshness
                     logger.warning(f"No reasonable data date found for PDF: {largest_file}")
             else:
-                # For non-PDF files, fall back to file modification time
+                # For images/other files, fall back to file modification time
                 stat = os.stat(file_path)
                 data_date = datetime.fromtimestamp(stat.st_mtime).strftime('%Y-%m-%d')
                 logger.debug(f"Using file modification time for non-PDF: {data_date}")
@@ -1984,6 +2006,8 @@ def _collect_files_matching_format(work_dir: str, fmt: str) -> list[str]:
             return n.endswith('.geojson') or n.endswith('.json')
         if fmt_lower == 'pdf':
             return n.endswith('.pdf')
+        if fmt_lower in {'jpg','jpeg','png','gif','image'}:
+            return n.endswith('.jpg') or n.endswith('.jpeg') or n.endswith('.png') or n.endswith('.gif')
         if fmt_lower in {'kml', 'kmz'}:
             return n.endswith('.kml') or n.endswith('.kmz')
         if fmt_lower in {'csv'}:
@@ -2087,6 +2111,8 @@ def _validate_data_files(changed_files, fmt: str, work_dir: str, logger):
             return name_lower.endswith('.geojson') or name_lower.endswith('.json')
         if fmt_lower == 'pdf':
             return name_lower.endswith('.pdf')
+        if fmt_lower in {'jpg','jpeg','png','gif','image'}:
+            return any(name_lower.endswith(ext) for ext in ('.jpg','.jpeg','.png','.gif'))
         if fmt_lower in {'kml', 'kmz'}:
             return name_lower.endswith('.kml') or name_lower.endswith('.kmz')
         if fmt_lower in {'csv'}:
@@ -2100,7 +2126,7 @@ def _validate_data_files(changed_files, fmt: str, work_dir: str, logger):
         if fmt_lower in {'txt'}:
             return name_lower.endswith('.txt')
         # Fallback: accept common geodata types
-        return any(name_lower.endswith(ext) for ext in ('.shp', '.geojson', '.gdb', '.kml', '.kmz', '.csv', '.xlsx', '.xls', '.tif', '.tiff', '.pdf'))
+        return any(name_lower.endswith(ext) for ext in ('.shp', '.geojson', '.gdb', '.kml', '.kmz', '.csv', '.xlsx', '.xls', '.tif', '.tiff', '.pdf', '.jpg', '.jpeg', '.png', '.gif'))
 
     matching = [f for f in changed_files if is_match(f)]
     if matching:
