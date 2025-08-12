@@ -2475,6 +2475,7 @@ def process_layer(layer, queue, entity_components):
                 'status': 'success',
                 'data_date': metadata.get('data_date') or datetime.now().date(),
                 'runtime_seconds': f'{entity_runtime}s',
+                'runtime_seconds_int': entity_runtime,
                 'start_time_iso': entity_start_time.isoformat(),
                 'end_time_iso': entity_end_time.isoformat(),
                 'start_time_display': entity_start_time.strftime('%m/%d/%y %I:%M %p'),
@@ -2495,6 +2496,20 @@ def process_layer(layer, queue, entity_components):
                 warning_msg = 'data_date defaulted to current day'
                 entity_logger.warning(warning_msg)
                 result_entry['warning'] = warning_msg
+
+            # If slow threshold configured or default 30s, record a warning in summary error_message
+            try:
+                slow_threshold = int(CONFIG.slow_threshold_seconds) if CONFIG.slow_threshold_seconds is not None else 30
+                if entity_runtime >= slow_threshold:
+                    warn = f"WARNING: runtime exceeded {slow_threshold}s: {entity_runtime}s"
+                    result_entry['warning'] = warn
+                    # Write into CSV immediately via update status helper
+                    try:
+                        _update_csv_status(layer, entity, 'download', 'SUCCESS', error_msg=warn, entity_components=entity_components)
+                    except Exception:
+                        pass
+            except Exception:
+                pass
 
             results.append(result_entry)
             logging.info(f"--- Successfully processed entity: {entity} ---")
