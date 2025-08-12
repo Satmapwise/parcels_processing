@@ -893,6 +893,38 @@ def _parse_processing_comments(text):
             commands.append(piece)
     return commands
 
+def _run_processing_comment_commands(catalog_row: dict, work_dir: str, logger, layer: str, entity: str):
+    """Execute processing_comments regardless of whether a main processing command exists."""
+    processing_comments = _parse_processing_comments(catalog_row.get('processing_comments'))
+    if not processing_comments:
+        return
+    logger.debug(f"[PROCESSING] Running {len(processing_comments)} pre-processing commands")
+    for raw_cmd in processing_comments:
+        is_warning_only = str(raw_cmd).startswith('WARNING:')
+        cmd_str = raw_cmd[8:].strip() if is_warning_only else str(raw_cmd).strip()
+        if is_warning_only:
+            logger.debug(f"Processing command marked as warning-only: {cmd_str}")
+
+        if not _looks_like_command(cmd_str):
+            logger.info(f"Skipping non-command note in processing_comments: {raw_cmd}")
+            continue
+
+        try:
+            command = shlex.split(cmd_str)
+        except Exception:
+            command = cmd_str.split()
+
+        try:
+            _run_command(command, work_dir, logger)
+        except Exception as e:
+            if is_warning_only:
+                logger.warning(f"Processing command failed (warning-only): {cmd_str}")
+                logger.warning(f"Error: {e}")
+            else:
+                logger.error(f"Processing command failed: {cmd_str}")
+                logger.error(f"Error: {e}")
+                raise ProcessingError(f"Processing command failed: {cmd_str}", layer, entity) from e
+
 # ---------------------------------------------------------------------------
 # Main Pipeline Functions
 # ---------------------------------------------------------------------------
@@ -1359,6 +1391,8 @@ def layer_metadata(layer: str, entity: str, state: str, county: str, city: str, 
             _debug_main(f"[METADATA] Basic metadata extracted: file:{metadata.get('shp', 'unknown')}, date:{metadata.get('data_date', 'unknown')}", logger)
         else:
             logger.warning("No basic metadata could be extracted")
+        # Run processing_comments after metadata for consistency
+        _run_processing_comment_commands(catalog_row, work_dir, logger, layer, entity)
         
     else:
         # For geospatial formats, try to find and process shapefiles
@@ -1405,6 +1439,8 @@ def layer_metadata(layer: str, entity: str, state: str, county: str, city: str, 
             logger.warning("No shapefile found to process for metadata extraction")
             # Fall through to catalog fallback below
             metadata = {}
+        # Run processing_comments after metadata for consistency
+        _run_processing_comment_commands(catalog_row, work_dir, logger, layer, entity)
     
     # Catalog fallback: if required fields are missing, attempt to use existing catalog values
     try:
@@ -1458,37 +1494,7 @@ def layer_processing(layer: str, entity: str, state: str, county: str, city: str
         pass
 
     # 1. Run pre-processing commands from database
-    processing_commands = _parse_processing_comments(catalog_row.get('processing_comments'))
-    if processing_commands:
-        logger.debug(f"[PROCESSING] Running {len(processing_commands)} pre-processing commands")
-        for raw_cmd in processing_commands:
-            # Check if this is a warning-only command
-            is_warning_only = str(raw_cmd).startswith('WARNING:')
-            cmd_str = raw_cmd[8:].strip() if is_warning_only else str(raw_cmd).strip()
-            if is_warning_only:
-                logger.debug(f"Processing command marked as warning-only: {cmd_str}")
-
-            # Validate whether it looks like a command; skip notes
-            if not _looks_like_command(cmd_str):
-                logger.info(f"Skipping non-command note in processing_comments: {raw_cmd}")
-                continue
-
-            # Tokenize for direct execution
-            try:
-                command = shlex.split(cmd_str)
-            except Exception:
-                command = cmd_str.split()
-            
-            try:
-                _run_command(command, work_dir, logger)
-            except Exception as e:
-                if is_warning_only:
-                    logger.warning(f"Processing command failed (warning-only): {cmd_str}")
-                    logger.warning(f"Error: {e}")
-                else:
-                    logger.error(f"Processing command failed: {cmd_str}")
-                    logger.error(f"Error: {e}")
-                    raise ProcessingError(f"Processing command failed: {cmd_str}", layer, entity) from e
+    _run_processing_comment_commands(catalog_row, work_dir, logger, layer, entity)
 
     # 2. Run layer-specific processing command (from config)
     layer_config = LAYER_CONFIGS.get(layer, {})
